@@ -1,9 +1,7 @@
-// app/instrumentation.ts
+import { NODE_ENV } from "./lib/constants";
+
 export function initInstrumentation() {
-  if (process.env.NODE_ENV === "production") {
-    // Ví dụ: setup Sentry
-    // import * as Sentry from "@sentry/nextjs";
-    // Sentry.init({ dsn: process.env.SENTRY_DSN });
+  if (NODE_ENV === "production") {
     console.log("Instrumentation initialized");
   }
 }

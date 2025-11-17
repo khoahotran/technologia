@@ -1,2 +1,2 @@
-// app/sitemap.xml.tsx
+
 export { default } from "./sitemap";
