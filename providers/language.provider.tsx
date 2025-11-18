@@ -1,6 +1,6 @@
 "use client";
 
-import { FullLoading } from "@/components/loading";
+import { FullLoading } from "@/components/shared/loading";
 import { Language } from "@/locales/languages.interface";
 import { getLocale, loadLocale } from "@/locales/locale";
 import { createContext, useContext, useEffect, useState } from "react";

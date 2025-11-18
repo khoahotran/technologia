@@ -1,8 +1,8 @@
-import type { Metadata } from "next";
-import "./globals.css";
-import Navbar from "@/components/navbar";
+import Navbar from "@/components/features/Navbar";
 import { AuthProvider } from "@/hooks/use-auth";
 import { Analytics } from "@vercel/analytics/next";
+import type { Metadata } from "next";
+import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Create Next App",

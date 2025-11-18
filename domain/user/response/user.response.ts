@@ -1,10 +1,10 @@
-import { createSuccessResponseSchema } from "@/shared/response.dto";
+import { createSuccessResponseSchema } from "@/shared/response/response.dto";
 import { z } from "zod";
 import { AddressEntitySchema } from "../entities/address.entity";
 import { AdminEntitySchema } from "../entities/admin.entity";
 import { CustomerEntitySchema } from "../entities/customer.entity";
-import { UserEntitySchema } from "../entities/user.entity";
 import { UserPublicSchema } from "../entities/user-public.entity";
+import { UserEntitySchema } from "../entities/user.entity";
 
 
 // --------------------------------------------------

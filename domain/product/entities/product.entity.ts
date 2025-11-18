@@ -1,6 +1,6 @@
-import { z } from "zod";
 import { BaseEntitySchema } from "@/shared/entities/base.entity";
-import { PriceSchema } from "../value-objects/price.vo";
+import { z } from "zod";
+import { PriceSchema } from "../vo/price.vo";
 
 export const ProductEntitySchema = BaseEntitySchema.extend({
     productId: z.string(),

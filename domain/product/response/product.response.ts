@@ -1,6 +1,6 @@
+import { createSuccessResponseSchema } from "@/shared/response/response.dto";
 import { z } from "zod";
 import { ProductEntitySchema } from "../entities/product.entity";
-import { createSuccessResponseSchema } from "@/shared/response.dto";
 
 // --- Single product response ---
 export const ProductResponseSchema = createSuccessResponseSchema(ProductEntitySchema);

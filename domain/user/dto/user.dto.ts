@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { EmailSchema } from "../value-objects/email.vo";
-import { PhoneNumberSchema } from "../value-objects/phone.vo";
+import { EmailSchema } from "../vo/email.vo";
+import { PhoneNumberSchema } from "../vo/phone.vo";
 
 export const CreateUserDtoSchema = z.object({
   username: z.string(),

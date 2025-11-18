@@ -1,9 +1,9 @@
-import { z } from "zod";
 import { BaseEntitySchema } from "@/shared/entities/base.entity";
-import { EmailSchema } from "../value-objects/email.vo";
-import { PhoneNumberSchema } from "../value-objects/phone.vo";
-import { UserStatusSchema } from "../value-objects/status.vo";
-import { UserRoleSchema } from "../value-objects/role.vo";
+import { z } from "zod";
+import { EmailSchema } from "../vo/email.vo";
+import { PhoneNumberSchema } from "../vo/phone.vo";
+import { UserRoleSchema } from "../vo/role.vo";
+import { UserStatusSchema } from "../vo/status.vo";
 
 export const UserEntitySchema = BaseEntitySchema.extend({
   userId: z.string(),
