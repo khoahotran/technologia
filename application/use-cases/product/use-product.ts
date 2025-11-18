@@ -1,6 +1,7 @@
-import { ProductRepository } from "@/infrastructure/product/repositories/product.repository";
-import { CreateProductDto, UpdateProductDto } from "@/domain/product/dto";
+
+import { CreateProductDto, UpdateProductDto } from "@/domain/product";
 import { ProductEntity } from "@/domain/product/entities/product.entity";
+import { ProductRepository } from "@/infrastructure/repositories/product";
 
 export const useProduct = () => {
   const getAll = async (): Promise<ProductEntity[]> => {

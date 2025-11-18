@@ -1,25 +1,25 @@
+import { CreateProductDto, UpdateProductDto } from "@/domain/product";
 import { ProductEntity, ProductEntitySchema } from "@/domain/product/entities/product.entity";
-import { CreateProductDto, UpdateProductDto } from "@/domain/product/dto";
-import { fetchWithToken } from "@/shared/utils/fetch-with-token";
-import { handleResponse } from "@/shared/utils/handle-response";
+import { fetchWithAuth } from "@/lib/fetch-auth";
+import { handleResponse } from "@/lib/handle-response";
 
 const BASE_URL = "/api/products"; // hoặc từ config
 
 export const ProductRepository = {
   getAll: async (): Promise<ProductEntity[]> => {
-    const res = await fetchWithToken(BASE_URL);
+    const res = await fetchWithAuth(BASE_URL);
     const data = await handleResponse<ProductEntity[]>(res);
     return data.map(d => ProductEntitySchema.parse(d));
   },
 
   getById: async (id: string): Promise<ProductEntity> => {
-    const res = await fetchWithToken(`${BASE_URL}/${id}`);
+    const res = await fetchWithAuth(`${BASE_URL}/${id}`);
     const data = await handleResponse<ProductEntity>(res);
     return ProductEntitySchema.parse(data);
   },
 
   create: async (dto: CreateProductDto): Promise<ProductEntity> => {
-    const res = await fetchWithToken(BASE_URL, {
+    const res = await fetchWithAuth(BASE_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(dto),
@@ -29,7 +29,7 @@ export const ProductRepository = {
   },
 
   update: async (id: string, dto: UpdateProductDto): Promise<ProductEntity> => {
-    const res = await fetchWithToken(`${BASE_URL}/${id}`, {
+    const res = await fetchWithAuth(`${BASE_URL}/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(dto),
@@ -39,7 +39,7 @@ export const ProductRepository = {
   },
 
   delete: async (id: string): Promise<void> => {
-    const res = await fetchWithToken(`${BASE_URL}/${id}`, { method: "DELETE" });
+    const res = await fetchWithAuth(`${BASE_URL}/${id}`, { method: "DELETE" });
     await handleResponse<void>(res);
   },
 };

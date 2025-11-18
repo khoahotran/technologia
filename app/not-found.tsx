@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { useLanguage } from "@/providers/language-provider";
+import { useLanguage } from "@/providers/language.provider";
 import { Ghost } from "lucide-react";
 import { useRouter } from "next/navigation";
 
