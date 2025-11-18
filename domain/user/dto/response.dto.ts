@@ -4,6 +4,7 @@ import { AddressEntitySchema } from "../entities/address.entity";
 import { AdminEntitySchema } from "../entities/admin.entity";
 import { CustomerEntitySchema } from "../entities/customer.entity";
 import { UserEntitySchema } from "../entities/user.entity";
+import { UserPublicSchema } from "../entities/user-public.entity";
 
 
 // --------------------------------------------------
@@ -15,7 +16,6 @@ export type UserResponse = z.infer<typeof UserResponseSchema>;
 // --------------------------------------------------
 // 2. Single Customer response (User + Customer info + Address list)
 // --------------------------------------------------
-// Dữ liệu trả về cho customer thường gồm user + customer profile + addresses
 export const CustomerFullResponseSchema = createSuccessResponseSchema(
   z.object({
     user: UserEntitySchema,
@@ -53,3 +53,9 @@ export const PaginatedUsersResponseSchema = createSuccessResponseSchema(
 );
 
 export type PaginatedUsersResponse = z.infer<typeof PaginatedUsersResponseSchema>;
+
+export const UserPublicResponseSchema = createSuccessResponseSchema(
+  UserPublicSchema
+);
+
+export type UserPublicResponse = z.infer<typeof UserPublicResponseSchema>;
