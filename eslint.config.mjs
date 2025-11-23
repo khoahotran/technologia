@@ -1,12 +1,15 @@
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
+import unusedImports from "eslint-plugin-unused-imports";
 
 export default defineConfig([
   ...nextVitals,
   ...nextTs,
-
   {
+    plugins: {
+      "unused-imports": unusedImports,
+    },
     rules: {
       "@typescript-eslint/no-unused-vars": [
         "error",
@@ -29,28 +32,18 @@ export default defineConfig([
       "import/no-cycle": "error",
       "import/order": [
         "error",
-        {
-          "newlines-between": "always",
-          alphabetize: { order: "asc" },
-        },
+        { newlinesBetween: "always", alphabetize: { order: "asc" } },
       ],
 
       "no-console": ["warn", { allow: ["warn", "error"] }],
       "no-restricted-imports": ["error", { patterns: ["../..*", "../../..*"] }],
 
       "@next/next/no-async-client-component": "error",
-      "@next/next/no-server-import-in-client-component": "error",
     },
-
     settings: {
-      react: {
-        version: "detect",
-      },
-      "import/resolver": {
-        typescript: {},
-      },
+      react: { version: "detect" },
+      "import/resolver": { typescript: {} },
     },
   },
-
   globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),
 ]);

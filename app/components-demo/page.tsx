@@ -7,6 +7,12 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import { useState } from "react"
+import { LabeledInput, SocialButton } from "@/components/features/home/FormElements";
+import { Subscribe } from "@/components/features/home/Subscribe";
+import { Facebook, Chrome } from "lucide-react";
+import { AddressCard } from "@/components/features/checkout/AddressCard";
+import { AddressForm } from "@/components/features/checkout/AddressForm";
+import { PaymentMethodList } from "@/components/features/checkout/PaymentMethodList";
 
 export default function ComponentsDemoPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -133,6 +139,109 @@ export default function ComponentsDemoPage() {
         </section>
 
       </div>
+      {/* Form Elements & Subscribe */}
+      <section className="space-y-4">
+        <h2 className="text-2xl font-semibold">Form Elements & Subscribe</h2>
+        <div className="grid gap-8 p-6 border rounded-lg">
+          <div className="max-w-sm space-y-4">
+            <LabeledInput label="Phone Number" placeholder="myphonenumber" />
+            <LabeledInput label="Email" placeholder="Enter your email" />
+          </div>
+          
+          <div className="max-w-sm space-y-4">
+            <SocialButton 
+              provider="Google" 
+              icon={<Chrome className="h-5 w-5 text-red-500" />} 
+            />
+            <SocialButton 
+              provider="Facebook" 
+              icon={<Facebook className="h-5 w-5 text-blue-600" />} 
+            />
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Subscribe Variants</h3>
+            <Subscribe />
+            <Subscribe variant="rounded" />
+          </div>
+        </div>
+      </section>
+
+      {/* Checkout Components */}
+      <section className="space-y-4">
+        <h2 className="text-2xl font-semibold">Checkout Components</h2>
+        
+        {/* Address Management */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium">Address Card</h3>
+          <div className="max-w-2xl">
+            <AddressCard
+              name="John Doe"
+              phone="+84 123 456 789"
+              address="123, Main Street, Ward 1, District 1, Ho Chi Minh City"
+              isDefault
+            />
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-medium">Address Form</h3>
+          <div className="max-w-4xl">
+            <AddressForm />
+          </div>
+        </div>
+
+        {/* Payment Methods */}
+        <div className="grid md:grid-cols-2 gap-8">
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">Bank Accounts</h3>
+            <PaymentMethodList
+              type="bank"
+              methods={[
+                {
+                  id: "1",
+                  type: "bank",
+                  name: "Bank name",
+                  accountName: "NAME",
+                  accountNumber: "bank account number",
+                  isDefault: true,
+                },
+                {
+                  id: "2",
+                  type: "bank",
+                  name: "Bank name",
+                  accountName: "NAME",
+                  accountNumber: "bank account number",
+                },
+              ]}
+            />
+          </div>
+
+          <div className="space-y-4">
+            <h3 className="text-lg font-medium">E-Wallet Accounts</h3>
+            <PaymentMethodList
+              type="wallet"
+              methods={[
+                {
+                  id: "1",
+                  type: "wallet",
+                  name: "E-wallet name",
+                  accountName: "NAME",
+                  accountNumber: "e-wallet number",
+                  isDefault: true,
+                },
+                {
+                  id: "2",
+                  type: "wallet",
+                  name: "E-wallet name",
+                  accountName: "NAME",
+                  accountNumber: "e-wallet account number",
+                },
+              ]}
+            />
+          </div>
+        </div>
+      </section>
     </div>
-  )
+  );
 }

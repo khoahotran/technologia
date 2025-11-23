@@ -1,0 +1,3 @@
+// Cart components barrel export
+export { CartItem } from './CartItem'
+export { CartSummary } from './CartSummary'
