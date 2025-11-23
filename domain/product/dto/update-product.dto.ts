@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { PriceSchema } from "../value-objects/price.vo";
+import { PriceSchema } from "../vo/price.vo";
 
 export const UpdateProductDtoSchema = z.object({
     name: z.string().optional(),
