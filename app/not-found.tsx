@@ -18,20 +18,18 @@ export default function NotFound() {
       // }}
     >
       <Ghost className="h-16 w-16 text-zinc-400" />
-      <h1 className="mt-6 font-bold text-4xl text-zinc-800">
-        {locales.notFoundPage.title}
-      </h1>
-      <p className="mt-2 text-zinc-600">{locales.notFoundPage.message}</p>
+      <h1 className="mt-6 font-bold text-4xl text-zinc-800">hihi</h1>
+      <p className="mt-2 text-zinc-600">hihi</p>
       <div className="mt-6 flex gap-4">
         <Button
           className="cursor-pointer"
           variant="outline"
           onClick={() => router.back()}
         >
-          {locales.notFoundPage.action.back}
+          hihi
         </Button>
         <Button className="cursor-pointer" onClick={() => router.push("/")}>
-          {locales.notFoundPage.action.home}
+          hihi
         </Button>
       </div>
     </div>

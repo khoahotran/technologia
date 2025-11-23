@@ -1,8 +1,13 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import Navbar from "@/components/navbar";
-import { AuthProvider } from "@/hooks/use-auth";
 import { Analytics } from "@vercel/analytics/next";
+import { AuthProvider } from "@/providers/auth.provider";
+import { LanguageProvider } from "@/providers/language.provider";
+import { QueryProvider } from "@/providers/query.provider";
+import { Suspense } from "react";
+import { Toaster } from "sonner";
+import Loading from "./loading";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -36,7 +41,7 @@ export default function RootLayout({
 }>) {
   return (
     <html suppressHydrationWarning={true} lang="en">
-      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable}`}>
+      <body className={`font-sans`}>
         <LanguageProvider>
           <Suspense fallback={<Loading />}>
             <QueryProvider>
@@ -48,7 +53,6 @@ export default function RootLayout({
                 }}
               />
               <AuthProvider>
-                <Navbar />
                 {children}
               </AuthProvider>
             </QueryProvider>

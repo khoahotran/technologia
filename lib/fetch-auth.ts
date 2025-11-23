@@ -1,4 +1,4 @@
-import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/presentation/hooks";
 
 export async function fetchWithAuth(input: RequestInfo, init?: RequestInit) {
   const { token } = useAuth();
