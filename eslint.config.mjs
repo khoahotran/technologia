@@ -1,10 +1,10 @@
 import { defineConfig, globalIgnores } from "eslint/config";
-import nextVitals from "eslint-config-next/core-web-vitals";
-import nextTs from "eslint-config-next/typescript";
+import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
+import nextTs from "eslint-config-next/typescript"; 
 import unusedImports from "eslint-plugin-unused-imports";
 
 export default defineConfig([
-  ...nextVitals,
+  ...nextCoreWebVitals,
   ...nextTs,
   {
     plugins: {
@@ -32,7 +32,7 @@ export default defineConfig([
       "import/no-cycle": "error",
       "import/order": [
         "error",
-        { newlinesBetween: "always", alphabetize: { order: "asc" } },
+        { "newlines-between": "always", alphabetize: { order: "asc" } },
       ],
 
       "no-console": ["warn", { allow: ["warn", "error"] }],

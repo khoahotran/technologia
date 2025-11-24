@@ -2,7 +2,7 @@ import { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
-  output: 'standalone',
+  // output: 'standalone',
   distDir: '.next',
   pageExtensions: ['tsx', 'ts', 'jsx', 'js'],
   poweredByHeader: false,
@@ -18,7 +18,6 @@ const nextConfig: NextConfig = {
     styledComponents: true,
   },
   experimental: {
-    turbopackMinify: true,
   },
   typescript: {
     ignoreBuildErrors: false,
