@@ -1,1 +1,1 @@
-export interface ActionLogResponse { }
+export type ActionLogResponse = Record<string, unknown>;

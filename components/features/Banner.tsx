@@ -1,16 +1,15 @@
 "use client"
 
+import Autoplay from "embla-carousel-autoplay"
 import * as React from "react"
+
 import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/ui/carousel"
-import { Card, CardContent } from "@/components/ui/card"
-import Autoplay from "embla-carousel-autoplay"
 
 export default function Banner() {
   const plugin = React.useRef(

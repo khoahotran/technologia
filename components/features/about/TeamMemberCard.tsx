@@ -11,6 +11,7 @@ export function TeamMemberCard({ name, role, description, imageUrl }: TeamMember
       <div className="flex flex-col items-center text-center space-y-4">
         <div className="w-20 h-20 rounded-full bg-[#8AB0C3] flex items-center justify-center">
           {imageUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
             <img src={imageUrl} alt={name} className="w-full h-full rounded-full object-cover" />
           ) : (
             <span className="text-2xl font-bold text-white">{name.charAt(0)}</span>

@@ -1,6 +1,8 @@
 import z from "zod";
-import { BaseEntitySchema } from "@/shared/entities/base.entity";
+
 import { EntityType } from "../vo/entity-type.vo";
+
+import { BaseEntitySchema } from "@/shared/entities/base.entity";
 
 export const AdminActionLogEntitySchema = BaseEntitySchema.extend({
   logId: z.string(),

@@ -1,5 +1,6 @@
-import Link from "next/link";
 import { Facebook, Youtube, Instagram, Linkedin, Headphones } from "lucide-react";
+import Link from "next/link";
+
 import { Button } from "@/components/ui/button";
 
 export default function Footer() {
@@ -58,9 +59,9 @@ export default function Footer() {
           <div>
             <h3 className="font-bold text-gray-900 mb-6 uppercase tracking-wider text-sm">Contact</h3>
             <div className="space-y-4">
-              <p className="text-gray-600 text-sm">We'd love to hear from you!</p>
+              <p className="text-gray-600 text-sm">We&apos;d love to hear from you!</p>
               <p className="text-gray-600 text-sm">Drop us a message anytime.</p>
-              
+
               <div className="flex items-center space-x-3 py-2">
                 <Headphones className="h-8 w-8 text-gray-800" />
                 <div>
@@ -72,16 +73,16 @@ export default function Footer() {
               <div className="flex space-x-4 pt-2">
                 {/* Placeholder for App Store Buttons */}
                 <div className="border rounded-md px-3 py-1.5 flex items-center space-x-2 cursor-pointer hover:bg-gray-50">
-                   <div className="text-xs">
-                     <p className="text-[10px] leading-none text-gray-500">Download on</p>
-                     <p className="font-semibold leading-tight text-gray-800">Google Play</p>
-                   </div>
+                  <div className="text-xs">
+                    <p className="text-[10px] leading-none text-gray-500">Download on</p>
+                    <p className="font-semibold leading-tight text-gray-800">Google Play</p>
+                  </div>
                 </div>
                 <div className="border rounded-md px-3 py-1.5 flex items-center space-x-2 cursor-pointer hover:bg-gray-50">
-                   <div className="text-xs">
-                     <p className="text-[10px] leading-none text-gray-500">Download on</p>
-                     <p className="font-semibold leading-tight text-gray-800">Amazon.com</p>
-                   </div>
+                  <div className="text-xs">
+                    <p className="text-[10px] leading-none text-gray-500">Download on</p>
+                    <p className="font-semibold leading-tight text-gray-800">Amazon.com</p>
+                  </div>
                 </div>
               </div>
             </div>

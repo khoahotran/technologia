@@ -1,12 +1,13 @@
+import { Settings2, Star, Check } from "lucide-react"
 import * as React from "react"
-import { MoreHorizontal, Settings2, Star, Check } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
+
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
 } from "@/components/ui/card"
+import { cn } from "@/lib/utils"
 
 interface ProductCardProps extends React.HTMLAttributes<HTMLDivElement> {
   title: string
@@ -51,7 +52,7 @@ export function ProductCard({
 
       {/* Selection Checkbox */}
       {(variant === "selectable" || isSelected !== undefined) && (
-        <div 
+        <div
           className={cn(
             "absolute top-3 left-3 z-10 h-5 w-5 rounded border border-primary bg-white flex items-center justify-center cursor-pointer transition-colors hover:bg-primary/10",
             isSelected && "bg-primary text-primary-foreground hover:bg-primary"
@@ -65,9 +66,9 @@ export function ProductCard({
       {/* Settings/Options Button */}
       <div className="absolute top-3 right-3 z-10">
         {variant !== "default" && !badge ? (
-           <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full bg-secondary/10 text-secondary-foreground hover:bg-secondary/20">
-             <Settings2 className="h-4 w-4" />
-           </Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full bg-secondary/10 text-secondary-foreground hover:bg-secondary/20">
+            <Settings2 className="h-4 w-4" />
+          </Button>
         ) : null}
       </div>
 
@@ -75,6 +76,7 @@ export function ProductCard({
         {variant !== "compact" && (
           <div className="aspect-[4/3] w-full bg-muted/20 flex items-center justify-center relative group">
             {image ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img src={image} alt={title} className="object-cover w-full h-full" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-muted-foreground/20">
@@ -82,14 +84,14 @@ export function ProductCard({
                 <div className="w-16 h-16 rounded-full bg-muted/30" />
               </div>
             )}
-            
+
             {/* Hover Overlay for Default Variant */}
             {variant === "default" && (
-               <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full shadow-sm">
-                    <Settings2 className="h-4 w-4" />
-                  </Button>
-               </div>
+              <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full shadow-sm">
+                  <Settings2 className="h-4 w-4" />
+                </Button>
+              </div>
             )}
           </div>
         )}
@@ -100,9 +102,9 @@ export function ProductCard({
               {title}
             </h3>
             {variant === "compact" && (
-               <Button variant="ghost" size="icon" className="h-8 w-8 -mt-1 -mr-2 text-muted-foreground">
-                 <Settings2 className="h-4 w-4" />
-               </Button>
+              <Button variant="ghost" size="icon" className="h-8 w-8 -mt-1 -mr-2 text-muted-foreground">
+                <Settings2 className="h-4 w-4" />
+              </Button>
             )}
           </div>
 

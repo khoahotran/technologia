@@ -1,45 +1,33 @@
-import { CreateProductDto, UpdateProductDto } from "@/domain/product";
-import { ProductEntity, ProductEntitySchema } from "@/domain/product/entities/product.entity";
-import { fetchWithAuth } from "@/lib/fetch-auth";
-import { handleResponse } from "@/lib/handle-response";
+import type { CreateProductDto, UpdateProductDto } from "@/domain/product";
+import type { ProductEntity } from "@/domain/product/entities/product.entity";
+import { ProductEntitySchema } from "@/domain/product/entities/product.entity";
+import { httpClient } from "@/infrastructure/http/client";
 
-const BASE_URL = "/api/products"; // hoặc từ config
+const BASE_URL = "/products";
 
 export const ProductRepository = {
   getAll: async (): Promise<ProductEntity[]> => {
-    const res = await fetchWithAuth(BASE_URL);
-    const data = await handleResponse<ProductEntity[]>(res);
-    return data.map(d => ProductEntitySchema.parse(d));
+    const { data } = await httpClient.get(BASE_URL);
+    // Validate response with Zod
+    return data.map((d: unknown) => ProductEntitySchema.parse(d));
   },
 
   getById: async (id: string): Promise<ProductEntity> => {
-    const res = await fetchWithAuth(`${BASE_URL}/${id}`);
-    const data = await handleResponse<ProductEntity>(res);
+    const { data } = await httpClient.get(`${BASE_URL}/${id}`);
     return ProductEntitySchema.parse(data);
   },
 
   create: async (dto: CreateProductDto): Promise<ProductEntity> => {
-    const res = await fetchWithAuth(BASE_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(dto),
-    });
-    const data = await handleResponse<ProductEntity>(res);
+    const { data } = await httpClient.post(BASE_URL, dto);
     return ProductEntitySchema.parse(data);
   },
 
   update: async (id: string, dto: UpdateProductDto): Promise<ProductEntity> => {
-    const res = await fetchWithAuth(`${BASE_URL}/${id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(dto),
-    });
-    const data = await handleResponse<ProductEntity>(res);
+    const { data } = await httpClient.patch(`${BASE_URL}/${id}`, dto);
     return ProductEntitySchema.parse(data);
   },
 
   delete: async (id: string): Promise<void> => {
-    const res = await fetchWithAuth(`${BASE_URL}/${id}`, { method: "DELETE" });
-    await handleResponse<void>(res);
+    await httpClient.delete(`${BASE_URL}/${id}`);
   },
 };

@@ -1,8 +1,9 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import React from "react";
+
+import { cn } from "@/lib/utils";
 
 export const ScreenLoading: React.FC<{ message?: string }> = ({ message }) => {
   return (

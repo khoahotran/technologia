@@ -1,12 +1,13 @@
 "use client"
 
-import Image from "next/image"
 import { Trash2 } from "lucide-react"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import Image from "next/image"
+
 import { QuantitySelector } from "@/components/features/product/QuantitySelector"
-import { useState } from "react"
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
+
 
 interface CartItemProps {
   id: string
@@ -22,7 +23,7 @@ interface CartItemProps {
 }
 
 export function CartItem({
-  id,
+  id: _id,
   title,
   price,
   image,
@@ -38,7 +39,7 @@ export function CartItem({
       <div className="pt-8">
         <Checkbox checked={isSelected || false} onCheckedChange={onToggle} />
       </div>
-      
+
       <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg bg-gray-100">
         <Image
           src={image}
@@ -58,17 +59,17 @@ export function CartItem({
             {new Intl.NumberFormat("vi-VN").format(price)} VND
           </p>
           <div className="pt-2">
-            <Input 
-              placeholder="+Add note" 
+            <Input
+              placeholder="+Add note"
               className="h-8 text-xs border-none bg-transparent p-0 placeholder:text-gray-400 focus-visible:ring-0"
             />
           </div>
         </div>
 
         <div className="md:col-span-6 flex items-end justify-between md:justify-end gap-4">
-          <QuantitySelector 
-            value={quantity} 
-            onChange={onQuantityChange} 
+          <QuantitySelector
+            value={quantity}
+            onChange={onQuantityChange}
           />
           <Button
             variant="ghost"

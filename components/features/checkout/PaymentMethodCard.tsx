@@ -1,7 +1,8 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
 import { Landmark, Wallet } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
 
 interface PaymentMethodCardProps {
   type: "bank" | "wallet"

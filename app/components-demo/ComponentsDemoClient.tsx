@@ -1,18 +1,19 @@
 "use client"
 
-import { ProductCard } from "@/components/ui/product-card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Input } from "@/components/ui/input"
-import { useState } from "react"
-import { LabeledInput, SocialButton } from "@/components/features/home/FormElements";
-import { Subscribe } from "@/components/features/home/Subscribe";
 import { Facebook, Chrome } from "lucide-react";
+import { useState } from "react"
+
 import { AddressCard } from "@/components/features/checkout/AddressCard";
 import { AddressForm } from "@/components/features/checkout/AddressForm";
 import { PaymentMethodList } from "@/components/features/checkout/PaymentMethodList";
+import { LabeledInput, SocialButton } from "@/components/features/home/FormElements";
+import { Subscribe } from "@/components/features/home/Subscribe";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
+import { ProductCard } from "@/components/ui/product-card"
 
 export default function ComponentsDemoClient() {
     const [selectedId, setSelectedId] = useState<string | null>(null)

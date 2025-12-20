@@ -1,5 +1,6 @@
+import type { z } from "zod";
+
 import { ReportEntitySchema } from "./report.entity";
-import { z } from "zod";
 
 export const ReportPublicSchema = ReportEntitySchema.omit({
   adminId: true,

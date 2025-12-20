@@ -1,8 +1,9 @@
 "use client"
 
 import Link from "next/link"
-import { ProductCard } from "@/components/ui/product-card"
+
 import { Button } from "@/components/ui/button"
+import { ProductCard } from "@/components/ui/product-card"
 
 export function HotProducts() {
   // Mock Products

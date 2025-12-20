@@ -1,7 +1,4 @@
-import { useAuth } from "@/presentation/hooks";
-
-export async function fetchWithAuth(input: RequestInfo, init?: RequestInit) {
-  const { token } = useAuth();
+export async function fetchWithAuth(input: RequestInfo, token?: string | null, init?: RequestInit) {
   const headers = new Headers(init?.headers);
 
   if (token) {

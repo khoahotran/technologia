@@ -1,4 +1,5 @@
 import z from "zod";
+
 import { ReportType } from "../vo";
 
 export const UpdateReportDtoSchema = z.object({

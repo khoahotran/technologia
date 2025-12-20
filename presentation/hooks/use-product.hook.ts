@@ -1,8 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+
+import { useAuth } from "./use-auth.hook";
+
 import { useProduct } from "@/application/use-cases/product";
-import { UpdateProductDto } from "@/domain/product";
+import type { UpdateProductDto } from "@/domain/product";
 
 export const useProductHook = () => {
+  // const { token } = useAuth(); // Token is now handled by httpClient interceptor
   const productService = useProduct();
   const queryClient = useQueryClient();
 

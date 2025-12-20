@@ -1,6 +1,8 @@
-import { BaseEntitySchema } from "@/shared/entities/base.entity";
 import z from "zod";
+
 import { AccountNumberVO } from "../vo/account-number.vo";
+
+import { BaseEntitySchema } from "@/shared/entities/base.entity";
 
 export const PaymentAccountEntitySchema = BaseEntitySchema.extend({
   pAccountId: z.string(),

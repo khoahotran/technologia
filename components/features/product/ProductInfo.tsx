@@ -1,10 +1,11 @@
 "use client"
 
-import { useState } from "react"
 import { Star, Share2, Heart } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { useState } from "react"
+
 import { QuantitySelector } from "./QuantitySelector"
+
+import { Button } from "@/components/ui/button"
 
 interface ProductInfoProps {
   title: string

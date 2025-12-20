@@ -1,6 +1,5 @@
 "use client"
 
-import { ProductCard } from "@/components/ui/product-card"
 import {
   Carousel,
   CarouselContent,
@@ -8,6 +7,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel"
+import { ProductCard } from "@/components/ui/product-card"
 
 export function TopProducts() {
   // Mock Products

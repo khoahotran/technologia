@@ -1,4 +1,5 @@
 import { z } from "zod";
+
 import { UserEntitySchema } from "./user.entity";
 
 export const AdminEntitySchema = UserEntitySchema.extend({

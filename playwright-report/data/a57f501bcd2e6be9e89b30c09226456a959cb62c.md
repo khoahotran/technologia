@@ -1,0 +1,140 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - region "Notifications alt+T"
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - generic [ref=e7]:
+            - img [ref=e8]
+            - generic [ref=e10]: (+84)123456789
+          - generic [ref=e11]:
+            - img [ref=e12]
+            - generic [ref=e15]: support@techstore.com
+        - generic [ref=e16]:
+          - link "About Us" [ref=e17] [cursor=pointer]:
+            - /url: /about
+          - generic [ref=e18] [cursor=pointer]:
+            - generic [ref=e19]: VI
+            - img [ref=e20]
+      - generic [ref=e23]:
+        - link "TechStore" [ref=e24] [cursor=pointer]:
+          - /url: /
+          - img [ref=e26]
+          - generic [ref=e29]: TechStore
+        - generic [ref=e31]:
+          - img [ref=e32]
+          - textbox "Search products, brands and categories..." [ref=e35]
+          - button "Search" [ref=e36]
+        - generic [ref=e37]:
+          - link "4" [ref=e38] [cursor=pointer]:
+            - /url: /cart
+            - img [ref=e39]
+            - generic [ref=e43]: "4"
+          - link "Account" [ref=e44] [cursor=pointer]:
+            - /url: /account
+            - button "Account" [ref=e45]:
+              - img
+              - generic [ref=e46]: Account
+      - navigation [ref=e49]:
+        - list [ref=e50]:
+          - listitem [ref=e51]:
+            - link "Home" [ref=e52] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=e53]:
+            - link "All Products" [ref=e54] [cursor=pointer]:
+              - /url: /products
+          - listitem [ref=e55]:
+            - link "Smartphones" [ref=e56] [cursor=pointer]:
+              - /url: /products?category=smartphone
+          - listitem [ref=e57]:
+            - link "Laptops" [ref=e58] [cursor=pointer]:
+              - /url: /products?category=laptop
+          - listitem [ref=e59]:
+            - link "Audio" [ref=e60] [cursor=pointer]:
+              - /url: /products?category=audio
+          - listitem [ref=e61]:
+            - link "Addresses" [ref=e62] [cursor=pointer]:
+              - /url: /address-book
+    - main [ref=e63]:
+      - main [ref=e65]:
+        - generic [ref=e66]: Failed to load products. Ensure the Mock API is enabled or Backend is running.
+    - contentinfo [ref=e67]:
+      - generic [ref=e69]:
+        - generic [ref=e71]:
+          - paragraph [ref=e72]: Stay connected with our tech community
+          - generic [ref=e73]:
+            - button [ref=e74]:
+              - img
+            - button [ref=e75]:
+              - img
+            - button [ref=e76]:
+              - img
+            - button [ref=e77]:
+              - img
+        - generic [ref=e78]:
+          - heading "Quick Links" [level=3] [ref=e79]
+          - list [ref=e80]:
+            - listitem [ref=e81]:
+              - link "About us" [ref=e82] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=e83]:
+              - link "Contact us" [ref=e84] [cursor=pointer]:
+                - /url: /contact
+            - listitem [ref=e85]:
+              - link "Products" [ref=e86] [cursor=pointer]:
+                - /url: /products
+            - listitem [ref=e87]:
+              - link "Login" [ref=e88] [cursor=pointer]:
+                - /url: /login
+            - listitem [ref=e89]:
+              - link "Sign up" [ref=e90] [cursor=pointer]:
+                - /url: /signup
+        - generic [ref=e91]:
+          - heading "Customer Area" [level=3] [ref=e92]
+          - list [ref=e93]:
+            - listitem [ref=e94]:
+              - link "My Account" [ref=e95] [cursor=pointer]:
+                - /url: /account
+            - listitem [ref=e96]:
+              - link "Orders" [ref=e97] [cursor=pointer]:
+                - /url: /orders
+            - listitem [ref=e98]:
+              - link "My Cart" [ref=e99] [cursor=pointer]:
+                - /url: /cart
+            - listitem [ref=e100]:
+              - link "Terms" [ref=e101] [cursor=pointer]:
+                - /url: /terms
+            - listitem [ref=e102]:
+              - link "Privacy Policy" [ref=e103] [cursor=pointer]:
+                - /url: /privacy
+        - generic [ref=e104]:
+          - heading "Contact" [level=3] [ref=e105]
+          - generic [ref=e106]:
+            - paragraph [ref=e107]: We'd love to hear from you!
+            - paragraph [ref=e108]: Drop us a message anytime.
+            - generic [ref=e109]:
+              - img [ref=e110]
+              - generic [ref=e112]:
+                - paragraph [ref=e113]: Have any question?
+                - paragraph [ref=e114]: (+84)123456789
+            - generic [ref=e115]:
+              - generic [ref=e117] [cursor=pointer]:
+                - paragraph [ref=e118]: Download on
+                - paragraph [ref=e119]: Google Play
+              - generic [ref=e121] [cursor=pointer]:
+                - paragraph [ref=e122]: Download on
+                - paragraph [ref=e123]: Amazon.com
+    - button [ref=e125]:
+      - img
+  - status [ref=e126]:
+    - generic [ref=e127]:
+      - img [ref=e129]
+      - generic [ref=e131]:
+        - text: Static route
+        - button "Hide static indicator" [ref=e132] [cursor=pointer]:
+          - img [ref=e133]
+  - alert [ref=e136]
+```

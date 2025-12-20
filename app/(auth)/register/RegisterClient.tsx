@@ -1,7 +1,8 @@
 "use client"
 
-import Link from "next/link"
 import { Facebook, Youtube, Instagram, Linkedin } from "lucide-react"
+import Link from "next/link"
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 

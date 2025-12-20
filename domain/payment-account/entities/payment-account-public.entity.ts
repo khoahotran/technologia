@@ -1,5 +1,6 @@
+import type { z } from "zod";
+
 import { PaymentAccountEntitySchema } from "./payment-account.entity";
-import { z } from "zod";
 
 export const PaymentAccountPublicSchema = PaymentAccountEntitySchema.omit({
   userId: true,

@@ -1,12 +1,15 @@
+// import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
-import "./globals.css";
-import { Analytics } from "@vercel/analytics/next";
-import { AuthProvider } from "@/providers/auth.provider";
-import { LanguageProvider } from "@/providers/language.provider";
-import { QueryProvider } from "@/providers/query.provider";
 import { Suspense } from "react";
 import { Toaster } from "sonner";
+
 import Loading from "./loading";
+
+import { AuthProvider } from "@/shared/providers/auth.provider";
+import { LanguageProvider } from "@/shared/providers/language.provider";
+import { QueryProvider } from "@/shared/providers/query.provider";
+import "./globals.css";
+
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -58,7 +61,7 @@ export default function RootLayout({
           </Suspense>
           {/* </ThemeProvider> */}
         </LanguageProvider>
-        <Analytics />
+        {/* <Analytics /> */}
       </body>
     </html>
   );

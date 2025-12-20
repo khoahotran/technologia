@@ -1,6 +1,8 @@
-import { createSuccessResponseSchema } from "@/shared/response/response.dto";
 import { z } from "zod";
+
 import { PaymentAccountPublicSchema } from "../entities/payment-account-public.entity";
+
+import { createSuccessResponseSchema } from "@/shared/response/response.dto";
 
 export const PaymentAccountResponseSchema =
   createSuccessResponseSchema(PaymentAccountPublicSchema);

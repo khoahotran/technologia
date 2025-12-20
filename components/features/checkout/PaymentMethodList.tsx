@@ -1,8 +1,10 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { PaymentMethodCard } from "./PaymentMethodCard"
 import { Info } from "lucide-react"
+
+import { PaymentMethodCard } from "./PaymentMethodCard"
+
+import { Button } from "@/components/ui/button"
 
 interface PaymentMethod {
   id: string

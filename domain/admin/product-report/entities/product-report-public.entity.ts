@@ -1,5 +1,6 @@
+import type { z } from "zod";
+
 import { ProductReportEntitySchema } from "./product-report.entity";
-import { z } from "zod";
 
 export const ProductReportPublicSchema =
   ProductReportEntitySchema;

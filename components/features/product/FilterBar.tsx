@@ -1,7 +1,7 @@
 "use client"
 
-import { ChevronDown, ArrowDownUp } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { ArrowDownUp } from "lucide-react"
+
 import {
   Select,
   SelectContent,

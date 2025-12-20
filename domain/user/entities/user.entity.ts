@@ -1,9 +1,11 @@
-import { BaseEntitySchema } from "@/shared/entities/base.entity";
 import { z } from "zod";
+
 import { EmailSchema } from "../vo/email.vo";
 import { PhoneNumberSchema } from "../vo/phone.vo";
 import { UserRoleSchema } from "../vo/role.vo";
 import { UserStatusSchema } from "../vo/status.vo";
+
+import { BaseEntitySchema } from "@/shared/entities/base.entity";
 
 export const UserEntitySchema = BaseEntitySchema.extend({
   userId: z.string(),

@@ -1,28 +1,13 @@
-
-import { CreateProductDto, UpdateProductDto } from "@/domain/product";
-import { ProductEntity } from "@/domain/product/entities/product.entity";
+import type { CreateProductDto, UpdateProductDto } from "@/domain/product";
+import type { ProductEntity } from "@/domain/product/entities/product.entity";
 import { ProductRepository } from "@/infrastructure/repositories/product";
 
 export const useProduct = () => {
-  const getAll = async (): Promise<ProductEntity[]> => {
-    return ProductRepository.getAll();
+  return {
+    getAll: async () => ProductRepository.getAll(),
+    getById: async (id: string) => ProductRepository.getById(id),
+    create: async (dto: CreateProductDto) => ProductRepository.create(dto),
+    update: async (id: string, dto: UpdateProductDto) => ProductRepository.update(id, dto),
+    remove: async (id: string) => ProductRepository.delete(id),
   };
-
-  const getById = async (id: string): Promise<ProductEntity> => {
-    return ProductRepository.getById(id);
-  };
-
-  const create = async (dto: CreateProductDto): Promise<ProductEntity> => {
-    return ProductRepository.create(dto);
-  };
-
-  const update = async (id: string, dto: UpdateProductDto): Promise<ProductEntity> => {
-    return ProductRepository.update(id, dto);
-  };
-
-  const remove = async (id: string): Promise<void> => {
-    return ProductRepository.delete(id);
-  };
-
-  return { getAll, getById, create, update, remove };
 };

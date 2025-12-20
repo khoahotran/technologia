@@ -1,6 +1,8 @@
-import { createSuccessResponseSchema } from "@/shared/response/response.dto";
 import { z } from "zod";
+
 import { ReportPublicSchema } from "../entities/report-public.entity";
+
+import { createSuccessResponseSchema } from "@/shared/response/response.dto";
 
 export const ReportResponseSchema =
   createSuccessResponseSchema(ReportPublicSchema);

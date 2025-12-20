@@ -1,6 +1,8 @@
 import z from "zod";
-import { BaseEntitySchema } from "@/shared/entities/base.entity";
+
 import { ReportType } from "../vo";
+
+import { BaseEntitySchema } from "@/shared/entities/base.entity";
 
 export const ReportEntitySchema = BaseEntitySchema.extend({
   reportId: z.string(),

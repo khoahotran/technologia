@@ -1,4 +1,4 @@
-import { NextConfig } from 'next';
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -15,7 +15,7 @@ const nextConfig: NextConfig = {
     imageSizes: [16, 32, 48, 64, 96],
   },
   compiler: {
-    styledComponents: true,
+    // styledComponents: true,
   },
   experimental: {
   },
@@ -23,7 +23,6 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: false,
   },
   webpack(config, { isServer }) {
-
     if (!isServer) {
       config.resolve.fallback = { fs: false, path: false, os: false };
     }
@@ -54,3 +53,4 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+// export default million.next(nextConfig, { auto: { rsc: true } }) as any;

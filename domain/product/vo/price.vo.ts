@@ -1,22 +1,31 @@
 import { z } from "zod";
 
-export const PriceSchema = z.number().min(0, "Price must be greater than or equal to 0");
+export const PriceSchema = z.object({
+  amount: z.number().min(0, "Amount must be greater than or equal to 0"),
+  currency: z.string().length(3, "Currency must be 3 characters code (e.g. USD)"),
+});
 export type Price = z.infer<typeof PriceSchema>;
 
 // Optional: Value Object class
 export class PriceVO {
   private readonly value: Price;
 
-  constructor(value: number) {
-    this.value = PriceSchema.parse(value); // validate ngay khi tạo VO
+  constructor(value: Price) {
+    this.value = PriceSchema.parse(value);
   }
 
   getAmount(): number {
-    return this.value;
+    return this.value.amount;
   }
 
-  // có thể thêm methods như format, add, subtract, multiply...
+  getCurrency(): string {
+    return this.value.currency;
+  }
+
   toString(): string {
-    return this.value.toFixed(2);
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: this.value.currency
+    }).format(this.value.amount);
   }
 }

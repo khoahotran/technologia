@@ -29,9 +29,7 @@ export default function ResetPasswordClient() {
                 <div className="text-center space-y-6">
                     <h1 className="text-3xl font-bold text-gray-800">RESET PASSWORD</h1>
 
-                    <p className="text-gray-600 leading-relaxed">
-                        Please create a new password that you don't use on any other site.
-                    </p>
+                    Please create a new password that you don&apos;t use on any other site.
 
                     <div className="pt-4 space-y-4">
                         <Input

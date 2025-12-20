@@ -1,8 +1,8 @@
 "use client"
 
-import { Laptop, Smartphone, Tablet, Watch, Headphones, Speaker, MoreHorizontal, Flame, Trophy, Music } from "lucide-react"
+import { Laptop, Smartphone, Tablet, Watch, Headphones, MoreHorizontal, Flame, Trophy, Music } from "lucide-react"
+
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
 
 interface Category {
   id: string

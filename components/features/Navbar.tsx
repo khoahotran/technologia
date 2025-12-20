@@ -1,6 +1,7 @@
 "use client";
-import { useAuth } from "@/presentation/hooks";
 import Link from "next/link";
+
+import { useAuth } from "@/presentation/hooks";
 
 export default function Navbar() {
   const { user } = useAuth();

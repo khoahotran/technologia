@@ -14,7 +14,7 @@ export const paginationSchema = <T extends z.ZodTypeAny>(itemSchema: T) =>
 
 export type Pagination<T extends z.ZodTypeAny> = z.infer<ReturnType<typeof paginationSchema<T>>>;
 
-export const paginationDefault = <T extends z.ZodTypeAny>(itemSchema: T): Pagination<T> => ({
+export const paginationDefault = <T extends z.ZodTypeAny>(_itemSchema: T): Pagination<T> => ({
 	data: [],
 	pagination: {
 		currentPage: 1,
