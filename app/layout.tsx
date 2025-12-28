@@ -8,6 +8,7 @@ import Loading from "./loading";
 import { AuthProvider } from "@/shared/providers/auth.provider";
 import { LanguageProvider } from "@/shared/providers/language.provider";
 import { QueryProvider } from "@/shared/providers/query.provider";
+import { RepositoryProvider } from "@/shared/providers/repository.provider";
 import "./globals.css";
 
 
@@ -54,9 +55,11 @@ export default function RootLayout({
                   className: "mx-auto",
                 }}
               />
-              <AuthProvider>
-                {children}
-              </AuthProvider>
+              <RepositoryProvider>
+                <AuthProvider>
+                  {children}
+                </AuthProvider>
+              </RepositoryProvider>
             </QueryProvider>
           </Suspense>
           {/* </ThemeProvider> */}

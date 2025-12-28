@@ -1,11 +1,12 @@
 import type { CreateProductDto, UpdateProductDto } from "@/domain/product";
 import type { ProductEntity } from "@/domain/product/entities/product.entity";
 import { ProductEntitySchema } from "@/domain/product/entities/product.entity";
+import type { IProductRepository } from "@/domain/product/repositories/product.repository.interface";
 import { httpClient } from "@/infrastructure/http/client";
 
 const BASE_URL = "/products";
 
-export const ProductRepository = {
+export const ProductRepository: IProductRepository = {
   getAll: async (): Promise<ProductEntity[]> => {
     const { data } = await httpClient.get(BASE_URL);
     // Validate response with Zod

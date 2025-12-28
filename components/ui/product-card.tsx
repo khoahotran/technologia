@@ -1,4 +1,5 @@
 import { Settings2, Star, Check } from "lucide-react"
+import Image from "next/image"
 import * as React from "react"
 
 import { Badge } from "@/components/ui/badge"
@@ -52,15 +53,25 @@ export function ProductCard({
 
       {/* Selection Checkbox */}
       {(variant === "selectable" || isSelected !== undefined) && (
-        <div
+        <button
+          type="button"
+          aria-checked={isSelected}
+          role="checkbox"
           className={cn(
-            "absolute top-3 left-3 z-10 h-5 w-5 rounded border border-primary bg-white flex items-center justify-center cursor-pointer transition-colors hover:bg-primary/10",
+            "absolute top-3 left-3 z-10 h-5 w-5 rounded border border-primary bg-white flex items-center justify-center cursor-pointer transition-colors hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
             isSelected && "bg-primary text-primary-foreground hover:bg-primary"
           )}
           onClick={onSelect}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              onSelect?.();
+            }
+          }}
         >
           {isSelected && <Check className="h-3.5 w-3.5" />}
-        </div>
+          <span className="sr-only">Select {title}</span>
+        </button>
       )}
 
       {/* Settings/Options Button */}
@@ -68,6 +79,7 @@ export function ProductCard({
         {variant !== "default" && !badge ? (
           <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full bg-secondary/10 text-secondary-foreground hover:bg-secondary/20">
             <Settings2 className="h-4 w-4" />
+            <span className="sr-only">Settings</span>
           </Button>
         ) : null}
       </div>
@@ -76,8 +88,13 @@ export function ProductCard({
         {variant !== "compact" && (
           <div className="aspect-[4/3] w-full bg-muted/20 flex items-center justify-center relative group">
             {image ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={image} alt={title} className="object-cover w-full h-full" />
+              <Image
+                src={image}
+                alt={title}
+                fill
+                className="object-cover"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-muted-foreground/20">
                 {/* Placeholder pattern */}
@@ -104,6 +121,7 @@ export function ProductCard({
             {variant === "compact" && (
               <Button variant="ghost" size="icon" className="h-8 w-8 -mt-1 -mr-2 text-muted-foreground">
                 <Settings2 className="h-4 w-4" />
+                <span className="sr-only">Settings</span>
               </Button>
             )}
           </div>
@@ -136,7 +154,7 @@ export function ProductCard({
             {variant === "default" && (
               <Button className="bg-primary hover:bg-primary/90 text-white shadow-md rounded-full px-6">
                 <Settings2 className="mr-2 h-4 w-4" />
-                Button
+                Add to Cart
               </Button>
             )}
           </div>

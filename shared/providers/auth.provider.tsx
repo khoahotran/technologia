@@ -1,12 +1,7 @@
 "use client";
 
-import type {
-  ReactNode} from "react";
-import {
-  createContext,
-  useState,
-  useEffect
-} from "react";
+import type { ReactNode } from "react";
+import { createContext, useState, useEffect } from "react";
 
 interface User {
   id: string;
@@ -18,11 +13,9 @@ interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   token: string | null;
 }
-
-const TOKEN_KEY = "auth_token";
 
 export const AuthContext = createContext<AuthContextType | undefined>(
   undefined
@@ -34,28 +27,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedToken =
-      typeof window !== "undefined" ? localStorage.getItem(TOKEN_KEY) : null;
-    if (storedToken) {
-      setToken(storedToken);
-      fetchUser(storedToken);
-    } else {
-      setLoading(false);
-    }
+    checkAuth();
   }, []);
 
-  async function fetchUser(jwt: string) {
+  async function checkAuth() {
     try {
-      const res = await fetch("/api/me", {
-        headers: { Authorization: `Bearer ${jwt}` },
-      });
-      if (!res.ok) throw new Error("Failed to fetch user");
+      const res = await fetch("/api/auth/me");
+      if (!res.ok) throw new Error("Unauthenticated");
       const data = await res.json();
       setUser(data.user);
     } catch {
       setUser(null);
-      setToken(null);
-      localStorage.removeItem(TOKEN_KEY);
     } finally {
       setLoading(false);
     }
@@ -64,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     setLoading(true);
     try {
-      const res = await fetch("/api/login", {
+      const res = await fetch("/api/auth/login", {
         method: "POST",
         body: JSON.stringify({ email, password }),
         headers: { "Content-Type": "application/json" },
@@ -72,18 +54,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!res.ok) throw new Error("Login failed");
       const data = await res.json();
       setUser(data.user);
-      setToken(data.token);
-      localStorage.setItem(TOKEN_KEY, data.token);
+      // Token is in HTTP-only cookie
     } finally {
       setLoading(false);
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem(TOKEN_KEY);
-    fetch("/api/logout");
+  const logout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } finally {
+      setUser(null);
+      setToken(null);
+    }
   };
 
   return (

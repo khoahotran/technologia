@@ -1,0 +1,10 @@
+import type { CreateProductDto, UpdateProductDto } from "../dto";
+import type { ProductEntity } from "../entities/product.entity";
+
+export interface IProductRepository {
+    getAll(): Promise<ProductEntity[]>;
+    getById(id: string): Promise<ProductEntity>;
+    create(dto: CreateProductDto): Promise<ProductEntity>;
+    update(id: string, dto: UpdateProductDto): Promise<ProductEntity>;
+    delete(id: string): Promise<void>;
+}

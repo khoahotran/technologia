@@ -1,3 +1,16 @@
 {
-    "locale": "en"
+    "locale": "en",
+    "filter_max_star": "Max star",
+    "filter_min_star": "Min star",
+    "filter_min_price": "Min price",
+    "filter_max_price": "Max price",
+    "filter_order": "Order",
+    "select_stars": "Select stars",
+    "select_price": "Select price",
+    "price_asc": "Price: Low to High",
+    "price_desc": "Price: High to Low",
+    "newest": "Newest",
+    "stars_and_up": "{count} stars & up",
+    "stars": "{count} stars",
+    "price_vnd": "{price} VND"
 }

@@ -1,13 +1,14 @@
 import type { CreateProductDto, UpdateProductDto } from "@/domain/product";
-import type { ProductEntity } from "@/domain/product/entities/product.entity";
-import { ProductRepository } from "@/infrastructure/repositories/product";
+import { useRepositories } from "@/shared/providers/repository.provider";
 
 export const useProduct = () => {
+  const { productRepository } = useRepositories();
+
   return {
-    getAll: async () => ProductRepository.getAll(),
-    getById: async (id: string) => ProductRepository.getById(id),
-    create: async (dto: CreateProductDto) => ProductRepository.create(dto),
-    update: async (id: string, dto: UpdateProductDto) => ProductRepository.update(id, dto),
-    remove: async (id: string) => ProductRepository.delete(id),
+    getAll: async () => productRepository.getAll(),
+    getById: async (id: string) => productRepository.getById(id),
+    create: async (dto: CreateProductDto) => productRepository.create(dto),
+    update: async (id: string, dto: UpdateProductDto) => productRepository.update(id, dto),
+    remove: async (id: string) => productRepository.delete(id),
   };
 };

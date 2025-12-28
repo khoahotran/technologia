@@ -13,6 +13,12 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 60,
     deviceSizes: [640, 768, 1024, 1280, 1536],
     imageSizes: [16, 32, 48, 64, 96],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'placehold.co',
+      },
+    ],
   },
   compiler: {
     // styledComponents: true,

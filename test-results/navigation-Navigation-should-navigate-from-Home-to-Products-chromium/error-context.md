@@ -1,0 +1,633 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - region "Notifications alt+T"
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - generic [ref=e7]:
+            - img [ref=e8]
+            - generic [ref=e10]: (+84)123456789
+          - generic [ref=e11]:
+            - img [ref=e12]
+            - generic [ref=e15]: support@techstore.com
+        - generic [ref=e16]:
+          - link "About Us" [ref=e17] [cursor=pointer]:
+            - /url: /about
+          - generic [ref=e18] [cursor=pointer]:
+            - generic [ref=e19]: VI
+            - img [ref=e20]
+      - generic [ref=e23]:
+        - link "TechStore" [ref=e24] [cursor=pointer]:
+          - /url: /
+          - img [ref=e26]
+          - generic [ref=e29]: TechStore
+        - generic [ref=e31]:
+          - img [ref=e32]
+          - textbox "Search products, brands and categories..." [ref=e35]
+          - button "Search" [ref=e36]
+        - generic [ref=e37]:
+          - link "4" [ref=e38] [cursor=pointer]:
+            - /url: /cart
+            - img [ref=e39]
+            - generic [ref=e43]: "4"
+          - link "Account" [ref=e44] [cursor=pointer]:
+            - /url: /account
+            - button "Account" [ref=e45]:
+              - img
+              - generic [ref=e46]: Account
+      - navigation [ref=e49]:
+        - list [ref=e50]:
+          - listitem [ref=e51]:
+            - link "Home" [ref=e52] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=e53]:
+            - link "All Products" [ref=e54] [cursor=pointer]:
+              - /url: /products
+          - listitem [ref=e55]:
+            - link "Smartphones" [ref=e56] [cursor=pointer]:
+              - /url: /products?category=smartphone
+          - listitem [ref=e57]:
+            - link "Laptops" [ref=e58] [cursor=pointer]:
+              - /url: /products?category=laptop
+          - listitem [ref=e59]:
+            - link "Audio" [ref=e60] [cursor=pointer]:
+              - /url: /products?category=audio
+          - listitem [ref=e61]:
+            - link "Addresses" [ref=e62] [cursor=pointer]:
+              - /url: /address-book
+    - main [ref=e63]:
+      - main [ref=e65]:
+        - generic [ref=e66]:
+          - generic [ref=e68]:
+            - region [ref=e70]:
+              - generic [ref=e72]:
+                - group [ref=e73]:
+                  - generic [ref=e77]:
+                    - heading "Desktop heading something here" [level=2] [ref=e78]
+                    - paragraph [ref=e79]: Desktop heading something here
+                    - button "Button" [ref=e81]
+                - group [ref=e86]:
+                  - generic [ref=e90]:
+                    - heading "New Arrival Collection" [level=2] [ref=e91]
+                    - paragraph [ref=e92]: Discover the latest trends in technology
+                    - button "Button" [ref=e94]
+                - group [ref=e99]:
+                  - generic [ref=e103]:
+                    - heading "Special Offer Today" [level=2] [ref=e104]
+                    - paragraph [ref=e105]: Get up to 50% off on selected items
+                    - button "Button" [ref=e107]
+            - generic [ref=e112]:
+              - generic [ref=e114]:
+                - heading "Desktop heading something here" [level=3] [ref=e115]
+                - button "Button X" [ref=e117]
+              - generic [ref=e119]:
+                - heading "Desktop heading something here" [level=3] [ref=e120]
+                - button "Button X" [ref=e122]
+          - generic [ref=e123]:
+            - heading "Top products" [level=2] [ref=e124]
+            - region [ref=e125]:
+              - generic [ref=e127]:
+                - group [ref=e128]:
+                  - generic [ref=e130]:
+                    - button [ref=e135]:
+                      - img
+                    - generic [ref=e136]:
+                      - heading "Product name 2 lines" [level=3] [ref=e138]
+                      - generic [ref=e139]:
+                        - generic [ref=e140]: Product property
+                        - generic [ref=e141]: Product property
+                        - generic [ref=e142]: Product property
+                        - generic [ref=e143]: Product property
+                      - generic [ref=e144]:
+                        - generic [ref=e145]:
+                          - generic [ref=e146]:
+                            - img [ref=e147]
+                            - img [ref=e149]
+                            - img [ref=e151]
+                            - img [ref=e153]
+                            - img [ref=e155]
+                          - generic [ref=e157]: 1.000.000
+                        - button "Add to Cart" [ref=e158]:
+                          - img
+                          - text: Add to Cart
+                - group [ref=e159]:
+                  - generic [ref=e161]:
+                    - button [ref=e166]:
+                      - img
+                    - generic [ref=e167]:
+                      - heading "Product name 2 lines" [level=3] [ref=e169]
+                      - generic [ref=e170]:
+                        - generic [ref=e171]: Product property
+                        - generic [ref=e172]: Product property
+                        - generic [ref=e173]: Product property
+                        - generic [ref=e174]: Product property
+                      - generic [ref=e175]:
+                        - generic [ref=e176]:
+                          - generic [ref=e177]:
+                            - img [ref=e178]
+                            - img [ref=e180]
+                            - img [ref=e182]
+                            - img [ref=e184]
+                            - img [ref=e186]
+                          - generic [ref=e188]: 1.000.000
+                        - button "Add to Cart" [ref=e189]:
+                          - img
+                          - text: Add to Cart
+                - group [ref=e190]:
+                  - generic [ref=e192]:
+                    - button [ref=e197]:
+                      - img
+                    - generic [ref=e198]:
+                      - heading "Product name 2 lines" [level=3] [ref=e200]
+                      - generic [ref=e201]:
+                        - generic [ref=e202]: Product property
+                        - generic [ref=e203]: Product property
+                        - generic [ref=e204]: Product property
+                        - generic [ref=e205]: Product property
+                      - generic [ref=e206]:
+                        - generic [ref=e207]:
+                          - generic [ref=e208]:
+                            - img [ref=e209]
+                            - img [ref=e211]
+                            - img [ref=e213]
+                            - img [ref=e215]
+                            - img [ref=e217]
+                          - generic [ref=e219]: 1.000.000
+                        - button "Add to Cart" [ref=e220]:
+                          - img
+                          - text: Add to Cart
+                - group [ref=e221]:
+                  - generic [ref=e223]:
+                    - button [ref=e228]:
+                      - img
+                    - generic [ref=e229]:
+                      - heading "Product name 2 lines" [level=3] [ref=e231]
+                      - generic [ref=e232]:
+                        - generic [ref=e233]: Product property
+                        - generic [ref=e234]: Product property
+                        - generic [ref=e235]: Product property
+                        - generic [ref=e236]: Product property
+                      - generic [ref=e237]:
+                        - generic [ref=e238]:
+                          - generic [ref=e239]:
+                            - img [ref=e240]
+                            - img [ref=e242]
+                            - img [ref=e244]
+                            - img [ref=e246]
+                            - img [ref=e248]
+                          - generic [ref=e250]: 1.000.000
+                        - button "Add to Cart" [ref=e251]:
+                          - img
+                          - text: Add to Cart
+                - group [ref=e252]:
+                  - generic [ref=e254]:
+                    - button [ref=e259]:
+                      - img
+                    - generic [ref=e260]:
+                      - heading "Product name 2 lines" [level=3] [ref=e262]
+                      - generic [ref=e263]:
+                        - generic [ref=e264]: Product property
+                        - generic [ref=e265]: Product property
+                        - generic [ref=e266]: Product property
+                        - generic [ref=e267]: Product property
+                      - generic [ref=e268]:
+                        - generic [ref=e269]:
+                          - generic [ref=e270]:
+                            - img [ref=e271]
+                            - img [ref=e273]
+                            - img [ref=e275]
+                            - img [ref=e277]
+                            - img [ref=e279]
+                          - generic [ref=e281]: 1.000.000
+                        - button "Add to Cart" [ref=e282]:
+                          - img
+                          - text: Add to Cart
+                - group [ref=e283]:
+                  - generic [ref=e285]:
+                    - button [ref=e290]:
+                      - img
+                    - generic [ref=e291]:
+                      - heading "Product name 2 lines" [level=3] [ref=e293]
+                      - generic [ref=e294]:
+                        - generic [ref=e295]: Product property
+                        - generic [ref=e296]: Product property
+                        - generic [ref=e297]: Product property
+                        - generic [ref=e298]: Product property
+                      - generic [ref=e299]:
+                        - generic [ref=e300]:
+                          - generic [ref=e301]:
+                            - img [ref=e302]
+                            - img [ref=e304]
+                            - img [ref=e306]
+                            - img [ref=e308]
+                            - img [ref=e310]
+                          - generic [ref=e312]: 1.000.000
+                        - button "Add to Cart" [ref=e313]:
+                          - img
+                          - text: Add to Cart
+                - group [ref=e314]:
+                  - generic [ref=e316]:
+                    - button [ref=e321]:
+                      - img
+                    - generic [ref=e322]:
+                      - heading "Product name 2 lines" [level=3] [ref=e324]
+                      - generic [ref=e325]:
+                        - generic [ref=e326]: Product property
+                        - generic [ref=e327]: Product property
+                        - generic [ref=e328]: Product property
+                        - generic [ref=e329]: Product property
+                      - generic [ref=e330]:
+                        - generic [ref=e331]:
+                          - generic [ref=e332]:
+                            - img [ref=e333]
+                            - img [ref=e335]
+                            - img [ref=e337]
+                            - img [ref=e339]
+                            - img [ref=e341]
+                          - generic [ref=e343]: 1.000.000
+                        - button "Add to Cart" [ref=e344]:
+                          - img
+                          - text: Add to Cart
+                - group [ref=e345]:
+                  - generic [ref=e347]:
+                    - button [ref=e352]:
+                      - img
+                    - generic [ref=e353]:
+                      - heading "Product name 2 lines" [level=3] [ref=e355]
+                      - generic [ref=e356]:
+                        - generic [ref=e357]: Product property
+                        - generic [ref=e358]: Product property
+                        - generic [ref=e359]: Product property
+                        - generic [ref=e360]: Product property
+                      - generic [ref=e361]:
+                        - generic [ref=e362]:
+                          - generic [ref=e363]:
+                            - img [ref=e364]
+                            - img [ref=e366]
+                            - img [ref=e368]
+                            - img [ref=e370]
+                            - img [ref=e372]
+                          - generic [ref=e374]: 1.000.000
+                        - button "Add to Cart" [ref=e375]:
+                          - img
+                          - text: Add to Cart
+              - button "Previous slide" [ref=e376]:
+                - img
+                - generic [ref=e377]: Previous slide
+              - button "Next slide" [ref=e378]:
+                - img
+                - generic [ref=e379]: Next slide
+          - generic [ref=e380]:
+            - heading "Hot products" [level=2] [ref=e381]
+            - generic [ref=e382]:
+              - generic [ref=e384]:
+                - button [ref=e389]:
+                  - img
+                - generic [ref=e390]:
+                  - heading "Product name 2 lines" [level=3] [ref=e392]
+                  - generic [ref=e393]:
+                    - generic [ref=e394]: Product property
+                    - generic [ref=e395]: Product property
+                    - generic [ref=e396]: Product property
+                    - generic [ref=e397]: Product property
+                  - generic [ref=e398]:
+                    - generic [ref=e399]:
+                      - generic [ref=e400]:
+                        - img [ref=e401]
+                        - img [ref=e403]
+                        - img [ref=e405]
+                        - img [ref=e407]
+                        - img [ref=e409]
+                      - generic [ref=e411]: 1.000.000
+                    - button "Add to Cart" [ref=e412]:
+                      - img
+                      - text: Add to Cart
+              - generic [ref=e414]:
+                - button [ref=e419]:
+                  - img
+                - generic [ref=e420]:
+                  - heading "Product name 2 lines" [level=3] [ref=e422]
+                  - generic [ref=e423]:
+                    - generic [ref=e424]: Product property
+                    - generic [ref=e425]: Product property
+                    - generic [ref=e426]: Product property
+                    - generic [ref=e427]: Product property
+                  - generic [ref=e428]:
+                    - generic [ref=e429]:
+                      - generic [ref=e430]:
+                        - img [ref=e431]
+                        - img [ref=e433]
+                        - img [ref=e435]
+                        - img [ref=e437]
+                        - img [ref=e439]
+                      - generic [ref=e441]: 1.000.000
+                    - button "Add to Cart" [ref=e442]:
+                      - img
+                      - text: Add to Cart
+              - generic [ref=e444]:
+                - button [ref=e449]:
+                  - img
+                - generic [ref=e450]:
+                  - heading "Product name 2 lines" [level=3] [ref=e452]
+                  - generic [ref=e453]:
+                    - generic [ref=e454]: Product property
+                    - generic [ref=e455]: Product property
+                    - generic [ref=e456]: Product property
+                    - generic [ref=e457]: Product property
+                  - generic [ref=e458]:
+                    - generic [ref=e459]:
+                      - generic [ref=e460]:
+                        - img [ref=e461]
+                        - img [ref=e463]
+                        - img [ref=e465]
+                        - img [ref=e467]
+                        - img [ref=e469]
+                      - generic [ref=e471]: 1.000.000
+                    - button "Add to Cart" [ref=e472]:
+                      - img
+                      - text: Add to Cart
+              - generic [ref=e474]:
+                - button [ref=e479]:
+                  - img
+                - generic [ref=e480]:
+                  - heading "Product name 2 lines" [level=3] [ref=e482]
+                  - generic [ref=e483]:
+                    - generic [ref=e484]: Product property
+                    - generic [ref=e485]: Product property
+                    - generic [ref=e486]: Product property
+                    - generic [ref=e487]: Product property
+                  - generic [ref=e488]:
+                    - generic [ref=e489]:
+                      - generic [ref=e490]:
+                        - img [ref=e491]
+                        - img [ref=e493]
+                        - img [ref=e495]
+                        - img [ref=e497]
+                        - img [ref=e499]
+                      - generic [ref=e501]: 1.000.000
+                    - button "Add to Cart" [ref=e502]:
+                      - img
+                      - text: Add to Cart
+              - generic [ref=e504]:
+                - button [ref=e509]:
+                  - img
+                - generic [ref=e510]:
+                  - heading "Product name 2 lines" [level=3] [ref=e512]
+                  - generic [ref=e513]:
+                    - generic [ref=e514]: Product property
+                    - generic [ref=e515]: Product property
+                    - generic [ref=e516]: Product property
+                    - generic [ref=e517]: Product property
+                  - generic [ref=e518]:
+                    - generic [ref=e519]:
+                      - generic [ref=e520]:
+                        - img [ref=e521]
+                        - img [ref=e523]
+                        - img [ref=e525]
+                        - img [ref=e527]
+                        - img [ref=e529]
+                      - generic [ref=e531]: 1.000.000
+                    - button "Add to Cart" [ref=e532]:
+                      - img
+                      - text: Add to Cart
+              - generic [ref=e534]:
+                - button [ref=e539]:
+                  - img
+                - generic [ref=e540]:
+                  - heading "Product name 2 lines" [level=3] [ref=e542]
+                  - generic [ref=e543]:
+                    - generic [ref=e544]: Product property
+                    - generic [ref=e545]: Product property
+                    - generic [ref=e546]: Product property
+                    - generic [ref=e547]: Product property
+                  - generic [ref=e548]:
+                    - generic [ref=e549]:
+                      - generic [ref=e550]:
+                        - img [ref=e551]
+                        - img [ref=e553]
+                        - img [ref=e555]
+                        - img [ref=e557]
+                        - img [ref=e559]
+                      - generic [ref=e561]: 1.000.000
+                    - button "Add to Cart" [ref=e562]:
+                      - img
+                      - text: Add to Cart
+              - generic [ref=e564]:
+                - button [ref=e569]:
+                  - img
+                - generic [ref=e570]:
+                  - heading "Product name 2 lines" [level=3] [ref=e572]
+                  - generic [ref=e573]:
+                    - generic [ref=e574]: Product property
+                    - generic [ref=e575]: Product property
+                    - generic [ref=e576]: Product property
+                    - generic [ref=e577]: Product property
+                  - generic [ref=e578]:
+                    - generic [ref=e579]:
+                      - generic [ref=e580]:
+                        - img [ref=e581]
+                        - img [ref=e583]
+                        - img [ref=e585]
+                        - img [ref=e587]
+                        - img [ref=e589]
+                      - generic [ref=e591]: 1.000.000
+                    - button "Add to Cart" [ref=e592]:
+                      - img
+                      - text: Add to Cart
+              - generic [ref=e594]:
+                - button [ref=e599]:
+                  - img
+                - generic [ref=e600]:
+                  - heading "Product name 2 lines" [level=3] [ref=e602]
+                  - generic [ref=e603]:
+                    - generic [ref=e604]: Product property
+                    - generic [ref=e605]: Product property
+                    - generic [ref=e606]: Product property
+                    - generic [ref=e607]: Product property
+                  - generic [ref=e608]:
+                    - generic [ref=e609]:
+                      - generic [ref=e610]:
+                        - img [ref=e611]
+                        - img [ref=e613]
+                        - img [ref=e615]
+                        - img [ref=e617]
+                        - img [ref=e619]
+                      - generic [ref=e621]: 1.000.000
+                    - button "Add to Cart" [ref=e622]:
+                      - img
+                      - text: Add to Cart
+              - generic [ref=e624]:
+                - button [ref=e629]:
+                  - img
+                - generic [ref=e630]:
+                  - heading "Product name 2 lines" [level=3] [ref=e632]
+                  - generic [ref=e633]:
+                    - generic [ref=e634]: Product property
+                    - generic [ref=e635]: Product property
+                    - generic [ref=e636]: Product property
+                    - generic [ref=e637]: Product property
+                  - generic [ref=e638]:
+                    - generic [ref=e639]:
+                      - generic [ref=e640]:
+                        - img [ref=e641]
+                        - img [ref=e643]
+                        - img [ref=e645]
+                        - img [ref=e647]
+                        - img [ref=e649]
+                      - generic [ref=e651]: 1.000.000
+                    - button "Add to Cart" [ref=e652]:
+                      - img
+                      - text: Add to Cart
+              - generic [ref=e654]:
+                - button [ref=e659]:
+                  - img
+                - generic [ref=e660]:
+                  - heading "Product name 2 lines" [level=3] [ref=e662]
+                  - generic [ref=e663]:
+                    - generic [ref=e664]: Product property
+                    - generic [ref=e665]: Product property
+                    - generic [ref=e666]: Product property
+                    - generic [ref=e667]: Product property
+                  - generic [ref=e668]:
+                    - generic [ref=e669]:
+                      - generic [ref=e670]:
+                        - img [ref=e671]
+                        - img [ref=e673]
+                        - img [ref=e675]
+                        - img [ref=e677]
+                        - img [ref=e679]
+                      - generic [ref=e681]: 1.000.000
+                    - button "Add to Cart" [ref=e682]:
+                      - img
+                      - text: Add to Cart
+              - generic [ref=e684]:
+                - button [ref=e689]:
+                  - img
+                - generic [ref=e690]:
+                  - heading "Product name 2 lines" [level=3] [ref=e692]
+                  - generic [ref=e693]:
+                    - generic [ref=e694]: Product property
+                    - generic [ref=e695]: Product property
+                    - generic [ref=e696]: Product property
+                    - generic [ref=e697]: Product property
+                  - generic [ref=e698]:
+                    - generic [ref=e699]:
+                      - generic [ref=e700]:
+                        - img [ref=e701]
+                        - img [ref=e703]
+                        - img [ref=e705]
+                        - img [ref=e707]
+                        - img [ref=e709]
+                      - generic [ref=e711]: 1.000.000
+                    - button "Add to Cart" [ref=e712]:
+                      - img
+                      - text: Add to Cart
+              - generic [ref=e714]:
+                - button [ref=e719]:
+                  - img
+                - generic [ref=e720]:
+                  - heading "Product name 2 lines" [level=3] [ref=e722]
+                  - generic [ref=e723]:
+                    - generic [ref=e724]: Product property
+                    - generic [ref=e725]: Product property
+                    - generic [ref=e726]: Product property
+                    - generic [ref=e727]: Product property
+                  - generic [ref=e728]:
+                    - generic [ref=e729]:
+                      - generic [ref=e730]:
+                        - img [ref=e731]
+                        - img [ref=e733]
+                        - img [ref=e735]
+                        - img [ref=e737]
+                        - img [ref=e739]
+                      - generic [ref=e741]: 1.000.000
+                    - button "Add to Cart" [ref=e742]:
+                      - img
+                      - text: Add to Cart
+            - link "View more" [ref=e744] [cursor=pointer]:
+              - /url: /products
+              - button "View more" [ref=e745]
+          - generic [ref=e747]:
+            - generic [ref=e748]:
+              - img [ref=e750]
+              - generic [ref=e753]:
+                - heading "Sign up for Newsletters" [level=3] [ref=e754]
+                - paragraph [ref=e755]: Join our community of tech lovers and never miss a launch again. Weekly insights, special offers, and cutting-edge updates.
+            - generic [ref=e757]:
+              - textbox "Enter your email here" [ref=e758]
+              - button "SUBSCRIBE" [ref=e759]
+    - contentinfo [ref=e760]:
+      - generic [ref=e762]:
+        - generic [ref=e764]:
+          - paragraph [ref=e765]: Stay connected with our tech community
+          - generic [ref=e766]:
+            - button [ref=e767]:
+              - img
+            - button [ref=e768]:
+              - img
+            - button [ref=e769]:
+              - img
+            - button [ref=e770]:
+              - img
+        - generic [ref=e771]:
+          - heading "Quick Links" [level=3] [ref=e772]
+          - list [ref=e773]:
+            - listitem [ref=e774]:
+              - link "About us" [ref=e775] [cursor=pointer]:
+                - /url: /about
+            - listitem [ref=e776]:
+              - link "Contact us" [ref=e777] [cursor=pointer]:
+                - /url: /contact
+            - listitem [ref=e778]:
+              - link "Products" [ref=e779] [cursor=pointer]:
+                - /url: /products
+            - listitem [ref=e780]:
+              - link "Login" [ref=e781] [cursor=pointer]:
+                - /url: /login
+            - listitem [ref=e782]:
+              - link "Sign up" [ref=e783] [cursor=pointer]:
+                - /url: /signup
+        - generic [ref=e784]:
+          - heading "Customer Area" [level=3] [ref=e785]
+          - list [ref=e786]:
+            - listitem [ref=e787]:
+              - link "My Account" [ref=e788] [cursor=pointer]:
+                - /url: /account
+            - listitem [ref=e789]:
+              - link "Orders" [ref=e790] [cursor=pointer]:
+                - /url: /orders
+            - listitem [ref=e791]:
+              - link "My Cart" [ref=e792] [cursor=pointer]:
+                - /url: /cart
+            - listitem [ref=e793]:
+              - link "Terms" [ref=e794] [cursor=pointer]:
+                - /url: /terms
+            - listitem [ref=e795]:
+              - link "Privacy Policy" [ref=e796] [cursor=pointer]:
+                - /url: /privacy
+        - generic [ref=e797]:
+          - heading "Contact" [level=3] [ref=e798]
+          - generic [ref=e799]:
+            - paragraph [ref=e800]: We'd love to hear from you!
+            - paragraph [ref=e801]: Drop us a message anytime.
+            - generic [ref=e802]:
+              - img [ref=e803]
+              - generic [ref=e805]:
+                - paragraph [ref=e806]: Have any question?
+                - paragraph [ref=e807]: (+84)123456789
+            - generic [ref=e808]:
+              - generic [ref=e810] [cursor=pointer]:
+                - paragraph [ref=e811]: Download on
+                - paragraph [ref=e812]: Google Play
+              - generic [ref=e814] [cursor=pointer]:
+                - paragraph [ref=e815]: Download on
+                - paragraph [ref=e816]: Amazon.com
+    - button [ref=e818]:
+      - img
+  - button "Open Next.js Dev Tools" [ref=e824] [cursor=pointer]:
+    - img [ref=e825]
+  - alert [ref=e828]
+```

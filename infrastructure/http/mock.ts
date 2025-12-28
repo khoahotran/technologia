@@ -1,7 +1,13 @@
-import { mock } from './client';
+import MockAdapter from 'axios-mock-adapter';
+import { httpClient } from './client';
+
+let mock: MockAdapter | null = null;
 
 export const setupMocks = () => {
+    if (mock) return;
+
     console.log('🔶 Initializing Mocks...');
+    mock = new MockAdapter(httpClient, { delayResponse: 500, onNoMatch: 'passthrough' });
 
     // User Mock
     mock.onGet('/users/me').reply(200, {
