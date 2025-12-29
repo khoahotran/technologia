@@ -46,7 +46,7 @@ export default function ResetPasswordClient() {
 
                         <div className="pt-2">
                             <Button className="w-full max-w-md mx-auto h-12 bg-[#8AB0C3] hover:bg-[#7A9EB0] text-white font-semibold text-base">
-                                Forgot Password
+                                Reset Password
                             </Button>
                         </div>
                     </div>

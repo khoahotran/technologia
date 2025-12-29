@@ -7,4 +7,14 @@ export interface IProductRepository {
     create(dto: CreateProductDto): Promise<ProductEntity>;
     update(id: string, dto: UpdateProductDto): Promise<ProductEntity>;
     delete(id: string): Promise<void>;
+    getPaged(
+        page?: number,
+        size?: number,
+        sortBy?: string,
+        sortDirection?: string,
+        name?: string,
+        minPrice?: number,
+        maxPrice?: number,
+        minStar?: number
+    ): Promise<{ data: ProductEntity[], total: number }>;
 }

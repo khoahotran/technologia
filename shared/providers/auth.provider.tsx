@@ -4,9 +4,13 @@ import type { ReactNode } from "react";
 import { createContext, useState, useEffect } from "react";
 
 interface User {
-  id: string;
+  userId: number;
+  username: string;
   email: string;
-  role: "user" | "admin";
+  firstName?: string | null;
+  lastName?: string | null;
+  phoneNumber?: string | null;
+  role: "CUSTOMER" | "ADMIN" | "user" | "admin"; // Handle case variation
 }
 
 interface AuthContextType {

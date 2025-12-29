@@ -45,7 +45,7 @@ export function ProductCard({
       {/* Badge */}
       {badge && variant === "default" && (
         <div className="absolute top-3 right-3 z-10">
-          <Badge variant="secondary" className="font-semibold">
+          <Badge variant="secondary" className="font-semibold rounded-full px-3">
             {badge}
           </Badge>
         </div>
@@ -58,105 +58,71 @@ export function ProductCard({
           aria-checked={isSelected}
           role="checkbox"
           className={cn(
-            "absolute top-3 left-3 z-10 h-5 w-5 rounded border border-primary bg-white flex items-center justify-center cursor-pointer transition-colors hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
+            "absolute top-3 left-3 z-10 h-5 w-5 rounded-full border border-primary bg-white flex items-center justify-center cursor-pointer transition-colors hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
             isSelected && "bg-primary text-primary-foreground hover:bg-primary"
           )}
           onClick={onSelect}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              onSelect?.();
-            }
-          }}
         >
           {isSelected && <Check className="h-3.5 w-3.5" />}
           <span className="sr-only">Select {title}</span>
         </button>
       )}
 
-      {/* Settings/Options Button */}
-      <div className="absolute top-3 right-3 z-10">
-        {variant !== "default" && !badge ? (
-          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full bg-secondary/10 text-secondary-foreground hover:bg-secondary/20">
-            <Settings2 className="h-4 w-4" />
-            <span className="sr-only">Settings</span>
-          </Button>
-        ) : null}
-      </div>
-
-      <CardContent className={cn("p-0", variant === "compact" ? "flex items-center p-4 gap-4" : "")}>
+      <CardContent className={cn("p-0 h-full flex flex-col", variant === "compact" ? "flex-row items-center p-4 gap-4" : "")}>
         {variant !== "compact" && (
-          <div className="aspect-[4/3] w-full bg-muted/20 flex items-center justify-center relative group">
+          <div className="aspect-square w-full bg-muted/30 flex items-center justify-center relative group p-6">
             {image ? (
               <Image
                 src={image}
                 alt={title}
                 fill
-                className="object-cover"
+                className="object-contain p-4 transition-transform duration-300 group-hover:scale-105"
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-muted-foreground/20">
-                {/* Placeholder pattern */}
                 <div className="w-16 h-16 rounded-full bg-muted/30" />
-              </div>
-            )}
-
-            {/* Hover Overlay for Default Variant */}
-            {variant === "default" && (
-              <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                <Button variant="secondary" size="icon" className="h-8 w-8 rounded-full shadow-sm">
-                  <Settings2 className="h-4 w-4" />
-                </Button>
               </div>
             )}
           </div>
         )}
 
-        <div className={cn("flex flex-col", variant === "compact" ? "flex-1" : "p-5")}>
-          <div className="flex justify-between items-start mb-2">
-            <h3 className="font-semibold text-lg leading-tight line-clamp-2 text-foreground">
+        <div className={cn("flex flex-col flex-1", variant === "compact" ? "" : "p-5")}>
+          <div className="mb-2">
+            <h3 className="font-bold text-lg leading-tight line-clamp-2 text-foreground group-hover:text-primary transition-colors">
               {title}
             </h3>
-            {variant === "compact" && (
-              <Button variant="ghost" size="icon" className="h-8 w-8 -mt-1 -mr-2 text-muted-foreground">
-                <Settings2 className="h-4 w-4" />
-                <span className="sr-only">Settings</span>
-              </Button>
-            )}
           </div>
 
           {variant === "default" && (
-            <div className="grid grid-cols-2 gap-y-1 gap-x-4 text-xs text-muted-foreground mb-4">
-              <span>Product property</span>
-              <span>Product property</span>
+            <div className="grid grid-cols-2 gap-y-1 gap-x-4 text-xs text-muted-foreground mb-4 opacity-80">
               <span>Product property</span>
               <span>Product property</span>
             </div>
           )}
 
-          <div className="mt-auto flex items-end justify-between">
-            <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-0.5">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star
-                    key={i}
-                    className={cn(
-                      "h-3.5 w-3.5",
-                      i < rating ? "fill-primary text-primary" : "fill-muted text-muted-foreground/30"
-                    )}
-                  />
-                ))}
-              </div>
-              <span className="text-lg font-bold text-foreground">{price}</span>
+          <div className="mt-auto">
+            <div className="flex items-center gap-0.5 mb-2">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star
+                  key={i}
+                  className={cn(
+                    "h-3.5 w-3.5",
+                    i < rating ? "fill-primary text-primary" : "fill-muted text-muted"
+                  )}
+                />
+              ))}
             </div>
 
-            {variant === "default" && (
-              <Button className="bg-primary hover:bg-primary/90 text-white shadow-md rounded-full px-6">
-                <Settings2 className="mr-2 h-4 w-4" />
-                Add to Cart
-              </Button>
-            )}
+            <div className="flex items-center justify-between">
+              <span className="text-xl font-bold text-primary">{price}</span>
+
+              {variant === "default" && (
+                <Button className="bg-primary hover:bg-primary/90 text-white shadow-none rounded-full px-6 h-9 font-medium">
+                  Button
+                </Button>
+              )}
+            </div>
           </div>
         </div>
       </CardContent>

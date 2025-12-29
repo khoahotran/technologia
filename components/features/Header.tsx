@@ -11,6 +11,22 @@ interface HeaderProps {
   variant?: "default" | "minimal"
 }
 
+import { useAuth } from "@/presentation/hooks/use-auth.hook";
+
+// Helper component to handle auth logic
+function AccountButton() {
+  const { token } = useAuth();
+
+  return (
+    <Link href={token ? "/account" : "/login"}>
+      <Button variant="ghost" className="rounded-full h-10 w-10 p-0 md:w-auto md:px-4 md:bg-gray-50 md:hover:bg-gray-100 gap-2">
+        <User className="h-5 w-5" />
+        <span className="hidden md:inline">Account</span>
+      </Button>
+    </Link>
+  );
+}
+
 export default function Header({ variant = "default" }: HeaderProps) {
   return (
     <header className="w-full flex flex-col bg-white sticky top-0 z-40 shadow-sm">
@@ -74,12 +90,8 @@ export default function Header({ variant = "default" }: HeaderProps) {
                   </Badge>
                 </Link>
 
-                <Link href="/account">
-                  <Button variant="ghost" className="rounded-full h-10 w-10 p-0 md:w-auto md:px-4 md:bg-gray-50 md:hover:bg-gray-100 gap-2">
-                    <User className="h-5 w-5" />
-                    <span className="hidden md:inline">Account</span>
-                  </Button>
-                </Link>
+                {/* Account Button with Token Check */}
+                <AccountButton />
               </div>
             </>
           )}

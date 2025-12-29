@@ -8,14 +8,16 @@ const BASE_URL = "/products";
 
 export const ProductRepository: IProductRepository = {
   getAll: async (): Promise<ProductEntity[]> => {
+    // Determine if we should use paged or all based on requirement. 
+    // For now, default getAll fetches the list endpoint.
     const { data } = await httpClient.get(BASE_URL);
-    // Validate response with Zod
     return data.map((d: unknown) => ProductEntitySchema.parse(d));
   },
 
   getById: async (id: string): Promise<ProductEntity> => {
     const { data } = await httpClient.get(`${BASE_URL}/${id}`);
-    return ProductEntitySchema.parse(data);
+    // Backend wraps response in { status: 200, data: {...}, message } as per Postman for getById
+    return ProductEntitySchema.parse(data.data);
   },
 
   create: async (dto: CreateProductDto): Promise<ProductEntity> => {
@@ -31,4 +33,34 @@ export const ProductRepository: IProductRepository = {
   delete: async (id: string): Promise<void> => {
     await httpClient.delete(`${BASE_URL}/${id}`);
   },
+
+  // Extended for Pagination
+  getPaged: async (
+    page = 0,
+    size = 10,
+    sortBy = "price",
+    sortDirection = "ASC",
+    name,
+    minPrice,
+    maxPrice,
+    minStar
+  ): Promise<{ data: ProductEntity[], total: number }> => {
+    const { data } = await httpClient.get(`${BASE_URL}/paged`, {
+      params: {
+        page,
+        size,
+        sortBy,
+        sortDirection,
+        name,
+        minPrice,
+        maxPrice,
+        minStar
+      }
+    });
+
+    return {
+      data: data.data.map((d: unknown) => ProductEntitySchema.parse(d)),
+      total: data.count_items
+    };
+  }
 };

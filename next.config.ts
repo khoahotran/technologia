@@ -18,6 +18,10 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'placehold.co',
       },
+      {
+        protocol: 'https',
+        hostname: 'rukminim2.flixcart.com',
+      },
     ],
   },
   compiler: {
@@ -34,16 +38,14 @@ const nextConfig: NextConfig = {
     }
     return config;
   },
-  // async redirects() {
-  //   return [
-  //     { source: '/old-path', destination: '/', permanent: true },
-  //   ];
-  // },
-  // async rewrites() {
-  //   return [
-  //     { source: '/api/:path*', destination: 'https://backend.example.com/:path*' },
-  //   ];
-  // },
+  async rewrites() {
+    return [
+      {
+        source: '/api/products/:path*',
+        destination: 'http://localhost:8082/api/products/:path*'
+      },
+    ];
+  },
   async headers() {
     return [
       {

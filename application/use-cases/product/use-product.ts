@@ -6,6 +6,16 @@ export const useProduct = () => {
 
   return {
     getAll: async () => productRepository.getAll(),
+    getPaged: async (
+      page: number,
+      size: number,
+      sortBy?: string,
+      sortDirection?: string,
+      name?: string,
+      minPrice?: number,
+      maxPrice?: number,
+      minStar?: number
+    ) => productRepository.getPaged(page, size, sortBy, sortDirection, name, minPrice, maxPrice, minStar),
     getById: async (id: string) => productRepository.getById(id),
     create: async (dto: CreateProductDto) => productRepository.create(dto),
     update: async (id: string, dto: UpdateProductDto) => productRepository.update(id, dto),

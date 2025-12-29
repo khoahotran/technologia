@@ -62,17 +62,17 @@ export default function Banner() {
                             {slide.description}
                           </p>
                           <div className="pt-4">
-                            <Button size="lg" className="rounded-lg px-8 bg-white text-gray-900 hover:bg-gray-50 border border-gray-200 shadow-sm">
+                            <Button size="lg" className="rounded-full px-8 bg-white text-gray-900 hover:bg-gray-50 border border-gray-200 shadow-sm">
                               Button
                             </Button>
                           </div>
                         </div>
-                        
+
                         {/* Carousel Indicators (Mock) */}
                         <div className="absolute bottom-8 left-12 flex gap-2">
-                           <div className="w-8 h-2 bg-primary rounded-full"></div>
-                           <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
-                           <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+                          <div className="w-8 h-2 bg-primary rounded-full"></div>
+                          <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+                          <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
                         </div>
                       </CardContent>
                     </Card>
@@ -89,30 +89,30 @@ export default function Banner() {
         <div className="flex flex-col gap-6 h-full">
           {/* Top Side Banner */}
           <div className="flex-1 bg-blue-50 rounded-3xl p-8 flex flex-col justify-center relative overflow-hidden">
-             <div className="z-10 space-y-2">
-                <h3 className="text-xl font-bold text-gray-900 w-2/3">
-                  Desktop heading something here
-                </h3>
-                <div className="pt-4">
-                   <Button variant="outline" size="sm" className="bg-transparent border-blue-200 text-blue-600 hover:bg-blue-100">
-                     Button X
-                   </Button>
-                </div>
-             </div>
+            <div className="z-10 space-y-2">
+              <h3 className="text-xl font-bold text-gray-900 w-2/3">
+                Desktop heading something here
+              </h3>
+              <div className="pt-4">
+                <Button variant="outline" size="sm" className="bg-transparent border-blue-200 text-blue-600 hover:bg-blue-100 rounded-full px-6">
+                  Button X
+                </Button>
+              </div>
+            </div>
           </div>
 
           {/* Bottom Side Banner */}
           <div className="flex-1 bg-white border border-gray-100 rounded-3xl p-8 flex flex-col justify-center relative overflow-hidden shadow-sm">
-             <div className="z-10 space-y-2">
-                <h3 className="text-xl font-bold text-gray-900 w-2/3">
-                  Desktop heading something here
-                </h3>
-                <div className="pt-4">
-                   <Button variant="outline" size="sm" className="bg-transparent border-gray-200 text-gray-600 hover:bg-gray-50">
-                     Button X
-                   </Button>
-                </div>
-             </div>
+            <div className="z-10 space-y-2">
+              <h3 className="text-xl font-bold text-gray-900 w-2/3">
+                Desktop heading something here
+              </h3>
+              <div className="pt-4">
+                <Button variant="outline" size="sm" className="bg-transparent border-gray-200 text-gray-600 hover:bg-gray-50 rounded-full px-6">
+                  Button X
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

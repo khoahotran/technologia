@@ -3,6 +3,7 @@
 import { ProductGallery } from "@/components/features/product/ProductGallery"
 import { ProductInfo } from "@/components/features/product/ProductInfo"
 import { ProductTabs } from "@/components/features/product/ProductTabs"
+import { TopProducts } from "@/components/features/home/TopProducts"
 import {
     Breadcrumb,
     BreadcrumbItem,
@@ -66,6 +67,11 @@ export default function ProductDetailClient({ id: _id }: { id: string }) {
                 {/* Product Tabs Section */}
                 <div className="mt-12">
                     <ProductTabs />
+                </div>
+
+                {/* Related Products */}
+                <div className="mt-12 border-t border-gray-100 pt-12">
+                    <TopProducts title="Related products" />
                 </div>
             </div>
         </div>
