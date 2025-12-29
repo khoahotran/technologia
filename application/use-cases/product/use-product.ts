@@ -14,8 +14,9 @@ export const useProduct = () => {
       name?: string,
       minPrice?: number,
       maxPrice?: number,
-      minStar?: number
-    ) => productRepository.getPaged(page, size, sortBy, sortDirection, name, minPrice, maxPrice, minStar),
+      minStar?: number,
+      maxStar?: number
+    ) => productRepository.getPaged(page, size, sortBy, sortDirection, name, minPrice, maxPrice, minStar, maxStar),
     getById: async (id: string) => productRepository.getById(id),
     create: async (dto: CreateProductDto) => productRepository.create(dto),
     update: async (id: string, dto: UpdateProductDto) => productRepository.update(id, dto),

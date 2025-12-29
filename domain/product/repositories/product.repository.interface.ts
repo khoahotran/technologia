@@ -15,6 +15,7 @@ export interface IProductRepository {
         name?: string,
         minPrice?: number,
         maxPrice?: number,
-        minStar?: number
+        minStar?: number,
+        maxStar?: number
     ): Promise<{ data: ProductEntity[], total: number }>;
 }

@@ -43,20 +43,39 @@ export const ProductRepository: IProductRepository = {
     name,
     minPrice,
     maxPrice,
-    minStar
+    minStar?: number,
+    maxStar?: number
   ): Promise<{ data: ProductEntity[], total: number }> => {
-    const { data } = await httpClient.get(`${BASE_URL}/paged`, {
-      params: {
-        page,
-        size,
-        sortBy,
-        sortDirection,
-        name,
-        minPrice,
-        maxPrice,
-        minStar
-      }
-    });
+    console.log("ProductRepository.getPaged params:", { page, size, sortBy, sortDirection, name, minPrice, maxPrice, minStar, maxStar });
+    // Base Params
+    const params: any = {
+      page,
+      size,
+      sortBy,
+      sortDirection,
+    };
+
+    // Add optional filters if they exist
+    if (minPrice !== undefined) params.minPrice = minPrice;
+    if (maxPrice !== undefined) params.maxPrice = maxPrice;
+    if (minStar !== undefined) params.minStar = minStar;
+    if (maxStar !== undefined) params.maxStar = maxStar;
+
+    let endpoint = `${BASE_URL}/paged`;
+
+    if (name) {
+      // Priority 1: Search
+      endpoint = `${BASE_URL}/search`;
+      params.keyword = name;
+      // Note: We are sending minPrice/maxPrice here too in case /search supports them.
+    } else if (minPrice !== undefined || maxPrice !== undefined) {
+      // Priority 2: Filter (Only if no name)
+      endpoint = `${BASE_URL}/filter`;
+    }
+
+    console.log(`ProductRepository fetching: [${endpoint}]`, params);
+
+    const { data } = await httpClient.get(endpoint, { params });
 
     return {
       data: data.data.map((d: unknown) => ProductEntitySchema.parse(d)),

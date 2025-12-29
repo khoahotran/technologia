@@ -1,15 +1,62 @@
 "use client"
 
-import { Facebook, Youtube, Instagram, Linkedin , Chrome } from "lucide-react"
+import { Facebook, Youtube, Instagram, Linkedin, Chrome } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useState, useContext } from "react"
 
 import { SocialButton } from "@/components/features/home/FormElements"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-
-
+import { httpClient } from "@/infrastructure/http/client"
+import { AuthContext } from "@/shared/providers/auth.provider"
 
 export default function LoginClient() {
+    const router = useRouter()
+    const auth = useContext(AuthContext)
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState("")
+    const [formData, setFormData] = useState({
+        username: "",
+        password: ""
+    })
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value })
+    }
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setError("")
+        setLoading(true)
+
+        try {
+            const res = await httpClient.post("/auth/login", {
+                username: formData.username,
+                password: formData.password
+            })
+
+            // Assume response structure based on typical NestJS/JWT setup
+            // Adjust if the API actually returns different structure
+            const { access_token, refresh_token, user } = res.data;
+
+            // If user object is not returned, we might need to decode token or fetch /me
+            // For now assuming existing user object or basic one
+            const userData = { ...user, username: formData.username };
+
+            if (auth) {
+                auth.login(access_token, refresh_token, userData);
+            }
+
+            router.push("/")
+        } catch (err: any) {
+            console.error(err)
+            setError(err.response?.data?.message || "Login failed. Please check your credentials.")
+        } finally {
+            setLoading(false)
+        }
+    }
+
     return (
         <div className="min-h-screen grid md:grid-cols-2">
             {/* Left Panel - Form */}
@@ -19,18 +66,28 @@ export default function LoginClient() {
                         <h2 className="text-3xl font-bold text-gray-800">SIGN IN</h2>
                     </div>
 
-                    <form className="space-y-6">
+                    <form className="space-y-6" onSubmit={handleSubmit}>
+                        {error && <div className="text-red-500 text-sm text-center">{error}</div>}
+
                         <Input
+                            name="username"
                             type="text"
                             placeholder="Username/Email"
                             className="h-12 bg-[#F9F8FE] border-gray-200"
+                            value={formData.username}
+                            onChange={handleChange}
+                            required
                         />
 
                         <div className="space-y-2">
                             <Input
+                                name="password"
                                 type="password"
                                 placeholder="Password"
                                 className="h-12 bg-[#F9F8FE] border-gray-200"
+                                value={formData.password}
+                                onChange={handleChange}
+                                required
                             />
                             <div className="text-right">
                                 <Link href="/forgot-password" className="text-sm text-[#8AB0C3] hover:underline">
@@ -39,8 +96,11 @@ export default function LoginClient() {
                             </div>
                         </div>
 
-                        <Button className="w-full h-12 bg-[#8AB0C3] hover:bg-[#7A9EB0] text-white font-semibold text-base">
-                            Sign In
+                        <Button
+                            disabled={loading}
+                            className="w-full h-12 bg-[#8AB0C3] hover:bg-[#7A9EB0] text-white font-semibold text-base"
+                        >
+                            {loading ? "Signing In..." : "Sign In"}
                         </Button>
 
                         <div className="relative">
@@ -57,10 +117,10 @@ export default function LoginClient() {
                                 provider="Google"
                                 icon={<Chrome className="h-5 w-5 text-red-500" />}
                             />
-                            <SocialButton
+                            {/* <SocialButton
                                 provider="FaceBook"
                                 icon={<Facebook className="h-5 w-5 text-blue-600" />}
-                            />
+                            /> */}
                         </div>
 
                         <div className="text-center text-sm text-gray-600">
@@ -69,6 +129,12 @@ export default function LoginClient() {
                                 Sign Up
                             </Link>
                         </div>
+
+                        {/* <div className="text-center text-sm text-gray-600">
+                            <Link href="/" className="text-gray-400 hover:text-gray-600">
+                                &larr; Home
+                            </Link>
+                        </div> */}
                     </form>
                 </div>
             </div>

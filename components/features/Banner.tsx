@@ -8,13 +8,27 @@ import { Card, CardContent } from "@/components/ui/card"
 import {
   Carousel,
   CarouselContent,
+  CarouselPrevious,
+  CarouselNext,
+  type CarouselApi,
   CarouselItem,
 } from "@/components/ui/carousel"
 
 export default function Banner() {
-  const plugin = React.useRef(
-    Autoplay({ delay: 4000, stopOnInteraction: true })
-  )
+  const [api, setApi] = React.useState<CarouselApi>()
+  const [current, setCurrent] = React.useState(0)
+
+  React.useEffect(() => {
+    if (!api) {
+      return
+    }
+
+    setCurrent(api.selectedScrollSnap())
+
+    api.on("select", () => {
+      setCurrent(api.selectedScrollSnap())
+    })
+  }, [api])
 
   const slides = [
     {
@@ -43,10 +57,10 @@ export default function Banner() {
         {/* Main Carousel - Takes up 2/3 width on large screens */}
         <div className="lg:col-span-2 h-full">
           <Carousel
-            plugins={[plugin.current]}
+            setApi={setApi}
+            opts={{ loop: true }}
+            plugins={[Autoplay({ delay: 4000 })]}
             className="w-full h-full"
-            onMouseEnter={plugin.current.stop}
-            onMouseLeave={plugin.current.reset}
           >
             <CarouselContent className="h-full">
               {slides.map((slide) => (
@@ -68,11 +82,18 @@ export default function Banner() {
                           </div>
                         </div>
 
-                        {/* Carousel Indicators (Mock) */}
-                        <div className="absolute bottom-8 left-12 flex gap-2">
-                          <div className="w-8 h-2 bg-primary rounded-full"></div>
-                          <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
-                          <div className="w-2 h-2 bg-gray-300 rounded-full"></div>
+                        {/* Carousel Indicators */}
+                        <div className="absolute bottom-8 left-12 flex gap-2 z-10">
+                          {slides.map((_, index) => (
+                            <div
+                              key={index}
+                              onClick={() => api?.scrollTo(index)}
+                              className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${current === index
+                                ? "w-8 bg-primary"
+                                : "w-2 bg-gray-300 hover:bg-gray-400"
+                                }`}
+                            />
+                          ))}
                         </div>
                       </CardContent>
                     </Card>

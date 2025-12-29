@@ -8,7 +8,7 @@ export default function AuthLayout({
 }>) {
     return (
         <div className="flex min-h-screen flex-col bg-gray-50">
-            <div className="p-4 md:p-8">
+            {/* <div className="p-4 md:p-8">
                 <Link
                     href="/"
                     className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900 transition-colors"
@@ -16,7 +16,7 @@ export default function AuthLayout({
                     <ChevronLeft className="mr-2 h-4 w-4" />
                     Back to Home
                 </Link>
-            </div>
+            </div> */}
             <main className="flex-1 flex items-center justify-center p-4">
                 {children}
             </main>

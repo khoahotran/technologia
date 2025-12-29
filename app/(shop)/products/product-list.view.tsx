@@ -30,6 +30,7 @@ export default function ProductListView() {
     const minPrice = searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : undefined;
     const maxPrice = searchParams.get('maxPrice') ? Number(searchParams.get('maxPrice')) : undefined;
     const minStar = searchParams.get('minStar') ? Number(searchParams.get('minStar')) : undefined;
+    const maxStar = searchParams.get('maxStar') ? Number(searchParams.get('maxStar')) : undefined;
     const sortParam = searchParams.get('sort'); // price_asc, price_desc, newest
 
     let sortBy = "price";
@@ -49,8 +50,9 @@ export default function ProductListView() {
         sortDirection,
         ...(minPrice !== undefined && { minPrice }),
         ...(maxPrice !== undefined && { maxPrice }),
-        ...(minStar !== undefined && { minStar })
-        // name: searchParams.get('q') // If we had a search bar
+        ...(minStar !== undefined && { minStar }),
+        ...(maxStar !== undefined && { maxStar }),
+        ...(searchParams.get('name') && { name: searchParams.get('name')! })
     });
 
     const { data: pagedData, isLoading, isError } = pagedProductsQuery;
@@ -62,7 +64,7 @@ export default function ProductListView() {
     // Reset page when filters change
     useEffect(() => {
         setPage(0);
-    }, [minPrice, maxPrice, minStar, sortParam]);
+    }, [minPrice, maxPrice, minStar, maxStar, sortParam, searchParams.get('name')]);
 
     if (isLoading) {
         return (
@@ -168,12 +170,12 @@ export default function ProductListView() {
                                 <Button variant="ghost" className="w-full justify-start gap-3 text-gray-600 hover:text-primary hover:bg-blue-50/30 px-4">
                                     <Laptop className="w-4 h-4" /> Laptops
                                 </Button>
-                                <Button variant="ghost" className="w-full justify-start gap-3 text-gray-600 hover:text-primary hover:bg-blue-50/30 px-4">
+                                {/* <Button variant="ghost" className="w-full justify-start gap-3 text-gray-600 hover:text-primary hover:bg-blue-50/30 px-4">
                                     <Speaker className="w-4 h-4" /> Audio
                                 </Button>
                                 <Button variant="ghost" className="w-full justify-start gap-3 text-gray-600 hover:text-primary hover:bg-blue-50/30 px-4">
                                     <MapPin className="w-4 h-4" /> Addresses
-                                </Button>
+                                </Button> */}
                             </div>
                         </div>
                     </div>

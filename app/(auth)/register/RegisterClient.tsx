@@ -2,11 +2,73 @@
 
 import { Facebook, Youtube, Instagram, Linkedin } from "lucide-react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { httpClient } from "@/infrastructure/http/client"
 
 export default function RegisterClient() {
+    const router = useRouter()
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState("")
+    const [formData, setFormData] = useState({
+        username: "",
+        password: "",
+        confirmPassword: "",
+        email: "",
+        phoneNumber: "",
+        firstName: "",
+        lastName: ""
+    })
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value })
+    }
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setError("")
+        setLoading(true)
+
+        if (formData.password !== formData.confirmPassword) {
+            setError("Passwords do not match")
+            setLoading(false)
+            return
+        }
+
+        try {
+            await httpClient.post("/auth/register", {
+                username: formData.username,
+                password: formData.password,
+                phoneNumber: formData.phoneNumber,
+                email: formData.email,
+                firstname: formData.firstName,
+                lastname: formData.lastName,
+                role: "CUSTOMER" // Default
+            })
+
+            toast.success("Registration successful! Redirecting to login...", {
+                duration: 2000,
+            })
+
+            // Delay redirect to allow user to see the success message
+            setTimeout(() => {
+                router.push("/login")
+            }, 2000)
+
+        } catch (err: any) {
+            console.error(err)
+            const errorMessage = err.response?.data?.message || "Registration failed";
+            setError(errorMessage)
+            toast.error(errorMessage);
+        } finally {
+            setLoading(false)
+        }
+    }
+
     return (
         <div className="min-h-screen grid md:grid-cols-2">
             {/* Left Panel - Welcome */}
@@ -62,58 +124,94 @@ export default function RegisterClient() {
                         <h2 className="text-3xl font-bold text-gray-800">CREATE ACCOUNT</h2>
                     </div>
 
-                    <form className="space-y-4">
+                    <form className="space-y-4" onSubmit={handleSubmit}>
+                        {error && <div className="text-red-500 text-sm text-center">{error}</div>}
+
                         <Input
+                            name="username"
                             type="text"
                             placeholder="Username*"
                             className="h-12 bg-[#F9F8FE] border-gray-200"
+                            value={formData.username}
+                            onChange={handleChange}
+                            required
                         />
 
                         <Input
+                            name="password"
                             type="password"
                             placeholder="Password*"
                             className="h-12 bg-[#F9F8FE] border-gray-200"
+                            value={formData.password}
+                            onChange={handleChange}
+                            required
                         />
 
                         <Input
+                            name="confirmPassword"
                             type="password"
                             placeholder="Confirm Password*"
                             className="h-12 bg-[#F9F8FE] border-gray-200"
+                            value={formData.confirmPassword}
+                            onChange={handleChange}
+                            required
                         />
 
                         <Input
+                            name="email"
                             type="email"
                             placeholder="Email*"
                             className="h-12 bg-[#F9F8FE] border-gray-200"
+                            value={formData.email}
+                            onChange={handleChange}
+                            required
                         />
 
                         <Input
+                            name="phoneNumber"
                             type="tel"
                             placeholder="Phone Number"
                             className="h-12 bg-[#F9F8FE] border-gray-200"
+                            value={formData.phoneNumber}
+                            onChange={handleChange}
                         />
 
                         <div className="grid grid-cols-2 gap-4">
                             <Input
+                                name="firstName"
                                 type="text"
                                 placeholder="First Name"
                                 className="h-12 bg-[#F9F8FE] border-gray-200"
+                                value={formData.firstName}
+                                onChange={handleChange}
                             />
                             <Input
+                                name="lastName"
                                 type="text"
                                 placeholder="Last Name"
                                 className="h-12 bg-[#F9F8FE] border-gray-200"
+                                value={formData.lastName}
+                                onChange={handleChange}
                             />
                         </div>
 
-                        <Button className="w-full h-12 bg-[#8AB0C3] hover:bg-[#7A9EB0] text-white font-semibold text-base">
-                            Sign Up
+                        <Button
+                            disabled={loading}
+                            className="w-full h-12 bg-[#8AB0C3] hover:bg-[#7A9EB0] text-white font-semibold text-base"
+                        >
+                            {loading ? "Signing up..." : "Sign Up"}
                         </Button>
 
                         <div className="text-center text-sm text-gray-600">
                             Already have account?{" "}
                             <Link href="/login" className="text-[#3E93B3] hover:underline font-medium">
                                 Sign In
+                            </Link>
+                        </div>
+
+                        <div className="text-center text-sm text-gray-600">
+                            <Link href="/" className="text-gray-400 hover:text-gray-600">
+                                Home &rarr;
                             </Link>
                         </div>
                     </form>

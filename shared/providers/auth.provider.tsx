@@ -1,80 +1,70 @@
 "use client";
 
-import type { ReactNode } from "react";
-import { createContext, useState, useEffect } from "react";
+import { createContext, useEffect, useState, ReactNode } from "react";
+import { useRouter } from "next/navigation";
+
+// Define the shape of the context
+interface AuthContextType {
+  user: User | null;
+  token: string | null;
+  login: (token: string, refreshToken: string, user: User) => void;
+  logout: () => void;
+  isAuthenticated: boolean;
+}
 
 interface User {
   userId: number;
   username: string;
   email: string;
-  firstName?: string | null;
-  lastName?: string | null;
-  phoneNumber?: string | null;
-  role: "CUSTOMER" | "ADMIN" | "user" | "admin"; // Handle case variation
+  role: string;
+  // Add other user fields as needed
 }
 
-interface AuthContextType {
-  user: User | null;
-  loading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => Promise<void>;
-  token: string | null;
-}
-
-export const AuthContext = createContext<AuthContextType | undefined>(
-  undefined
-);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    checkAuth();
+    // Check localStorage on mount
+    const storedToken = localStorage.getItem("access_token");
+    const storedUser = localStorage.getItem("user");
+
+    if (storedToken && storedUser) {
+      setToken(storedToken);
+      setUser(JSON.parse(storedUser));
+    }
   }, []);
 
-  async function checkAuth() {
-    try {
-      const res = await fetch("/api/auth/me");
-      if (!res.ok) throw new Error("Unauthenticated");
-      const data = await res.json();
-      setUser(data.user);
-    } catch {
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  const login = async (email: string, password: string) => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/auth/login", {
-        method: "POST",
-        body: JSON.stringify({ email, password }),
-        headers: { "Content-Type": "application/json" },
-      });
-      if (!res.ok) throw new Error("Login failed");
-      const data = await res.json();
-      setUser(data.user);
-      // Token is in HTTP-only cookie
-    } finally {
-      setLoading(false);
-    }
+  const login = (newToken: string, newRefreshToken: string, newUser: User) => {
+    localStorage.setItem("access_token", newToken);
+    localStorage.setItem("refresh_token", newRefreshToken);
+    localStorage.setItem("user", JSON.stringify(newUser));
+    setToken(newToken);
+    setUser(newUser);
   };
 
-  const logout = async () => {
-    try {
-      await fetch("/api/auth/logout", { method: "POST" });
-    } finally {
-      setUser(null);
-      setToken(null);
-    }
+  const logout = () => {
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    localStorage.removeItem("user");
+    setToken(null);
+    setUser(null);
+    // router.push("/login");
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, token }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        token,
+        login,
+        logout,
+        isAuthenticated: !!token,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );

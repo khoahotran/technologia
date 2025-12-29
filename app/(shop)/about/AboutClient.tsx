@@ -88,7 +88,7 @@ export default function AboutClient() {
                             <Button className="bg-white text-[#3E93B3] hover:bg-gray-100 font-semibold px-8">
                                 About us
                             </Button>
-                            <Button variant="outline" className="border-white text-white hover:bg-white/10 font-semibold px-8">
+                            <Button variant="outline" className="border-white text-white  bg-[#3E93B3] hover:bg-white/10 font-semibold px-8">
                                 Contact Now
                             </Button>
                         </div>
@@ -97,7 +97,7 @@ export default function AboutClient() {
             </section>
 
             {/* Navigation Tabs */}
-            <section className="bg-white border-b border-gray-200">
+            {/* <section className="bg-white border-b border-gray-200">
                 <div className="container mx-auto px-4">
                     <div className="flex gap-8 overflow-x-auto scrollbar-hide">
                         {["Giới thiệu", "Sản phẩm", "Đối tác", "Marketing"].map((tab) => (
@@ -110,7 +110,7 @@ export default function AboutClient() {
                         ))}
                     </div>
                 </div>
-            </section>
+            </section> */}
 
             <div className="container mx-auto px-4 py-12 space-y-16">
                 {/* Stats Section */}

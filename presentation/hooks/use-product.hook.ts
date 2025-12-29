@@ -14,6 +14,7 @@ interface UseProductParams {
   minPrice?: number;
   maxPrice?: number;
   minStar?: number;
+  maxStar?: number;
 }
 
 export const useProductHook = (params?: UseProductParams) => {
@@ -37,7 +38,8 @@ export const useProductHook = (params?: UseProductParams) => {
       params?.name,
       params?.minPrice,
       params?.maxPrice,
-      params?.minStar
+      params?.minStar,
+      params?.maxStar
     ],
     queryFn: () => productService.getPaged(
       params?.page ?? 0,
@@ -47,7 +49,8 @@ export const useProductHook = (params?: UseProductParams) => {
       params?.name,
       params?.minPrice,
       params?.maxPrice,
-      params?.minStar
+      params?.minStar,
+      params?.maxStar
     ),
     placeholderData: keepPreviousData,
     enabled: !!params, // Only run if params might be intended or always run?

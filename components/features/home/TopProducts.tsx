@@ -1,14 +1,14 @@
 "use client"
 
 import { useEffect, useState } from "react";
+import Autoplay from "embla-carousel-autoplay"
+
 import { type ProductEntity } from "@/domain/product/entities/product.entity";
 import { useProduct } from "@/application/use-cases/product/use-product";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/ui/carousel"
 import { ProductCard } from "@/components/ui/product-card"
 
@@ -50,6 +50,11 @@ export function TopProducts({ title = "Top products", className }: TopProductsPr
           align: "start",
           loop: true,
         }}
+        plugins={[
+          Autoplay({
+            delay: 2000,
+          }),
+        ]}
         className="w-full"
       >
         <CarouselContent className="-ml-4">
@@ -67,8 +72,6 @@ export function TopProducts({ title = "Top products", className }: TopProductsPr
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious />
-        <CarouselNext />
       </Carousel>
     </section>
   )

@@ -13,17 +13,109 @@ interface HeaderProps {
 
 import { useAuth } from "@/presentation/hooks/use-auth.hook";
 
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+
 // Helper component to handle auth logic
 function AccountButton() {
-  const { token } = useAuth();
+  const { token, user, logout } = useAuth();
+  const [isOpen, setIsOpen] = useState(false);
+
+  if (!token) {
+    return (
+      <Link href="/login">
+        <Button variant="ghost" className="rounded-full h-10 w-10 p-0 md:w-auto md:px-4 md:bg-gray-50 md:hover:bg-gray-100 gap-2">
+          <User className="h-5 w-5" />
+          <span className="hidden md:inline">Account</span>
+        </Button>
+      </Link>
+    );
+  }
 
   return (
-    <Link href={token ? "/account" : "/login"}>
-      <Button variant="ghost" className="rounded-full h-10 w-10 p-0 md:w-auto md:px-4 md:bg-gray-50 md:hover:bg-gray-100 gap-2">
+    <div className="relative">
+      <Button
+        variant="ghost"
+        className="rounded-full h-10 w-10 p-0 md:w-auto md:px-4 md:bg-gray-50 md:hover:bg-gray-100 gap-2"
+        onClick={() => setIsOpen(!isOpen)}
+      >
         <User className="h-5 w-5" />
-        <span className="hidden md:inline">Account</span>
+        <span className="hidden md:inline">{user?.username || "Account"}</span>
       </Button>
-    </Link>
+
+      {isOpen && (
+        <>
+          {/* Backdrop to close */}
+          <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
+
+          <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50 animate-in fade-in zoom-in-95 duration-200">
+            <div className="px-4 py-2 border-b border-gray-50">
+              <p className="text-sm font-semibold text-gray-900 truncate">
+                {user?.username || "User"}
+              </p>
+              <p className="text-xs text-gray-500 truncate">
+                {user?.email || "Member"}
+              </p>
+            </div>
+
+            <button
+              onClick={() => {
+                logout();
+                setIsOpen(false);
+              }}
+              className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
+            >
+              <span className="font-medium">Logout</span>
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function SearchBox() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [term, setTerm] = useState(searchParams.get("name") || "");
+
+  const handleSearch = () => {
+    const current = new URLSearchParams(Array.from(searchParams.entries()));
+
+    if (term.trim()) {
+      current.set("name", term.trim());
+    } else {
+      current.delete("name");
+    }
+
+    const search = current.toString();
+    const query = search ? `?${search}` : "";
+    router.push(`/products${query}`);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
+  return (
+    <div className="relative group">
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-primary transition-colors" />
+      <Input
+        placeholder="Search products, brands and categories..."
+        className="w-full pl-10 bg-gray-50 border-gray-200 focus-visible:bg-white focus-visible:ring-primary rounded-full h-11 transition-all"
+        value={term}
+        onChange={(e) => setTerm(e.target.value)}
+        onKeyDown={handleKeyDown}
+      />
+      <Button
+        className="absolute right-1 top-1 rounded-full h-9 px-4"
+        onClick={handleSearch}
+      >
+        Search
+      </Button>
+    </div>
   );
 }
 
@@ -71,23 +163,16 @@ export default function Header({ variant = "default" }: HeaderProps) {
             <>
               {/* Search */}
               <div className="flex-1 w-full max-w-2xl px-4">
-                <div className="relative group">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-primary transition-colors" />
-                  <Input
-                    placeholder="Search products, brands and categories..."
-                    className="w-full pl-10 bg-gray-50 border-gray-200 focus-visible:bg-white focus-visible:ring-primary rounded-full h-11 transition-all"
-                  />
-                  <Button className="absolute right-1 top-1 rounded-full h-9 px-4">Search</Button>
-                </div>
+                <SearchBox />
               </div>
 
               {/* Actions */}
               <div className="flex items-center gap-6 w-auto md:w-1/6 justify-end">
                 <Link href="/cart" className="relative cursor-pointer group">
                   <ShoppingCart className="h-6 w-6 text-gray-700 group-hover:text-primary transition-colors" />
-                  <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 bg-red-500 hover:bg-red-600 animate-in zoom-in">
+                  {/* <Badge className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 bg-red-500 hover:bg-red-600 animate-in zoom-in">
                     4
-                  </Badge>
+                  </Badge> */}
                 </Link>
 
                 {/* Account Button with Token Check */}
@@ -99,7 +184,7 @@ export default function Header({ variant = "default" }: HeaderProps) {
       </div>
 
       {/* Navigation Bar - Only for default */}
-      {variant === "default" && (
+      {/* {variant === "default" && (
         <div className="hidden md:block border-b border-gray-100">
           <div className="container mx-auto px-4">
             <nav>
@@ -114,7 +199,7 @@ export default function Header({ variant = "default" }: HeaderProps) {
             </nav>
           </div>
         </div>
-      )}
+      )} */}
     </header>
   )
 }

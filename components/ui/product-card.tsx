@@ -36,7 +36,7 @@ export function ProductCard({
   return (
     <Card
       className={cn(
-        "relative overflow-hidden transition-all duration-300 hover:shadow-lg bg-white border-transparent hover:border-primary/20",
+        "relative overflow-hidden transition-all duration-300 hover:shadow-lg bg-white border-transparent hover:border-primary/20 pt-0",
         isSelected && "ring-2 ring-primary border-primary",
         className
       )}
@@ -89,17 +89,17 @@ export function ProductCard({
 
         <div className={cn("flex flex-col flex-1", variant === "compact" ? "" : "p-5")}>
           <div className="mb-2">
-            <h3 className="font-bold text-lg leading-tight line-clamp-2 text-foreground group-hover:text-primary transition-colors">
+            <h3 className="font-bold text-lg leading-tight line-clamp-2 text-foreground group-hover:text-primary transition-colors min-h-[2.5em]">
               {title}
             </h3>
           </div>
 
-          {variant === "default" && (
+          {/* {variant === "default" && (
             <div className="grid grid-cols-2 gap-y-1 gap-x-4 text-xs text-muted-foreground mb-4 opacity-80">
               <span>Product property</span>
               <span>Product property</span>
             </div>
-          )}
+          )} */}
 
           <div className="mt-auto">
             <div className="flex items-center gap-0.5 mb-2">
@@ -119,7 +119,7 @@ export function ProductCard({
 
               {variant === "default" && (
                 <Button className="bg-primary hover:bg-primary/90 text-white shadow-none rounded-full px-6 h-9 font-medium">
-                  Button
+                  Details
                 </Button>
               )}
             </div>

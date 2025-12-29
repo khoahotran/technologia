@@ -4,20 +4,17 @@ import { cookies } from "next/headers";
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { email, password } = body;
+        const { username, password } = body;
 
         // Call Real Backend
-        // Using username as email for local simplified login if needed, or pass both
         // API expects: { username, password }
-        // Frontend passes: { email, password }
-        // Assumption: User enters username or email. API doc says "username".
-        // We will map email input to 'username' field for the backend call.
+        // Frontend passed: { username, password }
 
         const backendRes = await fetch("http://localhost:8081/api/auth/login/local", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                username: email, // Mapping email input to username for backend
+                username,
                 password
             }),
         });
@@ -33,11 +30,13 @@ export async function POST(request: Request) {
         const data = await backendRes.json();
         // Expected structure: { status: 200, data: { accessToken, refreshToken, userId }, message }
 
-        const { accessToken } = data.data;
+        const { data: backendData } = data;
+        const accessToken = backendData.accessToken || backendData.access_token;
+        const refreshToken = backendData.refreshToken || backendData.refresh_token;
 
         // Set HttpOnly Cookie
         const cookieStore = await cookies();
-        cookieStore.set("auth_token", accessToken, {
+        cookieStore.set("access_token", accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "lax",
@@ -51,7 +50,9 @@ export async function POST(request: Request) {
 
         return NextResponse.json({
             success: true,
-            user: { userId: data.data.userId }
+            access_token: accessToken,
+            refresh_token: refreshToken,
+            user: { userId: backendData.userId }
         });
 
     } catch (error) {

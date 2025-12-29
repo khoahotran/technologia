@@ -60,8 +60,8 @@ export function CartItem({
           </p>
           <div className="pt-2">
             <Input
-              placeholder="+Add note"
-              className="h-8 text-xs border-none bg-transparent p-0 placeholder:text-gray-400 focus-visible:ring-0"
+              placeholder="+ Add note"
+              className="h-8 text-xs border-none bg-transparent p-0 placeholder:text-gray-400 focus-visible:ring-0 pl-2"
             />
           </div>
         </div>
