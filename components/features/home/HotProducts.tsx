@@ -27,8 +27,9 @@ export function HotProducts() {
         setLoading(false);
       }
     };
+
     fetchProducts();
-  }, []);
+  }, [getAll]);
 
   if (loading) {
     return <div className="container mx-auto px-4 py-12">Loading...</div>;
@@ -44,9 +45,9 @@ export function HotProducts() {
             key={product.productId}
             id={String(product.productId)}
             title={product.name}
-            price={formatter.format(product.price)}
+            price={product.displayPrice ? formatter.format(product.displayPrice) : "Contact"}
             rating={4}
-            image={product.imageUrls?.[0] ?? "https://placehold.co/400x400"}
+            image={product.variants?.[0]?.images?.[0] || "https://placehold.co/400x400"}
             variant="default"
             className="w-full bg-white"
           />

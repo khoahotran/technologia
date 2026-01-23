@@ -9,7 +9,8 @@ export const UserProfileSchema = z.object({
     email: z.string().email(),
     phoneNumber: z.string().nullable(),
     imageUrl: z.string().nullable(),
-    displayName: z.string().nullable()
+    displayName: z.string().nullable(),
+    role: z.string().optional()
 });
 export type UserProfileDto = z.infer<typeof UserProfileSchema>;
 
