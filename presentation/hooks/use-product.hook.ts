@@ -1,32 +1,21 @@
-import { useQuery, useMutation, useQueryClient, keepPreviousData } from "@tanstack/react-query";
-
-import { useAuth } from "./use-auth.hook";
-
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { useProduct } from "@/application/use-cases/product";
-import type { UpdateProductDto } from "@/domain/product";
+import type { ProductSearchParams } from "@/domain/product/repositories/product.repository.interface";
 
-interface UseProductParams {
-  page?: number;
-  size?: number;
-  sortBy?: string;
-  sortDirection?: string;
-  name?: string;
-  minPrice?: number;
-  maxPrice?: number;
-  minStar?: number;
-  maxStar?: number;
-}
+type UseProductHookParams = {
+  [K in keyof ProductSearchParams]?: ProductSearchParams[K] | undefined;
+};
 
-export const useProductHook = (params?: UseProductParams) => {
-  // const { token } = useAuth(); // Token is now handled by httpClient interceptor
+export const useProductHook = (params?: UseProductHookParams) => {
   const productService = useProduct();
-  const queryClient = useQueryClient();
 
+  // Basic getAll query (optional, maybe for lightweight lists)
   const productsQuery = useQuery({
     queryKey: ["products"],
     queryFn: productService.getAll,
   });
 
+  // Search & Filter Query
   const pagedProductsQuery = useQuery({
     queryKey: [
       "products",
@@ -35,45 +24,36 @@ export const useProductHook = (params?: UseProductParams) => {
       params?.size,
       params?.sortBy,
       params?.sortDirection,
-      params?.name,
+      params?.keyword,
       params?.minPrice,
       params?.maxPrice,
-      params?.minStar,
-      params?.maxStar
+      params?.minRating,
+      params?.maxRating,
+      params?.categoryId,
+      params?.brandId
     ],
-    queryFn: () => productService.getPaged(
-      params?.page ?? 0,
-      params?.size ?? 12,
-      params?.sortBy,
-      params?.sortDirection,
-      params?.name,
-      params?.minPrice,
-      params?.maxPrice,
-      params?.minStar,
-      params?.maxStar
-    ),
+    queryFn: () => {
+      const searchParams: ProductSearchParams = {
+        page: params?.page ?? 0,
+        size: params?.size ?? 12,
+        sortBy: params?.sortBy || "createdAt",
+        sortDirection: params?.sortDirection || "DESC",
+      };
+      if (params?.keyword) searchParams.keyword = params.keyword;
+      if (params?.minPrice !== undefined) searchParams.minPrice = params.minPrice;
+      if (params?.maxPrice !== undefined) searchParams.maxPrice = params.maxPrice;
+      if (params?.minRating !== undefined) searchParams.minRating = params.minRating;
+      if (params?.maxRating !== undefined) searchParams.maxRating = params.maxRating;
+      if (params?.categoryId !== undefined) searchParams.categoryId = params.categoryId;
+      if (params?.brandId !== undefined) searchParams.brandId = params.brandId;
+
+      return productService.searchAndFilter(searchParams);
+    },
     placeholderData: keepPreviousData,
-    enabled: !!params, // Only run if params might be intended or always run?
-    // Actually, if I want to use it in ProductList, I will pass params.
-    // If I use it in TopProducts without params, this query might run with defaults? 
-    // Defaults are page=0, size=12.
+    enabled: !!params,
   });
 
-  const createProduct = useMutation({
-    mutationFn: productService.create,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["products"] }),
-  });
+  // Removed mutations as they are not part of current requirement and caused errors
 
-  const updateProduct = useMutation({
-    mutationFn: ({ id, dto }: { id: string; dto: UpdateProductDto }) =>
-      productService.update(id, dto),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["products"] }),
-  });
-
-  const deleteProduct = useMutation({
-    mutationFn: productService.remove,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["products"] }),
-  });
-
-  return { productsQuery, pagedProductsQuery, createProduct, updateProduct, deleteProduct };
+  return { productsQuery, pagedProductsQuery };
 };

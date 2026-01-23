@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { httpClient } from "@/infrastructure/http/client"
 import { AuthContext } from "@/shared/providers/auth.provider"
+import { AuthRepository } from "@/infrastructure/repositories/auth/auth.repository"
+import { UserRepository } from "@/infrastructure/repositories/user/user.repository"
 
 export default function LoginClient() {
     const router = useRouter()
@@ -31,23 +33,33 @@ export default function LoginClient() {
         setLoading(true)
 
         try {
-            const res = await httpClient.post("/auth/login", {
+            // 1. Login to get token
+            const { token, refreshToken, userId } = await AuthRepository.login({
                 username: formData.username,
                 password: formData.password
-            })
+            });
 
-            // Assume response structure based on typical NestJS/JWT setup
-            // Adjust if the API actually returns different structure
-            const { access_token, refresh_token, user } = res.data;
+            // 2. Set default auth header for subsequent requests
+            httpClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-            // If user object is not returned, we might need to decode token or fetch /me
-            // For now assuming existing user object or basic one
-            const userData = { ...user, username: formData.username };
+            // 3. Fetch user profile
+            const userProfile = await UserRepository.getMe();
 
+            // 4. Update Auth Context
             if (auth) {
-                auth.login(access_token, refresh_token, userData);
+                // Map UserProfileDto to the User interface expected by AuthContext
+                // You might need to adjust AuthContext's User interface or the mapping here
+                const contextUser = {
+                    userId: userProfile.userId,
+                    username: userProfile.username,
+                    email: userProfile.email,
+                    role: userProfile.role || "CUSTOMER", // explicit role or default
+                };
+
+                auth.login(token, refreshToken, contextUser);
             }
 
+            // 5. Redirect
             router.push("/")
         } catch (err: any) {
             console.error(err)

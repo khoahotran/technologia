@@ -1,11 +1,13 @@
 "use client";
 
-import { Loader2, Flame, Trophy, Music, Smartphone, Laptop, Speaker, MapPin } from "lucide-react";
+import { Loader2, Flame, Trophy, Music, Smartphone, Laptop, Speaker, MapPin, Tag } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 
 import { useProductHook } from "@/presentation/hooks/use-product.hook";
+import { useCategoryHook } from "@/presentation/hooks/use-category.hook";
+import { useBrandHook } from "@/presentation/hooks/use-brand.hook";
 import { FilterBar } from "@/components/features/product/FilterBar";
 import { ProductCard } from "@/components/ui/product-card";
 import { Button } from "@/components/ui/button";
@@ -21,10 +23,13 @@ import {
 
 export default function ProductListView() {
     const searchParams = useSearchParams();
+    const router = useRouter();
     const [page, setPage] = useState(0); // 0-indexed
     const pageSize = 12;
 
-    const [activeCategory, setActiveCategory] = useState("hot");
+    const [activeCategory, setActiveCategory] = useState<number | undefined>(undefined);
+    const [activeBrand, setActiveBrand] = useState<number | undefined>(undefined);
+    const [activeTab, setActiveTab] = useState<string>('all'); // 'all', 'hot', 'best', 'new'
 
     // Parse filters from URL
     const minPrice = searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : undefined;
@@ -33,38 +38,55 @@ export default function ProductListView() {
     const maxStar = searchParams.get('maxStar') ? Number(searchParams.get('maxStar')) : undefined;
     const sortParam = searchParams.get('sort'); // price_asc, price_desc, newest
 
-    let sortBy = "price";
-    let sortDirection = "ASC";
+    let sortBy = "createdAt";
+    let sortDirection = "DESC";
 
-    if (sortParam === 'price_desc') {
+    if (sortParam === 'price_asc') {
+        sortBy = "displayPrice";
+        sortDirection = "ASC";
+    } else if (sortParam === 'price_desc') {
+        sortBy = "displayPrice";
         sortDirection = "DESC";
     } else if (sortParam === 'newest') {
-        sortBy = "createdAt"; // Assuming createdAt exists, or handle in backend. Default to price for now if unsure.
+        sortBy = "createdAt";
         sortDirection = "DESC";
     }
+
+    // Handle "Hot", "Best", "New" tabs override
+    if (activeTab === 'hot') {
+        // sortBy = "soldCount"; // Example
+    } else if (activeTab === 'new') {
+        sortBy = "createdAt";
+        sortDirection = "DESC";
+    }
+
+    // Fetch Data
+    const { categoriesQuery } = useCategoryHook();
+    const { brandsQuery } = useBrandHook();
 
     const { pagedProductsQuery } = useProductHook({
         page,
         size: pageSize,
         sortBy,
         sortDirection,
-        ...(minPrice !== undefined && { minPrice }),
-        ...(maxPrice !== undefined && { maxPrice }),
-        ...(minStar !== undefined && { minStar }),
-        ...(maxStar !== undefined && { maxStar }),
-        ...(searchParams.get('name') && { name: searchParams.get('name')! })
+        minPrice,
+        maxPrice,
+        minRating: minStar, // Map core UI 'minStar' to API 'minRating'
+        maxRating: maxStar,
+        categoryId: activeCategory, // Use local state for now, ideally URL
+        brandId: activeBrand,
+        keyword: searchParams.get('name') || undefined
     });
 
     const { data: pagedData, isLoading, isError } = pagedProductsQuery;
-
     const products = pagedData?.data;
-    const totalItems = pagedData?.total || 0;
-    const totalPages = Math.ceil(totalItems / pageSize);
+    const totalItems = pagedData?.count_items || 0;
+    const totalPages = pagedData?.count_pages || 0;
 
     // Reset page when filters change
     useEffect(() => {
         setPage(0);
-    }, [minPrice, maxPrice, minStar, maxStar, sortParam, searchParams.get('name')]);
+    }, [minPrice, maxPrice, minStar, maxStar, sortParam, activeCategory, activeBrand, activeTab]);
 
     if (isLoading) {
         return (
@@ -77,7 +99,7 @@ export default function ProductListView() {
     if (isError) {
         return (
             <div className="flex h-screen items-center justify-center text-destructive">
-                Failed to load products. Ensure the Backend is running.
+                Failed to load products. Ensure the Backend is running (Products: 8082).
             </div>
         );
     }
@@ -133,24 +155,32 @@ export default function ProductListView() {
                         <div className="space-y-4">
                             <Button
                                 variant="ghost"
-                                className={`w-full justify-start gap-3 h-12 rounded-xl text-md font-semibold ${activeCategory === 'hot' ? 'bg-blue-100/50 text-blue-700' : 'bg-transparent text-gray-600'}`}
-                                onClick={() => setActiveCategory('hot')}
+                                className={`w-full justify-start gap-3 h-12 rounded-xl text-md font-semibold ${activeTab === 'all' ? 'bg-blue-100/50 text-blue-700' : 'bg-transparent text-gray-600'}`}
+                                onClick={() => { setActiveTab('all'); setActiveCategory(undefined); setActiveBrand(undefined); }}
+                            >
+                                <Tag className="w-5 h-5" />
+                                All Products
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                className={`w-full justify-start gap-3 h-12 rounded-xl text-md font-semibold ${activeTab === 'hot' ? 'bg-blue-100/50 text-blue-700' : 'bg-transparent text-gray-600'}`}
+                                onClick={() => setActiveTab('hot')}
                             >
                                 <Flame className="w-5 h-5" />
                                 Hot sales
                             </Button>
                             <Button
                                 variant="ghost"
-                                className={`w-full justify-start gap-3 h-12 rounded-xl text-md font-semibold ${activeCategory === 'best' ? 'bg-blue-100/50 text-blue-700' : 'bg-transparent text-gray-600'}`}
-                                onClick={() => setActiveCategory('best')}
+                                className={`w-full justify-start gap-3 h-12 rounded-xl text-md font-semibold ${activeTab === 'best' ? 'bg-blue-100/50 text-blue-700' : 'bg-transparent text-gray-600'}`}
+                                onClick={() => setActiveTab('best')}
                             >
                                 <Trophy className="w-5 h-5" />
                                 Best Seller
                             </Button>
                             <Button
                                 variant="ghost"
-                                className={`w-full justify-start gap-3 h-12 rounded-xl text-md font-semibold ${activeCategory === 'new' ? 'bg-blue-100/50 text-blue-700' : 'bg-transparent text-gray-600'}`}
-                                onClick={() => setActiveCategory('new')}
+                                className={`w-full justify-start gap-3 h-12 rounded-xl text-md font-semibold ${activeTab === 'new' ? 'bg-blue-100/50 text-blue-700' : 'bg-transparent text-gray-600'}`}
+                                onClick={() => setActiveTab('new')}
                             >
                                 <Music className="w-5 h-5" />
                                 New
@@ -161,21 +191,47 @@ export default function ProductListView() {
                         <div className="space-y-4">
                             <h3 className="font-bold text-lg text-gray-900 px-4">Categories</h3>
                             <div className="flex flex-col gap-2">
-                                <Button variant="ghost" className="w-full justify-start text-gray-600 hover:text-primary hover:bg-blue-50/30 px-4">
-                                    All Products
+                                <Button
+                                    variant="ghost"
+                                    className={`w-full justify-start text-gray-600 hover:text-primary hover:bg-blue-50/30 px-4 ${activeCategory === undefined ? 'font-bold text-primary' : ''}`}
+                                    onClick={() => setActiveCategory(undefined)}
+                                >
+                                    All Categories
                                 </Button>
-                                <Button variant="ghost" className="w-full justify-start gap-3 text-gray-600 hover:text-primary hover:bg-blue-50/30 px-4">
-                                    <Smartphone className="w-4 h-4" /> Smartphones
+                                {categoriesQuery.data?.map((cat) => (
+                                    <Button
+                                        key={cat.categoryId}
+                                        variant="ghost"
+                                        className={`w-full justify-start gap-3 text-gray-600 hover:text-primary hover:bg-blue-50/30 px-4 ${activeCategory === cat.categoryId ? 'font-bold text-primary bg-blue-50' : ''}`}
+                                        onClick={() => setActiveCategory(cat.categoryId)}
+                                    >
+                                        <Smartphone className="w-4 h-4" /> {cat.name}
+                                    </Button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Brands List */}
+                        <div className="space-y-4">
+                            <h3 className="font-bold text-lg text-gray-900 px-4">Brands</h3>
+                            <div className="flex flex-col gap-2">
+                                <Button
+                                    variant="ghost"
+                                    className={`w-full justify-start text-gray-600 hover:text-primary hover:bg-blue-50/30 px-4 ${activeBrand === undefined ? 'font-bold text-primary' : ''}`}
+                                    onClick={() => setActiveBrand(undefined)}
+                                >
+                                    All Brands
                                 </Button>
-                                <Button variant="ghost" className="w-full justify-start gap-3 text-gray-600 hover:text-primary hover:bg-blue-50/30 px-4">
-                                    <Laptop className="w-4 h-4" /> Laptops
-                                </Button>
-                                {/* <Button variant="ghost" className="w-full justify-start gap-3 text-gray-600 hover:text-primary hover:bg-blue-50/30 px-4">
-                                    <Speaker className="w-4 h-4" /> Audio
-                                </Button>
-                                <Button variant="ghost" className="w-full justify-start gap-3 text-gray-600 hover:text-primary hover:bg-blue-50/30 px-4">
-                                    <MapPin className="w-4 h-4" /> Addresses
-                                </Button> */}
+                                {brandsQuery.data?.map((brand) => (
+                                    <Button
+                                        key={brand.brandId}
+                                        variant="ghost"
+                                        className={`w-full justify-start gap-3 text-gray-600 hover:text-primary hover:bg-blue-50/30 px-4 ${activeBrand === brand.brandId ? 'font-bold text-primary bg-blue-50' : ''}`}
+                                        onClick={() => setActiveBrand(brand.brandId)}
+                                    >
+                                        {brand.name}
+                                    </Button>
+                                ))}
                             </div>
                         </div>
                     </div>
@@ -192,14 +248,19 @@ export default function ProductListView() {
                                     key={product.productId}
                                     id={String(product.productId)}
                                     title={product.name}
-                                    price={new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price)}
-                                    rating={4}
-                                    image={product.imageUrls?.[0] ?? "https://placehold.co/400x400"}
+                                    price={product.displayPrice ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.displayPrice) : "Contact"}
+                                    rating={product.averageRating || 0}
+                                    image={product.variants?.[0]?.images?.[0] || "https://placehold.co/400x400"}
                                     variant="default"
                                     {...(product.status === 'NEW' && { badge: 'New' })}
                                     className="w-full bg-white rounded-[1.5rem]"
                                 />
                             ))}
+                            {products?.length === 0 && (
+                                <div className="col-span-full text-center py-20 text-gray-500">
+                                    No products found matching your criteria.
+                                </div>
+                            )}
                         </div>
 
                         {/* Pagination */}

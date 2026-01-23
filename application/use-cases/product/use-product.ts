@@ -1,4 +1,5 @@
 import type { CreateProductDto, UpdateProductDto } from "@/domain/product";
+import type { ProductSearchParams } from "@/domain/product/repositories/product.repository.interface";
 import { useRepositories } from "@/shared/providers/repository.provider";
 
 export const useProduct = () => {
@@ -10,16 +11,11 @@ export const useProduct = () => {
       page: number,
       size: number,
       sortBy?: string,
-      sortDirection?: string,
-      name?: string,
-      minPrice?: number,
-      maxPrice?: number,
-      minStar?: number,
-      maxStar?: number
-    ) => productRepository.getPaged(page, size, sortBy, sortDirection, name, minPrice, maxPrice, minStar, maxStar),
-    getById: async (id: string) => productRepository.getById(id),
-    create: async (dto: CreateProductDto) => productRepository.create(dto),
-    update: async (id: string, dto: UpdateProductDto) => productRepository.update(id, dto),
-    remove: async (id: string) => productRepository.delete(id),
+      sortDirection?: string
+    ) => productRepository.getPaged(page, size, sortBy, sortDirection),
+
+    searchAndFilter: async (params: ProductSearchParams) => productRepository.searchAndFilter(params),
+
+    getById: async (id: string | number) => productRepository.getById(id),
   };
 };

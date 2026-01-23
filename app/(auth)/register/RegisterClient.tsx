@@ -9,6 +9,7 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { httpClient } from "@/infrastructure/http/client"
+import { AuthRepository } from "@/infrastructure/repositories/auth/auth.repository"
 
 export default function RegisterClient() {
     const router = useRouter()
@@ -40,15 +41,15 @@ export default function RegisterClient() {
         }
 
         try {
-            await httpClient.post("/auth/register", {
+            await AuthRepository.register({
                 username: formData.username,
                 password: formData.password,
                 phoneNumber: formData.phoneNumber,
                 email: formData.email,
                 firstname: formData.firstName,
-                lastname: formData.lastName,
-                role: "CUSTOMER" // Default
-            })
+                lastname: formData.lastName
+                // role is removed from DTO as it's optional/handled by backend or we update DTO
+            });
 
             toast.success("Registration successful! Redirecting to login...", {
                 duration: 2000,
