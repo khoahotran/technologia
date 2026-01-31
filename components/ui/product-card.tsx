@@ -1,5 +1,6 @@
-import { Settings2, Star, Check } from "lucide-react"
+import { Star, Check } from "lucide-react"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 import * as React from "react"
 
 import { Badge } from "@/components/ui/badge"
@@ -18,7 +19,7 @@ interface ProductCardProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: "default" | "compact" | "selectable"
   isSelected?: boolean
   onSelect?: () => void
-  badge?: string
+  badge?: string | undefined
 }
 
 export function ProductCard({
@@ -33,6 +34,7 @@ export function ProductCard({
   badge,
   ...props
 }: ProductCardProps) {
+  const router = useRouter()
   return (
     <Card
       className={cn(
@@ -118,7 +120,13 @@ export function ProductCard({
               <span className="text-xl font-bold text-primary">{price}</span>
 
               {variant === "default" && (
-                <Button className="bg-primary hover:bg-primary/90 text-white shadow-none rounded-full px-6 h-9 font-medium">
+                <Button
+                  className="bg-primary hover:bg-primary/90 text-white shadow-none rounded-full px-6 h-9 font-medium"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    router.push(`/products/${props.id}`);
+                  }}
+                >
                   Details
                 </Button>
               )}

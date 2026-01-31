@@ -2,7 +2,6 @@
 
 import { ArrowDownUp } from "lucide-react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import { useLanguage } from "@/shared/providers/language.provider"
 
 import {
   Select,
@@ -11,6 +10,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { useLanguage } from "@/shared/providers/language.provider"
+
 
 export function FilterBar() {
   const router = useRouter()
@@ -53,7 +54,7 @@ export function FilterBar() {
 
   // Helper to translate with replacement
   const t = (key: string, replacements?: Record<string, string | number>) => {
-    let text = (locales as any)?.[key] || key
+    let text = (locales as Record<string, string>)?.[key] || key
     if (replacements) {
       Object.entries(replacements).forEach(([k, v]) => {
         text = text.replace(`{${k}}`, String(v))
@@ -124,7 +125,7 @@ export function FilterBar() {
       {/* Max Price */}
       <div className="flex flex-col gap-1.5">
         <span className="text-xs font-medium text-gray-500">{t('filter_max_price')}</span>
-        <Select 
+        <Select
           defaultValue={searchParams.get("maxPrice") || ""}
           onValueChange={(val) => updateFilter("maxPrice", val)}
         >

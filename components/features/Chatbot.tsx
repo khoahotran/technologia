@@ -55,7 +55,7 @@ export function Chatbot() {
     if (!text.trim()) return
 
     const newMessage: Message = {
-      id: Math.random().toString(36),
+      id: crypto.randomUUID(),
       text,
       sender: 'user',
       timestamp: new Date()
@@ -77,7 +77,7 @@ export function Chatbot() {
       }
 
       setMessages(prev => [...prev, {
-        id: Math.random().toString(36),
+        id: crypto.randomUUID(),
         text: responseText,
         sender: 'bot',
         timestamp: new Date()

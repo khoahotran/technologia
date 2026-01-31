@@ -1,16 +1,14 @@
 "use client"
 
-import { useEffect, useState } from "react";
 import Autoplay from "embla-carousel-autoplay"
 
-import { type ProductEntity } from "@/domain/product/entities/product.entity";
-import { useProduct } from "@/application/use-cases/product/use-product";
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
 } from "@/components/ui/carousel"
 import { ProductCard } from "@/components/ui/product-card"
+import { useProducts } from "@/hooks/use-products";
 
 const formatter = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' });
 
@@ -20,26 +18,26 @@ interface TopProductsProps {
 }
 
 export function TopProducts({ title = "Top products", className }: TopProductsProps) {
-  const { getAll } = useProduct();
-  const [products, setProducts] = useState<ProductEntity[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { usePagedProducts } = useProducts();
+  // Fetch top 10 products, sorted by averageRating DESC (assuming that's what 'Top' implies)
+  // or just default sort. Adjust sortBy as needed.
+  const { data, isLoading } = usePagedProducts(0, 10, "averageRating", "DESC");
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const data = await getAll();
-        setProducts(data);
-      } catch (error) {
-        console.error("Failed to fetch top products", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProducts();
-  }, [getAll]);
+  const products = data?.data || [];
 
-  if (loading) {
-    return <div className="container mx-auto px-4 py-12">Loading...</div>;
+  if (isLoading) {
+    return (
+      <section className={`container mx-auto px-4 py-12 ${className}`}>
+        <div className="space-y-4">
+          <h2 className="text-2xl font-bold text-gray-900 mb-8">{title}</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-[300px] bg-gray-100 animate-pulse rounded-lg"></div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
   }
 
   return (
@@ -58,13 +56,13 @@ export function TopProducts({ title = "Top products", className }: TopProductsPr
         className="w-full"
       >
         <CarouselContent className="-ml-4">
-          {products?.map((product) => (
+          {products.map((product) => (
             <CarouselItem key={product.productId} className="pl-4 md:basis-1/2 lg:basis-1/4">
               <ProductCard
                 id={String(product.productId)}
                 title={product.name}
                 price={product.displayPrice ? formatter.format(product.displayPrice) : "Contact"}
-                rating={4}
+                rating={product.averageRating || 0}
                 image={product.variants?.[0]?.images?.[0] || "https://placehold.co/400x400"}
                 variant="default"
                 className="w-full"

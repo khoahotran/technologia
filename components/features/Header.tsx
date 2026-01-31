@@ -2,19 +2,16 @@
 
 import { Phone, Mail, ChevronDown, Search, ShoppingCart, User, ShoppingBag } from "lucide-react"
 import Link from "next/link"
+import { useRouter, useSearchParams } from "next/navigation"
+import { useState } from "react"
 
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { useAuth } from "@/presentation/hooks/use-auth.hook"
 
 interface HeaderProps {
   variant?: "default" | "minimal"
 }
-
-import { useAuth } from "@/presentation/hooks/use-auth.hook";
-
-import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
 
 // Helper component to handle auth logic
 function AccountButton() {

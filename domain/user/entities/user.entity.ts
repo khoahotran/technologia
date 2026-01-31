@@ -8,7 +8,7 @@ import { UserStatusSchema } from "../vo/status.vo";
 import { BaseEntitySchema } from "@/shared/entities/base.entity";
 
 export const UserEntitySchema = BaseEntitySchema.extend({
-  userId: z.number(),
+  userId: z.union([z.string(), z.number()]),
   username: z.string(),
   passwordHash: z.string(),
 

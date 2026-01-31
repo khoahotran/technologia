@@ -9,9 +9,9 @@ import { SocialButton } from "@/components/features/home/FormElements"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { httpClient } from "@/infrastructure/http/client"
-import { AuthContext } from "@/shared/providers/auth.provider"
 import { AuthRepository } from "@/infrastructure/repositories/auth/auth.repository"
 import { UserRepository } from "@/infrastructure/repositories/user/user.repository"
+import { AuthContext } from "@/shared/providers/auth.provider"
 
 export default function LoginClient() {
     const router = useRouter()
@@ -34,7 +34,7 @@ export default function LoginClient() {
 
         try {
             // 1. Login to get token
-            const { token, refreshToken, userId } = await AuthRepository.login({
+            const { token, refreshToken } = await AuthRepository.login({
                 username: formData.username,
                 password: formData.password
             });
@@ -61,9 +61,10 @@ export default function LoginClient() {
 
             // 5. Redirect
             router.push("/")
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err)
-            setError(err.response?.data?.message || "Login failed. Please check your credentials.")
+            const errorObj = err as { response?: { data?: { message?: string } } };
+            setError(errorObj.response?.data?.message || "Login failed. Please check your credentials.")
         } finally {
             setLoading(false)
         }

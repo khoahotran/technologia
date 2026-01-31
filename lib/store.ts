@@ -98,7 +98,7 @@ export const useStore = create<DataState & UserState>()(
 
             // Address Actions
             addAddress: (address) => set((state) => ({
-                addresses: [...state.addresses, { ...address, id: Math.random().toString(36).substr(2, 9), isDefault: state.addresses.length === 0 }]
+                addresses: [...state.addresses, { ...address, id: crypto.randomUUID(), isDefault: state.addresses.length === 0 }]
             })),
             updateAddress: (id, updates) => set((state) => ({
                 addresses: state.addresses.map(addr => addr.id === id ? { ...addr, ...updates } : addr)
@@ -114,7 +114,7 @@ export const useStore = create<DataState & UserState>()(
             placeOrder: (orderData) => set((state) => ({
                 orders: [{
                     ...orderData,
-                    id: Math.random().toString(36).substr(2, 9),
+                    id: crypto.randomUUID(),
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString(),
                     status: 'created',

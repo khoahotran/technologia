@@ -1,5 +1,5 @@
-import { IUserRepository } from "@/domain/user/repositories/user.repository.interface";
 import { UserProfileDto, UpdateProfileDto, ChangePasswordDto, UserProfileSchema } from "@/domain/user/dto/profile.dto";
+import { IUserRepository } from "@/domain/user/repositories/user.repository.interface";
 import { httpClient } from "@/infrastructure/http/client";
 
 const BASE_URL = "/users";

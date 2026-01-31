@@ -8,7 +8,6 @@ import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { httpClient } from "@/infrastructure/http/client"
 import { AuthRepository } from "@/infrastructure/repositories/auth/auth.repository"
 
 export default function RegisterClient() {
@@ -60,9 +59,10 @@ export default function RegisterClient() {
                 router.push("/login")
             }, 2000)
 
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err)
-            const errorMessage = err.response?.data?.message || "Registration failed";
+            const errorObj = err as { response?: { data?: { message?: string } } };
+            const errorMessage = errorObj.response?.data?.message || "Registration failed";
             setError(errorMessage)
             toast.error(errorMessage);
         } finally {

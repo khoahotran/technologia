@@ -1,4 +1,5 @@
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
+
 import { useProduct } from "@/application/use-cases/product";
 import type { ProductSearchParams } from "@/domain/product/repositories/product.repository.interface";
 
@@ -8,12 +9,6 @@ type UseProductHookParams = {
 
 export const useProductHook = (params?: UseProductHookParams) => {
   const productService = useProduct();
-
-  // Basic getAll query (optional, maybe for lightweight lists)
-  const productsQuery = useQuery({
-    queryKey: ["products"],
-    queryFn: productService.getAll,
-  });
 
   // Search & Filter Query
   const pagedProductsQuery = useQuery({
@@ -55,5 +50,5 @@ export const useProductHook = (params?: UseProductHookParams) => {
 
   // Removed mutations as they are not part of current requirement and caused errors
 
-  return { productsQuery, pagedProductsQuery };
+  return { pagedProductsQuery };
 };

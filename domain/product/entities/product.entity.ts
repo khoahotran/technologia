@@ -1,10 +1,10 @@
 import { z } from "zod";
 
-import { PriceSchema } from "../vo/price.vo";
 
 import { BaseEntitySchema } from "@/shared/entities/base.entity";
 
 export const ProductVariantSchema = z.object({
+    variantId: z.string().optional(),
     color: z.string().optional(),
     storage: z.string().optional(),
     stock: z.number(),
@@ -13,16 +13,18 @@ export const ProductVariantSchema = z.object({
 });
 
 export const ProductEntitySchema = BaseEntitySchema.extend({
-    productId: z.union([z.string(), z.number()]).transform((val) => Number(val)), // API seems to return number? User example has `productId: ,` which usually implies number.
+    productId: z.string(), // API returns UUID string
     name: z.string(),
     description: z.string().optional(),
-    totalStock: z.number().optional(), // totalStock in response
+    totalStock: z.number().optional(),
     averageRating: z.number().optional(),
-    displayPrice: z.number().optional(),
+    displayPrice: z.union([z.string(), z.number()]).transform((val) => Number(val)).optional(),
     status: z.string(),
     variants: z.array(ProductVariantSchema).optional(),
     specsText: z.string().optional(),
-    brandName: z.string().optional(), // Kept for backward compat if needed, though response implies separate brand object in filters
+    brand: z.string().optional(), // Brand name from API
+    brandName: z.string().optional(), // Keep for backward compatibility
+    category: z.string().optional(), // Category name from API
 });
 
 export type ProductEntity = z.infer<typeof ProductEntitySchema>;

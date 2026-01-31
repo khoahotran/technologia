@@ -1,11 +1,12 @@
 import { z } from "zod";
+
 import { ProductVariantSchema } from "./product.entity";
 
 export const FilterResponseEntitySchema = z.object({
-    productId: z.number(),
+    productId: z.string(),
     name: z.string(),
     description: z.string().optional(),
-    displayPrice: z.number().optional(),
+    displayPrice: z.union([z.string(), z.number()]).transform((val) => Number(val)).optional(),
     totalStock: z.number().optional(),
     status: z.string(),
     variants: z.array(ProductVariantSchema).optional(),
@@ -13,12 +14,12 @@ export const FilterResponseEntitySchema = z.object({
     brand: z.string().optional(),
     category: z.string().optional(),
     averageRating: z.number().optional(),
-    minPrice: z.number().optional(), // From filter metadata in response item? Or is this range for the item? User requirements say "minPrice" in response object.
-    maxPrice: z.number().optional(),
-    minRating: z.number().optional(),
-    maxRating: z.number().optional(),
-    sortBy: z.string().optional(),
-    sortOrder: z.string().optional(),
+    minPrice: z.number().nullable().optional(),
+    maxPrice: z.number().nullable().optional(),
+    minRating: z.number().nullable().optional(),
+    maxRating: z.number().nullable().optional(),
+    sortBy: z.string().nullable().optional(),
+    sortOrder: z.string().nullable().optional(),
 });
 
 export type FilterResponseEntity = z.infer<typeof FilterResponseEntitySchema>;

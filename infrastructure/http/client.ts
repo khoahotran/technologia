@@ -29,13 +29,13 @@ httpClient.interceptors.request.use(
 
 interface FailedRequest {
     resolve: (token: string) => void;
-    reject: (error: any) => void;
+    reject: (error: unknown) => void;
 }
 
 let isRefreshing = false;
 let failedQueue: FailedRequest[] = [];
 
-const processQueue = (error: any, token: string | null = null) => {
+const processQueue = (error: unknown, token: string | null = null) => {
     failedQueue.forEach((prom) => {
         if (error) {
             prom.reject(error);
@@ -67,7 +67,7 @@ httpClient.interceptors.response.use(
                 })
                     .then((token) => {
                         if (originalRequest.headers) {
-                             originalRequest.headers.Authorization = 'Bearer ' + token;
+                            originalRequest.headers.Authorization = 'Bearer ' + token;
                         }
                         return httpClient(originalRequest);
                     })
@@ -82,7 +82,7 @@ httpClient.interceptors.response.use(
             const refreshToken = typeof window !== 'undefined' ? localStorage.getItem("refresh_token") : null;
 
             if (!refreshToken) {
-                 if (typeof window !== 'undefined') {
+                if (typeof window !== 'undefined') {
                     // window.location.href = '/login';
                 }
                 return Promise.reject(error);
@@ -93,18 +93,18 @@ httpClient.interceptors.response.use(
                     refreshToken: refreshToken
                 });
 
-                if (response.status === 200 || response.status === 201) { 
+                if (response.status === 200 || response.status === 201) {
                     const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response.data.data;
-                    
+
                     if (typeof window !== 'undefined') {
-                         localStorage.setItem("access_token", newAccessToken);
-                         if(newRefreshToken) localStorage.setItem("refresh_token", newRefreshToken);
+                        localStorage.setItem("access_token", newAccessToken);
+                        if (newRefreshToken) localStorage.setItem("refresh_token", newRefreshToken);
                     }
 
                     httpClient.defaults.headers.common['Authorization'] = 'Bearer ' + newAccessToken;
-                    
+
                     processQueue(null, newAccessToken);
-                    
+
                     if (originalRequest.headers) {
                         originalRequest.headers.Authorization = 'Bearer ' + newAccessToken;
                     }

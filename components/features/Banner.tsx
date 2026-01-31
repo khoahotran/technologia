@@ -8,8 +8,6 @@ import { Card, CardContent } from "@/components/ui/card"
 import {
   Carousel,
   CarouselContent,
-  CarouselPrevious,
-  CarouselNext,
   type CarouselApi,
   CarouselItem,
 } from "@/components/ui/carousel"

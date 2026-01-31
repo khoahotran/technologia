@@ -1,4 +1,3 @@
-import type { CreateProductDto, UpdateProductDto } from "@/domain/product";
 import type { ProductSearchParams } from "@/domain/product/repositories/product.repository.interface";
 import { useRepositories } from "@/shared/providers/repository.provider";
 

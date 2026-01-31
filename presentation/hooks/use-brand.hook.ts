@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+
 import { useBrand } from "@/application/use-cases/brand/use-brand";
 
 export const useBrandHook = () => {

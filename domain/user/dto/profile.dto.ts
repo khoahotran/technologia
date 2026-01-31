@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { PhoneNumberSchema } from "../vo/phone.vo";
+
 
 export const UserProfileSchema = z.object({
     userId: z.number(),

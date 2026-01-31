@@ -1,7 +1,8 @@
 import { z } from "zod";
-import type { IProductRepository, ProductPagingResponse, ProductSearchParams, FilterProductResponse } from "@/domain/product/repositories/product.repository.interface";
-import { ProductEntity, ProductEntitySchema } from "@/domain/product/entities/product.entity";
+
 import { FilterResponseEntitySchema } from "@/domain/product/entities/filter.entity";
+import { ProductEntity, ProductEntitySchema } from "@/domain/product/entities/product.entity";
+import type { IProductRepository, ProductPagingResponse, ProductSearchParams, FilterProductResponse } from "@/domain/product/repositories/product.repository.interface";
 import { httpClient } from "@/infrastructure/http/client";
 
 const BASE_URL = "/products";

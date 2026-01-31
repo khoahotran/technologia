@@ -1,50 +1,94 @@
 "use client"
 
+import { ArrowLeft, Loader2 } from "lucide-react"
+import Link from "next/link"
+import { useState } from "react"
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { AuthRepository } from "@/infrastructure/repositories/auth/auth.repository"
 
 export default function ForgotPasswordClient() {
+    const [email, setEmail] = useState("")
+    const [loading, setLoading] = useState(false)
+    const [success, setSuccess] = useState(false)
+    const [error, setError] = useState("")
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        setLoading(true)
+        setError("")
+        setSuccess(false)
+
+        try {
+            await AuthRepository.forgotPassword({ email })
+            setSuccess(true)
+        } catch (err: unknown) {
+            console.error(err)
+            const errorObj = err as { response?: { data?: { message?: string } } };
+            setError(errorObj.response?.data?.message || "Failed to send reset email. Please try again.")
+        } finally {
+            setLoading(false)
+        }
+    }
+
     return (
-        <div className="min-h-screen bg-[#3E93B3] relative overflow-hidden flex items-center justify-center p-4">
-            {/* Decorative waves */}
-            <div className="absolute bottom-0 left-0 right-0">
-                <svg viewBox="0 0 1200 400" className="w-full">
-                    <path
-                        d="M0,200 Q300,100 600,200 T1200,200 L1200,400 L0,400 Z"
-                        fill="rgba(139, 176, 195, 0.3)"
-                    />
-                    <path
-                        d="M0,250 Q300,150 600,250 T1200,250 L1200,400 L0,400 Z"
-                        fill="rgba(139, 176, 195, 0.5)"
-                    />
-                    <path
-                        d="M0,300 Q300,200 600,300 T1200,300 L1200,400 L0,400 Z"
-                        fill="rgba(195, 228, 244, 0.4)"
-                    />
-                </svg>
-            </div>
-
-            {/* Modal */}
-            <div className="relative z-10 bg-white rounded-2xl shadow-2xl p-12 max-w-2xl w-full">
-                <div className="text-center space-y-6">
-                    <h1 className="text-3xl font-bold text-gray-800">FORGOT PASSWORD</h1>
-
-                    <p className="text-gray-600 leading-relaxed">
-                        Enter your registered email or phone number and follow the instructions sent to your email.
-                    </p>
-
-                    <div className="pt-4 space-y-6">
-                        <Input
-                            type="text"
-                            placeholder="Your registed Phone Number or Email"
-                            className="h-14 bg-[#F9F8FE] border-gray-200 text-center"
-                        />
-
-                        <Button className="w-full max-w-md mx-auto h-12 bg-[#8AB0C3] hover:bg-[#7A9EB0] text-white font-semibold text-base">
-                            Forgot Password
-                        </Button>
-                    </div>
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+            <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 space-y-8">
+                <div className="text-center">
+                    <h2 className="text-3xl font-bold text-gray-800">Forgot Password?</h2>
+                    <p className="mt-2 text-gray-600">Enter your email address and we&apos;ll send you a link to reset your password.</p>
                 </div>
+
+                {success ? (
+                    <div className="space-y-6 text-center">
+                        <div className="p-4 bg-green-50 text-green-700 rounded-lg">
+                            Check your email! We have sent a password reset link to <strong>{email}</strong>.
+                        </div>
+                        <Link href="/login" className="inline-block text-blue-600 hover:underline font-medium">
+                            Back to Login
+                        </Link>
+                    </div>
+                ) : (
+                    <form onSubmit={handleSubmit} className="space-y-6">
+                        <div className="space-y-2">
+                            <label htmlFor="email" className="text-sm font-medium text-gray-700">Email Address</label>
+                            <Input
+                                id="email"
+                                type="email"
+                                placeholder="Enter your email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                                className="h-11"
+                            />
+                        </div>
+
+                        {error && (
+                            <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg">
+                                {error}
+                            </div>
+                        )}
+
+                        <Button type="submit" className="w-full h-11 text-lg" disabled={loading}>
+                            {loading ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Sending Link...
+                                </>
+                            ) : (
+                                "Send Reset Link"
+                            )}
+                        </Button>
+
+                        <div className="text-center">
+                            <Link href="/login" className="inline-flex items-center text-sm text-gray-600 hover:text-blue-600 transition-colors">
+                                <ArrowLeft className="w-4 h-4 mr-1" />
+                                Back to Login
+                            </Link>
+                        </div>
+                    </form>
+                )}
             </div>
         </div>
     )

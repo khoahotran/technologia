@@ -1,7 +1,9 @@
-import { httpClient } from "@/infrastructure/http/client";
-import { ICategoryRepository, CategoryPagingResponse } from "@/domain/product/repositories/category.repository.interface";
-import { CategoryEntity, CategoryEntitySchema } from "@/domain/product/entities/category.entity";
 import { z } from "zod";
+
+import { CategoryEntity, CategoryEntitySchema } from "@/domain/product/entities/category.entity";
+import { ICategoryRepository, CategoryPagingResponse } from "@/domain/product/repositories/category.repository.interface";
+import { httpClient } from "@/infrastructure/http/client";
+
 
 const BASE_URL = "/categories";
 

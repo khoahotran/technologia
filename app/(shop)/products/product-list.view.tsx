@@ -1,15 +1,11 @@
 "use client";
 
-import { Loader2, Flame, Trophy, Music, Smartphone, Laptop, Speaker, MapPin, Tag } from "lucide-react";
+import { Loader2, Flame, Trophy, Music, Smartphone, Tag } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
 
-import { useProductHook } from "@/presentation/hooks/use-product.hook";
-import { useCategoryHook } from "@/presentation/hooks/use-category.hook";
-import { useBrandHook } from "@/presentation/hooks/use-brand.hook";
 import { FilterBar } from "@/components/features/product/FilterBar";
-import { ProductCard } from "@/components/ui/product-card";
 import { Button } from "@/components/ui/button";
 import {
     Pagination,
@@ -20,10 +16,20 @@ import {
     PaginationPrevious,
     PaginationEllipsis,
 } from "@/components/ui/pagination";
+import { ProductCard } from "@/components/ui/product-card";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { useBrandHook } from "@/presentation/hooks/use-brand.hook";
+import { useCategoryHook } from "@/presentation/hooks/use-category.hook";
+import { useProductHook } from "@/presentation/hooks/use-product.hook";
 
 export default function ProductListView() {
     const searchParams = useSearchParams();
-    const router = useRouter();
     const [page, setPage] = useState(0); // 0-indexed
     const pageSize = 12;
 
@@ -80,12 +86,14 @@ export default function ProductListView() {
 
     const { data: pagedData, isLoading, isError } = pagedProductsQuery;
     const products = pagedData?.data;
-    const totalItems = pagedData?.count_items || 0;
     const totalPages = pagedData?.count_pages || 0;
 
     // Reset page when filters change
     useEffect(() => {
-        setPage(0);
+        // Use a microtask/timeout to move setState out of the synchronous render/effect cycle
+        // to avoid the cascading render warning in React 19
+        const handle = setTimeout(() => setPage(0), 0);
+        return () => clearTimeout(handle);
     }, [minPrice, maxPrice, minStar, maxStar, sortParam, activeCategory, activeBrand, activeTab]);
 
     if (isLoading) {
@@ -190,48 +198,83 @@ export default function ProductListView() {
                         {/* Categories List */}
                         <div className="space-y-4">
                             <h3 className="font-bold text-lg text-gray-900 px-4">Categories</h3>
-                            <div className="flex flex-col gap-2">
-                                <Button
-                                    variant="ghost"
-                                    className={`w-full justify-start text-gray-600 hover:text-primary hover:bg-blue-50/30 px-4 ${activeCategory === undefined ? 'font-bold text-primary' : ''}`}
-                                    onClick={() => setActiveCategory(undefined)}
+                            <div className="px-4 space-y-3">
+                                {/* Select Dropdown */}
+                                <Select
+                                    value={activeCategory ? String(activeCategory) : "all"}
+                                    onValueChange={(val) => setActiveCategory(val === "all" ? undefined : Number(val))}
                                 >
-                                    All Categories
-                                </Button>
-                                {categoriesQuery.data?.map((cat) => (
-                                    <Button
-                                        key={cat.categoryId}
-                                        variant="ghost"
-                                        className={`w-full justify-start gap-3 text-gray-600 hover:text-primary hover:bg-blue-50/30 px-4 ${activeCategory === cat.categoryId ? 'font-bold text-primary bg-blue-50' : ''}`}
-                                        onClick={() => setActiveCategory(cat.categoryId)}
-                                    >
-                                        <Smartphone className="w-4 h-4" /> {cat.name}
-                                    </Button>
-                                ))}
+                                    <SelectTrigger className="w-full h-10 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 hover:bg-gray-50 focus:ring-2 focus:ring-blue-100 transition-all shadow-sm">
+                                        <div className="flex items-center gap-2">
+                                            <Smartphone className="w-4 h-4 text-gray-500" />
+                                            <SelectValue placeholder="All Categories" />
+                                        </div>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all" className="font-semibold cursor-pointer">All Categories</SelectItem>
+                                        {categoriesQuery.data?.map((cat) => (
+                                            <SelectItem key={cat.categoryId} value={String(cat.categoryId)} className="cursor-pointer">
+                                                {cat.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+
+                                {/* Top 3 Quick Access Items */}
+                                <div className="flex flex-col gap-2 pt-1 border-t border-gray-100">
+                                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider pl-1 py-1">Popular</p>
+                                    {categoriesQuery.data?.slice(0, 3).map((cat) => (
+                                        <Button
+                                            key={cat.categoryId}
+                                            variant="ghost"
+                                            className={`w-full justify-start gap-3 h-9 rounded-lg text-sm hover:text-primary hover:bg-blue-50/50 px-3 ${activeCategory === cat.categoryId ? 'font-bold text-primary bg-blue-50' : 'text-gray-600'}`}
+                                            onClick={() => setActiveCategory(cat.categoryId)}
+                                        >
+                                            <Smartphone className="w-4 h-4 opacity-70" /> {cat.name}
+                                        </Button>
+                                    ))}
+                                </div>
                             </div>
                         </div>
 
                         {/* Brands List */}
                         <div className="space-y-4">
                             <h3 className="font-bold text-lg text-gray-900 px-4">Brands</h3>
-                            <div className="flex flex-col gap-2">
-                                <Button
-                                    variant="ghost"
-                                    className={`w-full justify-start text-gray-600 hover:text-primary hover:bg-blue-50/30 px-4 ${activeBrand === undefined ? 'font-bold text-primary' : ''}`}
-                                    onClick={() => setActiveBrand(undefined)}
+                            <div className="px-4">
+                                <Select
+                                    value={activeBrand ? String(activeBrand) : "all"}
+                                    onValueChange={(val) => setActiveBrand(val === "all" ? undefined : Number(val))}
                                 >
-                                    All Brands
-                                </Button>
-                                {brandsQuery.data?.map((brand) => (
-                                    <Button
-                                        key={brand.brandId}
-                                        variant="ghost"
-                                        className={`w-full justify-start gap-3 text-gray-600 hover:text-primary hover:bg-blue-50/30 px-4 ${activeBrand === brand.brandId ? 'font-bold text-primary bg-blue-50' : ''}`}
-                                        onClick={() => setActiveBrand(brand.brandId)}
-                                    >
-                                        {brand.name}
-                                    </Button>
-                                ))}
+                                    <SelectTrigger className="w-full h-10 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 hover:bg-gray-50 focus:ring-2 focus:ring-blue-100 transition-all shadow-sm">
+                                        <div className="flex items-center gap-2">
+                                            <Tag className="w-4 h-4 text-gray-500" />
+                                            <SelectValue placeholder="All Brands" />
+                                        </div>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="all" className="font-semibold cursor-pointer">All Brands</SelectItem>
+                                        {brandsQuery.data?.map((brand) => (
+                                            <SelectItem key={brand.brandId} value={String(brand.brandId)} className="cursor-pointer">
+                                                {brand.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+
+                                {/* Top 3 Quick Access Items */}
+                                <div className="flex flex-col gap-2 pt-1 border-t border-gray-100">
+                                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider pl-1 py-1">Popular</p>
+                                    {brandsQuery.data?.slice(0, 3).map((brand) => (
+                                        <Button
+                                            key={brand.brandId}
+                                            variant="ghost"
+                                            className={`w-full justify-start gap-3 h-9 rounded-lg text-sm hover:text-primary hover:bg-blue-50/50 px-3 ${activeBrand === brand.brandId ? 'font-bold text-primary bg-blue-50' : 'text-gray-600'}`}
+                                            onClick={() => setActiveBrand(brand.brandId)}
+                                        >
+                                            <Tag className="w-4 h-4 opacity-70" /> {brand.name}
+                                        </Button>
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     </div>

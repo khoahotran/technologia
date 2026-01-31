@@ -1,20 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/presentation/hooks/use-auth.hook";
-import { UserRepository } from "@/infrastructure/repositories/user/user.repository";
-import { UserProfileDto, UpdateProfileDto } from "@/domain/user/dto/profile.dto";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useEffect, useState } from "react";
 import { toast } from "sonner"; // Assuming sonner is installed as per package.json
 
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { UserProfileDto, UpdateProfileDto } from "@/domain/user/dto/profile.dto";
+import { UserRepository } from "@/infrastructure/repositories/user/user.repository";
+import { useAuth } from "@/presentation/hooks/use-auth.hook";
+
+
 export default function ProfilePage() {
-    const { isAuthenticated, user, logout, login } = useAuth();
+    const { isAuthenticated } = useAuth();
     const router = useRouter();
     const [profile, setProfile] = useState<UserProfileDto | null>(null);
     const [loading, setLoading] = useState(true);
@@ -63,7 +65,7 @@ export default function ProfilePage() {
                 displayName: data.displayName || ""
             });
             // Update context user if needed
-        } catch (error) {
+        } catch {
             toast.error("Failed to fetch profile");
         } finally {
             setLoading(false);
@@ -76,7 +78,7 @@ export default function ProfilePage() {
             const updated = await UserRepository.updateMe(updateForm);
             setProfile(updated);
             toast.success("Profile updated successfully");
-        } catch (error) {
+        } catch {
             toast.error("Failed to update profile");
         }
     };
@@ -91,7 +93,7 @@ export default function ProfilePage() {
                 setProfile({ ...profile, imageUrl: avatarUrl });
             }
             toast.success("Avatar updated successfully");
-        } catch (error) {
+        } catch {
             toast.error("Failed to update avatar");
         }
     };
@@ -110,7 +112,7 @@ export default function ProfilePage() {
             });
             toast.success("Password changed successfully");
             setPasswordForm({ oldPassword: "", newPassword: "", confirmPassword: "" });
-        } catch (error) {
+        } catch {
             toast.error("Failed to change password");
         }
     };

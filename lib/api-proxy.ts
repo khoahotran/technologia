@@ -9,7 +9,7 @@ export async function createProxy(
         // Append query params from the original request
         const finalUrl = targetUrl + search;
 
-        console.log(`[Proxy] Forwarding ${req.method} ${req.url} -> ${finalUrl}`);
+        console.warn(`[Proxy] Forwarding ${req.method} ${req.url} -> ${finalUrl}`);
 
         const res = await fetch(finalUrl, {
             method: req.method,

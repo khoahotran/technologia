@@ -1,7 +1,6 @@
 "use client";
 
 import { createContext, useEffect, useState, ReactNode } from "react";
-import { useRouter } from "next/navigation";
 
 // Define the shape of the context
 interface AuthContextType {
@@ -25,7 +24,6 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
-  const router = useRouter();
 
   useEffect(() => {
     // Check localStorage on mount
@@ -33,8 +31,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const storedUser = localStorage.getItem("user");
 
     if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
+      const handle = setTimeout(() => {
+        setToken(storedToken);
+        setUser(JSON.parse(storedUser));
+      }, 0);
+      return () => clearTimeout(handle);
     }
   }, []);
 

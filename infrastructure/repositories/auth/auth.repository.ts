@@ -13,27 +13,28 @@ const BASE_URL = "/auth";
 
 export const AuthRepository: IAuthRepository = {
     login: async (dto: LoginDto): Promise<AuthResponse> => {
-        const { data } = await httpClient.post(`${BASE_URL}/login`, dto);
-        // Postman response: { status: 200, data: { accessToken, refreshToken, userId }, ... }
-        // The interface expects token (accessToken)
+        // API: /api/auth/login/local
+        const { data } = await httpClient.post(`${BASE_URL}/login/local`, dto);
         return {
-            token: data.data.accessToken || data.data.token, // Handle both cases just in case
+            token: data.data.accessToken,
             refreshToken: data.data.refreshToken,
             userId: data.data.userId
         };
     },
 
     loginGoogle: async (dto: GoogleLoginDto): Promise<AuthResponse> => {
+        // API: /api/auth/login/google
         const { data } = await httpClient.post(`${BASE_URL}/login/google`, dto);
         return {
-            token: data.data.token, // Postman example returns 'token' not 'accessToken'
+            token: data.data.accessToken,
             refreshToken: data.data.refreshToken,
             userId: data.data.userId
         };
     },
 
     register: async (dto: RegisterDto): Promise<void> => {
-        await httpClient.post(`${BASE_URL}/register`, dto);
+        // API: /api/auth/register/local
+        await httpClient.post(`${BASE_URL}/register/local`, dto);
     },
 
     logout: async (refreshToken: string): Promise<void> => {

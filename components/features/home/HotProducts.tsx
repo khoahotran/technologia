@@ -1,38 +1,32 @@
 "use client"
 
-import { useEffect, useState } from "react";
 import Link from "next/link"
-import { type ProductEntity } from "@/domain/product/entities/product.entity";
-import { useProduct } from "@/application/use-cases/product/use-product";
 
 import { Button } from "@/components/ui/button"
 import { ProductCard } from "@/components/ui/product-card"
+import { useProducts } from "@/hooks/use-products";
 
 const formatter = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' });
 
 export function HotProducts() {
-  const { getAll } = useProduct();
-  const [products, setProducts] = useState<ProductEntity[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { usePagedProducts } = useProducts();
+  // Fetch 12 hottest products (assuming sort by views/sold/rating)
+  // Using "id" DESC as a placeholder for "hot", typically you'd sort by 'views' or 'sold'
+  const { data, isLoading } = usePagedProducts(0, 12, "id", "DESC");
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const data = await getAll();
-        // Limit to 12 items for the grid
-        setProducts(data.slice(0, 12));
-      } catch (error) {
-        console.error("Failed to fetch hot products", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const products = data?.data || [];
 
-    fetchProducts();
-  }, [getAll]);
-
-  if (loading) {
-    return <div className="container mx-auto px-4 py-12">Loading...</div>;
+  if (isLoading) {
+    return (
+      <section className="container mx-auto px-4 py-12 bg-gray-50/50 rounded-3xl mb-12">
+        <h2 className="text-2xl font-bold text-gray-900 mb-8">Hot products</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          {[...Array(8)].map((_, i) => (
+            <div key={i} className="h-[350px] bg-white animate-pulse rounded-lg"></div>
+          ))}
+        </div>
+      </section>
+    );
   }
 
   return (
@@ -46,7 +40,7 @@ export function HotProducts() {
             id={String(product.productId)}
             title={product.name}
             price={product.displayPrice ? formatter.format(product.displayPrice) : "Contact"}
-            rating={4}
+            rating={product.averageRating || 0}
             image={product.variants?.[0]?.images?.[0] || "https://placehold.co/400x400"}
             variant="default"
             className="w-full bg-white"

@@ -1,12 +1,13 @@
 "use client";
 
 import { createContext, useContext, ReactNode } from "react";
-import { ProductRepository } from "@/infrastructure/repositories/product/product.repository";
-import { BrandRepository } from "@/infrastructure/repositories/product/brand.repository";
-import { CategoryRepository } from "@/infrastructure/repositories/product/category.repository";
-import type { IProductRepository } from "@/domain/product/repositories/product.repository.interface";
+
 import type { IBrandRepository } from "@/domain/product/repositories/brand.repository.interface";
 import type { ICategoryRepository } from "@/domain/product/repositories/category.repository.interface";
+import type { IProductRepository } from "@/domain/product/repositories/product.repository.interface";
+import { BrandRepository } from "@/infrastructure/repositories/product/brand.repository";
+import { CategoryRepository } from "@/infrastructure/repositories/product/category.repository";
+import { ProductRepository } from "@/infrastructure/repositories/product/product.repository";
 
 interface IRepositoryContext {
     productRepository: IProductRepository;

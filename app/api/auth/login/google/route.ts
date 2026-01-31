@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
     try {
@@ -24,7 +24,6 @@ export async function POST(request: Request) {
 
         // Postman: { token, refreshToken, userId }
         const accessToken = backendData.token || backendData.accessToken;
-        const refreshToken = backendData.refreshToken;
 
         const cookieStore = await cookies();
         cookieStore.set("access_token", accessToken, {
