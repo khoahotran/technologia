@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
+import { SERVICE_URLS, HTTP_STATUS } from "@/shared/constants";
 
-const BACKEND_URL = "http://localhost:8081/api/auth/logout";
+const BACKEND_URL = `${SERVICE_URLS.USER_SERVICE}/api/auth/logout`;
+
+/**
+ * Logout API Route
+ * POST /api/auth/logout
+ */
 
 export async function POST(request: Request) {
     try {
@@ -10,7 +16,7 @@ export async function POST(request: Request) {
         if (!refreshToken) {
             return NextResponse.json(
                 { error: "Refresh token is required" },
-                { status: 400 }
+                { status: HTTP_STATUS.BAD_REQUEST }
             );
         }
 
@@ -30,13 +36,15 @@ export async function POST(request: Request) {
         }
 
         return NextResponse.json({
-            status: 200,
+            status: HTTP_STATUS.OK,
             data: {},
-            message: "Logout successful!"
+            message: "Logout successful!",
         });
-
     } catch (error) {
         console.error("Logout Proxy Error:", error);
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+        return NextResponse.json(
+            { error: "Internal Server Error" },
+            { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
+        );
     }
 }

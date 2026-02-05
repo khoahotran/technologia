@@ -1,22 +1,23 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { SERVICE_URLS, HTTP_STATUS, COOKIE_NAMES } from "@/shared/constants";
+
+const BACKEND_URL = `${SERVICE_URLS.USER_SERVICE}/api/auth/login/local`;
+
+/**
+ * Local Login API Route
+ * POST /api/auth/login
+ */
 
 export async function POST(request: Request) {
     try {
         const body = await request.json();
         const { username, password } = body;
 
-        // Call Real Backend
-        // API expects: { username, password }
-        // Frontend passed: { username, password }
-
-        const backendRes = await fetch("http://localhost:8081/api/auth/login/local", {
+        const backendRes = await fetch(BACKEND_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                username,
-                password
-            }),
+            body: JSON.stringify({ username, password }),
         });
 
         if (!backendRes.ok) {
@@ -36,7 +37,7 @@ export async function POST(request: Request) {
 
         // Set HttpOnly Cookie
         const cookieStore = await cookies();
-        cookieStore.set("access_token", accessToken, {
+        cookieStore.set(COOKIE_NAMES.ACCESS_TOKEN, accessToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "lax",
@@ -44,19 +45,18 @@ export async function POST(request: Request) {
             maxAge: 60 * 60 * 24 * 7, // 1 week
         });
 
-        // Return User Info to Frontend (Frontend expects user object)
-        // Since login only returns IDs, we might need to fetch profile or just return basic info.
-        // For now, return what we have: userId. The AuthProvider calls /api/auth/me immediately after.
-
+        // Return User Info to Frontend
         return NextResponse.json({
             success: true,
             access_token: accessToken,
             refresh_token: refreshToken,
-            user: { userId: backendData.userId }
+            user: { userId: backendData.userId },
         });
-
     } catch (error) {
         console.error("Login Proxy Error:", error);
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+        return NextResponse.json(
+            { error: "Internal Server Error" },
+            { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
+        );
     }
 }

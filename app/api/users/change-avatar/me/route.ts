@@ -1,8 +1,13 @@
 import { NextResponse } from "next/server";
+import { SERVICE_URLS, HTTP_STATUS } from "@/shared/constants";
 
-const BACKEND_URL = "http://localhost:8081/api/users/change-avatar/me";
+const BACKEND_URL = `${SERVICE_URLS.USER_SERVICE}/api/users/change-avatar/me`;
 
-// PUT: Change user's avatar (multipart/form-data)
+/**
+ * Change Avatar API Route
+ * PUT /api/users/change-avatar/me (multipart/form-data)
+ */
+
 export async function PUT(request: Request) {
     try {
         const authHeader = request.headers.get("Authorization");
@@ -10,7 +15,7 @@ export async function PUT(request: Request) {
         if (!authHeader) {
             return NextResponse.json(
                 { error: "Authorization header is required" },
-                { status: 401 }
+                { status: HTTP_STATUS.UNAUTHORIZED }
             );
         }
 
@@ -21,7 +26,7 @@ export async function PUT(request: Request) {
         const backendRes = await fetch(BACKEND_URL, {
             method: "PUT",
             headers: {
-                "Authorization": authHeader,
+                Authorization: authHeader,
                 // Don't set Content-Type - let fetch set it with boundary for multipart
             },
             body: formData,
@@ -38,9 +43,11 @@ export async function PUT(request: Request) {
         const data = await backendRes.json();
         // Response: { status, data: { avatarUrl }, message }
         return NextResponse.json(data);
-
     } catch (error) {
         console.error("Change Avatar Proxy Error:", error);
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+        return NextResponse.json(
+            { error: "Internal Server Error" },
+            { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
+        );
     }
 }

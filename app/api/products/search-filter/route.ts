@@ -1,7 +1,11 @@
-import { createProxy } from "@/lib/api-proxy";
+import { createApiHandler } from "@/lib/api-handler";
 
-const TARGET_URL = "http://localhost:8082/api/products/search-filter";
+/**
+ * Search & Filter Products API Route
+ * GET /api/products/search-filter
+ */
 
-export async function GET(req: Request) {
-    return createProxy(req, TARGET_URL);
-}
+export const GET = createApiHandler({
+    targetService: 'product',
+    path: '/api/products/search-filter',
+});

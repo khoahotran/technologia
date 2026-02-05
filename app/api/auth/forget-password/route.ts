@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
+import { SERVICE_URLS, HTTP_STATUS } from "@/shared/constants";
 
-const BACKEND_URL = "http://localhost:8081/api/auth/forget-password";
+const BACKEND_URL = `${SERVICE_URLS.USER_SERVICE}/api/auth/forget-password`;
+
+/**
+ * Forgot Password API Route
+ * POST /api/auth/forget-password
+ */
 
 export async function POST(request: Request) {
     try {
@@ -10,7 +16,7 @@ export async function POST(request: Request) {
         if (!email) {
             return NextResponse.json(
                 { error: "Email is required" },
-                { status: 400 }
+                { status: HTTP_STATUS.BAD_REQUEST }
             );
         }
 
@@ -31,9 +37,11 @@ export async function POST(request: Request) {
         const data = await backendRes.json();
         // Response: { status, data: { email, resetToken }, message }
         return NextResponse.json(data);
-
     } catch (error) {
         console.error("Forget Password Proxy Error:", error);
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+        return NextResponse.json(
+            { error: "Internal Server Error" },
+            { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
+        );
     }
 }

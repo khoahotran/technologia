@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
+import { SERVICE_URLS, HTTP_STATUS } from "@/shared/constants";
 
-const BACKEND_URL = "http://localhost:8081/api/auth/reset-password";
+const BACKEND_URL = `${SERVICE_URLS.USER_SERVICE}/api/auth/reset-password`;
+
+/**
+ * Reset Password API Route
+ * POST /api/auth/reset-password
+ */
 
 export async function POST(request: Request) {
     try {
@@ -10,7 +16,7 @@ export async function POST(request: Request) {
         if (!resetToken || !newPassword) {
             return NextResponse.json(
                 { error: "Reset token and new password are required" },
-                { status: 400 }
+                { status: HTTP_STATUS.BAD_REQUEST }
             );
         }
 
@@ -30,9 +36,11 @@ export async function POST(request: Request) {
 
         const data = await backendRes.json();
         return NextResponse.json(data);
-
     } catch (error) {
         console.error("Reset Password Proxy Error:", error);
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+        return NextResponse.json(
+            { error: "Internal Server Error" },
+            { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
+        );
     }
 }

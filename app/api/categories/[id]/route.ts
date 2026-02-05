@@ -1,10 +1,11 @@
-import { createProxy } from "@/lib/api-proxy";
+import { createDynamicApiHandler } from "@/lib/api-handler";
 
-export async function GET(
-    req: Request,
-    { params }: { params: Promise<{ id: string }> }
-) {
-    const { id } = await params;
-    const TARGET_URL = `http://localhost:8082/api/categories/${id}`;
-    return createProxy(req, TARGET_URL);
-}
+/**
+ * Single Category API Route
+ * GET /api/categories/:id
+ */
+
+export const GET = createDynamicApiHandler<{ id: string }>({
+    targetService: 'product',
+    path: ({ id }) => `/api/categories/${id}`,
+});

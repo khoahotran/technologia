@@ -1,13 +1,18 @@
 import { NextResponse } from "next/server";
+import { SERVICE_URLS, HTTP_STATUS } from "@/shared/constants";
+
+const BACKEND_URL = `${SERVICE_URLS.USER_SERVICE}/api/auth/register/local`;
+
+/**
+ * Register API Route
+ * POST /api/auth/register
+ */
 
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        // Frontend Model might differ slightly from Backend requirements
-        // Backend: { username, password, email, ... }
 
-        // Simple pass-through
-        const backendRes = await fetch("http://localhost:8081/api/auth/register/local", {
+        const backendRes = await fetch(BACKEND_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(body),
@@ -22,12 +27,12 @@ export async function POST(request: Request) {
         }
 
         const data = await backendRes.json();
-        // data.data contains the user object
-
         return NextResponse.json(data);
-
     } catch (error) {
         console.error("Register Proxy Error:", error);
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+        return NextResponse.json(
+            { error: "Internal Server Error" },
+            { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
+        );
     }
 }

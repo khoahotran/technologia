@@ -1,7 +1,19 @@
-import { createProxy } from "@/lib/api-proxy";
+import { createApiHandler } from "@/lib/api-handler";
 
-const TARGET_URL = "http://localhost:8082/api/products";
+/**
+ * Products API Routes
+ * Proxies to Product Service
+ */
 
-export async function GET(req: Request) {
-    return createProxy(req, TARGET_URL);
-}
+// GET /api/products
+export const GET = createApiHandler({
+    targetService: 'product',
+    path: '/api/products',
+});
+
+// POST /api/products (admin only)
+export const POST = createApiHandler({
+    targetService: 'product',
+    path: '/api/products',
+    requiresAuth: true,
+});

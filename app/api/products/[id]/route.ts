@@ -1,10 +1,23 @@
-import { createProxy } from "@/lib/api-proxy";
+import { createDynamicApiHandler } from "@/lib/api-handler";
 
-export async function GET(
-    req: Request,
-    { params }: { params: Promise<{ id: string }> } // Params are Promises in Next.js 15/latest
-) {
-    const { id } = await params;
-    const TARGET_URL = `http://localhost:8082/api/products/${id}`;
-    return createProxy(req, TARGET_URL);
-}
+/**
+ * Single Product API Routes
+ * GET /api/products/:id
+ */
+
+export const GET = createDynamicApiHandler<{ id: string }>({
+    targetService: 'product',
+    path: ({ id }) => `/api/products/${id}`,
+});
+
+export const PUT = createDynamicApiHandler<{ id: string }>({
+    targetService: 'product',
+    path: ({ id }) => `/api/products/${id}`,
+    requiresAuth: true,
+});
+
+export const DELETE = createDynamicApiHandler<{ id: string }>({
+    targetService: 'product',
+    path: ({ id }) => `/api/products/${id}`,
+    requiresAuth: true,
+});

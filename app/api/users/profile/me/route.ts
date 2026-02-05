@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
+import { SERVICE_URLS, HTTP_STATUS } from "@/shared/constants";
 
-const BACKEND_URL = "http://localhost:8081/api/users/profile/me";
+const BACKEND_URL = `${SERVICE_URLS.USER_SERVICE}/api/users/profile/me`;
 
-// GET: Fetch current user's profile
+/**
+ * User Profile API Routes
+ * GET /api/users/profile/me - Fetch current user's profile
+ * PUT /api/users/profile/me - Update current user's profile
+ */
+
 export async function GET(request: Request) {
     try {
         const authHeader = request.headers.get("Authorization");
@@ -10,14 +16,14 @@ export async function GET(request: Request) {
         if (!authHeader) {
             return NextResponse.json(
                 { error: "Authorization header is required" },
-                { status: 401 }
+                { status: HTTP_STATUS.UNAUTHORIZED }
             );
         }
 
         const backendRes = await fetch(BACKEND_URL, {
             method: "GET",
             headers: {
-                "Authorization": authHeader,
+                Authorization: authHeader,
                 "Content-Type": "application/json",
             },
         });
@@ -32,14 +38,15 @@ export async function GET(request: Request) {
 
         const data = await backendRes.json();
         return NextResponse.json(data);
-
     } catch (error) {
         console.error("Get Profile Proxy Error:", error);
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+        return NextResponse.json(
+            { error: "Internal Server Error" },
+            { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
+        );
     }
 }
 
-// PUT: Update current user's profile
 export async function PUT(request: Request) {
     try {
         const authHeader = request.headers.get("Authorization");
@@ -47,7 +54,7 @@ export async function PUT(request: Request) {
         if (!authHeader) {
             return NextResponse.json(
                 { error: "Authorization header is required" },
-                { status: 401 }
+                { status: HTTP_STATUS.UNAUTHORIZED }
             );
         }
 
@@ -56,7 +63,7 @@ export async function PUT(request: Request) {
         const backendRes = await fetch(BACKEND_URL, {
             method: "PUT",
             headers: {
-                "Authorization": authHeader,
+                Authorization: authHeader,
                 "Content-Type": "application/json",
             },
             body: JSON.stringify(body),
@@ -72,9 +79,11 @@ export async function PUT(request: Request) {
 
         const data = await backendRes.json();
         return NextResponse.json(data);
-
     } catch (error) {
         console.error("Update Profile Proxy Error:", error);
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+        return NextResponse.json(
+            { error: "Internal Server Error" },
+            { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
+        );
     }
 }

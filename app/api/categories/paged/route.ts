@@ -1,7 +1,11 @@
-import { createProxy } from "@/lib/api-proxy";
+import { createApiHandler } from "@/lib/api-handler";
 
-const TARGET_URL = "http://localhost:8082/api/categories/paged";
+/**
+ * Paged Categories API Route
+ * GET /api/categories/paged
+ */
 
-export async function GET(req: Request) {
-    return createProxy(req, TARGET_URL);
-}
+export const GET = createApiHandler({
+    targetService: 'product',
+    path: '/api/categories/paged',
+});
