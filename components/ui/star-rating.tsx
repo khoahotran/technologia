@@ -20,6 +20,10 @@ interface StarRatingProps {
     interactive?: boolean;
     /** Callback when rating changes (only if interactive) */
     onRatingChange?: (rating: number) => void;
+    /** Custom filled star color classes */
+    filledColor?: string;
+    /** Custom empty star color classes */
+    emptyColor?: string;
 }
 
 const sizeMap = {
@@ -36,10 +40,13 @@ export function StarRating({
     className,
     interactive = false,
     onRatingChange,
+    filledColor = "fill-primary text-primary",
+    emptyColor = "fill-muted text-muted",
 }: StarRatingProps) {
     const [hoverRating, setHoverRating] = React.useState<number | null>(null);
 
     const displayRating = hoverRating ?? rating;
+    const isFloat = !Number.isInteger(displayRating);
 
     const handleClick = (index: number) => {
         if (interactive && onRatingChange) {
@@ -62,22 +69,31 @@ export function StarRating({
     return (
         <div className={cn("flex items-center gap-1", className)}>
             <div className="flex items-center gap-0.5">
-                {Array.from({ length: max }).map((_, index) => (
-                    <Star
-                        key={index}
-                        className={cn(
-                            sizeMap[size],
-                            "transition-colors",
-                            index < displayRating
-                                ? "fill-primary text-primary"
-                                : "fill-muted text-muted",
-                            interactive && "cursor-pointer hover:scale-110 transition-transform"
-                        )}
-                        onClick={() => handleClick(index)}
-                        onMouseEnter={() => handleMouseEnter(index)}
-                        onMouseLeave={handleMouseLeave}
-                    />
-                ))}
+                {Array.from({ length: max }).map((_, index) => {
+                    const filled = index + 1 <= Math.ceil(displayRating);
+                    const isHalf = filled && index + 1 > displayRating && isFloat;
+                    // Note: Standard Star icon doesn't support half-fill easily via CSS classes alone without SVGs definitions
+                    // For now we assume full stars for simplicity or implement partial fill logic later
+                    // Just using simple threshold logic
+
+                    const isFilled = index < displayRating;
+
+                    return (
+                        <Star
+                            key={index}
+                            className={cn(
+                                sizeMap[size],
+                                "transition-colors",
+                                isFilled ? filledColor : emptyColor,
+                                interactive &&
+                                "cursor-pointer hover:scale-110 transition-transform"
+                            )}
+                            onClick={() => handleClick(index)}
+                            onMouseEnter={() => handleMouseEnter(index)}
+                            onMouseLeave={handleMouseLeave}
+                        />
+                    );
+                })}
             </div>
 
             {showValue && (

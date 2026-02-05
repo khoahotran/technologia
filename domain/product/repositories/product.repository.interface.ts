@@ -22,17 +22,17 @@ export interface FilterProductResponse {
 }
 
 export interface ProductSearchParams {
-    page?: number;
-    size?: number;
-    sortBy?: string;
-    sortDirection?: string;
-    minPrice?: number;
-    maxPrice?: number;
-    keyword?: string;
-    minRating?: number;
-    maxRating?: number;
-    categoryId?: number;
-    brandId?: number;
+    page?: number | undefined;
+    size?: number | undefined;
+    sortBy?: string | undefined;
+    sortDirection?: string | undefined;
+    minPrice?: number | undefined;
+    maxPrice?: number | undefined;
+    keyword?: string | undefined;
+    minRating?: number | undefined;
+    maxRating?: number | undefined;
+    categoryId?: number | undefined;
+    brandId?: number | undefined;
 }
 
 export interface IProductRepository {

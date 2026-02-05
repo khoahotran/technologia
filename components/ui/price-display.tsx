@@ -9,17 +9,17 @@ interface PriceDisplayProps {
     /** Price value (can be string or number) */
     price: string | number;
     /** Original price for discount display */
-    originalPrice?: string | number;
+    originalPrice?: string | number | undefined;
     /** Currency code (default: VND) */
-    currency?: string;
+    currency?: string | undefined;
     /** Size variant */
-    size?: "sm" | "md" | "lg" | "xl";
+    size?: "sm" | "md" | "lg" | "xl" | undefined;
     /** Custom class name */
-    className?: string;
+    className?: string | undefined;
     /** Custom class for original price */
-    originalPriceClassName?: string;
+    originalPriceClassName?: string | undefined;
     /** Show discount percentage */
-    showDiscountPercent?: boolean;
+    showDiscountPercent?: boolean | undefined;
 }
 
 const sizeMap = {
