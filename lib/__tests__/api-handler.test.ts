@@ -1,6 +1,8 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+
 import { createApiHandler, createDynamicApiHandler } from '../api-handler'
-import { NextResponse } from 'next/server'
+
+import type { RouteContext } from '@/shared/types'
 
 // Mock globals
 const mockFetch = vi.fn()
@@ -104,9 +106,11 @@ describe('API Handler Utility', () => {
             })
 
             // Mock RouteContext
-            const context = { params: Promise.resolve({ id: '123' }) }
+            const context: RouteContext<{ id: string }> = {
+                params: Promise.resolve({ id: '123' }),
+            }
 
-            await handler(mockRequest(), context as any)
+            await handler(mockRequest(), context)
 
             expect(mockFetch).toHaveBeenCalledWith(
                 expect.stringContaining('/items/123'),

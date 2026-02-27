@@ -12,7 +12,7 @@
  * const prefs = storage.get<UserPrefs>('user_preferences');
  */
 
-import { STORAGE_KEYS, COOKIE_NAMES } from "@/shared/constants";
+import { STORAGE_KEYS } from "@/shared/constants";
 
 // ===========================================
 // Types
@@ -93,7 +93,7 @@ function getCookie(name: string): string | null {
     const cookies = document.cookie.split(";");
 
     for (const cookie of cookies) {
-        let c = cookie.trim();
+        const c = cookie.trim();
         if (c.indexOf(nameEQ) === 0) {
             return decodeURIComponent(c.substring(nameEQ.length));
         }

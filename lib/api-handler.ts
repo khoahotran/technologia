@@ -7,6 +7,7 @@
  */
 
 import { NextResponse } from 'next/server';
+
 import { SERVICE_URLS, HTTP_STATUS, REQUEST_CONFIG } from '@/shared/constants';
 import type { RouteContext } from '@/shared/types';
 

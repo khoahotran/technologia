@@ -6,8 +6,9 @@
  * - getTotal with multiple products at different prices
  * - removeItem for a non-existent ID (safety)
  */
-import { describe, it, expect, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
+import { describe, it, expect, beforeEach } from 'vitest'
+
 import { useCartStore } from '../cart.store'
 
 const product1 = {

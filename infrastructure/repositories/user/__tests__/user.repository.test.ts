@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+
 import { UserRepository } from '../user.repository'
+
 import { httpClient } from '@/infrastructure/http/client'
 
 vi.mock('@/infrastructure/http/client', () => ({

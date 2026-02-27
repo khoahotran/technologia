@@ -4,6 +4,7 @@
  * If it breaks, the entire UI breaks silently — wrong classes, no errors.
  */
 import { describe, it, expect } from 'vitest'
+
 import { cn } from '../utils'
 
 describe('cn() utility', () => {
@@ -12,7 +13,8 @@ describe('cn() utility', () => {
     })
 
     it('should handle conditional classes (falsy values ignored)', () => {
-        expect(cn('base', false && 'skip', undefined, null, 'add')).toBe('base add')
+        const includeSkip = false
+        expect(cn('base', includeSkip ? 'skip' : undefined, undefined, null, 'add')).toBe('base add')
     })
 
     it('should merge Tailwind conflicts — last wins', () => {

@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+
 import { ProductRepository } from '../product.repository'
+
 import { httpClient } from '@/infrastructure/http/client'
 
 // Mock httpClient

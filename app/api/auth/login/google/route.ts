@@ -1,8 +1,7 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { SERVICE_URLS, HTTP_STATUS, COOKIE_NAMES } from "@/shared/constants";
 
-const BACKEND_URL = `${SERVICE_URLS.USER_SERVICE}/api/auth/login/google`;
+import { forwardJsonToUserService, setAccessTokenCookie } from "@/lib/api-route";
+import { HTTP_STATUS } from "@/shared/constants";
 
 /**
  * Google Login API Route
@@ -12,37 +11,26 @@ const BACKEND_URL = `${SERVICE_URLS.USER_SERVICE}/api/auth/login/google`;
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-
-        const backendRes = await fetch(BACKEND_URL, {
+        const response = await forwardJsonToUserService({
+            path: "/api/auth/login/google",
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body),
+            body,
+            fallbackError: "Google Login failed",
+            logLabel: "Google Login",
         });
 
-        if (!backendRes.ok) {
-            const errorData = await backendRes.json().catch(() => ({}));
-            return NextResponse.json(
-                { error: errorData.message || "Google Login failed" },
-                { status: backendRes.status }
-            );
+        if (!response.ok) {
+            return response;
         }
 
-        const data = await backendRes.json();
-        const { data: backendData } = data;
-
-        // Postman: { token, refreshToken, userId }
+        const responseData = await response.json();
+        const backendData = responseData.data ?? {};
         const accessToken = backendData.token || backendData.accessToken;
+        if (typeof accessToken === "string" && accessToken.length > 0) {
+            await setAccessTokenCookie(accessToken);
+        }
 
-        const cookieStore = await cookies();
-        cookieStore.set(COOKIE_NAMES.ACCESS_TOKEN, accessToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-            path: "/",
-            maxAge: 60 * 60 * 24 * 7,
-        });
-
-        return NextResponse.json(data);
+        return NextResponse.json(responseData);
     } catch (error) {
         console.error("Google Login Proxy Error:", error);
         return NextResponse.json(

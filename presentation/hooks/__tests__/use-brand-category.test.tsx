@@ -1,7 +1,7 @@
-import { describe, it, expect, vi } from 'vitest'
-import { renderHook, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { renderHook, waitFor } from '@testing-library/react'
 import { ReactNode } from 'react'
+import { describe, it, expect, vi } from 'vitest'
 
 const mockGetAllBrands = vi.fn()
 vi.mock('@/application/use-cases/brand/use-brand', () => ({
@@ -18,9 +18,11 @@ import { useCategoryHook } from '../use-category.hook'
 
 const createWrapper = () => {
     const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })
-    return ({ children }: { children: ReactNode }) => (
+    const Wrapper = ({ children }: { children: ReactNode }) => (
         <QueryClientProvider client={qc}>{children}</QueryClientProvider>
     )
+    Wrapper.displayName = 'UseBrandCategoryTestWrapper'
+    return Wrapper
 }
 
 describe('useBrandHook', () => {

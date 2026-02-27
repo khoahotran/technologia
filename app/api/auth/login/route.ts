@@ -1,8 +1,7 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { SERVICE_URLS, HTTP_STATUS, COOKIE_NAMES } from "@/shared/constants";
 
-const BACKEND_URL = `${SERVICE_URLS.USER_SERVICE}/api/auth/login/local`;
+import { forwardJsonToUserService, setAccessTokenCookie } from "@/lib/api-route";
+import { HTTP_STATUS } from "@/shared/constants";
 
 /**
  * Local Login API Route
@@ -14,36 +13,28 @@ export async function POST(request: Request) {
         const body = await request.json();
         const { username, password } = body;
 
-        const backendRes = await fetch(BACKEND_URL, {
+        const response = await forwardJsonToUserService({
+            path: "/api/auth/login/local",
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ username, password }),
+            body: { username, password },
+            fallbackError: "Login failed",
+            logLabel: "Login",
         });
 
-        if (!backendRes.ok) {
-            const errorData = await backendRes.json().catch(() => ({}));
-            return NextResponse.json(
-                { error: errorData.message || "Login failed" },
-                { status: backendRes.status }
-            );
+        if (!response.ok) {
+            return response;
         }
 
-        const data = await backendRes.json();
+        const data = await response.json();
         // Expected structure: { status: 200, data: { accessToken, refreshToken, userId }, message }
 
         const { data: backendData } = data;
         const accessToken = backendData.accessToken || backendData.access_token;
         const refreshToken = backendData.refreshToken || backendData.refresh_token;
 
-        // Set HttpOnly Cookie
-        const cookieStore = await cookies();
-        cookieStore.set(COOKIE_NAMES.ACCESS_TOKEN, accessToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-            path: "/",
-            maxAge: 60 * 60 * 24 * 7, // 1 week
-        });
+        if (typeof accessToken === "string" && accessToken.length > 0) {
+            await setAccessTokenCookie(accessToken);
+        }
 
         // Return User Info to Frontend
         return NextResponse.json({

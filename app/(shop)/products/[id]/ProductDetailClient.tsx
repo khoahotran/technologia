@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
@@ -32,7 +32,7 @@ interface ProductDetailClientProps {
 export default function ProductDetailClient({ id }: ProductDetailClientProps) {
     const router = useRouter();
     const [quantity, setQuantity] = useState(1);
-    const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [selectedImage, setSelectedImage] = useState<{ productId: string; image: string } | null>(null);
 
     const { product, isLoading, error } = useProductDetail(id);
 
@@ -44,11 +44,6 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
     });
 
     const addToCart = useCartStore((state) => state.addItem);
-
-    // Reset selected image when product changes
-    useEffect(() => {
-        setSelectedImage(null);
-    }, [id]);
 
     if (isLoading) {
         return <ProductDetailSkeleton />;
@@ -78,7 +73,10 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
             ? product.variants[0].images
             : ["/placeholder.png"];
 
-    const currentImage = selectedImage || images[0] || "/placeholder.png";
+    const currentImage =
+        selectedImage?.productId === id && selectedImage.image
+            ? selectedImage.image
+            : images[0] || "/placeholder.png";
 
     const displayPrice = product.displayPrice || 0;
     // Mock original price if not provided
@@ -140,7 +138,7 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                                 {images.map((img, idx) => (
                                     <button
                                         key={idx}
-                                        onClick={() => setSelectedImage(img)}
+                                        onClick={() => setSelectedImage({ productId: id, image: img })}
                                         className={`relative w-20 h-20 flex-shrink-0 rounded-lg border-2 overflow-hidden transition-all ${currentImage === img
                                                 ? "border-blue-500"
                                                 : "border-transparent hover:border-gray-200"

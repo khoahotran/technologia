@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { SERVICE_URLS, HTTP_STATUS } from "@/shared/constants";
 
-const BACKEND_URL = `${SERVICE_URLS.USER_SERVICE}/api/auth/reset-password`;
+import { forwardJsonToUserService } from "@/lib/api-route";
+import { HTTP_STATUS } from "@/shared/constants";
 
 /**
  * Reset Password API Route
@@ -9,38 +9,21 @@ const BACKEND_URL = `${SERVICE_URLS.USER_SERVICE}/api/auth/reset-password`;
  */
 
 export async function POST(request: Request) {
-    try {
-        const body = await request.json();
-        const { resetToken, newPassword } = body;
+    const body = await request.json();
+    const { resetToken, newPassword } = body;
 
-        if (!resetToken || !newPassword) {
-            return NextResponse.json(
-                { error: "Reset token and new password are required" },
-                { status: HTTP_STATUS.BAD_REQUEST }
-            );
-        }
-
-        const backendRes = await fetch(BACKEND_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ resetToken, newPassword }),
-        });
-
-        if (!backendRes.ok) {
-            const errorData = await backendRes.json().catch(() => ({}));
-            return NextResponse.json(
-                { error: errorData.message || "Password reset failed" },
-                { status: backendRes.status }
-            );
-        }
-
-        const data = await backendRes.json();
-        return NextResponse.json(data);
-    } catch (error) {
-        console.error("Reset Password Proxy Error:", error);
+    if (!resetToken || !newPassword) {
         return NextResponse.json(
-            { error: "Internal Server Error" },
-            { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
+            { error: "Reset token and new password are required" },
+            { status: HTTP_STATUS.BAD_REQUEST }
         );
     }
+
+    return forwardJsonToUserService({
+        path: "/api/auth/reset-password",
+        method: "POST",
+        body: { resetToken, newPassword },
+        fallbackError: "Password reset failed",
+        logLabel: "Reset Password",
+    });
 }

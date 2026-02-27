@@ -139,6 +139,5 @@ export const STORAGE_KEYS = {
 
 export const COOKIE_NAMES = {
     ACCESS_TOKEN: 'access_token',
-    AUTH_TOKEN: 'auth_token',
     REFRESH_TOKEN: 'refresh_token',
 } as const;

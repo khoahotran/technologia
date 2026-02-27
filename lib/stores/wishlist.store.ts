@@ -9,8 +9,9 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-import { logger } from "@/lib/logger";
 import type { WishlistStore } from "./store.types";
+
+import { logger } from "@/lib/logger";
 
 // ===========================================
 // Store Implementation

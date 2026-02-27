@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest'
+
 import {
     isValidEmail, validatePassword, getPasswordStrength,
-    isValidPhone, validateUsername, isEmpty, isValidNumber
+    isValidPhone, validateUsername, isEmpty
 } from '../validation'
 
 describe('Validation Utilities', () => {

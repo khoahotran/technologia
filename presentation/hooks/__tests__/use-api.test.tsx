@@ -1,8 +1,10 @@
-import { describe, it, expect, vi } from 'vitest'
-import { renderHook, act, waitFor } from '@testing-library/react'
-import { usePagination, useDebounce, useApiQuery } from '../use-api.hook'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { renderHook, act, waitFor } from '@testing-library/react'
 import { ReactNode } from 'react'
+import { describe, it, expect, vi } from 'vitest'
+
+import { usePagination, useDebounce, useApiQuery } from '../use-api.hook'
+
 
 // Wrapper for Query hooks
 const createWrapper = () => {
@@ -11,9 +13,11 @@ const createWrapper = () => {
             queries: { retry: false },
         },
     })
-    return ({ children }: { children: ReactNode }) => (
+    const Wrapper = ({ children }: { children: ReactNode }) => (
         <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     )
+    Wrapper.displayName = 'UseApiTestWrapper'
+    return Wrapper
 }
 
 describe('Hooks Utilities', () => {

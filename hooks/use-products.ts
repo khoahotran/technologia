@@ -22,6 +22,10 @@ import type { ProductSearchParams } from "@/domain/product/repositories/product.
 import { ProductRepository } from "@/infrastructure/repositories/product/product.repository";
 import { REQUEST_CONFIG } from "@/shared/constants";
 
+const FIVE_MINUTES = 5 * 60 * 1000;
+const TEN_MINUTES = 10 * 60 * 1000;
+const ONE_MINUTE = 60 * 1000;
+
 // ===========================================
 // Query Keys Factory
 // ===========================================
@@ -58,6 +62,24 @@ export interface ProductListParams {
     maxRating?: number | undefined;
 }
 
+function buildSearchParams({
+    page = 0,
+    size = REQUEST_CONFIG.DEFAULT_PAGE_SIZE,
+    sortBy = "id",
+    sortDirection = "DESC",
+    search,
+    ...filters
+}: ProductListParams = {}): ProductSearchParams {
+    return {
+        page,
+        size,
+        sortBy,
+        sortDirection,
+        keyword: search,
+        ...filters,
+    };
+}
+
 // ===========================================
 // Legacy Hook (Backwards Compatible)
 // ===========================================
@@ -73,7 +95,7 @@ export const useProducts = () => {
             queryKey: productKeys.paged(page, size, sortBy, sortDirection),
             queryFn: () => ProductRepository.getPaged(page, size, sortBy, sortDirection),
             placeholderData: keepPreviousData,
-            staleTime: 5 * 60 * 1000, // 5 minutes
+            staleTime: FIVE_MINUTES,
         });
     };
 
@@ -82,7 +104,7 @@ export const useProducts = () => {
             queryKey: productKeys.list(params),
             queryFn: () => ProductRepository.searchAndFilter(params),
             placeholderData: keepPreviousData,
-            staleTime: 5 * 60 * 1000,
+            staleTime: FIVE_MINUTES,
         });
     };
 
@@ -91,7 +113,7 @@ export const useProducts = () => {
             queryKey: productKeys.detail(id),
             queryFn: () => ProductRepository.getById(id),
             enabled: !!id,
-            staleTime: 10 * 60 * 1000, // 10 minutes
+            staleTime: TEN_MINUTES,
         });
     };
 
@@ -111,43 +133,30 @@ export const useProducts = () => {
  */
 export function useProductList(params: ProductListParams = {}) {
     const queryClient = useQueryClient();
-
-    const {
-        page = 0,
-        size = REQUEST_CONFIG.DEFAULT_PAGE_SIZE,
-        sortBy = "id",
-        sortDirection = "DESC",
-        search,
-        ...filters
-    } = params;
-
-    // Map frontend params to repository params
-    const searchParams: ProductSearchParams = {
-        page,
-        size,
-        sortBy,
-        sortDirection,
-        keyword: search,
-        ...filters,
-    };
+    const searchParams = React.useMemo(() => buildSearchParams(params), [params]);
+    const currentPage = searchParams.page ?? 0;
 
     const query = useQuery({
         queryKey: productKeys.list(searchParams),
         queryFn: () => ProductRepository.searchAndFilter(searchParams),
         placeholderData: keepPreviousData,
-        staleTime: 5 * 60 * 1000,
+        staleTime: FIVE_MINUTES,
     });
 
     // Prefetch next page for smoother pagination
     React.useEffect(() => {
-        if (query.data && page < (query.data.count_pages ?? 1) - 1) {
-            const nextParams: ProductSearchParams = { ...searchParams, page: page + 1 };
+        const totalPages = query.data?.count_pages ?? 1;
+        if (query.data && currentPage < totalPages - 1) {
+            const nextParams: ProductSearchParams = {
+                ...searchParams,
+                page: currentPage + 1,
+            };
             queryClient.prefetchQuery({
                 queryKey: productKeys.list(nextParams),
                 queryFn: () => ProductRepository.searchAndFilter(nextParams),
             });
         }
-    }, [query.data, page, searchParams, queryClient]);
+    }, [currentPage, query.data, queryClient, searchParams]);
 
     // Map repository response to convenient frontend structure
     return {
@@ -171,7 +180,7 @@ export function useProductDetail(productId: string | number | undefined) {
         queryKey: productKeys.detail(productId ?? ""),
         queryFn: () => ProductRepository.getById(productId!),
         enabled: !!productId,
-        staleTime: 10 * 60 * 1000,
+        staleTime: TEN_MINUTES,
     });
 
     return {
@@ -207,7 +216,7 @@ export function useProductSearch(searchQuery: string, debounceMs: number = 300) 
         queryKey: productKeys.search(debouncedQuery),
         queryFn: () => ProductRepository.searchAndFilter(params),
         enabled: debouncedQuery.length >= 2,
-        staleTime: 60 * 1000,
+        staleTime: ONE_MINUTE,
     });
 
     return {

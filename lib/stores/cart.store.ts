@@ -10,9 +10,10 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+import type { CartItem, CartStore } from "./store.types";
+
 import { logger } from "@/lib/logger";
 import type { Product } from "@/lib/mock-data";
-import type { CartItem, CartStore } from "./store.types";
 
 // ===========================================
 // Store Implementation

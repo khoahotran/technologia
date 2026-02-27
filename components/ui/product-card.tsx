@@ -53,7 +53,7 @@ export function ProductCard({
   isSelected,
   onSelect,
   badge,
-  onAddToCart,
+  onAddToCart: _onAddToCart,
   ...props
 }: ProductCardProps) {
   const router = useRouter();
@@ -63,11 +63,6 @@ export function ProductCard({
     if (id) {
       router.push(`/products/${id}`);
     }
-  };
-
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    onAddToCart?.();
   };
 
   return (

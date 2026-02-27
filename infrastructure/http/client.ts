@@ -16,7 +16,6 @@ import axios, {
     AxiosError,
 } from "axios";
 
-import { STORAGE_KEYS, REQUEST_CONFIG, HTTP_STATUS } from "@/shared/constants";
 import {
     AppError,
     AuthenticationError,
@@ -25,8 +24,9 @@ import {
     createHttpError,
     getErrorMessage,
 } from "@/lib/errors";
-import { logger, createScopedLogger } from "@/lib/logger";
+import { createScopedLogger } from "@/lib/logger";
 import { authStorage } from "@/lib/storage";
+import { REQUEST_CONFIG, HTTP_STATUS } from "@/shared/constants";
 
 // ===========================================
 // Configuration

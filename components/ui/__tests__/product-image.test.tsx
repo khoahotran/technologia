@@ -1,10 +1,12 @@
-import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent, act } from '@testing-library/react'
+import type { ImgHTMLAttributes } from 'react'
+import { describe, it, expect, vi } from 'vitest'
+
 import { ProductImage } from '../product-image'
 
 // Mock next/image
 vi.mock('next/image', () => ({
-    default: (props: any) => {
+    default: ({ fill: _fill, priority: _priority, ...props }: ImgHTMLAttributes<HTMLImageElement> & { fill?: boolean; priority?: boolean }) => {
         // eslint-disable-next-line @next/next/no-img-element
         return <img {...props} />
     }

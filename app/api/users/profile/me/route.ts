@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { SERVICE_URLS, HTTP_STATUS } from "@/shared/constants";
 
-const BACKEND_URL = `${SERVICE_URLS.USER_SERVICE}/api/users/profile/me`;
+import { forwardJsonToUserService, requireAuthorizationHeader } from "@/lib/api-route";
 
 /**
  * User Profile API Routes
@@ -10,80 +9,33 @@ const BACKEND_URL = `${SERVICE_URLS.USER_SERVICE}/api/users/profile/me`;
  */
 
 export async function GET(request: Request) {
-    try {
-        const authHeader = request.headers.get("Authorization");
-
-        if (!authHeader) {
-            return NextResponse.json(
-                { error: "Authorization header is required" },
-                { status: HTTP_STATUS.UNAUTHORIZED }
-            );
-        }
-
-        const backendRes = await fetch(BACKEND_URL, {
-            method: "GET",
-            headers: {
-                Authorization: authHeader,
-                "Content-Type": "application/json",
-            },
-        });
-
-        if (!backendRes.ok) {
-            const errorData = await backendRes.json().catch(() => ({}));
-            return NextResponse.json(
-                { error: errorData.message || "Failed to get profile" },
-                { status: backendRes.status }
-            );
-        }
-
-        const data = await backendRes.json();
-        return NextResponse.json(data);
-    } catch (error) {
-        console.error("Get Profile Proxy Error:", error);
-        return NextResponse.json(
-            { error: "Internal Server Error" },
-            { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
-        );
+    const authHeaderOrResponse = requireAuthorizationHeader(request);
+    if (authHeaderOrResponse instanceof NextResponse) {
+        return authHeaderOrResponse;
     }
+
+    return forwardJsonToUserService({
+        path: "/api/users/profile/me",
+        method: "GET",
+        authHeader: authHeaderOrResponse,
+        fallbackError: "Failed to get profile",
+        logLabel: "Get Profile",
+    });
 }
 
 export async function PUT(request: Request) {
-    try {
-        const authHeader = request.headers.get("Authorization");
-
-        if (!authHeader) {
-            return NextResponse.json(
-                { error: "Authorization header is required" },
-                { status: HTTP_STATUS.UNAUTHORIZED }
-            );
-        }
-
-        const body = await request.json();
-
-        const backendRes = await fetch(BACKEND_URL, {
-            method: "PUT",
-            headers: {
-                Authorization: authHeader,
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(body),
-        });
-
-        if (!backendRes.ok) {
-            const errorData = await backendRes.json().catch(() => ({}));
-            return NextResponse.json(
-                { error: errorData.message || "Failed to update profile" },
-                { status: backendRes.status }
-            );
-        }
-
-        const data = await backendRes.json();
-        return NextResponse.json(data);
-    } catch (error) {
-        console.error("Update Profile Proxy Error:", error);
-        return NextResponse.json(
-            { error: "Internal Server Error" },
-            { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
-        );
+    const authHeaderOrResponse = requireAuthorizationHeader(request);
+    if (authHeaderOrResponse instanceof NextResponse) {
+        return authHeaderOrResponse;
     }
+
+    const body = await request.json();
+    return forwardJsonToUserService({
+        path: "/api/users/profile/me",
+        method: "PUT",
+        authHeader: authHeaderOrResponse,
+        body,
+        fallbackError: "Failed to update profile",
+        logLabel: "Update Profile",
+    });
 }

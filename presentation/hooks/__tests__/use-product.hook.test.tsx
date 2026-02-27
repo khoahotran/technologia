@@ -1,7 +1,7 @@
-import { describe, it, expect, vi } from 'vitest'
-import { renderHook, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { renderHook, waitFor } from '@testing-library/react'
 import { ReactNode } from 'react'
+import { describe, it, expect, vi } from 'vitest'
 
 // Must mock the use-cases/product before importing the hook
 const mockSearchAndFilter = vi.fn()
@@ -19,9 +19,11 @@ const createWrapper = () => {
             queries: { retry: false, staleTime: 0 },
         },
     })
-    return ({ children }: { children: ReactNode }) => (
+    const Wrapper = ({ children }: { children: ReactNode }) => (
         <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     )
+    Wrapper.displayName = 'UseProductHookTestWrapper'
+    return Wrapper
 }
 
 describe('useProductHook', () => {

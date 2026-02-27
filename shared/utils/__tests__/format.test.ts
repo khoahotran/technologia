@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+
 import { formatCurrency, formatNumber, formatDate } from '../format'
 
 describe('Format Utilities', () => {

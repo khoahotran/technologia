@@ -1,7 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { renderHook, waitFor } from '@testing-library/react'
-import { useProductList, useProductDetail } from '../use-products'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { renderHook, waitFor } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+
+import { useProductList, useProductDetail } from '../use-products'
+
+
 import { ProductRepository } from '@/infrastructure/repositories/product/product.repository'
 
 // Mock the repository
@@ -21,9 +24,11 @@ const createWrapper = () => {
             },
         },
     })
-    return ({ children }: { children: React.ReactNode }) => (
+    const Wrapper = ({ children }: { children: React.ReactNode }) => (
         <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     )
+    Wrapper.displayName = 'UseProductsTestWrapper'
+    return Wrapper
 }
 
 describe('Product Hooks', () => {
@@ -40,7 +45,9 @@ describe('Product Hooks', () => {
                 page_number: 0
             }
 
-            vi.mocked(ProductRepository.searchAndFilter).mockResolvedValue(mockData as any)
+            vi.mocked(ProductRepository.searchAndFilter).mockResolvedValue(
+                mockData as unknown as Awaited<ReturnType<typeof ProductRepository.searchAndFilter>>
+            )
 
             const { result } = renderHook(() => useProductList({}), {
                 wrapper: createWrapper(),
@@ -68,7 +75,9 @@ describe('Product Hooks', () => {
     describe('useProductDetail', () => {
         it('should fetch product detail', async () => {
             const mockProduct = { productId: 'p1', name: 'Detail P1' }
-            vi.mocked(ProductRepository.getById).mockResolvedValue(mockProduct as any)
+            vi.mocked(ProductRepository.getById).mockResolvedValue(
+                mockProduct as unknown as Awaited<ReturnType<typeof ProductRepository.getById>>
+            )
 
             const { result } = renderHook(() => useProductDetail('p1'), {
                 wrapper: createWrapper(),

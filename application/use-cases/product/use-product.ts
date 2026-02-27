@@ -5,16 +5,16 @@ export const useProduct = () => {
   const { productRepository } = useRepositories();
 
   return {
-    getAll: async () => productRepository.getAll(),
-    getPaged: async (
+    getAll: () => productRepository.getAll(),
+    getPaged: (
       page: number,
       size: number,
       sortBy?: string,
       sortDirection?: string
     ) => productRepository.getPaged(page, size, sortBy, sortDirection),
 
-    searchAndFilter: async (params: ProductSearchParams) => productRepository.searchAndFilter(params),
+    searchAndFilter: (params: ProductSearchParams) => productRepository.searchAndFilter(params),
 
-    getById: async (id: string | number) => productRepository.getById(id),
+    getById: (id: string | number) => productRepository.getById(id),
   };
 };

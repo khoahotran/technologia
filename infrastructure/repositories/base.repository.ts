@@ -4,8 +4,9 @@
  */
 
 import { z, ZodSchema } from "zod";
+
 import { httpClient } from "@/infrastructure/http/client";
-import type { PaginatedResponse, ApiResponse } from "@/shared/types";
+import type { PaginatedResponse } from "@/shared/types";
 
 // ===========================================
 // Types
@@ -16,6 +17,22 @@ export interface PagingParams {
     size?: number;
     sortBy?: string;
     sortDirection?: "ASC" | "DESC";
+}
+
+export const DEFAULT_PAGING_PARAMS = {
+    page: 0,
+    size: 10,
+    sortBy: "id",
+    sortDirection: "DESC" as const,
+};
+
+export function normalizePagingParams(params: PagingParams = {}) {
+    return {
+        page: params.page ?? DEFAULT_PAGING_PARAMS.page,
+        size: params.size ?? DEFAULT_PAGING_PARAMS.size,
+        sortBy: params.sortBy ?? DEFAULT_PAGING_PARAMS.sortBy,
+        sortDirection: params.sortDirection ?? DEFAULT_PAGING_PARAMS.sortDirection,
+    };
 }
 
 export interface BaseRepositoryConfig<T> {
@@ -108,12 +125,7 @@ export function createBaseRepository<T>(config: BaseRepositoryConfig<T>) {
         async getPaged(
             params: PagingParams = {}
         ): Promise<PaginatedResponse<T>> {
-            const {
-                page = 0,
-                size = 10,
-                sortBy = "id",
-                sortDirection = "DESC",
-            } = params;
+            const { page, size, sortBy, sortDirection } = normalizePagingParams(params);
 
             const { data } = await httpClient.get(`${basePath}/paged`, {
                 params: { page, size, sortBy, sortDirection },

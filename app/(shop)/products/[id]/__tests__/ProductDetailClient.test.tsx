@@ -1,8 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+
 import ProductDetailClient from '../ProductDetailClient'
+
 import * as ProductHooks from '@/hooks/use-products'
-import { useCartStore } from '@/lib/stores'
 
 // Mock Hooks
 vi.mock('@/hooks/use-products', () => ({
@@ -21,13 +22,16 @@ vi.mock('next/navigation', () => ({
 // Mock Cart Store
 const mockAddItem = vi.fn()
 vi.mock('@/lib/stores', () => ({
-    useCartStore: (selector: any) => {
+    useCartStore: (_selector: unknown) => {
         // Mock selector behavior if needed, or just return mock action
         return mockAddItem
     }
 }))
 
 describe('ProductDetailClient', () => {
+    type ProductDetailResult = ReturnType<typeof ProductHooks.useProductDetail>
+    type ProductListResult = ReturnType<typeof ProductHooks.useProductList>
+
     const mockProduct = {
         productId: 'p1',
         name: 'Test Product',
@@ -50,8 +54,8 @@ describe('ProductDetailClient', () => {
             isLoading: true,
             product: null,
             error: null,
-        } as any)
-        vi.mocked(ProductHooks.useProductList).mockReturnValue({ products: [] } as any)
+        } as ProductDetailResult)
+        vi.mocked(ProductHooks.useProductList).mockReturnValue({ products: [] } as ProductListResult)
 
         render(<ProductDetailClient id="p1" />)
         // Skeleton elements usually don't have text, but we can check for structure or testID
@@ -65,8 +69,8 @@ describe('ProductDetailClient', () => {
             isLoading: false,
             product: null,
             error: new Error('Err'),
-        } as any)
-        vi.mocked(ProductHooks.useProductList).mockReturnValue({ products: [] } as any)
+        } as ProductDetailResult)
+        vi.mocked(ProductHooks.useProductList).mockReturnValue({ products: [] } as ProductListResult)
 
         render(<ProductDetailClient id="p1" />)
         expect(screen.getByText('Failed to load product')).toBeInTheDocument()
@@ -77,8 +81,8 @@ describe('ProductDetailClient', () => {
             isLoading: false,
             product: mockProduct,
             error: null,
-        } as any)
-        vi.mocked(ProductHooks.useProductList).mockReturnValue({ products: [] } as any)
+        } as ProductDetailResult)
+        vi.mocked(ProductHooks.useProductList).mockReturnValue({ products: [] } as ProductListResult)
 
         render(<ProductDetailClient id="p1" />)
         expect(screen.getByText('Buy Now')).toBeInTheDocument()
@@ -90,8 +94,8 @@ describe('ProductDetailClient', () => {
             isLoading: false,
             product: mockProduct,
             error: null,
-        } as any)
-        vi.mocked(ProductHooks.useProductList).mockReturnValue({ products: [] } as any)
+        } as ProductDetailResult)
+        vi.mocked(ProductHooks.useProductList).mockReturnValue({ products: [] } as ProductListResult)
 
         render(<ProductDetailClient id="p1" />)
 

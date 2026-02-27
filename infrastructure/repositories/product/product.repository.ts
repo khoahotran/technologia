@@ -1,6 +1,4 @@
-import { z } from "zod";
-
-import { FilterResponseEntitySchema, FilterResponseEntity } from "@/domain/product/entities/filter.entity";
+import { FilterResponseEntitySchema } from "@/domain/product/entities/filter.entity";
 import { ProductEntity, ProductEntitySchema } from "@/domain/product/entities/product.entity";
 import type {
   IProductRepository,
@@ -12,6 +10,7 @@ import { httpClient } from "@/infrastructure/http/client";
 import {
   createBaseRepository,
   createPaginatedResponseSchema,
+  normalizePagingParams,
 } from "@/infrastructure/repositories/base.repository";
 
 // ===========================================
@@ -59,7 +58,8 @@ export const ProductRepository: IProductRepository = {
     sortBy = "id",
     sortDirection: "ASC" | "DESC" = "DESC"
   ): Promise<ProductPagingResponse> => {
-    return baseRepository.getPaged({ page, size, sortBy, sortDirection }) as Promise<ProductPagingResponse>;
+    const paging = normalizePagingParams({ page, size, sortBy, sortDirection });
+    return baseRepository.getPaged(paging) as Promise<ProductPagingResponse>;
   },
 
   /**
@@ -67,12 +67,16 @@ export const ProductRepository: IProductRepository = {
    * Custom method not in base repository
    */
   searchAndFilter: async (params: ProductSearchParams): Promise<FilterProductResponse> => {
+    const paging = normalizePagingParams({
+      page: params.page,
+      size: params.size,
+      sortBy: params.sortBy ?? "createdAt",
+      sortDirection: params.sortDirection as "ASC" | "DESC" | undefined,
+    });
+
     const { data } = await httpClient.get(`${BASE_PATH}/search-filter`, {
       params: {
-        page: params.page || 0,
-        size: params.size || 10,
-        sortBy: params.sortBy || "createdAt",
-        sortDirection: (params.sortDirection || "DESC") as "ASC" | "DESC",
+        ...paging,
         minPrice: params.minPrice,
         maxPrice: params.maxPrice,
         keyword: params.keyword,
@@ -88,4 +92,3 @@ export const ProductRepository: IProductRepository = {
 
 // Re-export for convenience
 export { baseRepository as ProductBaseRepository };
-

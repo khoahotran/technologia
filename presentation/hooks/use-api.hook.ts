@@ -4,11 +4,11 @@ import {
     useQuery,
     useMutation,
     keepPreviousData,
-    type UseQueryOptions,
-    type UseMutationOptions,
     type QueryKey,
 } from "@tanstack/react-query";
 import * as React from "react";
+
+const FIVE_MINUTES = 5 * 60 * 1000;
 
 // ===========================================
 // Types
@@ -58,7 +58,8 @@ export function useApiQuery<TData, TError = Error>(
     const {
         enabled = true,
         keepPreviousData: keepPrevious = false,
-        staleTime = 5 * 60 * 1000, // 5 minutes default
+        staleTime = FIVE_MINUTES,
+        cacheTime,
         retry = 1,
         initialData,
         onSuccess,
@@ -71,6 +72,7 @@ export function useApiQuery<TData, TError = Error>(
         enabled,
         placeholderData: keepPrevious ? keepPreviousData : undefined,
         staleTime,
+        gcTime: cacheTime,
         retry,
         initialData,
     });
@@ -145,11 +147,18 @@ export interface UsePaginationOptions {
  * Hook for managing pagination state
  */
 export function usePagination(options?: UsePaginationOptions) {
-    const [pagination, setPagination] = React.useState<PaginationState>({
+    const initialState = React.useMemo<PaginationState>(() => ({
         page: options?.initialPage ?? 0,
         size: options?.initialSize ?? 10,
         sortBy: options?.initialSortBy ?? "createdAt",
         sortDirection: options?.initialSortDirection ?? "DESC",
+    }), [options?.initialPage, options?.initialSize, options?.initialSortBy, options?.initialSortDirection]);
+
+    const [pagination, setPagination] = React.useState<PaginationState>({
+        page: initialState.page,
+        size: initialState.size,
+        sortBy: initialState.sortBy,
+        sortDirection: initialState.sortDirection,
     });
 
     const setPage = React.useCallback((page: number) => {
@@ -176,13 +185,8 @@ export function usePagination(options?: UsePaginationOptions) {
     }, []);
 
     const reset = React.useCallback(() => {
-        setPagination({
-            page: options?.initialPage ?? 0,
-            size: options?.initialSize ?? 10,
-            sortBy: options?.initialSortBy ?? "createdAt",
-            sortDirection: options?.initialSortDirection ?? "DESC",
-        });
-    }, [options]);
+        setPagination(initialState);
+    }, [initialState]);
 
     return {
         ...pagination,
