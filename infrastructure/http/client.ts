@@ -61,11 +61,11 @@ let isRefreshing = false;
 let failedQueue: FailedRequest[] = [];
 
 const processQueue = (error: unknown, token: string | null = null) => {
-    failedQueue.forEach((prom) => {
+    failedQueue.forEach((promise) => {
         if (error) {
-            prom.reject(error);
+            promise.reject(error);
         } else {
-            prom.resolve(token!);
+            promise.resolve(token!);
         }
     });
     failedQueue = [];
@@ -157,8 +157,21 @@ httpClient.interceptors.response.use(
             message: (data as Record<string, unknown>)?.["message"],
         });
 
+        // Handle 403 Forbidden - Redirect to Login
+        if (status === HTTP_STATUS.FORBIDDEN) {
+            httpLogger.error("Access forbidden - redirecting to login", { url: originalRequest?.url });
+            if (typeof window !== "undefined") {
+                window.location.href = "/login?error=forbidden";
+            }
+            return Promise.reject(new AuthenticationError("Access forbidden"));
+        }
+
         // Handle 401 Unauthorized - Token Refresh
-        if (status === HTTP_STATUS.UNAUTHORIZED && !originalRequest._retry) {
+        const isAuthRoute = originalRequest?.url?.includes("/auth/login") ||
+            originalRequest?.url?.includes("/auth/register") ||
+            originalRequest?.url?.includes("/auth/refresh-token");
+
+        if (status === HTTP_STATUS.UNAUTHORIZED && !originalRequest._retry && !isAuthRoute) {
             if (isRefreshing) {
                 return new Promise((resolve, reject) => {
                     failedQueue.push({ resolve, reject });
@@ -183,6 +196,10 @@ httpClient.interceptors.response.use(
                 authStorage.clearTokens();
                 processQueue(new AuthenticationError("No refresh token available"), null);
                 isRefreshing = false;
+
+                if (typeof window !== "undefined") {
+                    window.location.href = "/login?error=unauthorized";
+                }
                 return Promise.reject(new AuthenticationError("Authentication required"));
             }
 
@@ -215,7 +232,7 @@ httpClient.interceptors.response.use(
 
                 // Redirect to login page
                 if (typeof window !== "undefined") {
-                    window.location.href = "/login";
+                    window.location.href = "/login?error=session_expired";
                 }
 
                 httpLogger.error("Token refresh failed", refreshError);

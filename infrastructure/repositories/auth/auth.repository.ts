@@ -15,20 +15,22 @@ export const AuthRepository: IAuthRepository = {
     login: async (dto: LoginDto): Promise<AuthResponse> => {
         // API: /api/auth/login/local
         const { data } = await httpClient.post(`${BASE_URL}/login/local`, dto);
+        const result = data.data || {};
         return {
-            token: data.data.accessToken,
-            refreshToken: data.data.refreshToken,
-            userId: data.data.userId
+            token: result.accessToken || result.token || "",
+            refreshToken: result.refreshToken || "",
+            userId: result.userId || ""
         };
     },
 
     loginGoogle: async (dto: GoogleLoginDto): Promise<AuthResponse> => {
         // API: /api/auth/login/google
         const { data } = await httpClient.post(`${BASE_URL}/login/google`, dto);
+        const result = data.data || {};
         return {
-            token: data.data.accessToken,
-            refreshToken: data.data.refreshToken,
-            userId: data.data.userId
+            token: result.token || result.accessToken || "",
+            refreshToken: result.refreshToken || "",
+            userId: result.userId || ""
         };
     },
 
@@ -43,10 +45,11 @@ export const AuthRepository: IAuthRepository = {
 
     refreshToken: async (dto: RefreshTokenDto): Promise<AuthResponse> => {
         const { data } = await httpClient.post(`${BASE_URL}/refresh-token`, dto);
+        const result = data.data || {};
         return {
-            token: data.data.accessToken || data.data.token,
-            refreshToken: data.data.refreshToken,
-            userId: data.data.userId
+            token: result.accessToken || result.token || "",
+            refreshToken: result.refreshToken || "",
+            userId: result.userId || ""
         };
     },
 

@@ -3,7 +3,7 @@
 import { Facebook, Youtube, Instagram, Linkedin, Chrome } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useState, useContext } from "react"
+import { useState, useContext, useEffect } from "react"
 
 import { SocialButton } from "@/components/features/home/FormElements"
 import { Button } from "@/components/ui/button"
@@ -12,6 +12,7 @@ import { httpClient } from "@/infrastructure/http/client"
 import { AuthRepository } from "@/infrastructure/repositories/auth/auth.repository"
 import { UserRepository } from "@/infrastructure/repositories/user/user.repository"
 import { AuthContext } from "@/shared/providers/auth.provider"
+import { authStorage } from "@/lib/storage"
 
 export default function LoginClient() {
     const router = useRouter()
@@ -22,6 +23,18 @@ export default function LoginClient() {
         username: "",
         password: ""
     })
+
+    useEffect(() => {
+        const searchParams = new URLSearchParams(window.location.search);
+        const errorType = searchParams.get("error");
+        if (errorType === "forbidden") {
+            setError("Your session has no permission or expired. Please login again.");
+        } else if (errorType === "session_expired") {
+            setError("Your session has expired. Please login again.");
+        } else if (errorType === "unauthorized") {
+            setError("Please login to access this feature.");
+        }
+    }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -34,39 +47,101 @@ export default function LoginClient() {
 
         try {
             // 1. Login to get token
-            const { token, refreshToken } = await AuthRepository.login({
+            const { token, refreshToken, userId } = await AuthRepository.login({
                 username: formData.username,
                 password: formData.password
             });
 
-            // 2. Set default auth header for subsequent requests
+            // 2. Store tokens in storage (for httpClient interceptor to work)
+            authStorage.setTokens(token, refreshToken);
+
+            // 3. Set default auth header for subsequent requests
             httpClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-            // 3. Fetch user profile
-            const userProfile = await UserRepository.getMe();
+            // 4. Fetch user profile (Try but don't block if it fails)
+            let finalUser = {
+                userId,
+                username: formData.username,
+                email: "",
+                role: "CUSTOMER"
+            };
 
-            // 4. Update Auth Context
-            if (auth) {
-                // Map UserProfileDto to the User interface expected by AuthContext
-                // You might need to adjust AuthContext's User interface or the mapping here
-                const contextUser = {
+            try {
+                const userProfile = await UserRepository.getMe();
+                finalUser = {
                     userId: userProfile.userId,
                     username: userProfile.username,
                     email: userProfile.email,
-                    role: userProfile.role || "CUSTOMER", // explicit role or default
+                    role: userProfile.role || "CUSTOMER",
                 };
-
-                auth.login(token, refreshToken, contextUser);
+            } catch (profileErr) {
+                console.warn("Failed to fetch profile after login:", profileErr);
             }
 
-            // 5. Redirect
+            // 5. Update Auth Context
+            if (auth) {
+                auth.login(token, refreshToken, finalUser);
+            }
+
+            // 6. Redirect
             router.push("/")
+            router.refresh()
         } catch (err: unknown) {
-            console.error(err)
+            console.error("Login Error Details:", err)
             const errorObj = err as { response?: { data?: { message?: string } } };
             setError(errorObj.response?.data?.message || "Login failed. Please check your credentials.")
         } finally {
             setLoading(false)
+        }
+    }
+
+    const handleGoogleLogin = async () => {
+        const idToken = prompt("Please enter your Google ID Token for testing:");
+        if (!idToken) return;
+
+        setLoading(true);
+        setError("");
+
+        try {
+            const { token, refreshToken, userId } = await AuthRepository.loginGoogle({ idToken });
+
+            // Store tokens immediately
+            authStorage.setTokens(token, refreshToken);
+            httpClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+            // Try to fetch profile but don't block if it fails (can fetch later or show minimal profile)
+            let finalUser = {
+                userId,
+                username: "google_user",
+                email: "",
+                role: "CUSTOMER"
+            };
+
+            try {
+                const userProfile = await UserRepository.getMe();
+                finalUser = {
+                    userId: userProfile.userId,
+                    username: userProfile.username,
+                    email: userProfile.email,
+                    role: userProfile.role || "CUSTOMER"
+                };
+            } catch (profileErr) {
+                console.warn("Failed to fetch profile after Google login:", profileErr);
+            }
+
+            if (auth) {
+                auth.login(token, refreshToken, finalUser);
+            }
+
+            router.push("/");
+            router.refresh();
+        } catch (err: unknown) {
+            console.error("Google Login Error:", err);
+            const errorObj = err as { response?: { data?: { message?: string } } };
+            const msg = errorObj.response?.data?.message || "Google login failed. Please check your token.";
+            setError(msg);
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -129,6 +204,8 @@ export default function LoginClient() {
                             <SocialButton
                                 provider="Google"
                                 icon={<Chrome className="h-5 w-5 text-red-500" />}
+                                onClick={handleGoogleLogin}
+                                type="button"
                             />
                             {/* <SocialButton
                                 provider="FaceBook"

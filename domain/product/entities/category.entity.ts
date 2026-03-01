@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const CategoryEntitySchema = z.object({
-    categoryId: z.number(),
+    categoryId: z.union([z.string(), z.number()]).transform((val) => Number(val)),
     name: z.string(),
 });
 

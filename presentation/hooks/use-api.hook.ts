@@ -72,7 +72,7 @@ export function useApiQuery<TData, TError = Error>(
         enabled,
         placeholderData: keepPrevious ? keepPreviousData : undefined,
         staleTime,
-        gcTime: cacheTime,
+        ...(cacheTime !== undefined && { gcTime: cacheTime }),
         retry,
         initialData,
     });

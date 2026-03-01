@@ -1,9 +1,11 @@
-import type { NextRequest} from "next/server";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-export default function proxy(req: NextRequest) {
+import { COOKIE_NAMES } from "@/shared/constants";
+
+export default function middleware(req: NextRequest) {
   const url = req.nextUrl.pathname;
-  const token = req.cookies.get("token")?.value;
+  const token = req.cookies.get(COOKIE_NAMES.ACCESS_TOKEN)?.value;
 
   const protectedRoutes = ["/cart", "/checkout", "/profile"];
   if (!token && protectedRoutes.includes(url)) {

@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserProfileDto, UpdateProfileDto } from "@/domain/user/dto/profile.dto";
 import { UserRepository } from "@/infrastructure/repositories/user/user.repository";
+import { authStorage } from "@/lib/storage";
 import { useAuth } from "@/presentation/hooks/use-auth.hook";
 
 
@@ -37,9 +38,9 @@ export default function ProfilePage() {
     });
 
     useEffect(() => {
-        const token = localStorage.getItem("accessToken");
+        const token = authStorage.getAccessToken();
         if (!token) {
-            router.push("/login");
+            router.push("/login?error=unauthorized");
         }
     }, [router]);
 

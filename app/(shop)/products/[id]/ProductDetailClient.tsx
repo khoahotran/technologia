@@ -49,6 +49,15 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
     }
 
     if (error || !product) {
+        // if the backend returned a 404 we want to send the user to the not-found page
+        if (
+            error &&
+            (error as any).statusCode === 404 // axios/interceptor throws NotFoundError
+        ) {
+            router.push("/not-found");
+            return null; // render nothing while redirecting
+        }
+
         return (
             <div className="container mx-auto px-4 py-16 text-center">
                 <h2 className="text-2xl font-bold text-gray-900">Failed to load product</h2>
@@ -103,8 +112,22 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                             toast.success(`Added ${iterations} item(s) to cart`);
                         }
                     },
-                    onError: () => {
-                        toast.error("Failed to add to cart. Please login and try again.");
+                    onError: (err: unknown) => {
+                        // try to pull message returned from backend
+                        let message = "Failed to add to cart.";
+                        const axiosErr = err as any;
+                        if (axiosErr?.response?.data?.message) {
+                            message = axiosErr.response.data.message;
+                        }
+                        // if unauthenticated redirect to login page after showing error
+                        if (
+                            axiosErr?.statusCode === 401 ||
+                            axiosErr?.response?.status === 401
+                        ) {
+                            message = "Please login to add items to cart.";
+                            router.push("/login");
+                        }
+                        toast.error(message);
                     },
                 }
             );

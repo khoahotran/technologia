@@ -4,29 +4,33 @@ import { forwardJsonToUserService, setAccessTokenCookie } from "@/lib/api-route"
 import { HTTP_STATUS } from "@/shared/constants";
 
 /**
- * Google Login API Route
- * POST /api/auth/login/google
+ * Local Login API Route
+ * POST /api/auth/login/local
  */
 
 export async function POST(request: Request) {
     try {
         const body = await request.json();
+        const { username, password } = body;
+
         const response = await forwardJsonToUserService({
-            path: "/api/auth/login/google",
+            path: "/api/auth/login/local",
             method: "POST",
-            body,
-            fallbackError: "Google Login failed",
-            logLabel: "Google Login",
+            body: { username, password },
+            fallbackError: "Login failed",
+            logLabel: "Login Local",
         });
 
         if (!response.ok) {
             return response;
         }
 
-        const responseData = await response.json();
-        const backendData = responseData.data ?? {};
-        const accessToken = backendData.token || backendData.accessToken;
-        const refreshToken = backendData.refreshToken;
+        const data = await response.json();
+        // Expected structure: { status: 200, data: { accessToken, refreshToken, userId }, message }
+
+        const { data: backendData } = data;
+        const accessToken = backendData.accessToken || backendData.access_token;
+        const refreshToken = backendData.refreshToken || backendData.refresh_token;
 
         if (typeof accessToken === "string" && accessToken.length > 0) {
             await setAccessTokenCookie(accessToken);
@@ -41,7 +45,7 @@ export async function POST(request: Request) {
             },
         });
     } catch (error) {
-        console.error("Google Login Proxy Error:", error);
+        console.error("Login Local Proxy Error:", error);
         return NextResponse.json(
             { error: "Internal Server Error" },
             { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }

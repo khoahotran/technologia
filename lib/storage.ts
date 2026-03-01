@@ -138,7 +138,7 @@ class StorageService {
      */
     set<T>(key: string, value: T, options: StorageOptions = {}): void {
         const type = options.type ?? this.defaultType;
-        const serialized = JSON.stringify(value);
+        const serialized = typeof value === "string" ? value : JSON.stringify(value);
 
         if (type === "cookie") {
             setCookie(key, serialized, options);
@@ -182,11 +182,23 @@ class StorageService {
 
         if (value === null) return null;
 
-        try {
-            return JSON.parse(value) as T;
-        } catch {
-            return value as unknown as T;
+        // Optimized parsing: only parse if it looks like JSON object or array or boolean
+        if (
+            typeof value === "string" &&
+            (value.startsWith("{") ||
+                value.startsWith("[") ||
+                value === "true" ||
+                value === "false" ||
+                (value.startsWith("\"") && value.endsWith("\"")))
+        ) {
+            try {
+                return JSON.parse(value) as T;
+            } catch {
+                return value as unknown as T;
+            }
         }
+
+        return value as unknown as T;
     }
 
     /**

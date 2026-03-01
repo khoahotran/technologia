@@ -35,7 +35,7 @@ export default function ShippingClient() {
 
     const [paymentMethod, setPaymentMethod] = useState<"bank" | "wallet" | "cod">("bank");
     const [addresses] = useState<CheckoutAddress[]>(() => getCheckoutAddresses());
-    const { data: cart, isLoading, isError, refetch } = useCartQuery();
+    const { data: cart, isLoading, isError, error: cartError, refetch } = useCartQuery();
     const removeMutation = useRemoveCartItemMutation();
     const { mutate: calculatePrice, data: calculatedPrice } = useCartPriceMutation();
 
@@ -145,6 +145,15 @@ export default function ShippingClient() {
     }
 
     if (isError) {
+        // if the cart query threw a 404, the user probably has no cart, redirect to cart page
+        if (
+            cartError &&
+            (cartError as any).statusCode === 404
+        ) {
+            router.push("/cart");
+            return null;
+        }
+
         return (
             <div className="min-h-screen bg-[#F9F8FE] flex items-center justify-center px-4">
                 <div className="bg-white p-6 rounded-xl border border-gray-100 text-center max-w-md">

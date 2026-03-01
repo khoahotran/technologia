@@ -3,7 +3,7 @@ import { z } from "zod";
 import { ProductVariantSchema } from "./product.entity";
 
 export const FilterResponseEntitySchema = z.object({
-    productId: z.string(),
+    productId: z.union([z.string(), z.number()]).transform(String),
     name: z.string(),
     description: z.string().optional(),
     displayPrice: z.union([z.string(), z.number()]).transform((val) => Number(val)).optional(),

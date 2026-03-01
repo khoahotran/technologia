@@ -1,6 +1,8 @@
 "use client";
 
 import { createContext, useEffect, useState, ReactNode } from "react";
+import { authStorage, storage } from "@/lib/storage";
+import { STORAGE_KEYS } from "@/shared/constants";
 
 // Define the shape of the context
 interface AuthContextType {
@@ -12,7 +14,7 @@ interface AuthContextType {
 }
 
 interface User {
-  userId: number;
+  userId: number | string;
   username: string;
   email: string;
   role: string;
@@ -26,31 +28,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
 
   useEffect(() => {
-    // Check localStorage on mount
-    const storedToken = localStorage.getItem("access_token");
-    const storedUser = localStorage.getItem("user");
+    // Check storage on mount
+    const storedToken = authStorage.getAccessToken();
+    const storedUser = storage.get<User>(STORAGE_KEYS.USER_DATA);
 
     if (storedToken && storedUser) {
       const handle = setTimeout(() => {
         setToken(storedToken);
-        setUser(JSON.parse(storedUser));
+        setUser(storedUser);
       }, 0);
       return () => clearTimeout(handle);
     }
   }, []);
 
   const login = (newToken: string, newRefreshToken: string, newUser: User) => {
-    localStorage.setItem("access_token", newToken);
-    localStorage.setItem("refresh_token", newRefreshToken);
-    localStorage.setItem("user", JSON.stringify(newUser));
+    authStorage.setTokens(newToken, newRefreshToken);
+    storage.set(STORAGE_KEYS.USER_DATA, newUser);
     setToken(newToken);
     setUser(newUser);
   };
 
   const logout = () => {
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("refresh_token");
-    localStorage.removeItem("user");
+    authStorage.clearTokens();
+    storage.remove(STORAGE_KEYS.USER_DATA);
     setToken(null);
     setUser(null);
     // router.push("/login");

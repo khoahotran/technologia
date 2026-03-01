@@ -3,7 +3,7 @@ import { LoginDto, RegisterDto, RefreshTokenDto, ForgotPasswordDto, ResetPasswor
 export interface AuthResponse {
     token: string;
     refreshToken: string;
-    userId: number;
+    userId: number | string;
 }
 
 export interface IAuthRepository {

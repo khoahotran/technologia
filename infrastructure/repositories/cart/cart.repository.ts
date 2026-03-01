@@ -98,7 +98,8 @@ export const CartRepository = {
     },
 
     async remove(cartItemId: string) {
-        const { data } = await httpClient.patch(`/cart-items/delete/${cartItemId}`);
+        // backend expects DELETE for removing a cart item (see Postman collection)
+        const { data } = await httpClient.delete(`/cart-items/delete/${cartItemId}`);
         return CartItemMutationResponseSchema.parse(data);
     },
 

@@ -3,7 +3,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { useState, useEffect } from "react";
-// import { setupMocks } from "@/infrastructure/http/mock";
 
 export function QueryProvider({ children }: { children: ReactNode }) {
   const [queryClient] = useState(
@@ -21,10 +20,6 @@ export function QueryProvider({ children }: { children: ReactNode }) {
         },
       })
   );
-  useEffect(() => {
-    // Initialize mocks on mount
-    // setupMocks();
-  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

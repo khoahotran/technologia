@@ -13,7 +13,7 @@ export const ProductVariantSchema = z.object({
 });
 
 export const ProductEntitySchema = BaseEntitySchema.extend({
-    productId: z.string(), // API returns UUID string
+    productId: z.union([z.string(), z.number()]).transform(String), // API returns UUID string OR number
     name: z.string(),
     description: z.string().optional(),
     totalStock: z.number().optional(),

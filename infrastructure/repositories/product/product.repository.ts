@@ -12,6 +12,7 @@ import {
   createPaginatedResponseSchema,
   normalizePagingParams,
 } from "@/infrastructure/repositories/base.repository";
+import { REQUEST_CONFIG } from "@/shared";
 
 // ===========================================
 // Constants
@@ -68,10 +69,10 @@ export const ProductRepository: IProductRepository = {
    */
   searchAndFilter: async (params: ProductSearchParams): Promise<FilterProductResponse> => {
     const paging = normalizePagingParams({
-      page: params.page,
-      size: params.size,
+      page: params.page ?? 0,
+      size: params.size ?? 10,
       sortBy: params.sortBy ?? "createdAt",
-      sortDirection: params.sortDirection as "ASC" | "DESC" | undefined,
+      sortDirection: params.sortDirection as "ASC" | "DESC" || REQUEST_CONFIG.DEFAULT_SORT_DIRECTION,
     });
 
     const { data } = await httpClient.get(`${BASE_PATH}/search-filter`, {

@@ -3,9 +3,13 @@ const nextConfig = {
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "placehold.co" },
-      { protocol: "https", hostname: "m.media-amazon.com" },
-      { protocol: "https", hostname: "rukminim2.flixcart.com" },
-      { protocol: "https", hostname: "res.cloudinary.com" },
+      { protocol: "https", hostname: "m.media-amazon.com", pathname: "/**" },
+      {
+        protocol: "https",
+        hostname: "rukminim2.flixcart.com",
+        pathname: "/**",
+      },
+      { protocol: "https", hostname: "res.cloudinary.com", pathname: "/**" },
     ],
   },
   async headers() {
