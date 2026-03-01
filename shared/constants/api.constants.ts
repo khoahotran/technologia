@@ -24,6 +24,12 @@ export const SERVICE_URLS = {
     /** Payment service (orders, payments) */
     PAYMENT_SERVICE: process.env['NEXT_PUBLIC_PAYMENT_SERVICE_URL'] || 'http://localhost:8083',
 
+    /** Cart service (shopping cart) */
+    CART_SERVICE:
+        process.env['NEXT_PUBLIC_CART_SERVICE_URL'] ||
+        process.env['NEXT_PUBLIC_PAYMENT_SERVICE_URL'] ||
+        'http://localhost:8083',
+
     /** Internal Next.js API (proxy) */
     INTERNAL_API: process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:3000/api',
 } as const;

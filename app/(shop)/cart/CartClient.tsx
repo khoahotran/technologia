@@ -1,120 +1,176 @@
-"use client"
+"use client";
 
-import { Ticket } from "lucide-react"
-import { useState } from "react"
+import { Ticket } from "lucide-react";
+import { useMemo, useState, useEffect } from "react";
+import { toast } from "sonner";
 
-import { CartItem } from "@/components/features/cart/CartItem"
-import { CartSummary } from "@/components/features/cart/CartSummary"
-import { Subscribe } from "@/components/features/home/Subscribe"
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
+import { CartItem } from "@/components/features/cart/CartItem";
+import { CartSummary } from "@/components/features/cart/CartSummary";
+import { Subscribe } from "@/components/features/home/Subscribe";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+    useCartPriceMutation,
+    useCartQuery,
+    useDecreaseCartItemMutation,
+    useIncreaseCartItemMutation,
+    useRemoveCartItemMutation,
+} from "@/hooks/use-cart-api";
 
 export default function CartClient() {
-    // Mock Data
-    const [items, setItems] = useState([
-        {
-            id: "1",
-            title: "IPHONE 12 128G",
-            price: 13999999,
-            image: "https://placehold.co/400x400/fef3c7/fef3c7",
-            quantity: 1,
-            isSelected: false,
-        },
-        {
-            id: "2",
-            title: "Sony WH-1000XM4",
-            price: 8470000,
-            image: "https://placehold.co/400x400/e5e7eb/e5e7eb",
-            quantity: 1,
-            isSelected: true,
-        },
-        {
-            id: "3",
-            title: "Beats Solo 3 Wireless",
-            price: 3790000,
-            image: "https://placehold.co/400x400/f3f4f6/f3f4f6",
-            quantity: 1,
-            isSelected: false,
-        },
-    ])
+    const { data: cart, isLoading, isError, refetch } = useCartQuery();
+    const increaseMutation = useIncreaseCartItemMutation();
+    const decreaseMutation = useDecreaseCartItemMutation();
+    const removeMutation = useRemoveCartItemMutation();
+    const { mutate: calculatePrice, data: calculatedPrice } = useCartPriceMutation();
+
+    const items = useMemo(() => cart?.cartItems ?? [], [cart]);
+    const [selectedIds, setSelectedIds] = useState<string[]>([]);
+    const [hasUserSelection, setHasUserSelection] = useState(false);
+    const effectiveSelectedIds = hasUserSelection
+        ? selectedIds
+        : items.map((item) => item.cartItemId);
 
     const toggleItem = (id: string) => {
-        setItems(items.map(item =>
-            item.id === id ? { ...item, isSelected: !item.isSelected } : item
-        ))
-    }
-
-    const updateQuantity = (id: string, quantity: number) => {
-        setItems(items.map(item =>
-            item.id === id ? { ...item, quantity } : item
-        ))
-    }
-
-    const removeItem = (id: string) => {
-        setItems(items.filter(item => item.id !== id))
-    }
+        setHasUserSelection(true);
+        setSelectedIds((prev) =>
+            prev.includes(id) ? prev.filter((itemId) => itemId !== id) : [...prev, id]
+        );
+    };
 
     const toggleAll = (checked: boolean) => {
-        setItems(items.map(item => ({ ...item, isSelected: checked })))
+        setHasUserSelection(true);
+        setSelectedIds(checked ? items.map((item) => item.cartItemId) : []);
+    };
+
+    const allSelected = items.length > 0 && effectiveSelectedIds.length === items.length;
+
+    useEffect(() => {
+        if (effectiveSelectedIds.length === 0) return;
+        calculatePrice({
+            includeDiscount: false,
+            cartItemIds: effectiveSelectedIds,
+        });
+    }, [effectiveSelectedIds, calculatePrice]);
+
+    const localComputedTotal = useMemo(
+        () =>
+            items
+                .filter((item) => effectiveSelectedIds.includes(item.cartItemId))
+                .reduce(
+                    (sum, item) =>
+                        sum + (item.priceAfterDiscount ?? item.price ?? 0) * item.currentQuantity,
+                    0
+                ),
+        [items, effectiveSelectedIds]
+    );
+
+    const total = effectiveSelectedIds.length === 0 ? 0 : calculatedPrice ?? localComputedTotal;
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen bg-[#F9F8FE] flex items-center justify-center">
+                <p className="text-gray-500">Loading cart...</p>
+            </div>
+        );
     }
 
-    const allSelected = items.length > 0 && items.every(item => item.isSelected)
-    const total = items
-        .filter(item => item.isSelected)
-        .reduce((sum, item) => sum + item.price * item.quantity, 0)
+    if (isError) {
+        return (
+            <div className="min-h-screen bg-[#F9F8FE] flex items-center justify-center px-4">
+                <div className="bg-white p-6 rounded-xl border border-gray-100 text-center max-w-md">
+                    <p className="text-red-500 font-medium">Cannot load cart from backend.</p>
+                    <p className="text-sm text-gray-500 mt-2">
+                        Please login first or check cart service connection.
+                    </p>
+                    <button
+                        type="button"
+                        onClick={() => refetch()}
+                        className="mt-4 px-4 py-2 rounded-lg bg-[#8AB0C3] text-white"
+                    >
+                        Retry
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-[#F9F8FE] pb-20">
             <div className="container mx-auto px-4 py-8">
                 <div className="flex flex-col lg:flex-row gap-8">
-                    {/* Main Cart Content */}
                     <div className="flex-1 space-y-6">
-                        {/* Select All Bar */}
                         <div className="bg-white p-4 rounded-xl border border-gray-100 flex items-center justify-between">
                             <div className="flex items-center gap-4">
                                 <Checkbox
                                     checked={allSelected}
-                                    onCheckedChange={(checked) => toggleAll(checked as boolean)}
+                                    onCheckedChange={(checked) => toggleAll(Boolean(checked))}
                                 />
                                 <span className="font-medium text-gray-900">Select All</span>
                             </div>
-                            <Button variant="ghost" className="text-red-500 hover:text-red-600 hover:bg-red-50 font-medium">
+                            <button
+                                type="button"
+                                className="text-red-500 hover:text-red-600 font-medium"
+                                onClick={() => {
+                                    effectiveSelectedIds.forEach((id) => {
+                                        removeMutation.mutate(id);
+                                    });
+                                    toast.success("Removed selected items");
+                                }}
+                            >
                                 REMOVE
-                            </Button>
+                            </button>
                         </div>
 
-                        {/* Cart Items */}
                         <div className="space-y-4">
                             {items.map((item) => (
                                 <CartItem
-                                    key={item.id}
-                                    {...item}
-                                    onToggle={() => toggleItem(item.id)}
-                                    onQuantityChange={(q) => updateQuantity(item.id, q)}
-                                    onRemove={() => removeItem(item.id)}
+                                    key={item.cartItemId}
+                                    id={item.cartItemId}
+                                    title={item.name}
+                                    price={item.priceAfterDiscount ?? item.price ?? 0}
+                                    image={item.mainImage ?? "https://placehold.co/400x400/f3f4f6/f3f4f6"}
+                                    quantity={item.currentQuantity}
+                                    isSelected={effectiveSelectedIds.includes(item.cartItemId)}
+                                    onToggle={() => toggleItem(item.cartItemId)}
+                                    onQuantityChange={(nextQty) => {
+                                        if (nextQty > item.currentQuantity) {
+                                            increaseMutation.mutate(item.cartItemId);
+                                            return;
+                                        }
+                                        if (nextQty < item.currentQuantity) {
+                                            decreaseMutation.mutate(item.cartItemId);
+                                        }
+                                    }}
+                                    onRemove={() => removeMutation.mutate(item.cartItemId)}
                                 />
                             ))}
+                            {items.length === 0 && (
+                                <div className="bg-white p-8 rounded-xl border border-gray-100 text-center text-gray-500">
+                                    Your cart is empty. Start adding products from the product list.
+                                </div>
+                            )}
                         </div>
                     </div>
 
-                    {/* Sidebar */}
                     <div className="w-full lg:w-96 space-y-6">
-                        {/* Promo Code */}
-                        <div className="bg-[#D3E4F4] p-4 rounded-xl flex items-center justify-center gap-2 text-gray-700 font-medium cursor-pointer hover:bg-[#C1D8EB] transition-colors">
+                        <div className="bg-[#D3E4F4] p-4 rounded-xl flex items-center justify-center gap-2 text-gray-700 font-medium">
                             <Ticket className="h-5 w-5" />
-                            <span>I have promo code</span>
+                            <span>Promo code support is mocked</span>
                         </div>
 
-                        {/* Summary */}
-                        <CartSummary total={total} />
+                        <CartSummary
+                            total={total}
+                            itemCount={effectiveSelectedIds.length}
+                            disableCheckout={effectiveSelectedIds.length === 0}
+                            checkoutHref={`/shipping?items=${effectiveSelectedIds.join(",")}`}
+                        />
                     </div>
                 </div>
             </div>
 
-            {/* Subscribe Section */}
             <div className="mt-20">
                 <Subscribe variant="rounded" className="max-w-6xl" />
             </div>
         </div>
-    )
+    );
 }

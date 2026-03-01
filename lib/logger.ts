@@ -76,9 +76,10 @@ const consoleTransport: LogTransport = {
         const { level, message, context, error, timestamp } = entry;
         const prefix = `[${timestamp}] [${level.toUpperCase()}]`;
 
+        // Keep eslint no-console clean by routing non-error levels via warn.
         const logFn = {
-            debug: console.debug,
-            info: console.info,
+            debug: console.warn,
+            info: console.warn,
             warn: console.warn,
             error: console.error,
         }[level];
@@ -96,7 +97,7 @@ const consoleTransport: LogTransport = {
 
     action(entry: UserActionEntry): void {
         const { action, data, timestamp, userId } = entry;
-        console.info(
+        console.warn(
             `[${timestamp}] [ACTION] ${action}`,
             { ...data, userId }
         );

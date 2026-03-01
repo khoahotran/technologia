@@ -75,7 +75,7 @@ export async function forwardJsonToUserService(options: ForwardToUserServiceOpti
                 "Content-Type": "application/json",
                 ...(authHeader ? { Authorization: authHeader } : {}),
             },
-            body: body ? JSON.stringify(body) : undefined,
+            ...(body ? { body: JSON.stringify(body) } : {}),
         });
 
         const data = await parseJsonSafe(backendRes);

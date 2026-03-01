@@ -1,83 +1,178 @@
-"use client"
+"use client";
 
-import { ArrowLeft } from "lucide-react"
-import Link from "next/link"
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { addCheckoutAddress } from "@/lib/checkout-flow";
+
+interface AddressFormState {
+    firstName: string;
+    lastName: string;
+    phone: string;
+    province: string;
+    city: string;
+    ward: string;
+    street: string;
+    number: string;
+    note: string;
+    isDefault: boolean;
+}
+
+const INITIAL_FORM: AddressFormState = {
+    firstName: "",
+    lastName: "",
+    phone: "",
+    province: "",
+    city: "",
+    ward: "",
+    street: "",
+    number: "",
+    note: "",
+    isDefault: false,
+};
 
 export default function CreateAddressClient() {
+    const router = useRouter();
+    const [form, setForm] = useState<AddressFormState>(INITIAL_FORM);
+
+    const setField = <K extends keyof AddressFormState>(key: K, value: AddressFormState[K]) => {
+        setForm((prev) => ({ ...prev, [key]: value }));
+    };
+
+    const handleSubmit = () => {
+        if (!form.firstName || !form.lastName || !form.phone || !form.province || !form.city || !form.ward || !form.street || !form.number) {
+            toast.error("Please fill all required fields");
+            return;
+        }
+
+        addCheckoutAddress({
+            fullName: `${form.firstName} ${form.lastName}`.trim(),
+            phone: form.phone,
+            line: `${form.number} ${form.street}`.trim(),
+            ward: form.ward,
+            city: form.city,
+            province: form.province,
+            note: form.note,
+            isDefault: form.isDefault,
+        });
+
+        toast.success("Address created");
+        router.push("/address-book");
+    };
+
     return (
         <div className="min-h-screen bg-[#F9F8FE]">
             <div className="container mx-auto px-4 py-8">
                 <div className="max-w-4xl mx-auto">
-                    {/* Back to shipping detail */}
                     <Link
-                        href="/shipping"
+                        href="/address-book"
                         className="inline-flex items-center gap-2 text-gray-700 hover:text-gray-900 mb-6"
                     >
                         <ArrowLeft className="h-4 w-4" />
-                        <span className="font-medium">Back to shipping detail</span>
+                        <span className="font-medium">Back to address book</span>
                     </Link>
 
-                    {/* Page Title */}
                     <h1 className="text-2xl font-bold text-gray-900 mb-8">Create new address</h1>
 
-                    {/* Address Form */}
                     <div className="bg-white p-8 rounded-xl border border-gray-100 space-y-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-gray-700">Firstname *</label>
-                                <Input className="bg-[#F9F8FE] border-gray-200" />
+                                <Input
+                                    value={form.firstName}
+                                    onChange={(e) => setField("firstName", e.target.value)}
+                                    className="bg-[#F9F8FE] border-gray-200"
+                                />
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-gray-700">Last name *</label>
-                                <Input className="bg-[#F9F8FE] border-gray-200" />
+                                <Input
+                                    value={form.lastName}
+                                    onChange={(e) => setField("lastName", e.target.value)}
+                                    className="bg-[#F9F8FE] border-gray-200"
+                                />
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-gray-700">Phone Number *</label>
-                                <Input className="bg-[#F9F8FE] border-gray-200" />
+                                <Input
+                                    value={form.phone}
+                                    onChange={(e) => setField("phone", e.target.value)}
+                                    className="bg-[#F9F8FE] border-gray-200"
+                                />
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-gray-700">Province *</label>
-                                <Input className="bg-[#F9F8FE] border-gray-200" />
+                                <Input
+                                    value={form.province}
+                                    onChange={(e) => setField("province", e.target.value)}
+                                    className="bg-[#F9F8FE] border-gray-200"
+                                />
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700">City</label>
-                                <Input className="bg-[#F9F8FE] border-gray-200" />
+                                <label className="text-sm font-medium text-gray-700">City *</label>
+                                <Input
+                                    value={form.city}
+                                    onChange={(e) => setField("city", e.target.value)}
+                                    className="bg-[#F9F8FE] border-gray-200"
+                                />
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-gray-700">Ward *</label>
-                                <Input className="bg-[#F9F8FE] border-gray-200" />
+                                <Input
+                                    value={form.ward}
+                                    onChange={(e) => setField("ward", e.target.value)}
+                                    className="bg-[#F9F8FE] border-gray-200"
+                                />
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-gray-700">Street *</label>
-                                <Input className="bg-[#F9F8FE] border-gray-200" />
+                                <Input
+                                    value={form.street}
+                                    onChange={(e) => setField("street", e.target.value)}
+                                    className="bg-[#F9F8FE] border-gray-200"
+                                />
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-gray-700">No *</label>
-                                <Input className="bg-[#F9F8FE] border-gray-200" />
+                                <Input
+                                    value={form.number}
+                                    onChange={(e) => setField("number", e.target.value)}
+                                    className="bg-[#F9F8FE] border-gray-200"
+                                />
                             </div>
                         </div>
 
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-gray-700">Note</label>
-                            <Textarea className="bg-[#F9F8FE] border-gray-200 min-h-[100px]" />
+                            <Textarea
+                                value={form.note}
+                                onChange={(e) => setField("note", e.target.value)}
+                                className="bg-[#F9F8FE] border-gray-200 min-h-[100px]"
+                            />
                         </div>
 
                         <div className="flex items-center space-x-2">
-                            <Checkbox id="default-address" />
+                            <Checkbox
+                                id="default-address"
+                                checked={form.isDefault}
+                                onCheckedChange={(checked) => setField("isDefault", Boolean(checked))}
+                            />
                             <label
                                 htmlFor="default-address"
                                 className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
@@ -87,15 +182,17 @@ export default function CreateAddressClient() {
                         </div>
 
                         <div className="flex justify-center pt-4">
-                            <Link href="/shipping">
-                                <Button className="w-64 h-12 bg-[#8AB0C3] hover:bg-[#7A9EB0] text-white font-semibold text-base">
-                                    Check out
-                                </Button>
-                            </Link>
+                            <Button
+                                type="button"
+                                onClick={handleSubmit}
+                                className="w-64 h-12 bg-[#8AB0C3] hover:bg-[#7A9EB0] text-white font-semibold text-base"
+                            >
+                                Save address
+                            </Button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    )
+    );
 }

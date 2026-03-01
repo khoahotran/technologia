@@ -1,6 +1,6 @@
 "use client";
 
-import { Check } from "lucide-react";
+import { Check, ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import * as React from "react";
@@ -53,7 +53,7 @@ export function ProductCard({
   isSelected,
   onSelect,
   badge,
-  onAddToCart: _onAddToCart,
+  onAddToCart,
   ...props
 }: ProductCardProps) {
   const router = useRouter();
@@ -63,6 +63,11 @@ export function ProductCard({
     if (id) {
       router.push(`/products/${id}`);
     }
+  };
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onAddToCart?.();
   };
 
   return (
@@ -153,12 +158,25 @@ export function ProductCard({
               <span className="text-xl font-bold text-primary">{price}</span>
 
               {variant === "default" && (
-                <Button
-                  className="bg-primary hover:bg-primary/90 text-white shadow-none rounded-full px-6 h-9 font-medium"
-                  onClick={handleDetailsClick}
-                >
-                  Details
-                </Button>
+                <div className="flex items-center gap-2">
+                  {onAddToCart && (
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      className="h-9 w-9 rounded-full border-primary/30 text-primary hover:bg-primary/10"
+                      onClick={handleAddToCart}
+                      aria-label={`Add ${title} to cart`}
+                    >
+                      <ShoppingCart className="h-4 w-4" />
+                    </Button>
+                  )}
+                  <Button
+                    className="bg-primary hover:bg-primary/90 text-white shadow-none rounded-full px-6 h-9 font-medium"
+                    onClick={handleDetailsClick}
+                  >
+                    Details
+                  </Button>
+                </div>
               )}
             </div>
           </div>

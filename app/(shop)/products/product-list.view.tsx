@@ -4,6 +4,7 @@ import { Loader2, Flame, Trophy, Music, Smartphone, Tag } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
+import { toast } from "sonner";
 
 import { FilterBar } from "@/components/features/product/FilterBar";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { useAddToCartMutation } from "@/hooks/use-cart-api";
 import { useBrandHook } from "@/presentation/hooks/use-brand.hook";
 import { useCategoryHook } from "@/presentation/hooks/use-category.hook";
 import { useProductHook } from "@/presentation/hooks/use-product.hook";
@@ -36,6 +38,7 @@ export default function ProductListView() {
     const [activeCategory, setActiveCategory] = useState<number | undefined>(undefined);
     const [activeBrand, setActiveBrand] = useState<number | undefined>(undefined);
     const [activeTab, setActiveTab] = useState<string>('all'); // 'all', 'hot', 'best', 'new'
+    const addToCartMutation = useAddToCartMutation();
 
     // Parse filters from URL
     const minPrice = searchParams.get('minPrice') ? Number(searchParams.get('minPrice')) : undefined;
@@ -297,6 +300,25 @@ export default function ProductListView() {
                                     variant="default"
                                     {...(product.status === 'NEW' && { badge: 'New' })}
                                     className="w-full bg-white rounded-[1.5rem]"
+                                    onAddToCart={() => {
+                                        const variantId = product.variants?.[0]?.variantId;
+                                        if (!variantId) {
+                                            toast.error("Product has no available variant");
+                                            return;
+                                        }
+
+                                        addToCartMutation.mutate(
+                                            {
+                                                productId: product.productId,
+                                                variantId,
+                                            },
+                                            {
+                                                onSuccess: () => toast.success("Added to cart"),
+                                                onError: () =>
+                                                    toast.error("Failed to add to cart. Please login and try again."),
+                                            }
+                                        );
+                                    }}
                                 />
                             ))}
                             {products?.length === 0 && (

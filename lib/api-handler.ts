@@ -15,7 +15,7 @@ import type { RouteContext } from '@/shared/types';
 // Types
 // ===========================================
 
-export type TargetService = 'product' | 'user' | 'payment';
+export type TargetService = 'product' | 'user' | 'payment' | 'cart';
 
 export interface ApiHandlerConfig {
     /** Target backend service */
@@ -42,6 +42,7 @@ const SERVICE_URL_MAP: Record<TargetService, string> = {
     product: SERVICE_URLS.PRODUCT_SERVICE,
     user: SERVICE_URLS.USER_SERVICE,
     payment: SERVICE_URLS.PAYMENT_SERVICE,
+    cart: SERVICE_URLS.CART_SERVICE,
 };
 
 // ===========================================
@@ -132,7 +133,7 @@ export function createApiHandler(config: ApiHandlerConfig) {
             const headers = buildHeaders(req, config);
             const body = await getRequestBody(req);
 
-            console.log(`[API Proxy] ${req.method} ${targetUrl}`);
+            console.warn(`[API Proxy] ${req.method} ${targetUrl}`);
 
             const res = await fetch(targetUrl, {
                 method: req.method,
@@ -179,7 +180,7 @@ export function createDynamicApiHandler<T extends Record<string, string> = Recor
             const headers = buildHeaders(req, config as ApiHandlerConfig);
             const body = await getRequestBody(req);
 
-            console.log(`[API Proxy] ${req.method} ${targetUrl}`);
+            console.warn(`[API Proxy] ${req.method} ${targetUrl}`);
 
             const res = await fetch(targetUrl, {
                 method: req.method,

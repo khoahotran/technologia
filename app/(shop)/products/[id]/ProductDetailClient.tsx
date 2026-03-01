@@ -21,8 +21,8 @@ import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/ui/product-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAddToCartMutation } from "@/hooks/use-cart-api";
 import { useProductDetail, useProductList } from "@/hooks/use-products";
-import { useCartStore } from "@/lib/stores"; // Using store directly or useCart hook
 import { formatCurrency, formatNumber } from "@/shared/utils/format";
 
 interface ProductDetailClientProps {
@@ -35,6 +35,7 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
     const [selectedImage, setSelectedImage] = useState<{ productId: string; image: string } | null>(null);
 
     const { product, isLoading, error } = useProductDetail(id);
+    const addToCartMutation = useAddToCartMutation();
 
     // Use category name as keyword for related products if we don't have ID
     // This is a heuristic since we only have category name in ProductEntity
@@ -42,8 +43,6 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
         search: product?.category,
         size: 4,
     });
-
-    const addToCart = useCartStore((state) => state.addItem);
 
     if (isLoading) {
         return <ProductDetailSkeleton />;
@@ -83,24 +82,33 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
     const originalPrice = displayPrice * 1.2;
 
     const handleAddToCart = () => {
-        addToCart(
-            {
-                id: product.productId,
-                name: product.name,
-                price: displayPrice,
-                image: currentImage,
-                rating: product.averageRating || 0,
-                reviewCount: 0,
-                category: product.category || "",
-                brand: product.brand || "",
-                description: product.description || "",
-                specifications: {},
-                inStock: (product.totalStock || 0) > 0,
-                sku: product.productId,
-            },
-            quantity
-        );
-        toast.success("Added to cart!");
+        const variantId = product.variants?.[0]?.variantId;
+        if (!variantId) {
+            toast.error("No available variant for this product");
+            return;
+        }
+
+        const iterations = Math.max(1, quantity);
+        let completed = 0;
+        for (let i = 0; i < iterations; i += 1) {
+            addToCartMutation.mutate(
+                {
+                    productId: product.productId,
+                    variantId,
+                },
+                {
+                    onSuccess: () => {
+                        completed += 1;
+                        if (completed === iterations) {
+                            toast.success(`Added ${iterations} item(s) to cart`);
+                        }
+                    },
+                    onError: () => {
+                        toast.error("Failed to add to cart. Please login and try again.");
+                    },
+                }
+            );
+        }
     };
 
     return (

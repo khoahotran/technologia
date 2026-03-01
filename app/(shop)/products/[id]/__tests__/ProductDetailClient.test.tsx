@@ -3,12 +3,17 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 import ProductDetailClient from '../ProductDetailClient'
 
+import * as CartApiHooks from '@/hooks/use-cart-api'
 import * as ProductHooks from '@/hooks/use-products'
 
 // Mock Hooks
 vi.mock('@/hooks/use-products', () => ({
     useProductDetail: vi.fn(),
     useProductList: vi.fn(),
+}))
+
+vi.mock('@/hooks/use-cart-api', () => ({
+    useAddToCartMutation: vi.fn(),
 }))
 
 // Mock Next Navigation
@@ -19,14 +24,7 @@ vi.mock('next/navigation', () => ({
     }),
 }))
 
-// Mock Cart Store
-const mockAddItem = vi.fn()
-vi.mock('@/lib/stores', () => ({
-    useCartStore: (_selector: unknown) => {
-        // Mock selector behavior if needed, or just return mock action
-        return mockAddItem
-    }
-}))
+const mockMutate = vi.fn()
 
 describe('ProductDetailClient', () => {
     type ProductDetailResult = ReturnType<typeof ProductHooks.useProductDetail>
@@ -38,7 +36,7 @@ describe('ProductDetailClient', () => {
         displayPrice: 100000,
         averageRating: 4.5,
         totalStock: 10,
-        variants: [{ images: ['/test.jpg'] }],
+        variants: [{ variantId: 'v1', images: ['/test.jpg'] }],
         category: 'Test',
         brandName: 'Brand',
         description: 'Desc',
@@ -47,6 +45,9 @@ describe('ProductDetailClient', () => {
 
     beforeEach(() => {
         vi.clearAllMocks()
+        vi.mocked(CartApiHooks.useAddToCartMutation).mockReturnValue({
+            mutate: mockMutate,
+        } as ReturnType<typeof CartApiHooks.useAddToCartMutation>)
     })
 
     it('should show loading state', () => {
@@ -102,8 +103,6 @@ describe('ProductDetailClient', () => {
         const buyButton = screen.getByText('Buy Now')
         fireEvent.click(buyButton)
 
-        expect(mockAddItem).toHaveBeenCalled()
-        // verify args if possible, but mock implementation of store selector is tricky here.
-        // verified call is enough for integration level given store unit tests exist.
+        expect(mockMutate).toHaveBeenCalled()
     })
 })
