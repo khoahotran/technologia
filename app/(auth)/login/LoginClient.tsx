@@ -9,9 +9,9 @@ import { useState, useContext, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { httpClient } from "@/infrastructure/http/client"
+import { authStorage } from "@/infrastructure/persistence/storage"
 import { AuthRepository } from "@/infrastructure/repositories/auth/auth.repository"
 import { UserRepository } from "@/infrastructure/repositories/user/user.repository"
-import { authStorage } from "@/lib/storage"
 import { AuthContext } from "@/shared/providers/auth.provider"
 
 export default function LoginClient() {
@@ -54,8 +54,28 @@ export default function LoginClient() {
             });
 
             // 2. Store tokens in storage
+            console.log("[LOGIN] After login - storing tokens", {
+                hasToken: !!token,
+                hasRefreshToken: !!refreshToken,
+                tokenLength: token?.length,
+                refreshTokenLength: refreshToken?.length,
+            });
+
             authStorage.setTokens(token, refreshToken);
+            console.log("[LOGIN] authStorage.setTokens() completed");
+
+            // Verify tokens were stored
+            const storedToken = authStorage.getAccessToken();
+            const storedRefresh = authStorage.getRefreshToken();
+            console.log("[LOGIN] Verification - tokens in storage after setTokens()", {
+                hasStoredToken: !!storedToken,
+                hasStoredRefresh: !!storedRefresh,
+                storedTokenMatches: storedToken === token,
+                storedRefreshMatches: storedRefresh === refreshToken,
+            });
+
             httpClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            console.log("[LOGIN] Updated httpClient default headers");
 
             // 3. User info
             let finalUser = {

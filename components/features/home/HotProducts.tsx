@@ -4,17 +4,12 @@ import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
 import { ProductCard } from "@/components/ui/product-card"
-import { useProducts } from "@/hooks/use-products";
+import { useProductList } from "@/presentation/hooks";
 
 const formatter = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' });
 
 export function HotProducts() {
-  const { usePagedProducts } = useProducts();
-  // Fetch 12 hottest products (assuming sort by views/sold/rating)
-  // Using "id" DESC as a placeholder for "hot", typically you'd sort by 'views' or 'sold'
-  const { data, isLoading } = usePagedProducts(0, 12, "id", "DESC");
-
-  const products = data?.data || [];
+  const { products, isLoading } = useProductList({ page: 0, size: 12, sortBy: "id", sortDirection: "DESC" });
 
   if (isLoading) {
     return (

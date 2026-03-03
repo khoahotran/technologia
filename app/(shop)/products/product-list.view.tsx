@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, Flame, Trophy, Music, Smartphone, Tag } from "lucide-react";
+import { Loader2, Flame, Trophy, Music, Tag, Smartphone } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -25,10 +25,12 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { useAddToCartMutation } from "@/hooks/use-cart-api";
-import { useBrandHook } from "@/presentation/hooks/use-brand.hook";
-import { useCategoryHook } from "@/presentation/hooks/use-category.hook";
-import { useProductHook } from "@/presentation/hooks/use-product.hook";
+import {
+    useAddToCartMutation,
+    useBrands,
+    useCategories,
+    useProductList
+} from "@/presentation/hooks";
 
 export default function ProductListView() {
     const searchParams = useSearchParams();
@@ -61,40 +63,31 @@ export default function ProductListView() {
         sortDirection = "DESC";
     }
 
-    // Handle "Hot", "Best", "New" tabs override
-    if (activeTab === 'hot') {
-        // sortBy = "soldCount"; // Example
-    } else if (activeTab === 'new') {
+    if (activeTab === 'new') {
         sortBy = "createdAt";
         sortDirection = "DESC";
     }
 
     // Fetch Data
-    const { categoriesQuery } = useCategoryHook();
-    const { brandsQuery } = useBrandHook();
+    const { data: categories } = useCategories();
+    const { data: brands } = useBrands();
 
-    const { pagedProductsQuery } = useProductHook({
+    const { products, totalPages, isLoading, isError } = useProductList({
         page,
         size: pageSize,
         sortBy,
-        sortDirection,
+        sortDirection: sortDirection as "ASC" | "DESC",
         minPrice,
         maxPrice,
-        minRating: minStar, // Map core UI 'minStar' to API 'minRating'
+        minRating: minStar,
         maxRating: maxStar,
-        categoryId: activeCategory, // Use local state for now, ideally URL
+        categoryId: activeCategory,
         brandId: activeBrand,
         keyword: searchParams.get('name') || undefined
     });
 
-    const { data: pagedData, isLoading, isError } = pagedProductsQuery;
-    const products = pagedData?.data;
-    const totalPages = pagedData?.count_pages || 0;
-
     // Reset page when filters change
     useEffect(() => {
-        // Use a microtask/timeout to move setState out of the synchronous render/effect cycle
-        // to avoid the cascading render warning in React 19
         const handle = setTimeout(() => setPage(0), 0);
         return () => clearTimeout(handle);
     }, [minPrice, maxPrice, minStar, maxStar, sortParam, activeCategory, activeBrand, activeTab]);
@@ -109,7 +102,7 @@ export default function ProductListView() {
 
     if (isError) {
         return (
-            <div className="flex h-screen items-center justify-center text-destructive">
+            <div className="flex h-screen items-center justify-center text-destructive px-4 text-center">
                 Failed to load products. Ensure the Backend is running (Products: 8082).
             </div>
         );
@@ -125,29 +118,24 @@ export default function ProductListView() {
     // Smart Pagination Logic
     const getPaginationItems = () => {
         const items = [];
-        const current = page + 1; // 1-indexed for display
+        const current = page + 1;
         const last = totalPages;
 
         if (last <= 7) {
-            for (let i = 1; i <= last; i++) {
-                items.push(i);
-            }
+            for (let i = 1; i <= last; i++) items.push(i);
         } else {
             items.push(1);
             if (current > 3) items.push('...');
-
             const start = Math.max(2, current - 1);
             const end = Math.min(last - 1, current + 1);
-
-            for (let i = start; i <= end; i++) {
-                items.push(i);
-            }
-
+            for (let i = start; i <= end; i++) items.push(i);
             if (current < last - 2) items.push('...');
             items.push(last);
         }
         return items;
     };
+
+    const currencyFormat = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' });
 
     return (
         <div className="min-h-screen bg-background py-8">
@@ -162,39 +150,34 @@ export default function ProductListView() {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     {/* Sidebar */}
                     <div className="lg:col-span-2 space-y-8">
-                        {/* Filter Buttons */}
                         <div className="space-y-4">
                             <Button
                                 variant="ghost"
                                 className={`w-full justify-start gap-3 h-12 rounded-xl text-md font-semibold ${activeTab === 'all' ? 'bg-blue-100/50 text-blue-700' : 'bg-transparent text-gray-600'}`}
                                 onClick={() => { setActiveTab('all'); setActiveCategory(undefined); setActiveBrand(undefined); }}
                             >
-                                <Tag className="w-5 h-5" />
-                                All Products
+                                <Tag className="w-5 h-5" /> All Products
                             </Button>
                             <Button
                                 variant="ghost"
                                 className={`w-full justify-start gap-3 h-12 rounded-xl text-md font-semibold ${activeTab === 'hot' ? 'bg-blue-100/50 text-blue-700' : 'bg-transparent text-gray-600'}`}
                                 onClick={() => setActiveTab('hot')}
                             >
-                                <Flame className="w-5 h-5" />
-                                Hot sales
+                                <Flame className="w-5 h-5" /> Hot sales
                             </Button>
                             <Button
                                 variant="ghost"
                                 className={`w-full justify-start gap-3 h-12 rounded-xl text-md font-semibold ${activeTab === 'best' ? 'bg-blue-100/50 text-blue-700' : 'bg-transparent text-gray-600'}`}
                                 onClick={() => setActiveTab('best')}
                             >
-                                <Trophy className="w-5 h-5" />
-                                Best Seller
+                                <Trophy className="w-5 h-5" /> Best Seller
                             </Button>
                             <Button
                                 variant="ghost"
                                 className={`w-full justify-start gap-3 h-12 rounded-xl text-md font-semibold ${activeTab === 'new' ? 'bg-blue-100/50 text-blue-700' : 'bg-transparent text-gray-600'}`}
                                 onClick={() => setActiveTab('new')}
                             >
-                                <Music className="w-5 h-5" />
-                                New
+                                <Music className="w-5 h-5" /> New
                             </Button>
                         </div>
 
@@ -202,35 +185,33 @@ export default function ProductListView() {
                         <div className="space-y-4">
                             <h3 className="font-bold text-lg text-gray-900 px-4">Categories</h3>
                             <div className="px-4 space-y-3">
-                                {/* Select Dropdown */}
                                 <Select
                                     value={activeCategory ? String(activeCategory) : "all"}
                                     onValueChange={(val) => setActiveCategory(val === "all" ? undefined : Number(val))}
                                 >
-                                    <SelectTrigger className="w-full h-10 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 hover:bg-gray-50 focus:ring-2 focus:ring-blue-100 transition-all shadow-sm">
+                                    <SelectTrigger className="w-full h-10 px-4 bg-white border border-gray-200 rounded-lg shadow-sm">
                                         <div className="flex items-center gap-2">
                                             <Smartphone className="w-4 h-4 text-gray-500" />
                                             <SelectValue placeholder="All Categories" />
                                         </div>
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="all" className="font-semibold cursor-pointer">All Categories</SelectItem>
-                                        {categoriesQuery.data?.map((cat) => (
-                                            <SelectItem key={cat.categoryId} value={String(cat.categoryId)} className="cursor-pointer">
+                                        <SelectItem value="all">All Categories</SelectItem>
+                                        {categories?.map((cat) => (
+                                            <SelectItem key={cat.categoryId} value={String(cat.categoryId)}>
                                                 {cat.name}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
 
-                                {/* Top 3 Quick Access Items */}
                                 <div className="flex flex-col gap-2 pt-1 border-t border-gray-100">
                                     <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider pl-1 py-1">Popular</p>
-                                    {categoriesQuery.data?.slice(0, 3).map((cat) => (
+                                    {categories?.slice(0, 3).map((cat) => (
                                         <Button
                                             key={cat.categoryId}
                                             variant="ghost"
-                                            className={`w-full justify-start gap-3 h-9 rounded-lg text-sm hover:text-primary hover:bg-blue-50/50 px-3 ${activeCategory === cat.categoryId ? 'font-bold text-primary bg-blue-50' : 'text-gray-600'}`}
+                                            className={`w-full justify-start gap-3 h-9 px-3 rounded-lg text-sm ${activeCategory === cat.categoryId ? 'font-bold text-primary bg-blue-50' : 'text-gray-600'}`}
                                             onClick={() => setActiveCategory(cat.categoryId)}
                                         >
                                             <Smartphone className="w-4 h-4 opacity-70" /> {cat.name}
@@ -248,30 +229,29 @@ export default function ProductListView() {
                                     value={activeBrand ? String(activeBrand) : "all"}
                                     onValueChange={(val) => setActiveBrand(val === "all" ? undefined : Number(val))}
                                 >
-                                    <SelectTrigger className="w-full h-10 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-700 hover:bg-gray-50 focus:ring-2 focus:ring-blue-100 transition-all shadow-sm">
+                                    <SelectTrigger className="w-full h-10 px-4 bg-white border border-gray-200 rounded-lg shadow-sm">
                                         <div className="flex items-center gap-2">
                                             <Tag className="w-4 h-4 text-gray-500" />
                                             <SelectValue placeholder="All Brands" />
                                         </div>
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="all" className="font-semibold cursor-pointer">All Brands</SelectItem>
-                                        {brandsQuery.data?.map((brand) => (
-                                            <SelectItem key={brand.brandId} value={String(brand.brandId)} className="cursor-pointer">
+                                        <SelectItem value="all">All Brands</SelectItem>
+                                        {brands?.map((brand) => (
+                                            <SelectItem key={brand.brandId} value={String(brand.brandId)}>
                                                 {brand.name}
                                             </SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
 
-                                {/* Top 3 Quick Access Items */}
                                 <div className="flex flex-col gap-2 pt-1 border-t border-gray-100">
                                     <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider pl-1 py-1">Popular</p>
-                                    {brandsQuery.data?.slice(0, 3).map((brand) => (
+                                    {brands?.slice(0, 3).map((brand) => (
                                         <Button
                                             key={brand.brandId}
                                             variant="ghost"
-                                            className={`w-full justify-start gap-3 h-9 rounded-lg text-sm hover:text-primary hover:bg-blue-50/50 px-3 ${activeBrand === brand.brandId ? 'font-bold text-primary bg-blue-50' : 'text-gray-600'}`}
+                                            className={`w-full justify-start gap-3 h-9 px-3 rounded-lg text-sm ${activeBrand === brand.brandId ? 'font-bold text-primary bg-blue-50' : 'text-gray-600'}`}
                                             onClick={() => setActiveBrand(brand.brandId)}
                                         >
                                             <Tag className="w-4 h-4 opacity-70" /> {brand.name}
@@ -284,17 +264,14 @@ export default function ProductListView() {
 
                     {/* Main Content */}
                     <div className="lg:col-span-10 space-y-6">
-                        {/* Filter Bar */}
                         <FilterBar />
-
-                        {/* Product Grid */}
                         <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                             {products?.map((product) => (
                                 <ProductCard
                                     key={product.productId}
                                     id={String(product.productId)}
                                     title={product.name}
-                                    price={product.displayPrice ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.displayPrice) : "Contact"}
+                                    price={product.displayPrice ? currencyFormat.format(product.displayPrice) : "Contact"}
                                     rating={product.averageRating || 0}
                                     image={product.variants?.[0]?.images?.[0] || "https://placehold.co/400x400"}
                                     variant="default"
@@ -306,16 +283,11 @@ export default function ProductListView() {
                                             toast.error("Product has no available variant");
                                             return;
                                         }
-
                                         addToCartMutation.mutate(
-                                            {
-                                                productId: product.productId,
-                                                variantId,
-                                            },
+                                            { productId: product.productId, variantId },
                                             {
                                                 onSuccess: () => toast.success("Added to cart"),
-                                                onError: () =>
-                                                    toast.error("Failed to add to cart. Please login and try again."),
+                                                onError: () => toast.error("Failed to add to cart. Please login and try again.")
                                             }
                                         );
                                     }}
@@ -337,32 +309,27 @@ export default function ProductListView() {
                                             <PaginationPrevious
                                                 href="#"
                                                 onClick={(e) => { e.preventDefault(); handlePageChange(page - 1); }}
-                                                className={`h-10 rounded-lg ${page === 0 ? 'pointer-events-none opacity-50' : ''}`}
+                                                className={page === 0 ? 'pointer-events-none opacity-50' : ''}
                                             />
                                         </PaginationItem>
-
                                         {getPaginationItems().map((item, index) => (
                                             <PaginationItem key={index}>
-                                                {item === '...' ? (
-                                                    <PaginationEllipsis />
-                                                ) : (
+                                                {item === '...' ? <PaginationEllipsis /> : (
                                                     <PaginationLink
                                                         href="#"
                                                         isActive={page === (Number(item) - 1)}
                                                         onClick={(e) => { e.preventDefault(); handlePageChange(Number(item) - 1); }}
-                                                        className="h-10 w-10 rounded-lg"
                                                     >
                                                         {item}
                                                     </PaginationLink>
                                                 )}
                                             </PaginationItem>
                                         ))}
-
                                         <PaginationItem>
                                             <PaginationNext
                                                 href="#"
                                                 onClick={(e) => { e.preventDefault(); handlePageChange(page + 1); }}
-                                                className={`h-10 rounded-lg ${page === totalPages - 1 ? 'pointer-events-none opacity-50' : ''}`}
+                                                className={page === totalPages - 1 ? 'pointer-events-none opacity-50' : ''}
                                             />
                                         </PaginationItem>
                                     </PaginationContent>

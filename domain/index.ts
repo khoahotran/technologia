@@ -21,6 +21,13 @@ export type {
 } from "./product/repositories/product.repository.interface";
 
 // ===========================================
+// Cart Domain
+// ===========================================
+
+export * from "./cart/entities/cart.entity";
+export * from "./cart/repositories/cart.repository.interface";
+
+// ===========================================
 // User Domain
 // ===========================================
 

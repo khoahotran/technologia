@@ -2,7 +2,7 @@
 
 import { createContext, useEffect, useState, ReactNode } from "react";
 
-import { authStorage, storage } from "@/lib/storage";
+import { authStorage, storage } from "@/infrastructure/persistence/storage";
 import { STORAGE_KEYS } from "@/shared/constants";
 
 // Define the shape of the context

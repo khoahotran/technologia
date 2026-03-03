@@ -8,7 +8,7 @@ import {
   CarouselItem,
 } from "@/components/ui/carousel"
 import { ProductCard } from "@/components/ui/product-card"
-import { useProducts } from "@/hooks/use-products";
+import { useProductList } from "@/presentation/hooks";
 
 const formatter = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' });
 
@@ -18,12 +18,7 @@ interface TopProductsProps {
 }
 
 export function TopProducts({ title = "Top products", className }: TopProductsProps) {
-  const { usePagedProducts } = useProducts();
-  // Fetch top 10 products, sorted by averageRating DESC (assuming that's what 'Top' implies)
-  // or just default sort. Adjust sortBy as needed.
-  const { data, isLoading } = usePagedProducts(0, 10, "averageRating", "DESC");
-
-  const products = data?.data || [];
+  const { products, isLoading } = useProductList({ page: 0, size: 10, sortBy: "averageRating", sortDirection: "DESC" });
 
   if (isLoading) {
     return (

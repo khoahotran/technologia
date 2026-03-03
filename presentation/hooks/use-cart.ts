@@ -3,10 +3,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import {
+    AddToCartPayload,
+    CalculatePricePayload
+} from "@/domain";
+import {
     CartRepository,
-    type AddToCartPayload,
-    type CalculatePricePayload,
 } from "@/infrastructure/repositories/cart/cart.repository";
+import { QUERY_CONFIG } from "@/shared/constants/query.constants";
 
 export const cartKeys = {
     all: ["cart"] as const,
@@ -18,7 +21,7 @@ export function useCartQuery() {
     return useQuery({
         queryKey: cartKeys.detail(),
         queryFn: () => CartRepository.getCart(),
-        staleTime: 30 * 1000,
+        ...QUERY_CONFIG.DYNAMIC,
     });
 }
 

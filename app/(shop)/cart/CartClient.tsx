@@ -14,7 +14,7 @@ import {
     useDecreaseCartItemMutation,
     useIncreaseCartItemMutation,
     useRemoveCartItemMutation,
-} from "@/hooks/use-cart-api";
+} from "@/presentation/hooks";
 
 export default function CartClient() {
     const { data: cart, isLoading, isError, refetch } = useCartQuery();

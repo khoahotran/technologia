@@ -1,55 +1,34 @@
 import { z } from "zod";
 
+import {
+    CartItem,
+    CartMap,
+    CartMapSchema,
+    CartItemSchema,
+    AddToCartPayload,
+    CalculatePricePayload
+} from "@/domain/cart/entities/cart.entity";
+import { ICartRepository, CartPagingParams } from "@/domain/cart/repositories/cart.repository.interface";
 import { httpClient } from "@/infrastructure/http/client";
-
-const CartItemSchema = z.object({
-    cartItemId: z.string(),
-    productId: z.string(),
-    variantId: z.string().optional(),
-    addAt: z.string().optional(),
-    updateAt: z.string().optional(),
-    currentQuantity: z.number(),
-    name: z.string(),
-    color: z.string().optional(),
-    price: z.number().optional(),
-    priceAfterDiscount: z.number().optional(),
-    inStock: z.number().optional(),
-    mainImage: z.string().optional(),
-});
-
-const CartMapSchema = z.object({
-    cartId: z.string().optional(),
-    customerId: z.string().optional(),
-    updatedAt: z.string().optional(),
-    cartItems: z.array(CartItemSchema).default([]),
-    totalItems: z.number().optional(),
-    pageSize: z.number().optional(),
-    currentPage: z.number().optional(),
-});
 
 const CartResponseSchema = z.object({
     status: z.number(),
-    data: z
-        .object({
-            map: CartMapSchema,
-            empty: z.boolean().optional(),
-        })
-        .optional(),
+    data: z.object({
+        map: CartMapSchema,
+        empty: z.boolean().optional(),
+    }).optional(),
     message: z.string().optional(),
 });
 
 const CartItemMutationResponseSchema = z.object({
     status: z.number(),
-    data: z
-        .object({
-            cartItemId: z.string().optional(),
-            productId: z.string().optional(),
-            variantId: z.string().optional(),
-            quantityInCart: z.number().optional(),
-            quantityInStock: z.number().optional(),
-        })
-        .nullable()
-        .optional(),
+    data: z.object({
+        cartItemId: z.string().optional(),
+        productId: z.string().optional(),
+        variantId: z.string().optional(),
+        quantityInCart: z.number().optional(),
+        quantityInStock: z.number().optional(),
+    }).nullable().optional(),
     message: z.string().optional(),
 });
 
@@ -59,36 +38,9 @@ const CartPriceResponseSchema = z.object({
     message: z.string().optional(),
 });
 
-export type CartItem = z.infer<typeof CartItemSchema>;
-export type CartMap = z.infer<typeof CartMapSchema>;
-
-export interface AddToCartPayload {
-    productId: string;
-    variantId: string;
-}
-
-export interface CalculatePricePayload {
-    includeDiscount?: boolean;
-    userDiscountId?: string;
-    cartItemIds: string[];
-}
-
 const EMPTY_CART: CartMap = { cartItems: [] };
 
-export interface CartPagingParams {
-    page?: number;
-    size?: number;
-    /** NOTE: Backend uses 'sortDir' not 'sortDirection' — confirmed from Postman */
-    sortDir?: "ASC" | "DESC";
-    sortBy?: string;
-}
-
-export const CartRepository = {
-    /**
-     * Get cart with paginated cart items
-     * Endpoint: GET /api/carts/with-items-paging
-     * NOTE: param is `sortDir` (not `sortDirection`) per Postman collection
-     */
+export const CartRepository: ICartRepository = {
     async getCartWithPaging(params: CartPagingParams = {}): Promise<CartMap> {
         const { data } = await httpClient.get("/carts/with-items-paging", {
             params: {
@@ -101,6 +53,7 @@ export const CartRepository = {
         const parsed = CartResponseSchema.parse(data);
         return parsed.data?.map ?? { cartItems: [] };
     },
+
     async getCart(): Promise<CartMap> {
         const { data } = await httpClient.get("/carts");
         const parsed = CartResponseSchema.parse(data);
@@ -108,10 +61,7 @@ export const CartRepository = {
     },
 
     async addToCart(payload: AddToCartPayload) {
-        const { data } = await httpClient.post(
-            "/carts/add-to-cart",
-            payload
-        );
+        const { data } = await httpClient.post("/carts/add-to-cart", payload);
         return CartItemMutationResponseSchema.parse(data);
     },
 
@@ -126,7 +76,6 @@ export const CartRepository = {
     },
 
     async remove(cartItemId: string) {
-        // backend expects DELETE for removing a cart item (see Postman collection)
         const { data } = await httpClient.delete(`/cart-items/delete/${cartItemId}`);
         return CartItemMutationResponseSchema.parse(data);
     },

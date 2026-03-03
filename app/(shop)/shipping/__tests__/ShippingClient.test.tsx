@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import ShippingClient from "../ShippingClient";
 
-import * as CartApiHooks from "@/hooks/use-cart-api";
+import * as PresentationHooks from "@/presentation/hooks";
 
 const mockRefetch = vi.fn();
 
@@ -21,7 +21,7 @@ vi.mock("@/lib/checkout-flow", () => ({
     getCheckoutAddresses: vi.fn(() => []),
 }));
 
-vi.mock("@/hooks/use-cart-api", () => ({
+vi.mock("@/presentation/hooks", () => ({
     useCartQuery: vi.fn(),
     useCartPriceMutation: vi.fn(() => ({
         mutate: vi.fn(),
@@ -39,12 +39,12 @@ describe("ShippingClient", () => {
     });
 
     it("shows backend error state and allows retry", () => {
-        vi.mocked(CartApiHooks.useCartQuery).mockReturnValue({
+        vi.mocked(PresentationHooks.useCartQuery).mockReturnValue({
             data: undefined,
             isLoading: false,
             isError: true,
             refetch: mockRefetch,
-        } as ReturnType<typeof CartApiHooks.useCartQuery>);
+        } as any);
 
         render(<ShippingClient />);
 

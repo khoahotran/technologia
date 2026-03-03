@@ -11,18 +11,18 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import {
-    useCartPriceMutation,
-    useCartQuery,
-    useRemoveCartItemMutation,
-} from "@/hooks/use-cart-api";
+import { isAppError } from "@/domain/errors";
 import {
     addCheckoutOrder,
     getCheckoutAddresses,
     type CheckoutAddress,
     type CheckoutOrderItem,
 } from "@/lib/checkout-flow";
-import { isAppError } from "@/lib/errors";
+import {
+    useCartPriceMutation,
+    useCartQuery,
+    useRemoveCartItemMutation,
+} from "@/presentation/hooks";
 
 function getAddressDisplay(address: CheckoutAddress) {
     return `${address.line}, ${address.ward}, ${address.city}, ${address.province}`;

@@ -1,6 +1,14 @@
-// Generic API hooks
-export * from "./use-api.hook";
+/**
+ * Presentation Layer Hooks
+ * Central export point for all UI and data hooks
+ */
 
-// Domain-specific hooks
-export * from "./use-auth.hook";
-export * from "./use-product.hook";
+// Domain hooks
+export * from "./use-auth";
+export * from "./use-cart";
+export * from "./use-product";
+export * from "./use-brand";
+export * from "./use-category";
+
+// Generic utility hooks
+export * from "./use-api.hook";

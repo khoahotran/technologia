@@ -273,62 +273,140 @@ export const authStorage = {
      */
     getAccessToken(): string | null {
         // Try cookie first (server-accessible), then localStorage
-        return (
-            storage.get<string>(STORAGE_KEYS.ACCESS_TOKEN, { type: "cookie" }) ??
-            storage.get<string>(STORAGE_KEYS.ACCESS_TOKEN)
-        );
+        console.log("[STORAGE] Getting access token...");
+        
+        const cookieToken = storage.get<string>(STORAGE_KEYS.ACCESS_TOKEN, { type: "cookie" });
+        console.log("[STORAGE] Cookie token check", {
+            hasCookieToken: !!cookieToken,
+            cookieTokenLength: cookieToken?.length,
+            cookieTokenPrefix: cookieToken?.substring(0, 20),
+        });
+
+        const localStorageToken = storage.get<string>(STORAGE_KEYS.ACCESS_TOKEN);
+        console.log("[STORAGE] LocalStorage token check", {
+            hasLocalStorageToken: !!localStorageToken,
+            localStorageTokenLength: localStorageToken?.length,
+            localStorageTokenPrefix: localStorageToken?.substring(0, 20),
+        });
+
+        const result = cookieToken ?? localStorageToken;
+        console.log("[STORAGE] Final token result", {
+            hasToken: !!result,
+            source: cookieToken ? "cookie" : localStorageToken ? "localStorage" : "none",
+            tokenLength: result?.length,
+        });
+
+        return result;
     },
 
     /**
      * Get refresh token
      */
     getRefreshToken(): string | null {
-        return storage.get<string>(STORAGE_KEYS.REFRESH_TOKEN);
+        console.log("[STORAGE] Getting refresh token...");
+        
+        const refreshToken = storage.get<string>(STORAGE_KEYS.REFRESH_TOKEN);
+        
+        console.log("[STORAGE] Refresh token check", {
+            hasRefreshToken: !!refreshToken,
+            refreshTokenLength: refreshToken?.length,
+            refreshTokenPrefix: refreshToken?.substring(0, 20),
+            storageKey: STORAGE_KEYS.REFRESH_TOKEN,
+        });
+
+        return refreshToken;
     },
 
     /**
      * Set auth tokens and extract role for middleware
      */
     setTokens(accessToken: string, refreshToken: string): void {
+        console.log("[STORAGE] setTokens() called", {
+            accessTokenLength: accessToken?.length,
+            accessTokenPrefix: accessToken?.substring(0, 20),
+            refreshTokenLength: refreshToken?.length,
+            refreshTokenPrefix: refreshToken?.substring(0, 20),
+        });
+
         // Store access token in both cookie (for SSR) and localStorage
+        console.log("[STORAGE] Setting access token to COOKIE");
         storage.set(STORAGE_KEYS.ACCESS_TOKEN, accessToken, {
             type: "cookie",
             expireDays: 7,
             secure: process.env.NODE_ENV === "production",
         });
+        console.log("[STORAGE] ✓ Access token saved to cookie");
+
+        console.log("[STORAGE] Setting access token to LOCALSTORAGE");
         storage.set(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
+        console.log("[STORAGE] ✓ Access token saved to localStorage");
+
+        console.log("[STORAGE] Setting refresh token to LOCALSTORAGE");
         storage.set(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
+        console.log("[STORAGE] ✓ Refresh token saved to localStorage");
 
         // Attempt to decode role and save it in a cookie for Next.js middleware
         try {
             const payload = accessToken.split(".")[1];
+            console.log("[STORAGE] Attempting to decode JWT payload", {
+                hasPayload: !!payload,
+                payloadLength: payload?.length,
+            });
+
             if (payload) {
                 // Use Buffer for base64 decoding to support both browser & Node environments (if SSR)
                 const decodedStr = typeof window !== 'undefined'
                     ? atob(payload)
                     : Buffer.from(payload, 'base64').toString('ascii');
                 const decoded = JSON.parse(decodedStr);
+                console.log("[STORAGE] Decoded JWT payload", {
+                    sub: decoded.sub,
+                    role: decoded.role,
+                    iat: decoded.iat,
+                    exp: decoded.exp,
+                });
+
                 if (decoded && decoded.role) {
+                    console.log("[STORAGE] Setting role to cookie", { role: decoded.role });
                     storage.set("role", decoded.role, {
                         type: "cookie",
                         expireDays: 7,
                         secure: process.env.NODE_ENV === "production",
                     });
+                    console.log("[STORAGE] ✓ Role saved to cookie");
                 }
             }
         } catch (e) {
-            console.warn("Could not decode role from token for proxy middleware", e);
+            console.warn("[STORAGE] Could not decode role from token", {
+                error: e instanceof Error ? e.message : String(e),
+            });
         }
+
+        console.log("[STORAGE] setTokens() COMPLETED SUCCESSFULLY");
     },
 
     /**
      * Clear auth tokens
      */
     clearTokens(): void {
+        console.warn("[STORAGE] clearTokens() called - CLEARING ALL AUTH DATA", {
+            timestamp: new Date().toISOString(),
+            stackTrace: new Error().stack?.split("\n").slice(0, 3).join("\n"),
+        });
+
+        console.log("[STORAGE] Removing access token from cookie");
         storage.remove(STORAGE_KEYS.ACCESS_TOKEN, { type: "cookie" });
+        
+        console.log("[STORAGE] Removing access token from localStorage");
         storage.remove(STORAGE_KEYS.ACCESS_TOKEN);
+        
+        console.log("[STORAGE] Removing refresh token from localStorage");
         storage.remove(STORAGE_KEYS.REFRESH_TOKEN);
+        
+        console.log("[STORAGE] Removing role from cookie");
         storage.remove("role", { type: "cookie" }); // Clear role cookie as well
+
+        console.warn("[STORAGE] clearTokens() COMPLETED - ALL AUTH DATA CLEARED");
     },
 
     /**

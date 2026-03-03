@@ -17,9 +17,8 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/ui/product-card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useAddToCartMutation } from "@/hooks/use-cart-api";
-import { useProductDetail, useProductList } from "@/hooks/use-products";
-import { isAppError, type AppError } from "@/lib/errors";
+import { isAppError, type AppError } from "@/domain/errors";
+import { useAddToCartMutation, useProductDetail, useProductList } from "@/presentation/hooks";
 import { formatCurrency, formatNumber } from "@/shared/utils/format";
 
 interface ProductDetailClientProps {
@@ -39,7 +38,7 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
     const addToCartMutation = useAddToCartMutation();
 
     const { products: relatedProducts } = useProductList({
-        search: product?.category,
+        search: product?.category?.name ?? undefined,
         size: 4,
     });
 
@@ -193,8 +192,8 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                                         key={idx}
                                         onClick={() => setSelectedImage({ productId: id, image: img })}
                                         className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${currentImage === img
-                                                ? "border-[#3B82F6]"
-                                                : "border-transparent bg-[#D9E6F2] hover:border-blue-300"
+                                            ? "border-[#3B82F6]"
+                                            : "border-transparent bg-[#D9E6F2] hover:border-blue-300"
                                             }`}
                                     >
                                         <Image
@@ -232,8 +231,8 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                                         <Star
                                             key={i}
                                             className={`w-4 h-4 ${i < Math.round(product.averageRating || 4)
-                                                    ? "fill-current"
-                                                    : "text-gray-300"
+                                                ? "fill-current"
+                                                : "text-gray-300"
                                                 }`}
                                         />
                                     ))}
@@ -332,8 +331,8 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                                     key={tab.key}
                                     onClick={() => setActiveTab(tab.key)}
                                     className={`text-left px-4 py-4 text-sm font-medium transition-colors border-l-2 ${activeTab === tab.key
-                                            ? "border-blue-500 text-blue-600 bg-blue-50"
-                                            : "border-transparent text-gray-600 hover:text-blue-500 hover:bg-gray-50"
+                                        ? "border-blue-500 text-blue-600 bg-blue-50"
+                                        : "border-transparent text-gray-600 hover:text-blue-500 hover:bg-gray-50"
                                         }`}
                                 >
                                     {tab.label}

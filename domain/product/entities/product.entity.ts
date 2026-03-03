@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 
-import { BaseEntitySchema } from "@/shared/entities/base.entity";
+import { BaseEntitySchema } from "@/domain/entities/base.entity";
 
 export const ProductVariantSchema = z.object({
     variantId: z.string().optional(),
