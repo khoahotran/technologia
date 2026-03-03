@@ -43,15 +43,21 @@ async function parseJsonSafe(res: Response): Promise<JsonRecord> {
     }
 }
 
-export function requireAuthorizationHeader(request: Request): string | NextResponse {
+export async function getAuthToken(request: Request): Promise<string | null> {
+    // 1. Try Authorization header
     const authHeader = request.headers.get("Authorization");
-    if (!authHeader) {
-        return NextResponse.json(
-            { error: "Authorization header is required" },
-            { status: HTTP_STATUS.UNAUTHORIZED }
-        );
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+        return authHeader;
     }
-    return authHeader;
+
+    // 2. Fallback to cookie
+    const cookieStore = await cookies();
+    const token = cookieStore.get(COOKIE_NAMES.ACCESS_TOKEN)?.value;
+    if (token) {
+        return `Bearer ${token}`;
+    }
+
+    return null;
 }
 
 export async function setAccessTokenCookie(accessToken: string): Promise<void> {
@@ -80,7 +86,9 @@ export async function forwardJsonToUserService(options: ForwardToUserServiceOpti
 
         const data = await parseJsonSafe(backendRes);
 
+        console.log(`[API Proxy] ${logLabel} ${method} ${path} -> Status: ${backendRes.status}`);
         if (!backendRes.ok) {
+            console.error(`[API Proxy] ${logLabel} Error:`, data);
             return NextResponse.json(
                 { error: parseErrorMessage(data, fallbackError) },
                 { status: backendRes.status }

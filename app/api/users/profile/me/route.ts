@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
-import { forwardJsonToUserService, requireAuthorizationHeader } from "@/lib/api-route";
+import { forwardJsonToUserService, getAuthToken } from "@/lib/api-route";
+import { HTTP_STATUS } from "@/shared/constants";
 
 /**
  * User Profile API Routes
@@ -9,31 +10,37 @@ import { forwardJsonToUserService, requireAuthorizationHeader } from "@/lib/api-
  */
 
 export async function GET(request: Request) {
-    const authHeaderOrResponse = requireAuthorizationHeader(request);
-    if (authHeaderOrResponse instanceof NextResponse) {
-        return authHeaderOrResponse;
+    const token = await getAuthToken(request);
+    if (!token) {
+        return NextResponse.json(
+            { error: "Authorization header or cookie is required" },
+            { status: HTTP_STATUS.UNAUTHORIZED }
+        );
     }
 
     return forwardJsonToUserService({
         path: "/api/users/profile/me",
         method: "GET",
-        authHeader: authHeaderOrResponse,
+        authHeader: token,
         fallbackError: "Failed to get profile",
         logLabel: "Get Profile",
     });
 }
 
 export async function PUT(request: Request) {
-    const authHeaderOrResponse = requireAuthorizationHeader(request);
-    if (authHeaderOrResponse instanceof NextResponse) {
-        return authHeaderOrResponse;
+    const token = await getAuthToken(request);
+    if (!token) {
+        return NextResponse.json(
+            { error: "Authorization header or cookie is required" },
+            { status: HTTP_STATUS.UNAUTHORIZED }
+        );
     }
 
     const body = await request.json();
     return forwardJsonToUserService({
         path: "/api/users/profile/me",
         method: "PUT",
-        authHeader: authHeaderOrResponse,
+        authHeader: token,
         body,
         fallbackError: "Failed to update profile",
         logLabel: "Update Profile",

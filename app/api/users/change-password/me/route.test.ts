@@ -2,12 +2,12 @@ import { NextResponse } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
-    mockRequireAuthorizationHeader: vi.fn(),
+    mockGetAuthToken: vi.fn(),
     mockForwardJsonToUserService: vi.fn(),
 }));
 
 vi.mock("@/lib/api-route", () => ({
-    requireAuthorizationHeader: mocks.mockRequireAuthorizationHeader,
+    getAuthToken: mocks.mockGetAuthToken,
     forwardJsonToUserService: mocks.mockForwardJsonToUserService,
 }));
 
@@ -15,22 +15,20 @@ import { PUT } from "./route";
 
 describe("PUT /api/users/change-password/me", () => {
     beforeEach(() => {
-        mocks.mockRequireAuthorizationHeader.mockReset();
+        mocks.mockGetAuthToken.mockReset();
         mocks.mockForwardJsonToUserService.mockReset();
     });
 
     it("returns auth response when authorization is missing", async () => {
-        mocks.mockRequireAuthorizationHeader.mockReturnValue(
-            NextResponse.json({ error: "Authorization header is required" }, { status: 401 })
-        );
+        mocks.mockGetAuthToken.mockResolvedValue(null);
 
         const response = await PUT(new Request("http://localhost/api/users/change-password/me"));
         expect(response.status).toBe(401);
-        expect(await response.json()).toEqual({ error: "Authorization header is required" });
+        expect(await response.json()).toEqual({ error: "Authorization header or cookie is required" });
     });
 
     it("returns 400 when old/new password is missing", async () => {
-        mocks.mockRequireAuthorizationHeader.mockReturnValue("Bearer token");
+        mocks.mockGetAuthToken.mockResolvedValue("Bearer token");
 
         const request = new Request("http://localhost/api/users/change-password/me", {
             method: "PUT",
@@ -45,7 +43,7 @@ describe("PUT /api/users/change-password/me", () => {
     });
 
     it("forwards valid change-password payload", async () => {
-        mocks.mockRequireAuthorizationHeader.mockReturnValue("Bearer token");
+        mocks.mockGetAuthToken.mockResolvedValue("Bearer token");
         mocks.mockForwardJsonToUserService.mockResolvedValue(
             NextResponse.json({ status: 200, data: {}, message: "ok" }, { status: 200 })
         );

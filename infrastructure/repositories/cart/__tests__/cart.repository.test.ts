@@ -22,10 +22,13 @@ describe('CartRepository', () => {
         const mocked = {
             status: 200,
             data: {
-                map: {
-                    cartId: 'c1',
-                    cartItems: [],
-                },
+                status: 200,
+                data: {
+                    map: {
+                        cartId: 'c1',
+                        cartItems: [],
+                    },
+                }
             },
         };
         vi.mocked(httpClient.get).mockResolvedValue(mocked as any);
@@ -43,7 +46,7 @@ describe('CartRepository', () => {
         vi.mocked(httpClient.post).mockResolvedValue(mocked as any);
 
         const resp = await CartRepository.addToCart({ productId: 'p1', variantId: 'v1' });
-        expect(httpClient.post).toHaveBeenCalledWith('/carts/add-to-cart', { productId: 'p1', variantId: 'v1' });
+        expect(httpClient.post).toHaveBeenCalledWith('/carts/add-to-cart?productId=p1&variantId=v1', { productId: 'p1', variantId: 'v1' });
         expect(resp.data?.productId).toBe('p1');
     });
 

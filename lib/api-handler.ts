@@ -8,7 +8,7 @@
 
 import { NextResponse } from 'next/server';
 
-import { SERVICE_URLS, HTTP_STATUS, REQUEST_CONFIG } from '@/shared/constants';
+import { SERVICE_URLS, HTTP_STATUS, REQUEST_CONFIG, COOKIE_NAMES } from '@/shared/constants';
 import type { RouteContext } from '@/shared/types';
 
 // ===========================================
@@ -68,21 +68,47 @@ function buildTargetUrl(
     return `${baseUrl}${path}${search}`;
 }
 
+import { cookies } from 'next/headers';
+
 /**
  * Build headers for proxy request
  */
-function buildHeaders(
+async function buildHeaders(
     req: Request,
     config: ApiHandlerConfig
-): HeadersInit {
+): Promise<HeadersInit> {
+    // Debug: Log all incoming headers
+    const incomingHeaders: Record<string, string> = {};
+    req.headers.forEach((value, key) => {
+        incomingHeaders[key] = key.toLowerCase() === 'authorization' ? `${value.substring(0, 15)}...` : value;
+    });
+    console.debug(`[API Proxy] Incoming Headers:`, incomingHeaders);
+
     const headers: Record<string, string> = {
         'Content-Type': REQUEST_CONFIG.JSON_CONTENT_TYPE,
     };
 
     // Forward auth header if present
-    const authHeader = req.headers.get('Authorization');
+    let authHeader = req.headers.get('Authorization');
+    let source = 'NONE';
+
+    // Fallback to cookie if no Authorization header
+    if (!authHeader) {
+        const cookieStore = await cookies();
+        const token = cookieStore.get(COOKIE_NAMES.ACCESS_TOKEN)?.value;
+        if (token) {
+            authHeader = `Bearer ${token}`;
+            source = 'COOKIE';
+        }
+    } else {
+        source = 'HEADER';
+    }
+
     if (authHeader) {
         headers['Authorization'] = authHeader;
+        console.log(`[API Proxy] Auth token sourced from: ${source} (starts with: ${authHeader.substring(0, 15)}...)`);
+    } else {
+        console.warn(`[API Proxy] No auth token found in headers or cookies`);
     }
 
     // Add custom headers from config
@@ -130,10 +156,18 @@ export function createApiHandler(config: ApiHandlerConfig) {
     return async function handler(req: Request): Promise<NextResponse> {
         try {
             const targetUrl = buildTargetUrl(config, req);
-            const headers = buildHeaders(req, config);
+            const headers = await buildHeaders(req, config);
             const body = await getRequestBody(req);
 
-            console.warn(`[API Proxy] ${req.method} ${targetUrl}`);
+            console.warn(`[API Proxy] ${req.method} ${targetUrl} (Body size: ${body?.byteLength || 0} bytes)`);
+
+            // Debug: Log all headers being sent
+            Object.entries(headers).forEach(([key, value]) => {
+                const displayValue = key.toLowerCase() === 'authorization'
+                    ? `${value.substring(0, 15)}...`
+                    : value;
+                console.log(`[API Proxy] Header: ${key}=${displayValue}`);
+            });
 
             const res = await fetch(targetUrl, {
                 method: req.method,
@@ -143,10 +177,13 @@ export function createApiHandler(config: ApiHandlerConfig) {
 
             const data = await parseResponse(res);
 
+            // Debug: log response status from backend
+            console.warn(`[API Proxy] Backend Response: ${res.status}`, JSON.stringify(data));
+
             if (!res.ok) {
                 const errorData = data as { message?: string };
                 return NextResponse.json(
-                    { error: errorData.message || `Proxy Error: ${res.statusText}` },
+                    { error: errorData.message || `Proxy Error: ${res.statusText}`, details: data },
                     { status: res.status }
                 );
             }
@@ -177,10 +214,18 @@ export function createDynamicApiHandler<T extends Record<string, string> = Recor
         try {
             const params = await context.params;
             const targetUrl = buildTargetUrl(config as ApiHandlerConfig, req, params);
-            const headers = buildHeaders(req, config as ApiHandlerConfig);
+            const headers = await buildHeaders(req, config as ApiHandlerConfig);
             const body = await getRequestBody(req);
 
-            console.warn(`[API Proxy] ${req.method} ${targetUrl}`);
+            console.warn(`[API Proxy] ${req.method} ${targetUrl} (Body size: ${body?.byteLength || 0} bytes)`);
+
+            // Debug: Log all headers being sent
+            Object.entries(headers).forEach(([key, value]) => {
+                const displayValue = key.toLowerCase() === 'authorization'
+                    ? `${value.substring(0, 15)}...`
+                    : value;
+                console.log(`[API Proxy] Header: ${key}=${displayValue}`);
+            });
 
             const res = await fetch(targetUrl, {
                 method: req.method,
@@ -190,17 +235,21 @@ export function createDynamicApiHandler<T extends Record<string, string> = Recor
 
             const data = await parseResponse(res);
 
+            // Debug: log response status from backend
+            console.warn(`[API Proxy - Dynamic] Backend Response: ${res.status}`, JSON.stringify(data));
+
             if (!res.ok) {
                 const errorData = data as { message?: string };
+                console.error(`[API Proxy - Dynamic] Backend Error Details:`, errorData);
                 return NextResponse.json(
-                    { error: errorData.message || `Proxy Error: ${res.statusText}` },
+                    { error: errorData.message || `Proxy Error: ${res.statusText}`, details: data },
                     { status: res.status }
                 );
             }
 
             return NextResponse.json(data);
         } catch (error) {
-            console.error('[API Proxy] Internal Error:', error);
+            console.error('[API Proxy - Dynamic] Internal Error:', error);
             return NextResponse.json(
                 { error: 'Internal Server Error' },
                 { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }

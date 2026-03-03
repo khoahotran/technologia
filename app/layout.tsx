@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Toaster } from "sonner";
 
+import { GoogleOAuthProvider } from "@react-oauth/google";
+
 import Loading from "./loading";
 
 import { AuthProvider } from "@/shared/providers/auth.provider";
@@ -56,9 +58,11 @@ export default function RootLayout({
                 }}
               />
               <RepositoryProvider>
-                <AuthProvider>
-                  {children}
-                </AuthProvider>
+                <GoogleOAuthProvider clientId={process.env["NEXT_PUBLIC_GOOGLE_CLIENT_ID"] || ""}>
+                  <AuthProvider>
+                    {children}
+                  </AuthProvider>
+                </GoogleOAuthProvider>
               </RepositoryProvider>
             </QueryProvider>
           </Suspense>

@@ -83,7 +83,10 @@ export const CartRepository = {
     },
 
     async addToCart(payload: AddToCartPayload) {
-        const { data } = await httpClient.post("/carts/add-to-cart", payload);
+        const { data } = await httpClient.post(
+            "/carts/add-to-cart",
+            payload
+        );
         return CartItemMutationResponseSchema.parse(data);
     },
 

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-import { forwardJsonToUserService, requireAuthorizationHeader } from "@/lib/api-route";
+import { forwardJsonToUserService, getAuthToken } from "@/lib/api-route";
 import { HTTP_STATUS } from "@/shared/constants";
 
 /**
@@ -9,9 +9,12 @@ import { HTTP_STATUS } from "@/shared/constants";
  */
 
 export async function PUT(request: Request) {
-    const authHeaderOrResponse = requireAuthorizationHeader(request);
-    if (authHeaderOrResponse instanceof NextResponse) {
-        return authHeaderOrResponse;
+    const token = await getAuthToken(request);
+    if (!token) {
+        return NextResponse.json(
+            { error: "Authorization header or cookie is required" },
+            { status: HTTP_STATUS.UNAUTHORIZED }
+        );
     }
 
     const body = await request.json();
@@ -27,7 +30,7 @@ export async function PUT(request: Request) {
     return forwardJsonToUserService({
         path: "/api/users/change-password/me",
         method: "PUT",
-        authHeader: authHeaderOrResponse,
+        authHeader: token,
         body: { oldPassword, newPassword },
         fallbackError: "Failed to change password",
         logLabel: "Change Password",

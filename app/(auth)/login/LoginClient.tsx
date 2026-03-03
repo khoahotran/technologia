@@ -1,5 +1,6 @@
 "use client"
 
+import { GoogleLogin, useGoogleLogin } from "@react-oauth/google"
 import { Facebook, Youtube, Instagram, Linkedin, Chrome } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -46,19 +47,18 @@ export default function LoginClient() {
         setLoading(true)
 
         try {
+            console.log("Attempting local login for:", formData.username);
             // 1. Login to get token
             const { token, refreshToken, userId } = await AuthRepository.login({
                 username: formData.username,
                 password: formData.password
             });
 
-            // 2. Store tokens in storage (for httpClient interceptor to work)
+            // 2. Store tokens in storage
             authStorage.setTokens(token, refreshToken);
-
-            // 3. Set default auth header for subsequent requests
             httpClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-            // 4. Fetch user profile (Try but don't block if it fails)
+            // 3. User info
             let finalUser = {
                 userId,
                 username: formData.username,
@@ -78,38 +78,39 @@ export default function LoginClient() {
                 console.warn("Failed to fetch profile after login:", profileErr);
             }
 
-            // 5. Update Auth Context
             if (auth) {
                 auth.login(token, refreshToken, finalUser);
             }
 
-            // 6. Redirect
+            console.log("Local Login Success. Redirecting...");
             router.push("/")
             router.refresh()
         } catch (err: unknown) {
-            console.error("Login Error Details:", err)
-            const errorObj = err as { response?: { data?: { message?: string } } };
-            setError(errorObj.response?.data?.message || "Login failed. Please check your credentials.")
+            console.error("Local Login Error Details:", err)
+            const appError = err as { message?: string, details?: { data?: { message?: string } } };
+            const msg = appError.details?.data?.message || appError.message || "Login failed.";
+            setError(msg);
         } finally {
             setLoading(false)
         }
     }
 
-    const handleGoogleLogin = async () => {
-        const idToken = prompt("Please enter your Google ID Token for testing:");
-        if (!idToken) return;
-
+    const onGoogleSuccess = async (credentialResponse: any) => {
+        console.log("Google Credential Response:", credentialResponse);
         setLoading(true);
         setError("");
 
         try {
-            const { token, refreshToken, userId } = await AuthRepository.loginGoogle({ idToken });
+            // credentialResponse.credential is the ID Token (JWT)
+            const { token, refreshToken, userId } = await AuthRepository.loginGoogle({
+                idToken: credentialResponse.credential
+            });
 
-            // Store tokens immediately
+            console.log("Backend Google Login Success:", { userId });
+
             authStorage.setTokens(token, refreshToken);
             httpClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-            // Try to fetch profile but don't block if it fails (can fetch later or show minimal profile)
             let finalUser = {
                 userId,
                 username: "google_user",
@@ -136,9 +137,9 @@ export default function LoginClient() {
             router.push("/");
             router.refresh();
         } catch (err: unknown) {
-            console.error("Google Login Error:", err);
-            const errorObj = err as { response?: { data?: { message?: string } } };
-            const msg = errorObj.response?.data?.message || "Google login failed. Please check your token.";
+            console.error("Backend Google Login Error:", err);
+            const appError = err as { message?: string, details?: { data?: { message?: string } } };
+            const msg = appError.details?.data?.message || appError.message || "Google login failed.";
             setError(msg);
         } finally {
             setLoading(false);
@@ -155,7 +156,11 @@ export default function LoginClient() {
                     </div>
 
                     <form className="space-y-6" onSubmit={handleSubmit}>
-                        {error && <div className="text-red-500 text-sm text-center">{error}</div>}
+                        {error && (
+                            <div className="bg-red-50 text-red-500 text-sm p-3 rounded-lg text-center border border-red-100">
+                                {error}
+                            </div>
+                        )}
 
                         <Input
                             name="username"
@@ -185,6 +190,7 @@ export default function LoginClient() {
                         </div>
 
                         <Button
+                            type="submit"
                             disabled={loading}
                             className="w-full h-12 bg-[#8AB0C3] hover:bg-[#7A9EB0] text-white font-semibold text-base"
                         >
@@ -200,17 +206,17 @@ export default function LoginClient() {
                             </div>
                         </div>
 
-                        <div className="space-y-3">
-                            <SocialButton
-                                provider="Google"
-                                icon={<Chrome className="h-5 w-5 text-red-500" />}
-                                onClick={handleGoogleLogin}
-                                type="button"
-                            />
-                            {/* <SocialButton
-                                provider="FaceBook"
-                                icon={<Facebook className="h-5 w-5 text-blue-600" />}
-                            /> */}
+                        <div className="flex flex-col space-y-3 items-center">
+                            <div className="w-full">
+                                <GoogleLogin
+                                    onSuccess={onGoogleSuccess}
+                                    onError={() => setError("Google login failed. Please try again.")}
+                                    useOneTap
+                                    width="100%"
+                                    theme="outline"
+                                    shape="rectangular"
+                                />
+                            </div>
                         </div>
 
                         <div className="text-center text-sm text-gray-600">
@@ -219,12 +225,6 @@ export default function LoginClient() {
                                 Sign Up
                             </Link>
                         </div>
-
-                        {/* <div className="text-center text-sm text-gray-600">
-                            <Link href="/" className="text-gray-400 hover:text-gray-600">
-                                &larr; Home
-                            </Link>
-                        </div> */}
                     </form>
                 </div>
             </div>
