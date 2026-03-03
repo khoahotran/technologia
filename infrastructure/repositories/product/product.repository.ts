@@ -56,7 +56,7 @@ export const ProductRepository: IProductRepository = {
   getPaged: async (
     page = 0,
     size = 10,
-    sortBy = "id",
+    sortBy = "create_at",
     sortDirection: "ASC" | "DESC" = "DESC"
   ): Promise<ProductPagingResponse> => {
     const paging = normalizePagingParams({ page, size, sortBy, sortDirection });

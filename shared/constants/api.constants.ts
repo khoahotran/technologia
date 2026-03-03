@@ -48,7 +48,6 @@ export const API_PATHS = {
         REFRESH_TOKEN: '/api/auth/refresh-token',
         FORGOT_PASSWORD: '/api/auth/forget-password',
         RESET_PASSWORD: '/api/auth/reset-password',
-        ME: '/api/auth/me',
     },
 
     // Product endpoints  

@@ -9,7 +9,7 @@ export type LoginDto = z.infer<typeof LoginSchema>;
 export const RegisterSchema = z.object({
     username: z.string(),
     password: z.string(),
-    email: z.string().email(),
+    email: z.string().email().optional(),
     phoneNumber: z.string().optional(),
     firstname: z.string().optional(),
     lastname: z.string().optional(),

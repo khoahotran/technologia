@@ -287,7 +287,7 @@ export const authStorage = {
     },
 
     /**
-     * Set auth tokens
+     * Set auth tokens and extract role for middleware
      */
     setTokens(accessToken: string, refreshToken: string): void {
         // Store access token in both cookie (for SSR) and localStorage
@@ -298,6 +298,27 @@ export const authStorage = {
         });
         storage.set(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
         storage.set(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
+
+        // Attempt to decode role and save it in a cookie for Next.js middleware
+        try {
+            const payload = accessToken.split(".")[1];
+            if (payload) {
+                // Use Buffer for base64 decoding to support both browser & Node environments (if SSR)
+                const decodedStr = typeof window !== 'undefined'
+                    ? atob(payload)
+                    : Buffer.from(payload, 'base64').toString('ascii');
+                const decoded = JSON.parse(decodedStr);
+                if (decoded && decoded.role) {
+                    storage.set("role", decoded.role, {
+                        type: "cookie",
+                        expireDays: 7,
+                        secure: process.env.NODE_ENV === "production",
+                    });
+                }
+            }
+        } catch (e) {
+            console.warn("Could not decode role from token for proxy middleware", e);
+        }
     },
 
     /**
@@ -307,6 +328,7 @@ export const authStorage = {
         storage.remove(STORAGE_KEYS.ACCESS_TOKEN, { type: "cookie" });
         storage.remove(STORAGE_KEYS.ACCESS_TOKEN);
         storage.remove(STORAGE_KEYS.REFRESH_TOKEN);
+        storage.remove("role", { type: "cookie" }); // Clear role cookie as well
     },
 
     /**

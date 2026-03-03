@@ -75,7 +75,32 @@ export interface CalculatePricePayload {
 
 const EMPTY_CART: CartMap = { cartItems: [] };
 
+export interface CartPagingParams {
+    page?: number;
+    size?: number;
+    /** NOTE: Backend uses 'sortDir' not 'sortDirection' — confirmed from Postman */
+    sortDir?: "ASC" | "DESC";
+    sortBy?: string;
+}
+
 export const CartRepository = {
+    /**
+     * Get cart with paginated cart items
+     * Endpoint: GET /api/carts/with-items-paging
+     * NOTE: param is `sortDir` (not `sortDirection`) per Postman collection
+     */
+    async getCartWithPaging(params: CartPagingParams = {}): Promise<CartMap> {
+        const { data } = await httpClient.get("/carts/with-items-paging", {
+            params: {
+                page: params.page ?? 0,
+                size: params.size ?? 10,
+                sortDir: params.sortDir,
+                sortBy: params.sortBy,
+            },
+        });
+        const parsed = CartResponseSchema.parse(data);
+        return parsed.data?.map ?? { cartItems: [] };
+    },
     async getCart(): Promise<CartMap> {
         const { data } = await httpClient.get("/carts");
         const parsed = CartResponseSchema.parse(data);
