@@ -1,3 +1,5 @@
+import process from "node:process";
+
 /** @type {import('next').NextConfig} */
 
 // Service URLs (can be overridden via environment variables)

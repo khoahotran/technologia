@@ -86,7 +86,7 @@ export async function forwardJsonToUserService(options: ForwardToUserServiceOpti
 
         const data = await parseJsonSafe(backendRes);
 
-        console.log(`[API Proxy] ${logLabel} ${method} ${path} -> Status: ${backendRes.status}`);
+        console.warn(`[API Proxy] ${logLabel} ${method} ${path} -> Status: ${backendRes.status}`);
         if (!backendRes.ok) {
             console.error(`[API Proxy] ${logLabel} Error:`, data);
             return NextResponse.json(

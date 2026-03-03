@@ -22,6 +22,7 @@ import {
     type CheckoutAddress,
     type CheckoutOrderItem,
 } from "@/lib/checkout-flow";
+import { isAppError } from "@/lib/errors";
 
 function getAddressDisplay(address: CheckoutAddress) {
     return `${address.line}, ${address.ward}, ${address.city}, ${address.province}`;
@@ -106,9 +107,9 @@ export default function ShippingClient() {
         const orderItems: CheckoutOrderItem[] = selectedCartItems.map((item) => ({
             cartItemId: item.cartItemId,
             productId: item.productId,
-            variantId: item.variantId,
+            variantId: item.variantId || "",
             name: item.name,
-            image: item.mainImage,
+            image: item.mainImage || "/placeholder.png",
             quantity: item.currentQuantity,
             unitPrice: item.priceAfterDiscount ?? item.price ?? 0,
         }));
@@ -147,8 +148,8 @@ export default function ShippingClient() {
     if (isError) {
         // if the cart query threw a 404, the user probably has no cart, redirect to cart page
         if (
-            cartError &&
-            (cartError as any).statusCode === 404
+            isAppError(cartError) &&
+            cartError.statusCode === 404
         ) {
             router.push("/cart");
             return null;

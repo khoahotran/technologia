@@ -1,19 +1,18 @@
 "use client"
 
-import { GoogleLogin, useGoogleLogin } from "@react-oauth/google"
-import { Facebook, Youtube, Instagram, Linkedin, Chrome } from "lucide-react"
+import { GoogleLogin, type CredentialResponse } from "@react-oauth/google"
+import { Facebook, Youtube, Instagram, Linkedin } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState, useContext, useEffect } from "react"
 
-import { SocialButton } from "@/components/features/home/FormElements"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { httpClient } from "@/infrastructure/http/client"
 import { AuthRepository } from "@/infrastructure/repositories/auth/auth.repository"
 import { UserRepository } from "@/infrastructure/repositories/user/user.repository"
-import { AuthContext } from "@/shared/providers/auth.provider"
 import { authStorage } from "@/lib/storage"
+import { AuthContext } from "@/shared/providers/auth.provider"
 
 export default function LoginClient() {
     const router = useRouter()
@@ -47,7 +46,7 @@ export default function LoginClient() {
         setLoading(true)
 
         try {
-            console.log("Attempting local login for:", formData.username);
+            console.warn("Attempting local login for:", formData.username);
             // 1. Login to get token
             const { token, refreshToken, userId } = await AuthRepository.login({
                 username: formData.username,
@@ -82,7 +81,7 @@ export default function LoginClient() {
                 auth.login(token, refreshToken, finalUser);
             }
 
-            console.log("Local Login Success. Redirecting...");
+            console.warn("Local Login Success. Redirecting...");
             router.push("/")
             router.refresh()
         } catch (err: unknown) {
@@ -95,18 +94,24 @@ export default function LoginClient() {
         }
     }
 
-    const onGoogleSuccess = async (credentialResponse: any) => {
-        console.log("Google Credential Response:", credentialResponse);
+    const onGoogleSuccess = async (credentialResponse: CredentialResponse) => {
+        console.warn("Google Credential Response:", credentialResponse);
         setLoading(true);
         setError("");
 
         try {
+            if (!credentialResponse.credential) {
+                console.error("Google Login: No credential received");
+                setError("Google login failed - no credential received.");
+                return;
+            }
+
             // credentialResponse.credential is the ID Token (JWT)
             const { token, refreshToken, userId } = await AuthRepository.loginGoogle({
                 idToken: credentialResponse.credential
             });
 
-            console.log("Backend Google Login Success:", { userId });
+            console.warn("Backend Google Login Success:", { userId });
 
             authStorage.setTokens(token, refreshToken);
             httpClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;

@@ -1,9 +1,7 @@
-// import { Analytics } from "@vercel/analytics/next";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { Toaster } from "sonner";
-
-import { GoogleOAuthProvider } from "@react-oauth/google";
 
 import Loading from "./loading";
 

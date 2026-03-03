@@ -1,5 +1,4 @@
-import { NextResponse } from "next/server";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 // mocks for createDynamicApiHandler helpers
 const mocks = vi.hoisted(() => ({
@@ -23,8 +22,9 @@ describe("DELETE /api/cart-items/delete/[id] route", () => {
         });
 
         // verify the generated path function builds the expected string
-        const calledConfig = mocks.mockCreateDynamicApiHandler.mock.calls[0][0];
-        const pathFn = calledConfig.path as (params: { id: string }) => string;
+        const calledConfig = mocks.mockCreateDynamicApiHandler.mock.calls[0]?.[0];
+        expect(calledConfig).toBeDefined();
+        const pathFn = calledConfig!.path as (params: { id: string }) => string;
         expect(pathFn({ id: "123" })).toBe("/api/cart-items/delete/123");
     });
 });

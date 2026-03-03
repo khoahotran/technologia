@@ -5,7 +5,7 @@
  * Usage:
  * export const GET = createApiHandler({ targetService: 'product', path: '/products' });
  */
-
+import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
 import { SERVICE_URLS, HTTP_STATUS, REQUEST_CONFIG, COOKIE_NAMES } from '@/shared/constants';
@@ -68,8 +68,6 @@ function buildTargetUrl(
     return `${baseUrl}${path}${search}`;
 }
 
-import { cookies } from 'next/headers';
-
 /**
  * Build headers for proxy request
  */
@@ -82,7 +80,7 @@ async function buildHeaders(
     req.headers.forEach((value, key) => {
         incomingHeaders[key] = key.toLowerCase() === 'authorization' ? `${value.substring(0, 15)}...` : value;
     });
-    console.debug(`[API Proxy] Incoming Headers:`, incomingHeaders);
+    console.warn(`[API Proxy] Incoming Headers:`, incomingHeaders);
 
     const headers: Record<string, string> = {
         'Content-Type': REQUEST_CONFIG.JSON_CONTENT_TYPE,
@@ -106,7 +104,7 @@ async function buildHeaders(
 
     if (authHeader) {
         headers['Authorization'] = authHeader;
-        console.log(`[API Proxy] Auth token sourced from: ${source} (starts with: ${authHeader.substring(0, 15)}...)`);
+        console.warn(`[API Proxy] Auth token sourced from: ${source} (starts with: ${authHeader.substring(0, 15)}...)`);
     } else {
         console.warn(`[API Proxy] No auth token found in headers or cookies`);
     }
@@ -166,7 +164,7 @@ export function createApiHandler(config: ApiHandlerConfig) {
                 const displayValue = key.toLowerCase() === 'authorization'
                     ? `${value.substring(0, 15)}...`
                     : value;
-                console.log(`[API Proxy] Header: ${key}=${displayValue}`);
+                console.warn(`[API Proxy] Header: ${key}=${displayValue}`);
             });
 
             const res = await fetch(targetUrl, {
@@ -224,7 +222,7 @@ export function createDynamicApiHandler<T extends Record<string, string> = Recor
                 const displayValue = key.toLowerCase() === 'authorization'
                     ? `${value.substring(0, 15)}...`
                     : value;
-                console.log(`[API Proxy] Header: ${key}=${displayValue}`);
+                console.warn(`[API Proxy] Header: ${key}=${displayValue}`);
             });
 
             const res = await fetch(targetUrl, {

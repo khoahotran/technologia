@@ -85,6 +85,39 @@ httpClient.interceptors.request.use(
         const token = authStorage.getAccessToken();
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
+            // Debug: log token being used
+            if (process.env.NODE_ENV !== "production") {
+                const tokenPrefix = token.substring(0, 20) + "...";
+                const tokenExpiryCheck = (() => {
+                    try {
+                        const parts = token.split(".");
+                        if (parts.length === 3 && parts[1]) {
+                            const decoded = JSON.parse(atob(parts[1]));
+                            const expTimestamp = decoded.exp as number;
+                            const nowTimestamp = Math.floor(Date.now() / 1000);
+                            const expiresIn = expTimestamp - nowTimestamp;
+                            return {
+                                exp: new Date(expTimestamp * 1000).toISOString(),
+                                expiresInSeconds: expiresIn,
+                                isExpired: expiresIn < 0,
+                            };
+                        }
+                    } catch (e) {
+                        return { error: "Could not decode token" };
+                    }
+                    return {};
+                })();
+                httpLogger.debug("Token attached to request", {
+                    tokenPrefix,
+                    tokenLength: token.length,
+                    ...tokenExpiryCheck,
+                });
+            }
+        } else {
+            httpLogger.warn("No token available for request", {
+                url: config.url,
+                method: config.method?.toUpperCase(),
+            });
         }
 
         // Log request in development
@@ -93,6 +126,7 @@ httpClient.interceptors.request.use(
                 method: config.method?.toUpperCase(),
                 url: config.url,
                 requestId,
+                hasAuthorization: !!config.headers.Authorization,
             });
         }
 
@@ -157,21 +191,26 @@ httpClient.interceptors.response.use(
             message: (data as Record<string, unknown>)?.["message"],
         });
 
-        // Handle 403 Forbidden - Redirect to Login
-        if (status === HTTP_STATUS.FORBIDDEN) {
-            httpLogger.error("Access forbidden - redirecting to login", { url: originalRequest?.url });
-            if (typeof window !== "undefined") {
-                window.location.href = "/login?error=forbidden";
-            }
-            return Promise.reject(new AuthenticationError("Access forbidden"));
-        }
-
-        // Handle 401 Unauthorized - Token Refresh
+        // Handle 401 Unauthorized & 403 Forbidden - Token Refresh
+        // NOTE: Backend may return 403 instead of 401 for expired tokens
+        // So we treat both as token expiration and attempt refresh
         const isAuthRoute = originalRequest?.url?.includes("/auth/login") ||
             originalRequest?.url?.includes("/auth/register") ||
             originalRequest?.url?.includes("/auth/refresh-token");
 
-        if (status === HTTP_STATUS.UNAUTHORIZED && !originalRequest._retry && !isAuthRoute) {
+        const shouldAttemptRefresh = (status === HTTP_STATUS.UNAUTHORIZED || status === HTTP_STATUS.FORBIDDEN) 
+            && !originalRequest._retry 
+            && !isAuthRoute;
+
+        httpLogger.info("Token refresh decision", {
+            status,
+            shouldAttemptRefresh,
+            isAuthRoute,
+            hasRetried: originalRequest._retry,
+            url: originalRequest?.url,
+        });
+
+        if (shouldAttemptRefresh) {
             if (isRefreshing) {
                 return new Promise((resolve, reject) => {
                     failedQueue.push({ resolve, reject });
@@ -191,8 +230,15 @@ httpClient.interceptors.response.use(
             isRefreshing = true;
 
             const refreshToken = authStorage.getRefreshToken();
+            httpLogger.info("Attempting token refresh", {
+                hasRefreshToken: !!refreshToken,
+                refreshTokenLength: refreshToken?.length,
+            });
 
             if (!refreshToken) {
+                httpLogger.error("No refresh token available for refresh attempt", {
+                    url: originalRequest?.url,
+                });
                 authStorage.clearTokens();
                 processQueue(new AuthenticationError("No refresh token available"), null);
                 isRefreshing = false;
@@ -204,6 +250,9 @@ httpClient.interceptors.response.use(
             }
 
             try {
+                httpLogger.debug("Sending refresh token request", {
+                    refreshTokenPrefix: refreshToken.substring(0, 20) + "...",
+                });
                 const response = await axios.post(`${BASE_URL}/auth/refresh-token`, {
                     refreshToken: refreshToken,
                 });
@@ -211,6 +260,12 @@ httpClient.interceptors.response.use(
                 if (response.status === HTTP_STATUS.OK || response.status === HTTP_STATUS.CREATED) {
                     const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
                         response.data.data;
+
+                    httpLogger.info("Token refresh response received", {
+                        hasNewAccessToken: !!newAccessToken,
+                        hasNewRefreshToken: !!newRefreshToken,
+                        newAccessTokenLength: newAccessToken?.length,
+                    });
 
                     authStorage.setTokens(newAccessToken, newRefreshToken || refreshToken);
 
@@ -223,20 +278,33 @@ httpClient.interceptors.response.use(
                         originalRequest.headers.Authorization = "Bearer " + newAccessToken;
                     }
 
-                    httpLogger.info("Token refreshed successfully");
+                    httpLogger.info("Token refreshed successfully and retrying request", {
+                        originalUrl: originalRequest?.url,
+                        newTokenPrefix: newAccessToken?.substring(0, 20) + "...",
+                    });
                     return httpClient(originalRequest);
                 }
             } catch (refreshError) {
+                httpLogger.error("Token refresh failed with error", {
+                    errorMessage: refreshError instanceof Error ? refreshError.message : String(refreshError),
+                    errorStatus: (refreshError as any)?.response?.status,
+                    errorData: (refreshError as any)?.response?.data,
+                    originalStatus: status,
+                });
+
                 processQueue(refreshError, null);
                 authStorage.clearTokens();
 
-                // Redirect to login page
+                // Redirect to login page with appropriate error
+                const errorParam = status === HTTP_STATUS.FORBIDDEN ? "forbidden" : "session_expired";
                 if (typeof window !== "undefined") {
-                    window.location.href = "/login?error=session_expired";
+                    window.location.href = `/login?error=${errorParam}`;
                 }
 
-                httpLogger.error("Token refresh failed", refreshError);
-                return Promise.reject(new AuthenticationError("Session expired"));
+                httpLogger.error("Token refresh failed - redirecting to login", {
+                    errorParam,
+                });
+                return Promise.reject(new AuthenticationError("Session expired or access forbidden"));
             } finally {
                 isRefreshing = false;
             }

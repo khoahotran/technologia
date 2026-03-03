@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { CartRepository } from '../cart.repository';
+
 import { httpClient } from '@/infrastructure/http/client';
 
 // mock axios client
@@ -31,7 +32,7 @@ describe('CartRepository', () => {
                 }
             },
         };
-        vi.mocked(httpClient.get).mockResolvedValue(mocked as any);
+        vi.mocked(httpClient.get).mockResolvedValue(mocked);
 
         const result = await CartRepository.getCart();
         expect(httpClient.get).toHaveBeenCalledWith('/carts');
@@ -43,7 +44,7 @@ describe('CartRepository', () => {
             status: 200,
             data: { status: 200, data: { productId: 'p1' }, message: 'ok' },
         };
-        vi.mocked(httpClient.post).mockResolvedValue(mocked as any);
+        vi.mocked(httpClient.post).mockResolvedValue(mocked);
 
         const resp = await CartRepository.addToCart({ productId: 'p1', variantId: 'v1' });
         expect(httpClient.post).toHaveBeenCalledWith('/carts/add-to-cart?productId=p1&variantId=v1', { productId: 'p1', variantId: 'v1' });
@@ -55,7 +56,7 @@ describe('CartRepository', () => {
             status: 200,
             data: { status: 200, data: null, message: 'deleted' },
         };
-        vi.mocked(httpClient.delete).mockResolvedValue(mocked as any);
+        vi.mocked(httpClient.delete).mockResolvedValue(mocked);
 
         await CartRepository.remove('ci1');
         expect(httpClient.delete).toHaveBeenCalledWith('/cart-items/delete/ci1');
