@@ -1,17 +1,17 @@
 /**
- * HTTP Error Classes
+ * Các Lớp Lỗi HTTP & Nghiệp vụ (Domain Errors)
  *
- * Typed error classes for different HTTP/API error scenarios.
- * Enables consistent error handling and proper error classification.
- *
+ * Định nghĩa hệ thống phân cấp lỗi (Error Hierarchy) giúp chuẩn hóa việc xử lý lỗi trong ứng dụng.
+ * Tách biệt rõ ràng giữa lỗi mạng, lỗi xác thực, lỗi dữ liệu và lỗi hệ thống.
+ * 
  * @example
  * try {
  *   await api.get('/products');
  * } catch (error) {
  *   if (error instanceof AuthenticationError) {
- *     redirectToLogin();
+ *     // Xử lý lỗi đăng nhập
  *   } else if (error instanceof NetworkError) {
- *     showRetryMessage();
+ *     // Xử lý lỗi đường truyền
  *   }
  * }
  */
@@ -19,13 +19,21 @@
 import { HTTP_STATUS } from "@/shared/constants";
 
 // ===========================================
-// Base App Error
+// Base App Error - Lớp lỗi cơ sở
 // ===========================================
 
+/**
+ * Lớp lỗi gốc cho toàn bộ ứng dụng. 
+ * Kế thừa từ class Error mặc định của JavaScript nhưng bổ sung thêm thông tin định danh.
+ */
 export class AppError extends Error {
+    /** Mã lỗi máy tính đọc (Dùng để so khớp logic hoặc i18n) */
     public readonly code: string;
+    /** Mã trạng thái HTTP tương ứng */
     public readonly statusCode: number;
+    /** Dữ liệu chi tiết bổ sung (Payload của lỗi) */
     public readonly details: unknown;
+    /** Thời điểm lỗi xảy ra */
     public readonly timestamp: string;
 
     constructor(
@@ -41,14 +49,14 @@ export class AppError extends Error {
         this.details = details;
         this.timestamp = new Date().toISOString();
 
-        // Maintains proper stack trace for where error was thrown
+        // Giữ lại vết ngăn xếp (stack trace) chính xác nơi lỗi được ném ra
         if (Error.captureStackTrace) {
             Error.captureStackTrace(this, this.constructor);
         }
     }
 
     /**
-     * Convert to JSON for logging/serialization
+     * Chuyển đổi lỗi sang dạng JSON để phục vụ ghi log hoặc serialize qua network
      */
     toJSON(): Record<string, unknown> {
         return {
@@ -64,18 +72,20 @@ export class AppError extends Error {
 }
 
 // ===========================================
-// Network Errors
+// Network Errors - Lỗi kết nối & Đường truyền
 // ===========================================
 
+/** Lỗi do không có kết nối internet hoặc server không phản hồi */
 export class NetworkError extends AppError {
-    constructor(message: string = "Network error occurred", details?: unknown) {
+    constructor(message: string = "Lỗi kết nối mạng", details?: unknown) {
         super(message, "NETWORK_ERROR", 0, details);
     }
 }
 
+/** Lỗi do yêu cầu kéo dài quá lâu (Timeout) */
 export class TimeoutError extends AppError {
     constructor(
-        message: string = "Request timed out",
+        message: string = "Yêu cầu quá hạn (Timeout)",
         timeoutMs?: number,
         details?: unknown
     ) {
@@ -84,30 +94,33 @@ export class TimeoutError extends AppError {
 }
 
 // ===========================================
-// Authentication Errors
+// Authentication Errors - Lỗi Xác thực & Quyền hạn
 // ===========================================
 
+/** Lỗi yêu cầu đăng nhập (401 Unauthorized) */
 export class AuthenticationError extends AppError {
     constructor(
-        message: string = "Authentication required",
+        message: string = "Yêu cầu xác thực tài khoản",
         details?: unknown
     ) {
         super(message, "AUTH_ERROR", HTTP_STATUS.UNAUTHORIZED, details);
     }
 }
 
+/** Lỗi do Token hết hạn sử dụng */
 export class TokenExpiredError extends AppError {
     constructor(
-        message: string = "Token has expired",
+        message: string = "Phiên làm việc đã hết hạn",
         details?: unknown
     ) {
         super(message, "TOKEN_EXPIRED", HTTP_STATUS.UNAUTHORIZED, details);
     }
 }
 
+/** Lỗi do người dùng không có quyền truy cập tài nguyên (403 Forbidden) */
 export class ForbiddenError extends AppError {
     constructor(
-        message: string = "Access forbidden",
+        message: string = "Bạn không có quyền truy cập tài nguyên này",
         details?: unknown
     ) {
         super(message, "FORBIDDEN", HTTP_STATUS.FORBIDDEN, details);
@@ -115,14 +128,19 @@ export class ForbiddenError extends AppError {
 }
 
 // ===========================================
-// Validation Errors
+// Validation Errors - Lỗi Dữ liệu đầu vào
 // ===========================================
 
+/** 
+ * Lỗi 422 (Unprocessable Entity) thường dùng cho lỗi Form 
+ * Chứa danh sách chi tiết các trường bị lỗi.
+ */
 export class ValidationError extends AppError {
+    /** Danh sách lỗi chi tiết theo từng field (Tên field -> Mảng các thông báo lỗi) */
     public readonly fieldErrors: Record<string, string[]>;
 
     constructor(
-        message: string = "Validation failed",
+        message: string = "Dữ liệu không hợp lệ",
         fieldErrors: Record<string, string[]> = {},
         details?: unknown
     ) {
@@ -130,32 +148,27 @@ export class ValidationError extends AppError {
         this.fieldErrors = fieldErrors;
     }
 
-    /**
-     * Get errors for a specific field
-     */
+    /** Lấy mảng lỗi của một trường cụ thể */
     getFieldErrors(field: string): string[] {
         return this.fieldErrors[field] || [];
     }
 
-    /**
-     * Check if a specific field has errors
-     */
+    /** Kiểm tra xem một trường có bị lỗi hay không */
     hasFieldError(field: string): boolean {
         return (this.fieldErrors[field]?.length ?? 0) > 0;
     }
 
-    /**
-     * Get all field names with errors
-     */
+    /** Lấy danh sách tên tất cả các trường đang có lỗi */
     getErrorFields(): string[] {
         return Object.keys(this.fieldErrors);
     }
 }
 
 // ===========================================
-// API Errors
+// API Errors - Lỗi phản hồi từ Backend
 // ===========================================
 
+/** Lỗi chung chung khi gọi API nhưng không thuộc các nhóm đặc thù trên */
 export class ApiError extends AppError {
     public readonly endpoint: string;
     public readonly method: string;
@@ -173,6 +186,7 @@ export class ApiError extends AppError {
     }
 }
 
+/** Lỗi 404 (Not Found) - Không tìm thấy tài nguyên */
 export class NotFoundError extends AppError {
     public readonly resourceType: string;
     public readonly resourceId: string | number | undefined;
@@ -183,26 +197,28 @@ export class NotFoundError extends AppError {
         details?: unknown
     ) {
         const message = resourceId
-            ? `${resourceType} with ID '${resourceId}' not found`
-            : `${resourceType} not found`;
+            ? `Không tìm thấy ${resourceType} với mã '${resourceId}'`
+            : `Không tìm thấy ${resourceType}`;
         super(message, "NOT_FOUND", HTTP_STATUS.NOT_FOUND, details);
         this.resourceType = resourceType;
         this.resourceId = resourceId;
     }
 }
 
+/** Lỗi 409 (Conflict) - Xung đột dữ liệu (VD: Trùng email đã đăng ký) */
 export class ConflictError extends AppError {
     constructor(
-        message: string = "Resource conflict",
+        message: string = "Xung đột dữ liệu",
         details?: unknown
     ) {
         super(message, "CONFLICT", HTTP_STATUS.CONFLICT, details);
     }
 }
 
+/** Lỗi 500 (Internal Server Error) - Lỗi phát sinh từ phía Server */
 export class ServerError extends AppError {
     constructor(
-        message: string = "Internal server error",
+        message: string = "Lỗi hệ thống từ phía Server",
         details?: unknown
     ) {
         super(message, "SERVER_ERROR", HTTP_STATUS.INTERNAL_SERVER_ERROR, details);
@@ -210,11 +226,12 @@ export class ServerError extends AppError {
 }
 
 // ===========================================
-// Error Factory
+// Error Factory - Bản đồ ánh xạ lỗi
 // ===========================================
 
 /**
- * Create appropriate error from HTTP status code
+ * Nhà máy tạo lỗi: Tự động chuyển đổi status code thành Type Error tương ứng.
+ * Giúp code xử lý lỗi ngắn gọn và tường minh hơn.
  */
 export function createHttpError(
     statusCode: number,
@@ -227,7 +244,7 @@ export function createHttpError(
         case HTTP_STATUS.FORBIDDEN:
             return new ForbiddenError(message, details);
         case HTTP_STATUS.NOT_FOUND:
-            return new NotFoundError("Resource", undefined, details);
+            return new NotFoundError("Tài nguyên", undefined, details);
         case HTTP_STATUS.CONFLICT:
             return new ConflictError(message, details);
         case HTTP_STATUS.UNPROCESSABLE_ENTITY:
@@ -241,29 +258,28 @@ export function createHttpError(
     }
 }
 
-/**
- * Type guard to check if error is an AppError
- */
+// ===========================================
+// Type Guards - Các hàm kiểm tra kiểu lỗi
+// ===========================================
+
 export function isAppError(error: unknown): error is AppError {
     return error instanceof AppError;
 }
 
-/**
- * Type guard to check if error is an authentication error
- */
 export function isAuthError(error: unknown): error is AuthenticationError | TokenExpiredError {
     return error instanceof AuthenticationError || error instanceof TokenExpiredError;
 }
 
-/**
- * Type guard to check if error is a network error
- */
 export function isNetworkError(error: unknown): error is NetworkError | TimeoutError {
     return error instanceof NetworkError || error instanceof TimeoutError;
 }
 
+// ===========================================
+// Utilities - Tiện ích bóc tách lỗi
+// ===========================================
+
 /**
- * Extract error message from any error type
+ * Lấy thông báo lỗi cuối cùng hiển thị cho người dùng từ bất kỳ kiểu dữ liệu lỗi nào.
  */
 export function getErrorMessage(error: unknown): string {
     if (error instanceof Error) {
@@ -282,11 +298,11 @@ export function getErrorMessage(error: unknown): string {
             return msg;
         }
     }
-    return "An unexpected error occurred";
+    return "Đã có lỗi không xác định xảy ra";
 }
 
 /**
- * Extract error code from any error type
+ * Lấy mã hiệu lỗi (error code) để phục vụ logic i18n hoặc tracking log.
  */
 export function getErrorCode(error: unknown): string {
     if (error instanceof AppError) {

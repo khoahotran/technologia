@@ -2,7 +2,7 @@ import { renderHook, act } from '@testing-library/react'
 import { ReactNode } from 'react'
 import { describe, it, expect, vi } from 'vitest'
 
-import { useAuth } from '../use-auth.hook'
+import { useAuth } from '../use-auth'
 
 import { AuthProvider } from '@/shared/providers/auth.provider'
 
@@ -31,7 +31,7 @@ describe('useAuth hook', () => {
     })
 
     it('should update state after login', () => {
-        const mockUser = { userId: 1, username: 'tester', email: 'test@test.com', role: 'USER' }
+        const mockUser = { userId: '1', username: 'tester', email: 'test@test.com', role: 'USER' }
         const { result } = renderHook(() => useAuth(), { wrapper: Wrapper })
 
         act(() => {
@@ -44,7 +44,7 @@ describe('useAuth hook', () => {
     })
 
     it('should clear state after logout', () => {
-        const mockUser = { userId: 1, username: 'tester', email: 'test@test.com', role: 'USER' }
+        const mockUser = { userId: '1', username: 'tester', email: 'test@test.com', role: 'USER' }
         const { result } = renderHook(() => useAuth(), { wrapper: Wrapper })
 
         act(() => {

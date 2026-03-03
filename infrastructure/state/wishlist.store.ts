@@ -1,9 +1,8 @@
 /**
- * Wishlist Store
+ * Kho lưu trữ Danh sách yêu thích (Wishlist Store)
  *
- * Manages wishlist state:
- * - Product IDs in wishlist
- * - Toggle, add, remove operations
+ * Quản lý danh sách các ID sản phẩm mà người dùng đã đánh dấu yêu thích.
+ * Sử dụng LocalStorage để duy trì danh sách khi người dùng đóng trình duyệt.
  */
 
 import { create } from "zustand";
@@ -20,10 +19,16 @@ import { logger } from "@/lib/logger";
 export const useWishlistStore = create<WishlistStore>()(
     persist(
         (set, get) => ({
-            // State
+            // Khởi tạo State: Mảng chứa các ID sản phẩm (string)
             items: [],
 
             // Actions
+
+            /**
+             * Đảo ngược trạng thái yêu thích của một sản phẩm
+             * Nếu đã có trong danh sách -> Xóa đi
+             * Nếu chưa có -> Thêm vào
+             */
             toggle: (productId: string) => {
                 const { items } = get();
                 const isInList = items.includes(productId);
@@ -35,6 +40,7 @@ export const useWishlistStore = create<WishlistStore>()(
                 }
             },
 
+            /** Thêm sản phẩm vào danh sách yêu thích (nếu chưa tồn tại) */
             add: (productId: string) => {
                 const { items } = get();
                 if (!items.includes(productId)) {
@@ -43,37 +49,44 @@ export const useWishlistStore = create<WishlistStore>()(
                 }
             },
 
+            /** Xóa sản phẩm khỏi danh sách yêu thích */
             remove: (productId: string) => {
                 set({ items: get().items.filter((id) => id !== productId) });
                 logger.action("REMOVE_FROM_WISHLIST", { productId });
             },
 
+            /** Kiểm tra xem một sản phẩm cụ thể có nằm trong Wishlist không */
             isInWishlist: (productId: string) => {
                 return get().items.includes(productId);
             },
 
+            /** Làm sạch toàn bộ danh sách yêu thích */
             clear: () => {
                 set({ items: [] });
-                logger.info("Wishlist cleared");
             },
         }),
         {
+            // Tên khóa lưu vào LocalStorage
             name: "wishlist-storage",
         }
     )
 );
 
 // ===========================================
-// Selectors
+// Selectors - Tối ưu truy xuất dữ liệu
 // ===========================================
 
 export const selectWishlistItems = (state: WishlistStore) => state.items;
 export const selectWishlistCount = (state: WishlistStore) => state.items.length;
 
 // ===========================================
-// Hooks
+// Hooks - Giao diện React
 // ===========================================
 
+/**
+ * Hook tiện ích để tương tác với Danh sách yêu thích từ UI.
+ * Cung cấp danh sách ID, số lượng và các hàm thao tác.
+ */
 export function useWishlist() {
     const items = useWishlistStore(selectWishlistItems);
     const toggle = useWishlistStore((state) => state.toggle);

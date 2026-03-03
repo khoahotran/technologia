@@ -14,3 +14,8 @@ export * from "./constants";
 // Utilities
 export * from "./utils/format";
 export * from "./utils/validation";
+export * from "./utils/result";
+export * from "./utils/logger";
+
+// Shared Hooks (cross-layer)
+export * from "./hooks";

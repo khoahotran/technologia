@@ -2,64 +2,94 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderHook, waitFor } from '@testing-library/react'
 import { ReactNode } from 'react'
 import { describe, it, expect, vi } from 'vitest'
+import { RepositoryProvider } from '@/shared/providers/repository.provider'
+import { useBrands } from '../use-brand'
+import { useCategories } from '../use-category'
 
-const mockGetAllBrands = vi.fn()
-vi.mock('@/application/use-cases/brand/use-brand', () => ({
-    useBrand: () => ({ getAll: mockGetAllBrands })
-}))
+const mockBrandRepository = {
+    getAll: vi.fn(),
+    getById: vi.fn(),
+    getPaged: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    getBasePath: vi.fn(),
+    getEntitySchema: vi.fn()
+}
 
-const mockGetAllCategories = vi.fn()
-vi.mock('@/application/use-cases/category/use-category', () => ({
-    useCategory: () => ({ getAll: mockGetAllCategories })
-}))
-
-import { useBrandHook } from '../use-brand.hook'
-import { useCategoryHook } from '../use-category.hook'
+const mockCategoryRepository = {
+    getAll: vi.fn(),
+    getById: vi.fn(),
+    getPaged: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    getBasePath: vi.fn(),
+    getEntitySchema: vi.fn()
+}
 
 const createWrapper = () => {
-    const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    const qc = new QueryClient({
+        defaultOptions: {
+            queries: {
+                retry: false,
+                gcTime: 0,
+            }
+        }
+    })
+
     const Wrapper = ({ children }: { children: ReactNode }) => (
-        <QueryClientProvider client={qc}>{children}</QueryClientProvider>
+        <QueryClientProvider client={qc}>
+            <RepositoryProvider mockRepositories={{
+                brandRepository: mockBrandRepository as any,
+                categoryRepository: mockCategoryRepository as any
+            }}>
+                {children}
+            </RepositoryProvider>
+        </QueryClientProvider>
     )
     Wrapper.displayName = 'UseBrandCategoryTestWrapper'
     return Wrapper
 }
 
-describe('useBrandHook', () => {
-    it('should fetch brands and expose them via brandsQuery', async () => {
-        mockGetAllBrands.mockResolvedValue([{ id: 1, name: 'Apple' }])
+describe('useBrands', () => {
+    it('should fetch brands', async () => {
+        const mockData = [{ brandId: 1, name: 'Apple' }]
+        mockBrandRepository.getAll.mockResolvedValue(mockData)
 
-        const { result } = renderHook(() => useBrandHook(), { wrapper: createWrapper() })
+        const { result } = renderHook(() => useBrands(), { wrapper: createWrapper() })
 
-        await waitFor(() => expect(result.current.brandsQuery.isSuccess).toBe(true))
-        expect(result.current.brandsQuery.data).toHaveLength(1)
-        expect(result.current.brandsQuery.data?.[0].name).toBe('Apple')
+        await waitFor(() => expect(result.current.isSuccess).toBe(true))
+        expect(result.current.data).toEqual(mockData)
+        expect(result.current.data?.[0]?.brandId).toBe(1)
     })
 
     it('should expose error state when fetch fails', async () => {
-        mockGetAllBrands.mockRejectedValue(new Error('network error'))
+        mockBrandRepository.getAll.mockRejectedValue(new Error('network error'))
 
-        const { result } = renderHook(() => useBrandHook(), { wrapper: createWrapper() })
+        const { result } = renderHook(() => useBrands(), { wrapper: createWrapper() })
 
-        await waitFor(() => expect(result.current.brandsQuery.isError).toBe(true))
+        await waitFor(() => expect(result.current.isError).toBe(true))
     })
 })
 
-describe('useCategoryHook', () => {
-    it('should fetch categories and expose them via categoriesQuery', async () => {
-        mockGetAllCategories.mockResolvedValue([{ id: 10, name: 'Phones' }])
+describe('useCategories', () => {
+    it('should fetch categories', async () => {
+        const mockData = [{ categoryId: 10, name: 'Phones' }]
+        mockCategoryRepository.getAll.mockResolvedValue(mockData)
 
-        const { result } = renderHook(() => useCategoryHook(), { wrapper: createWrapper() })
+        const { result } = renderHook(() => useCategories(), { wrapper: createWrapper() })
 
-        await waitFor(() => expect(result.current.categoriesQuery.isSuccess).toBe(true))
-        expect(result.current.categoriesQuery.data?.[0].name).toBe('Phones')
+        await waitFor(() => expect(result.current.isSuccess).toBe(true))
+        expect(result.current.data).toEqual(mockData)
+        expect(result.current.data?.[0]?.categoryId).toBe(10)
     })
 
     it('should expose error state when fetch fails', async () => {
-        mockGetAllCategories.mockRejectedValue(new Error('network error'))
+        mockCategoryRepository.getAll.mockRejectedValue(new Error('network error'))
 
-        const { result } = renderHook(() => useCategoryHook(), { wrapper: createWrapper() })
+        const { result } = renderHook(() => useCategories(), { wrapper: createWrapper() })
 
-        await waitFor(() => expect(result.current.categoriesQuery.isError).toBe(true))
+        await waitFor(() => expect(result.current.isError).toBe(true))
     })
 })

@@ -1,17 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 import { ProductRepository } from '../product.repository'
+import { fetchWithToken } from '@/infrastructure/http'
 
-import { httpClient } from '@/infrastructure/http/client'
-
-// Mock httpClient
-vi.mock('@/infrastructure/http/client', () => ({
-    httpClient: {
-        get: vi.fn(),
-        post: vi.fn(),
-        put: vi.fn(),
-        delete: vi.fn(),
-    }
+// Mock fetchWithToken
+vi.mock('@/infrastructure/http', () => ({
+    fetchWithToken: vi.fn(),
 }))
 
 describe('ProductRepository', () => {
@@ -31,27 +25,27 @@ describe('ProductRepository', () => {
                     {
                         productId: 'p1',
                         name: 'Product 1',
-                        slug: 'p1',
-                        status: 'ACTIVE',
-                        isVisible: true,
+                        status: 'AVAILABLE',
                         totalStock: 10,
                         displayPrice: 100,
+                        variants: [],
                         createdAt: new Date().toISOString(),
                         updatedAt: new Date().toISOString()
                     }
                 ],
-                message: 'Success'
+                message: 'Get products successfully'
             }
 
-            vi.mocked(httpClient.get).mockResolvedValue({ data: mockResponse })
+            vi.mocked(fetchWithToken).mockResolvedValue(mockResponse)
 
-            const result = await ProductRepository.getPaged(1, 10, 'name', 'ASC')
+            const result = await ProductRepository.getPaged(1, 10, 'create_at', 'ASC')
 
-            expect(httpClient.get).toHaveBeenCalledWith('/products/paged', {
-                params: { page: 1, size: 10, sortBy: 'name', sortDirection: 'ASC' }
+            expect(fetchWithToken).toHaveBeenCalledWith('/products/paged', {
+                method: 'GET',
+                query: { page: '1', size: '10', sortBy: 'create_at', sortDirection: 'ASC' }
             })
             expect(result.data).toHaveLength(1)
-            expect(result.data?.[0]?.name).toBe('Product 1')
+            expect(result.data[0].name).toBe('Product 1')
         })
     })
 
@@ -63,23 +57,31 @@ describe('ProductRepository', () => {
                 page_size: 20,
                 count_items: 1,
                 count_pages: 1,
+                message: 'Filter products successfully',
                 data: [
                     {
                         productId: 'p2',
                         name: 'Filtered Product',
-                        slug: 'p2',
-                        status: 'ACTIVE',
-                        isVisible: true,
+                        description: 'A filtered product',
+                        status: 'AVAILABLE',
                         totalStock: 5,
                         displayPrice: 50,
-                        createdAt: new Date().toISOString(),
-                        updatedAt: new Date().toISOString()
+                        variants: [],
+                        specsText: '',
+                        brand: 'Brand A',
+                        category: 'Electronics',
+                        averageRating: 4.5,
+                        minPrice: 45,
+                        maxPrice: 55,
+                        minRating: null,
+                        maxRating: null,
+                        sortBy: 'create_at',
+                        sortOrder: 'DESC'
                     }
-                ],
-                message: 'Success'
+                ]
             }
 
-            vi.mocked(httpClient.get).mockResolvedValue({ data: mockResponse })
+            vi.mocked(fetchWithToken).mockResolvedValue(mockResponse)
 
             const params = {
                 page: 0,
@@ -92,23 +94,47 @@ describe('ProductRepository', () => {
 
             const result = await ProductRepository.searchAndFilter(params)
 
-            expect(httpClient.get).toHaveBeenCalledWith('/products/search-filter', {
-                params: {
-                    page: 0,
-                    size: 20,
-                    sortBy: 'createdAt', // fallback logic
-                    sortDirection: 'DESC', // fallback logic
-                    minPrice: 10,
-                    maxPrice: 100,
+            expect(fetchWithToken).toHaveBeenCalledWith('/products/search-filter', {
+                method: 'GET',
+                query: {
+                    page: '0',
+                    size: '20',
+                    sortBy: 'create_at',
+                    sortDirection: 'DESC',
+                    minPrice: '10',
+                    maxPrice: '100',
                     keyword: 'Filter',
-                    categoryId: 1,
-                    brandId: undefined, // undefined are passed through
-                    minRating: undefined,
-                    maxRating: undefined,
+                    categoryId: '1',
                 }
             })
             expect(result.data).toHaveLength(1)
-            expect(result.data?.[0]?.name).toBe('Filtered Product')
+            expect(result.data[0].name).toBe('Filtered Product')
         })
+    })
+
+    it('should handle product getById', async () => {
+        const mockProduct = {
+            productId: 'p1',
+            name: 'Product Name',
+            status: 'AVAILABLE',
+            totalStock: 10,
+            displayPrice: 100,
+            variants: [],
+            description: 'A product',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        }
+
+        vi.mocked(fetchWithToken).mockResolvedValue({
+            status: 200,
+            message: 'Get product successfully',
+            data: mockProduct
+        })
+
+        const result = await ProductRepository.getById('p1')
+
+        expect(fetchWithToken).toHaveBeenCalledWith('/products/p1', { method: 'GET' })
+        expect(result.name).toBe('Product Name')
+        expect(result.productId).toBe('p1')
     })
 })

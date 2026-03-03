@@ -110,7 +110,18 @@ function deleteCookie(name: string, path: string = "/"): void {
 // Storage Class
 // ===========================================
 
+/**
+ * Dịch vụ Lưu trữ (Storage Service)
+ *
+ * Một lớp trừu tượng hóa việc lưu trữ dữ liệu, hỗ trợ đa môi trường (SSR safe):
+ * - localStorage (Client-side, tồn tại lâu dài)
+ * - sessionStorage (Client-side, theo phiên làm việc)
+ * - cookies (Cả Client và Server, dùng cho Auth/Middleware)
+ * - Memory fallback (Dùng tạm trong bộ nhớ nếu chạy trên Server Node.js)
+ */
+
 class StorageService {
+    /** Loại hình lưu trữ mặc định nếu không chỉ định */
     private defaultType: StorageType;
 
     constructor(defaultType: StorageType = "local") {
@@ -118,9 +129,10 @@ class StorageService {
     }
 
     /**
-     * Get the appropriate storage based on type and environment
+     * Trích xuất Engine lưu trữ tương ứng của trình duyệt
      */
     private getStorage(type: StorageType): Storage | null {
+        // Trả về null nếu đang ở môi trường Server (không có đối tượng window)
         if (!isClient()) return null;
 
         switch (type) {
@@ -134,17 +146,23 @@ class StorageService {
     }
 
     /**
-     * Set a value in storage
+     * Lưu giá trị vào bộ nhớ
+     * @param key Khóa định danh
+     * @param value Giá trị (Object/Array sẽ được tự động stringify)
+     * @param options Cấu hình loại storage và cookie attributes
      */
     set<T>(key: string, value: T, options: StorageOptions = {}): void {
         const type = options.type ?? this.defaultType;
+        // Chuyển đổi dữ liệu sang chuỗi JSON để lưu trữ đơn giản
         const serialized = typeof value === "string" ? value : JSON.stringify(value);
 
+        // Xử lý riêng cho Cookie (Cần set thủ công qua document.cookie)
         if (type === "cookie") {
             setCookie(key, serialized, options);
             return;
         }
 
+        // Nếu là Memory Storage hoặc đang ở Server, chỉ lưu vào Map biến tĩnh
         if (type === "memory" || !isClient()) {
             memoryStorage.set(key, serialized);
             return;
@@ -155,20 +173,21 @@ class StorageService {
             try {
                 storage.setItem(key, serialized);
             } catch {
-                // Fallback to memory if localStorage is full
+                // Fallback sang bộ nhớ RAM nếu ổ đĩa/quota trình duyệt bị đầy
                 memoryStorage.set(key, serialized);
             }
         }
     }
 
     /**
-     * Get a value from storage
+     * Lấy giá trị từ bộ nhớ
      */
     get<T>(key: string, options: StorageOptions = {}): T | null {
         const type = options.type ?? this.defaultType;
 
         let value: string | null = null;
 
+        // Ưu tiên đọc từ nguồn tương ứng
         if (type === "cookie") {
             value = getCookie(key);
         } else if (type === "memory" || !isClient()) {
@@ -182,7 +201,7 @@ class StorageService {
 
         if (value === null) return null;
 
-        // Optimized parsing: only parse if it looks like JSON object or array or boolean
+        // Tối ưu việc Parsing: Chỉ gọi JSON.parse nếu chuỗi có dấu hiệu là Object/Array/Boolean
         if (
             typeof value === "string" &&
             (value.startsWith("{") ||
@@ -198,12 +217,11 @@ class StorageService {
             }
         }
 
+        // Trả về chuỗi gốc nếu không cần parse
         return value as unknown as T;
     }
 
-    /**
-     * Remove a value from storage
-     */
+    /** Xóa bỏ một khóa khỏi bộ nhớ */
     remove(key: string, options: StorageOptions = {}): void {
         const type = options.type ?? this.defaultType;
 
@@ -223,16 +241,12 @@ class StorageService {
         }
     }
 
-    /**
-     * Check if a key exists in storage
-     */
+    /** Kiểm tra xem một khóa có tồn tại hay không */
     has(key: string, options: StorageOptions = {}): boolean {
         return this.get(key, options) !== null;
     }
 
-    /**
-     * Clear all items from storage
-     */
+    /** Xóa sạch sành sanh toàn bộ dữ liệu trong Storage chỉ định */
     clear(type?: StorageType): void {
         const targetType = type ?? this.defaultType;
 
@@ -251,166 +265,109 @@ class StorageService {
 }
 
 // ===========================================
-// Singleton Instances
+// Singleton Instances - Các instance dùng sẵn cho toàn ứng dụng
 // ===========================================
 
-/** Default storage using localStorage */
+/** Storage mặc định (localStorage) */
 export const storage = new StorageService("local");
 
-/** Session storage */
+/** Storage theo phiên (sessionStorage) */
 export const sessionStorage = new StorageService("session");
 
-/** Cookie storage */
+/** Storage dạng Cookie */
 export const cookieStorage = new StorageService("cookie");
 
 // ===========================================
-// Auth Token Helpers
+// Auth Token Helpers - Các tiện ích chuyên biệt cho Authentication
 // ===========================================
 
+/**
+ * Đối tượng chuyên trách quản lý Access Token và Refresh Token.
+ * Đảm bảo token luôn được đồng bộ giữa Cookie (cho Server) và LocalStorage (cho Client).
+ */
 export const authStorage = {
     /**
-     * Get access token
+     * Lấy Access Token hiện tại
      */
     getAccessToken(): string | null {
-        // Try cookie first (server-accessible), then localStorage
-        console.log("[STORAGE] Getting access token...");
-        
+        // Thử lấy từ Cookie trước (vì Cookie hỗ trợ SSR tốt hơn)
         const cookieToken = storage.get<string>(STORAGE_KEYS.ACCESS_TOKEN, { type: "cookie" });
-        console.log("[STORAGE] Cookie token check", {
-            hasCookieToken: !!cookieToken,
-            cookieTokenLength: cookieToken?.length,
-            cookieTokenPrefix: cookieToken?.substring(0, 20),
-        });
 
+        // Fallback sang LocalStorage nếu không tìm thấy trong Cookie
         const localStorageToken = storage.get<string>(STORAGE_KEYS.ACCESS_TOKEN);
-        console.log("[STORAGE] LocalStorage token check", {
-            hasLocalStorageToken: !!localStorageToken,
-            localStorageTokenLength: localStorageToken?.length,
-            localStorageTokenPrefix: localStorageToken?.substring(0, 20),
-        });
 
-        const result = cookieToken ?? localStorageToken;
-        console.log("[STORAGE] Final token result", {
-            hasToken: !!result,
-            source: cookieToken ? "cookie" : localStorageToken ? "localStorage" : "none",
-            tokenLength: result?.length,
-        });
-
-        return result;
+        return cookieToken ?? localStorageToken;
     },
 
     /**
-     * Get refresh token
+     * Lấy Refresh Token dùng để cấp lại Access Token mới
      */
     getRefreshToken(): string | null {
-        console.log("[STORAGE] Getting refresh token...");
-        
-        const refreshToken = storage.get<string>(STORAGE_KEYS.REFRESH_TOKEN);
-        
-        console.log("[STORAGE] Refresh token check", {
-            hasRefreshToken: !!refreshToken,
-            refreshTokenLength: refreshToken?.length,
-            refreshTokenPrefix: refreshToken?.substring(0, 20),
-            storageKey: STORAGE_KEYS.REFRESH_TOKEN,
-        });
-
-        return refreshToken;
+        return storage.get<string>(STORAGE_KEYS.REFRESH_TOKEN);
     },
 
     /**
-     * Set auth tokens and extract role for middleware
+     * Lưu cặp bài trùng Tokens và bóc tách quyền hạn (Role)
      */
     setTokens(accessToken: string, refreshToken: string): void {
-        console.log("[STORAGE] setTokens() called", {
-            accessTokenLength: accessToken?.length,
-            accessTokenPrefix: accessToken?.substring(0, 20),
-            refreshTokenLength: refreshToken?.length,
-            refreshTokenPrefix: refreshToken?.substring(0, 20),
-        });
-
-        // Store access token in both cookie (for SSR) and localStorage
-        console.log("[STORAGE] Setting access token to COOKIE");
+        // 1. Lưu Access Token vào COOKIE (Để middleware của Next.js có thể đọc được trên Server)
         storage.set(STORAGE_KEYS.ACCESS_TOKEN, accessToken, {
             type: "cookie",
-            expireDays: 7,
-            secure: process.env.NODE_ENV === "production",
+            expireDays: 7, // Hạn dùng 7 ngày
+            secure: process.env.NODE_ENV === "production", // Chỉ dùng HTTPS trên Production
         });
-        console.log("[STORAGE] ✓ Access token saved to cookie");
 
-        console.log("[STORAGE] Setting access token to LOCALSTORAGE");
+        // 2. Lưu Access Token vào LOCALSTORAGE (Phòng hờ cho các request phía Client)
         storage.set(STORAGE_KEYS.ACCESS_TOKEN, accessToken);
-        console.log("[STORAGE] ✓ Access token saved to localStorage");
 
-        console.log("[STORAGE] Setting refresh token to LOCALSTORAGE");
+        // 3. Lưu Refresh Token vào LOCALSTORAGE
         storage.set(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
-        console.log("[STORAGE] ✓ Refresh token saved to localStorage");
 
-        // Attempt to decode role and save it in a cookie for Next.js middleware
+        // 4. TIỆN ÍCH: Giải mã JWT để lấy 'role' của user và lưu vào một cookie riêng
+        // Giúp Next.js Middleware kiểm tra quyền truy cập Route nhanh mà không cần parse JWT phức tạp
         try {
-            const payload = accessToken.split(".")[1];
-            console.log("[STORAGE] Attempting to decode JWT payload", {
-                hasPayload: !!payload,
-                payloadLength: payload?.length,
-            });
+            const payload = accessToken.split(".")[1]; // Lấy phần Payload của JWT (đoạn giữa)
 
             if (payload) {
-                // Use Buffer for base64 decoding to support both browser & Node environments (if SSR)
+                // Hỗ trợ giải mã Base64 trên cả Trình duyệt (atob) và Server (Buffer)
                 const decodedStr = typeof window !== 'undefined'
                     ? atob(payload)
                     : Buffer.from(payload, 'base64').toString('ascii');
-                const decoded = JSON.parse(decodedStr);
-                console.log("[STORAGE] Decoded JWT payload", {
-                    sub: decoded.sub,
-                    role: decoded.role,
-                    iat: decoded.iat,
-                    exp: decoded.exp,
-                });
 
+                const decoded = JSON.parse(decodedStr);
+
+                // Nếu trong token có chứa thông tin quyền (role), lưu riêng ra cookie
                 if (decoded && decoded.role) {
-                    console.log("[STORAGE] Setting role to cookie", { role: decoded.role });
                     storage.set("role", decoded.role, {
                         type: "cookie",
                         expireDays: 7,
                         secure: process.env.NODE_ENV === "production",
                     });
-                    console.log("[STORAGE] ✓ Role saved to cookie");
                 }
             }
         } catch (e) {
-            console.warn("[STORAGE] Could not decode role from token", {
-                error: e instanceof Error ? e.message : String(e),
-            });
+            // Không chặn luồng nếu việc decode role gặp lỗi
+            console.warn("[STORAGE] Could not decode role from token", e);
         }
-
-        console.log("[STORAGE] setTokens() COMPLETED SUCCESSFULLY");
     },
 
     /**
-     * Clear auth tokens
+     * Xóa sạch dấu vết đăng nhập (Dùng khi Logout hoặc Token hết hạn)
      */
     clearTokens(): void {
-        console.warn("[STORAGE] clearTokens() called - CLEARING ALL AUTH DATA", {
-            timestamp: new Date().toISOString(),
-            stackTrace: new Error().stack?.split("\n").slice(0, 3).join("\n"),
-        });
-
-        console.log("[STORAGE] Removing access token from cookie");
+        // Xóa Access Token ở cả 2 nguồn
         storage.remove(STORAGE_KEYS.ACCESS_TOKEN, { type: "cookie" });
-        
-        console.log("[STORAGE] Removing access token from localStorage");
         storage.remove(STORAGE_KEYS.ACCESS_TOKEN);
-        
-        console.log("[STORAGE] Removing refresh token from localStorage");
-        storage.remove(STORAGE_KEYS.REFRESH_TOKEN);
-        
-        console.log("[STORAGE] Removing role from cookie");
-        storage.remove("role", { type: "cookie" }); // Clear role cookie as well
 
-        console.warn("[STORAGE] clearTokens() COMPLETED - ALL AUTH DATA CLEARED");
+        // Xóa Refresh Token
+        storage.remove(STORAGE_KEYS.REFRESH_TOKEN);
+
+        // Xóa thông tin Role
+        storage.remove("role", { type: "cookie" });
     },
 
     /**
-     * Check if user has tokens
+     * Kiểm tra nhanh xem người dùng có đang ở trạng thái 'Đã đăng nhập' hay không
      */
     hasTokens(): boolean {
         return !!this.getAccessToken() && !!this.getRefreshToken();

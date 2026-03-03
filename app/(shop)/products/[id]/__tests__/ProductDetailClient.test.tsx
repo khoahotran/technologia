@@ -20,6 +20,14 @@ vi.mock('next/navigation', () => ({
     }),
 }))
 
+// Mock sonner toast
+vi.mock('sonner', () => ({
+    toast: {
+        error: vi.fn(),
+        success: vi.fn(),
+    },
+}))
+
 const mockMutate = vi.fn()
 
 describe('ProductDetailClient', () => {
@@ -40,6 +48,7 @@ describe('ProductDetailClient', () => {
         vi.clearAllMocks()
         vi.mocked(PresentationHooks.useAddToCartMutation).mockReturnValue({
             mutate: mockMutate,
+            isPending: false,
         } as any)
     })
 
@@ -64,7 +73,7 @@ describe('ProductDetailClient', () => {
         vi.mocked(PresentationHooks.useProductList).mockReturnValue({ products: [] } as any)
 
         render(<ProductDetailClient id="p1" />)
-        expect(screen.getByText('Failed to load product')).toBeInTheDocument()
+        expect(screen.getByText('Không tải được sản phẩm')).toBeInTheDocument()
     })
 
     it('should render product details', () => {
@@ -76,8 +85,8 @@ describe('ProductDetailClient', () => {
         vi.mocked(PresentationHooks.useProductList).mockReturnValue({ products: [] } as any)
 
         render(<ProductDetailClient id="p1" />)
-        expect(screen.getByText('Buy Now')).toBeInTheDocument()
-        expect(screen.getByText('Description')).toBeInTheDocument()
+        expect(screen.getByText('Buy now')).toBeInTheDocument()
+        expect(screen.getByText('Chi tiết')).toBeInTheDocument()
     })
 
     it('should add to cart', () => {
@@ -90,7 +99,7 @@ describe('ProductDetailClient', () => {
 
         render(<ProductDetailClient id="p1" />)
 
-        const buyButton = screen.getByText('Buy Now')
+        const buyButton = screen.getByText('Buy now')
         fireEvent.click(buyButton)
 
         expect(mockMutate).toHaveBeenCalled()

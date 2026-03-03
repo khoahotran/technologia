@@ -181,7 +181,7 @@ export function createApiHandler(config: ApiHandlerConfig) {
             if (!res.ok) {
                 const errorData = data as { message?: string };
                 return NextResponse.json(
-                    { error: errorData.message || `Proxy Error: ${res.statusText}`, details: data },
+                    { error: errorData.message || `Proxy Error: ${res.statusText}` },
                     { status: res.status }
                 );
             }
@@ -240,7 +240,7 @@ export function createDynamicApiHandler<T extends Record<string, string> = Recor
                 const errorData = data as { message?: string };
                 console.error(`[API Proxy - Dynamic] Backend Error Details:`, errorData);
                 return NextResponse.json(
-                    { error: errorData.message || `Proxy Error: ${res.statusText}`, details: data },
+                    { error: errorData.message || `Proxy Error: ${res.statusText}` },
                     { status: res.status }
                 );
             }

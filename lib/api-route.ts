@@ -60,6 +60,19 @@ export async function getAuthToken(request: Request): Promise<string | null> {
     return null;
 }
 
+export function requireAuthorizationHeader(request: Request): string | NextResponse {
+    const authHeader = request.headers.get("Authorization");
+    
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return NextResponse.json(
+            { error: "Authorization header is required" },
+            { status: HTTP_STATUS.UNAUTHORIZED }
+        );
+    }
+    
+    return authHeader;
+}
+
 export async function setAccessTokenCookie(accessToken: string): Promise<void> {
     const cookieStore = await cookies();
     cookieStore.set(COOKIE_NAMES.ACCESS_TOKEN, accessToken, {

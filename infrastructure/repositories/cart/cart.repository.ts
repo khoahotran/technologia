@@ -1,5 +1,15 @@
-import { z } from "zod";
+/**
+ * Cart Repository
+ *
+ * Implements ICartRepository with unified HTTP client.
+ * Handles:
+ * - Cart retrieval and pagination
+ * - Add/remove/increase/decrease cart items
+ * - Cart price calculation
+ * - Automatic response validation
+ */
 
+import { fetchWithToken } from "@/infrastructure/http";
 import {
     CartItem,
     CartMap,
@@ -9,86 +19,182 @@ import {
     CalculatePricePayload
 } from "@/domain/cart/entities/cart.entity";
 import { ICartRepository, CartPagingParams } from "@/domain/cart/repositories/cart.repository.interface";
-import { httpClient } from "@/infrastructure/http/client";
+import {
+    CartResponseSchema,
+    CartItemActionResponseSchema,
+    AddToCartResponseSchema,
+    CartTotalPriceResponseSchema,
+    CartItemDetailResponseSchema,
+    CartItemListResponseSchema,
+} from "@/shared/validators/api-schemas";
+import { createScopedLogger } from "@/lib/logger";
 
-const CartResponseSchema = z.object({
-    status: z.number(),
-    data: z.object({
-        map: CartMapSchema,
-        empty: z.boolean().optional(),
-    }).optional(),
-    message: z.string().optional(),
-});
-
-const CartItemMutationResponseSchema = z.object({
-    status: z.number(),
-    data: z.object({
-        cartItemId: z.string().optional(),
-        productId: z.string().optional(),
-        variantId: z.string().optional(),
-        quantityInCart: z.number().optional(),
-        quantityInStock: z.number().optional(),
-    }).nullable().optional(),
-    message: z.string().optional(),
-});
-
-const CartPriceResponseSchema = z.object({
-    status: z.number(),
-    data: z.number(),
-    message: z.string().optional(),
-});
+const logger = createScopedLogger('CartRepository');
 
 const EMPTY_CART: CartMap = { cartItems: [] };
 
+// ===========================================
+// Helper Functions
+// ===========================================
+
+/**
+ * Extract cart data from API response
+ */
+function extractCartData(response: unknown): CartMap {
+    try {
+        const validated = CartResponseSchema.parse(response);
+        return validated.data.map || EMPTY_CART;
+    } catch (error) {
+        logger.error('Failed to parse cart response', error);
+        return EMPTY_CART;
+    }
+}
+
+/**
+ * Extract cart data from paginated listing response
+ */
+function extractCartDataFromList(response: unknown): CartMap {
+    try {
+        const validated = CartItemListResponseSchema.parse(response);
+        return validated.data.map || EMPTY_CART;
+    } catch (error) {
+        logger.error('Failed to parse cart item list response', error);
+        return EMPTY_CART;
+    }
+}
+
+// ===========================================
+// Cart Repository Implementation
+// ===========================================
+
+/**
+ * Triển khai Cart Repository
+ *
+ * Quản lý giỏ hàng của người dùng thông qua các API chuyên biệt.
+ * Repository này xử lý việc thêm, xóa, cập nhật số lượng và tính toán giá trị giỏ hàng.
+ */
 export const CartRepository: ICartRepository = {
+    /**
+     * Lấy danh sách giỏ hàng kèm phân trang
+     * Dùng khi giỏ hàng có quá nhiều mục và cần hiển thị từng trang.
+     */
     async getCartWithPaging(params: CartPagingParams = {}): Promise<CartMap> {
-        const { data } = await httpClient.get("/carts/with-items-paging", {
-            params: {
-                page: params.page ?? 0,
-                size: params.size ?? 10,
-                sortDir: params.sortDir,
-                sortBy: params.sortBy,
+        logger.debug('Fetching cart with paging', params as any);
+
+        const response = await fetchWithToken("/carts", {
+            method: 'GET',
+            query: {
+                page: String(params.page ?? 0),
+                size: String(params.size ?? 10),
+                ...(params.sortDir && { sortDir: params.sortDir }),
+                ...(params.sortBy && { sortBy: params.sortBy }),
             },
         });
-        const parsed = CartResponseSchema.parse(data);
-        return parsed.data?.map ?? { cartItems: [] };
+
+        return extractCartDataFromList(response);
     },
 
+    /**
+     * Lấy toàn bộ thông tin giỏ hàng hiện tại của người dùng
+     */
     async getCart(): Promise<CartMap> {
-        const { data } = await httpClient.get("/carts");
-        const parsed = CartResponseSchema.parse(data);
-        return parsed.data?.map ?? EMPTY_CART;
+        logger.debug('Fetching cart');
+
+        const response = await fetchWithToken("/carts", {
+            method: 'GET',
+        });
+
+        // Trích xuất và bóc tách dữ liệu từ cấu trúc Response API
+        return extractCartData(response);
     },
 
+    /**
+     * Thêm sản phẩm vào giỏ hàng
+     */
     async addToCart(payload: AddToCartPayload) {
-        const { data } = await httpClient.post("/carts/add-to-cart", payload);
-        return CartItemMutationResponseSchema.parse(data);
+        logger.debug('Adding to cart', payload as any);
+
+        const response = await fetchWithToken("/carts/add-to-cart", {
+            method: 'POST',
+            body: payload,
+        });
+
+        // Xác thực kết quả thao tác từ Server
+        const validated = AddToCartResponseSchema.parse(response);
+        return validated.data;
     },
 
+    /**
+     * Tăng số lượng của một mục trong giỏ hàng lên 1 unit
+     */
     async increase(cartItemId: string) {
-        const { data } = await httpClient.patch(`/cart-items/increase/${cartItemId}`);
-        return CartItemMutationResponseSchema.parse(data);
+        logger.debug('Increasing cart item', { cartItemId });
+
+        const response = await fetchWithToken(
+            `/cart-items/increase/${cartItemId}`,
+            { method: 'PATCH' }
+        );
+
+        const validated = CartItemActionResponseSchema.parse(response);
+        return validated.data;
     },
 
+    /**
+     * Giảm số lượng của một mục trong giỏ hàng xuống 1 unit
+     */
     async decrease(cartItemId: string) {
-        const { data } = await httpClient.patch(`/cart-items/decrease/${cartItemId}`);
-        return CartItemMutationResponseSchema.parse(data);
+        logger.debug('Decreasing cart item', { cartItemId });
+
+        const response = await fetchWithToken(
+            `/cart-items/decrease/${cartItemId}`,
+            { method: 'PATCH' }
+        );
+
+        const validated = CartItemActionResponseSchema.parse(response);
+        return validated.data;
     },
 
+    /**
+     * Xóa hoàn toàn một mục khỏi giỏ hàng
+     */
     async remove(cartItemId: string) {
-        const { data } = await httpClient.delete(`/cart-items/delete/${cartItemId}`);
-        return CartItemMutationResponseSchema.parse(data);
+        logger.debug('Removing cart item', { cartItemId });
+
+        await fetchWithToken(
+            `/cart-items/delete/${cartItemId}`,
+            { method: 'PATCH' }
+        );
     },
 
+    /**
+     * Lấy thông tin chi tiết của một item cụ thể trong giỏ hàng
+     */
     async getCartItem(cartItemId: string): Promise<CartItem> {
-        const { data } = await httpClient.get(`/carts/item/${cartItemId}`);
-        const parsed = z.object({ status: z.number(), data: CartItemSchema }).parse(data);
-        return parsed.data;
+        logger.debug('Fetching cart item', { cartItemId });
+
+        const response = await fetchWithToken(
+            `/carts/item/${cartItemId}`,
+            { method: 'GET' }
+        );
+
+        const validated = CartItemDetailResponseSchema.parse(response);
+        // Xác thực sâu vào Model của Item để đảm bảo tính đúng đắn dữ liệu
+        return CartItemSchema.parse(validated.data);
     },
 
+    /**
+     * Tính toán tổng giá trị cho các mục được chọn trong giỏ hàng
+     * Hỗ trợ việc áp dụng mã giảm giá hoặc tính thuế phí từ Server.
+     */
     async calculatePrice(payload: CalculatePricePayload): Promise<number> {
-        const { data } = await httpClient.post("/carts/price", payload);
-        const parsed = CartPriceResponseSchema.parse(data);
-        return parsed.data;
+        logger.debug('Calculating cart price', payload as any);
+
+        const response = await fetchWithToken("/carts/price", {
+            method: 'POST',
+            body: payload,
+        });
+
+        const validated = CartTotalPriceResponseSchema.parse(response);
+        return validated.data;
     },
 };

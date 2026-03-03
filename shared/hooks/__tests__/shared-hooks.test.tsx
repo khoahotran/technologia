@@ -1,26 +1,8 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { renderHook, act, waitFor } from '@testing-library/react'
-import { ReactNode } from 'react'
+import { renderHook, act } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
+import { usePagination, useDebounce } from '../'
 
-import { usePagination, useDebounce, useApiQuery } from '../use-api.hook'
-
-
-// Wrapper for Query hooks
-const createWrapper = () => {
-    const queryClient = new QueryClient({
-        defaultOptions: {
-            queries: { retry: false },
-        },
-    })
-    const Wrapper = ({ children }: { children: ReactNode }) => (
-        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    )
-    Wrapper.displayName = 'UseApiTestWrapper'
-    return Wrapper
-}
-
-describe('Hooks Utilities', () => {
+describe('Shared Hooks', () => {
 
     describe('usePagination', () => {
         it('should initialize with defaults', () => {
@@ -72,32 +54,6 @@ describe('Hooks Utilities', () => {
 
             expect(result.current).toBe('updated')
             vi.useRealTimers()
-        })
-    })
-
-    describe('useApiQuery', () => {
-        it('should fetch data successfully', async () => {
-            const mockFn = vi.fn().mockResolvedValue('success data')
-            const { result } = renderHook(
-                () => useApiQuery(['test'], mockFn),
-                { wrapper: createWrapper() }
-            )
-
-            await waitFor(() => expect(result.current.isSuccess).toBe(true))
-            expect(result.current.data).toBe('success data')
-        })
-
-        it('should handle errors and callbacks', async () => {
-            const mockFn = vi.fn().mockRejectedValue(new Error('fail'))
-            const onError = vi.fn()
-
-            const { result } = renderHook(
-                () => useApiQuery(['test-error'], mockFn, { onError, retry: false }),
-                { wrapper: createWrapper() }
-            )
-
-            await waitFor(() => expect(result.current.isError).toBe(true))
-            expect(onError).toHaveBeenCalledWith(expect.any(Error))
         })
     })
 })

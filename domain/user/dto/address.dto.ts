@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+/** Schema payload for creating a new user address */
 export const CreateAddressDtoSchema = z.object({
   customerId: z.string(),
   province: z.string(),

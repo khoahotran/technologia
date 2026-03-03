@@ -92,7 +92,7 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
     const productProperties = [
         { label: "Thương hiệu", value: product.brandName || "Khác" },
         { label: "SKU", value: product.productId.slice(0, 8).toUpperCase() },
-        { label: "Danh mục", value: product.category || "Sản phẩm" },
+        { label: "Danh mục", value: typeof product.category === 'string' ? product.category : product.category?.name || "Sản phẩm" },
         { label: "Tồn kho", value: formatNumber(product.totalStock || 0) },
     ];
 
@@ -157,10 +157,10 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                     </button>
                     <ChevronRight className="w-3.5 h-3.5" />
                     <button
-                        onClick={() => router.push(`/products?search=${product.category}`)}
+                        onClick={() => router.push(`/products?search=${typeof product.category === 'string' ? product.category : product.category?.name}`)}
                         className="hover:text-blue-600 transition-colors"
                     >
-                        {product.category || "Sản phẩm"}
+                        {typeof product.category === 'string' ? product.category : product.category?.name || "Sản phẩm"}
                     </button>
                     <ChevronRight className="w-3.5 h-3.5" />
                     <span className="text-gray-900 font-medium truncate max-w-[200px]">
@@ -379,7 +379,7 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                                             </div>
                                             <div className="flex justify-between border-b py-2">
                                                 <span className="text-gray-500">Danh mục</span>
-                                                <span className="font-medium">{product.category || "—"}</span>
+                                                <span className="font-medium">{typeof product.category === 'string' ? product.category : product.category?.name || "—"}</span>
                                             </div>
                                             <div className="flex justify-between py-2">
                                                 <span className="text-gray-500">Tồn kho</span>
