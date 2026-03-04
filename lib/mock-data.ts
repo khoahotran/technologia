@@ -1,69 +1,79 @@
-// Mock data for the entire application
-// Centralized data source for consistency
+/**
+ * Dữ liệu giả lập (Mock Data) cho toàn bộ ứng dụng.
+ * 
+ * Đây là nguồn dữ liệu tập trung dùng cho các bản mẫu (UI prototyping), 
+ * các bản demo khi chưa có backend, và phục vụ cho viết Unit Test.
+ */
 
+/** Giao diện đại diện cho một Sản phẩm (Product) */
 export interface Product {
     id: string
     name: string
     price: number
     originalPrice?: number
     image: string
-    badge?: string
-    rating: number
-    reviewCount: number
-    category: string
-    brand: string
-    description: string
-    specifications: Record<string, string>
-    inStock: boolean
-    sku: string
+    badge?: string // Nhãn hiển thị (VD: NEW, HOT, SALE)
+    rating: number // Điểm đánh giá trung bình
+    reviewCount: number // Số lượng lượt đánh giá
+    category: string // Tên danh mục
+    brand: string // Tên thương hiệu
+    description: string // Mô tả sản phẩm
+    specifications: Record<string, string> // Thông số kỹ thuật (Cấu trúc Key-Value)
+    inStock: boolean // Tình trạng còn hàng
+    sku: string // Mã quản lý kho hàng
 }
 
+/** Giao diện danh mục sản phẩm (Category) */
 export interface Category {
     id: string
     name: string
-    slug: string
-    productCount: number
+    slug: string // Chuỗi tối ưu cho URL (Ví dụ: "smartphone")
+    productCount: number // Tổng số sản phẩm thuộc danh mục
 }
 
+/** Giao diện lượt đánh giá (Review) */
 export interface Review {
     id: string
     productId: string
     userName: string
     rating: number
     comment: string
-    date: string
-    verified: boolean
+    date: string // Ngày đánh giá (Chuỗi ISO)
+    verified: boolean // Trạng thái "Đã mua hàng" (Xác thực)
 }
 
+/** Giao diện Địa chỉ giao hàng (Address) */
 export interface Address {
     id: string
-    name: string
+    name: string // Tên người nhận
     phone: string
-    address: string
+    address: string // Địa chỉ đầy đủ (Chuỗi gộp)
     city: string
     province: string
     ward: string
     street: string
-    no: string
-    note?: string
-    isDefault: boolean
+    no: string // Số nhà
+    note?: string // Ghi chú thêm (VD: Giao giờ hành chính)
+    isDefault: boolean // Có phải địa chỉ mặc định ko
 }
 
+/** Giao diện Đơn hàng (Order) */
 export interface Order {
     id: string
-    orderNumber: string
+    orderNumber: string // Mã đơn hàng (VD: #ORD...)
     items: OrderItem[]
-    total: number
-    subtotal: number
-    shipping: number
-    status: 'created' | 'paid' | 'shipping' | 'delivered' | 'cancelled'
+    total: number // Tổng tiền cuối cùng
+    subtotal: number // Tiền hàng trước khi tính ship/giảm giá
+    shipping: number // Phí vận chuyển
+    status: 'created' | 'paid' | 'shipping' | 'delivered' | 'cancelled' // Trạng thái đơn hàng
     createdAt: string
     updatedAt: string
     shippingAddress: Address
-    paymentMethod: 'bank' | 'ewallet' | 'cod'
-    timeline: OrderTimeline[]
+    paymentMethod: 'bank' | 'ewallet' | 'cod' // Phương thức thanh toán
+    timeline: OrderTimeline[] // Lịch sử hành trình đơn hàng
 }
 
+/** Giao diện Chi tiết món hàng trong đơn (Order Item) */
 export interface OrderItem {
     productId: string
     productName: string
@@ -72,24 +82,29 @@ export interface OrderItem {
     image: string
 }
 
+/** Giao diện Hành trình đơn hàng (Order Timeline) */
 export interface OrderTimeline {
     status: string
     date: string
     completed: boolean
-    description?: string
+    description?: string // Mô tả chi tiết cho trạng thái hiện tại
 }
 
-// Categories
+// ===========================================
+// Dữ liệu Khởi tạo (Initial Mock Data)
+// ===========================================
+
+/** Danh sách Danh mục mẫu */
 export const categories: Category[] = [
-    { id: '1', name: 'Smartphone', slug: 'smartphone', productCount: 150 },
-    { id: '2', name: 'Laptop', slug: 'laptop', productCount: 89 },
-    { id: '3', name: 'Gaming Equipment', slug: 'gaming', productCount: 67 },
-    { id: '4', name: 'Headphone', slug: 'headphone', productCount: 45 },
-    { id: '5', name: 'Speaker', slug: 'speaker', productCount: 32 },
-    { id: '6', name: 'Tablet', slug: 'tablet', productCount: 28 },
+    { id: '1', name: 'Điện thoại (Smartphone)', slug: 'smartphone', productCount: 150 },
+    { id: '2', name: 'Máy tính xách tay (Laptop)', slug: 'laptop', productCount: 89 },
+    { id: '3', name: 'Thiết bị Gaming', slug: 'gaming', productCount: 67 },
+    { id: '4', name: 'Tai nghe (Headphone)', slug: 'headphone', productCount: 45 },
+    { id: '5', name: 'Loa (Speaker)', slug: 'speaker', productCount: 32 },
+    { id: '6', name: 'Máy tính bảng (Tablet)', slug: 'tablet', productCount: 28 },
 ]
 
-// Products
+/** Danh sách Sản phẩm mẫu */
 export const products: Product[] = [
     {
         id: '1',
@@ -229,7 +244,7 @@ export const products: Product[] = [
     },
 ]
 
-// Reviews
+/** Danh sách Đánh giá mẫu */
 export const reviews: Review[] = [
     {
         id: '1',
@@ -260,7 +275,7 @@ export const reviews: Review[] = [
     },
 ]
 
-// Addresses
+/** Danh sách Địa chỉ mẫu */
 export const addresses: Address[] = [
     {
         id: '1',
@@ -276,7 +291,7 @@ export const addresses: Address[] = [
         isDefault: true,
     },
     {
-        id: '2',
+        id: '1',
         name: 'Nguyễn Văn An',
         phone: '0901234567',
         address: 'Số 456, Đường Nguyễn Huệ, Phường Bến Thành, Quận 1, TP.HCM',
@@ -289,7 +304,7 @@ export const addresses: Address[] = [
     },
 ]
 
-// Orders
+/** Danh sách Đơn hàng mẫu */
 export const orders: Order[] = [
     {
         id: '1',
@@ -390,23 +405,31 @@ export const orders: Order[] = [
     },
 ]
 
-// Helper functions
+// ===========================================
+// Các hàm Trợ giúp Truy xuất (Helper functions)
+// ===========================================
+
+/** Lấy thông tin sản phẩm qua ID */
 export function getProductById(id: string): Product | undefined {
     return products.find((p) => p.id === id)
 }
 
+/** Lọc danh sách sản phẩm theo Tên danh mục */
 export function getProductsByCategory(category: string): Product[] {
     return products.filter((p) => p.category === category)
 }
 
+/** Lấy danh sách đánh giá của một sản phẩm */
 export function getReviewsByProductId(productId: string): Review[] {
     return reviews.filter((r) => r.productId === productId)
 }
 
+/** Lấy thông tin đơn hàng qua ID */
 export function getOrderById(id: string): Order | undefined {
     return orders.find((o) => o.id === id)
 }
 
+/** Lọc đơn hàng theo Trạng thái (đã giao, đã hủy...) */
 export function getOrdersByStatus(status: Order['status']): Order[] {
     return orders.filter((o) => o.status === status)
 }

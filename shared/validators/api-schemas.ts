@@ -1,10 +1,11 @@
 /**
- * API Response Schemas
+ * Lược đồ Phản hồi API (API Response Schemas)
  *
- * Zod schemas for validating all API responses
- * ensuring type safety and runtime validation.
+ * Mở khai báo Zod schemas để thẩm định mạnh (validate) TẤT CẢ bộ dữ liệu trả về từ API backend.
+ * Khẳng định type safety (an toàn kiểu dữ liệu) ngay lúc runtime (thời gian chạy) 
+ * trước khi đổ ra UI. Nếu API backend trả sai cấu trúc sẽ bị bắt lỗi ngay ở bước này.
  *
- * Based on backend API documentation:
+ * Dựa trên tài liệu Backend API:
  * - Product Service: http://localhost:8082
  * - User Service: http://localhost:8081
  * - Cart Service: http://localhost:8083
@@ -13,12 +14,12 @@
 import { z } from 'zod';
 
 // ===========================================
-// Base Response Structure
+// Cấu trúc Phản hồi Gốc (Base Response Structure)
 // ===========================================
 
 /**
- * Standard API response wrapper
- * All backend responses follow this pattern
+ * Khuôn mẫu Wrapper tiêu chuẩn cho tất cả những API response
+ * Mọi backend endpoints phải tuân thủ dạng { status, message, data }
  */
 export const BaseResponseSchema = z.object({
   status: z.number().int(),
@@ -33,7 +34,7 @@ export type BaseResponse<T> = {
 };
 
 // ===========================================
-// Brand Schemas
+// Nhóm Schema về Thương Hiệu (Brand Schemas)
 // ===========================================
 
 export const BrandResponseSchema = z.object({
@@ -60,7 +61,7 @@ export const BrandPaginatedResponseSchema = z.object({
 });
 
 // ===========================================
-// Category Schemas
+// Nhóm Schema về Danh Mục (Category Schemas)
 // ===========================================
 
 export const CategoryResponseSchema = z.object({
@@ -87,7 +88,7 @@ export const CategoryPaginatedResponseSchema = z.object({
 });
 
 // ===========================================
-// Product Variant Schemas
+// Nhóm Schema về Loại Sản phẩm (Product Variant)
 // ===========================================
 
 export const ProductVariantSchema = z.object({
@@ -102,7 +103,7 @@ export const ProductVariantSchema = z.object({
 export type ProductVariant = z.infer<typeof ProductVariantSchema>;
 
 // ===========================================
-// Product Schemas
+// Nhóm Schema về Sản Phẩm (Product Schemas)
 // ===========================================
 
 export const ProductResponseSchema = z.object({
@@ -140,7 +141,7 @@ export const ProductPaginatedResponseSchema = z.object({
 });
 
 // ===========================================
-// Filter Response Schemas (Search/Filter)
+// Nhóm Schema cho Chức năng Lọc (Filter/Search)
 // ===========================================
 
 export const FilterResponseSchema = z.object({
@@ -176,7 +177,7 @@ export const FilterPaginatedResponseSchema = z.object({
 });
 
 // ===========================================
-// Authentication Schemas
+// Nhóm Schema cho Hệ thống Xác thực (Authentication)
 // ===========================================
 
 export const RegisterResponseSchema = z.object({
@@ -234,7 +235,7 @@ export const ResetPasswordResponseSchema = z.object({
 export const RefreshTokenResponseSchema = LoginResponseSchema;
 
 // ===========================================
-// User Profile Schemas
+// Nhóm Schema Hồ Sơ Người dùng (User Profile)
 // ===========================================
 
 export const UserProfileSchema = z.object({
@@ -265,7 +266,7 @@ export const ChangeAvatarResponseSchema = z.object({
 });
 
 // ===========================================
-// Cart Item Schemas
+// Nhóm Schema cho Mục con trong Giỏ Hàng (Cart Item)
 // ===========================================
 
 export const CartItemSchema = z.object({
@@ -286,7 +287,7 @@ export const CartItemSchema = z.object({
 export type CartItem = z.infer<typeof CartItemSchema>;
 
 // ===========================================
-// Cart Schemas
+// Nhóm Schema Giỏ Hàng Tổng (Cart Data)
 // ===========================================
 
 export const CartDataSchema = z.object({
@@ -311,7 +312,7 @@ export const CartResponseSchema = z.object({
 });
 
 // ===========================================
-// Cart Item Operations Schemas
+// Nhóm thao tác với Giỏ hàng (Cart Item Operations)
 // ===========================================
 
 export const AddToCartResponseSchema = z.object({
@@ -368,7 +369,7 @@ export const CartTotalPriceResponseSchema = z.object({
 });
 
 // ===========================================
-// Error Response Schemas
+// Nhóm Schema báo Lỗi chung (Error Response Schemas)
 // ===========================================
 
 export const ErrorResponseSchema = z.object({

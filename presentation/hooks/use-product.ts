@@ -1,5 +1,5 @@
 /**
- * Product-related hooks for Presentation Layer
+ * Các React Hooks liên quan đến Sản phẩm cho Lớp Trình bày (Presentation Layer)
  */
 
 "use client";
@@ -17,9 +17,13 @@ import { REQUEST_CONFIG } from "@/shared/constants";
 import { QUERY_CONFIG } from "@/shared/constants/query.constants";
 
 // ===========================================
-// Query Keys
+// Khóa Truy Vấn (Query Keys)
 // ===========================================
 
+/**
+ * Quản lý tập trung các khóa cache cho Sản phẩm.
+ * Giúp việc Invalidate cache hoặc update cache diễn ra chính xác hơn.
+ */
 export const productKeys = {
     all: ["products"] as const,
     lists: () => [...productKeys.all, "list"] as const,
@@ -32,13 +36,16 @@ export const productKeys = {
 };
 
 // ===========================================
-// Types
+// Kiểu dữ liệu (Types)
 // ===========================================
 
 export interface ProductListParams extends Partial<ProductSearchParams> {
     search?: string;
 }
 
+/**
+ * Hàm trợ giúp xây dựng tham số tìm kiếm chuẩn từ các giá trị thô ở UI.
+ */
 function buildSearchParams({
     page = 0,
     size = REQUEST_CONFIG.DEFAULT_PAGE_SIZE,
@@ -63,45 +70,49 @@ function buildSearchParams({
 }
 
 // ===========================================
-// Hooks
+// Các Hooks Chính
 // ===========================================
 
 /**
- * Hook for fetching paginated products with filters
+ * Hook `useProductList`: Truy vấn danh sách sản phẩm có kèm phân trang và bộ lọc.
+ * 
+ * Tính năng đặc biệt:
+ * - Hỗ trợ `keepPreviousData`: Giữ lại dữ liệu trang cũ khi đang tải trang mới (tránh nháy màn hình).
+ * - Tự động `prefetchQuery`: Tải trước dữ liệu của trang kế tiếp (Next page) để trải nghiệm mượt mà hơn.
+ * 
+ * @param params Các tùy chọn về trang, kích thước, sắp xếp và các bộ lọc (brand, category, price...)
  */
 export function useProductList(params: ProductListParams = {}) {
     // Khởi tạo queryClient để kiểm soát và tương tác với cache của TanStack
     const queryClient = useQueryClient();
 
-    // Memoize search params để tránh re-create object dư thừa ở mỗi lần render, giúp tối ưu performance
+    // Duy trì tính nhất quán cho tham số tìm kiếm (tránh re-create object)
     const searchParams = React.useMemo(() => buildSearchParams(params), [params]);
 
-    // Lấy ra số trang hiện tại từ search params, mặc định là 0 (trang đầu tiên)
+    // Lấy ra số trang hiện tại từ search params
     const currentPage = searchParams.page ?? 0;
 
     // Đăng ký fetch data thông qua React Query (useQuery)
     const query = useQuery({
-        // Dùng dynamic query params qua đối tượng `productKeys` nhằm quy định caching định danh thống nhất
+        // Dùng query keys động dựa trên bộ filters
         queryKey: productKeys.list(searchParams),
 
-        // Chỉ định logic lấy Data bằng cách gọi Repository searchAndFilter từ tầng Infrastructure
+        // Gọi trực tiếp xuống Infrastructure Repository
         queryFn: () => ProductRepository.searchAndFilter(searchParams),
 
-        // Option giữ nguyên hiển thị data cũ trên giao diện trong lúc gọi lấy trang mới (giúp tránh Layout Shift)
+        // Chống hiện tượng Layout Shift trong lúc đổi trang
         placeholderData: keepPreviousData,
 
-        // Gắn cấu hình chuẩn (retry rules, staleTime, gcTime)
+        // Gắn cấu hình cache tiêu chuẩn
         ...QUERY_CONFIG.STANDARD,
     });
 
-    // Side Effect: Thực hiện prefetch data cho việc chuyển trang (Smoother UX)
+    // Side Effect: Thực hiện tải trước (Prefetch) dữ liệu trang kế tiếp
     React.useEffect(() => {
-        // Lấy tính tổng số pages có thể duyệt, mặc định an toàn là 1
         const totalPages = query.data?.count_pages ?? 1;
 
-        // Nếu đã có data và user chưa duyệt tới trang cuối cùng
+        // Nếu người dùng chưa ở trang cuối cùng, ta đoán già đoán non là họ sẽ click sang trang tiếp
         if (query.data && currentPage < totalPages - 1) {
-            // Chuẩn bị payload lấy hàng cho trang tiếp theo (currentPage + 1)
             const nextParams: ProductSearchParams = {
                 ...searchParams,
                 page: currentPage + 1,
@@ -115,7 +126,7 @@ export function useProductList(params: ProductListParams = {}) {
         }
     }, [currentPage, query.data, queryClient, searchParams]);
 
-    // Trả ra các field được đóng gói sạch sẽ (abstract mapping) cho UI dễ mapping React component
+    // Trả ra các field được "làm đẹp" lại cho UI dễ sử dụng
     return {
         products: query.data?.data ?? [],
         totalPages: query.data?.count_pages ?? 0,
@@ -130,12 +141,15 @@ export function useProductList(params: ProductListParams = {}) {
 }
 
 /**
- * Hook for single product details
+ * Hook `useProductDetail`: Lấy thông tin chi tiết của một sản phẩm duy nhất.
+ * 
+ * @param productId ID của sản phẩm cần lấy thông tin
  */
 export function useProductDetail(productId: string | number | undefined) {
     const query = useQuery({
         queryKey: productKeys.detail(productId ?? ""),
         queryFn: () => ProductRepository.getById(productId!),
+        // Chỉ kích hoạt query khi productId hợp lệ
         enabled: !!productId,
         ...QUERY_CONFIG.STANDARD,
     });

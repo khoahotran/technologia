@@ -1,14 +1,14 @@
 /**
- * Auth Repository
+ * Triển khai Auth Repository (Authentication Repository Implementation)
  *
- * Implements IAuthRepository with unified HTTP client.
- * Handles:
- * - Local login/register
- * - Google OAuth login
- * - Token refresh
- * - Password management
- * - Automatic response validation
- * - Secure token storage
+ * Triển khai `IAuthRepository` sử dụng HTTP client thống nhất (fetchWithToken).
+ * Chịu trách nhiệm cho tất cả các thao tác liên quan đến xác thực:
+ * - Đăng nhập nội bộ (Username/Password)
+ * - Đăng nhập qua Google OAuth
+ * - Đăng ký tài khoản mới
+ * - Đăng xuất và hủy phiên làm việc
+ * - Làm mới Access Token (Refresh Token)
+ * - Quản lý mật khẩu (Forgot / Reset)
  */
 
 import {
@@ -33,6 +33,7 @@ import { authStorage } from "@/infrastructure/persistence/storage";
 import { createScopedLogger } from "@/lib/logger";
 
 const logger = createScopedLogger('AuthRepository');
+/** Đường dẫn gốc của Auth API */
 const BASE_URL = "/auth";
 
 // ===========================================
@@ -40,13 +41,16 @@ const BASE_URL = "/auth";
 // ===========================================
 
 /**
- * Extract tokens from login/register response
+ * Trích xuất cặp Tokens từ response Login/Register và lưu vào authStorage
+ *
+ * @param fullResponse Response thô từ API (Chưa xác thực kiểu)
+ * @returns AuthResponse chứa accessToken, refreshToken và userId
  */
 function extractTokens(fullResponse: unknown): AuthResponse {
     const response = LoginResponseSchema.parse(fullResponse);
     const data = response.data;
 
-    // Store tokens in secure storage
+    // Lưu tokens vào secure storage để dùng cho các request tiếp theo
     authStorage.setTokens(data.accessToken, data.refreshToken);
 
     return {
@@ -71,6 +75,7 @@ export const AuthRepository: IAuthRepository = {
      * Đăng nhập bằng tài khoản nội bộ (Username/Password)
      *
      * Sau khi đăng nhập thành công, token sẽ được tự động lưu vào secure storage (authStorage)
+     * @param dto Dữ liệu đăng nhập (username, password)
      */
     async login(dto: LoginDto): Promise<AuthResponse> {
         logger.debug('Attempting local login', { username: dto.username });
@@ -91,6 +96,7 @@ export const AuthRepository: IAuthRepository = {
 
     /**
      * Đăng nhập thông qua Google OAuth
+     * @param dto Dữ liệu từ Google (idToken hoặc code)
      */
     async loginGoogle(dto: GoogleLoginDto): Promise<AuthResponse> {
         logger.debug('Attempting Google login');
@@ -109,6 +115,7 @@ export const AuthRepository: IAuthRepository = {
 
     /**
      * Đăng ký tài khoản người dùng mới
+     * @param dto Dữ liệu đăng ký (username, email, password, v.v.)
      */
     async register(dto: RegisterDto): Promise<void> {
         logger.debug('Registering new user', { username: dto.username });
@@ -127,6 +134,7 @@ export const AuthRepository: IAuthRepository = {
      * Đăng xuất và hủy bỏ phiên làm việc
      *
      * Quy trình: Gửi yêu cầu lên Server trước (Best effort), sau đó luôn xóa sạch Token ở Client.
+     * @param refreshToken Refresh Token hiện tại (để server vô hiệu hóa trong DB)
      */
     async logout(refreshToken: string): Promise<void> {
         logger.debug('Logging out');
@@ -154,6 +162,7 @@ export const AuthRepository: IAuthRepository = {
      * Làm mới Access Token bằng Refresh Token
      *
      * Thường được gọi bởi cơ chế 'Tự động Refresh' của fetchWithToken khi nhận lỗi 401
+     * @param dto Chứa refreshToken cần dùng để đổi lấy accessToken mới
      */
     async refreshToken(dto: RefreshTokenDto): Promise<AuthResponse> {
         logger.debug('Refreshing access token');
@@ -172,6 +181,7 @@ export const AuthRepository: IAuthRepository = {
 
     /**
      * Gửi yêu cầu khôi phục mật khẩu qua Email
+     * @param dto Chứa địa chỉ email cần gửi link đặt lại mật khẩu
      */
     async forgotPassword(dto: ForgotPasswordDto): Promise<void> {
         logger.debug('Requesting password reset', { email: dto.email });
@@ -188,6 +198,7 @@ export const AuthRepository: IAuthRepository = {
 
     /**
      * Đặt lại mật khẩu mới bằng Code (Reset Token) nhận được từ Email
+     * @param dto Chứa reset token và mật khẩu mới
      */
     async resetPassword(dto: ResetPasswordDto): Promise<void> {
         logger.debug('Resetting password');

@@ -10,6 +10,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { AuthRepository } from "@/infrastructure/repositories/auth/auth.repository"
 
+/**
+ * Giao diện Đăng ký (Register Client View)
+ * 
+ * Hiển thị biểu mẫu thu thập thông tin người dùng mới (username, mật khẩu, email...).
+ * Xử lý xác thực đầu vào, so khớp mật khẩu và gọi API đăng ký.
+ */
 export default function RegisterClient() {
     const router = useRouter()
     const [loading, setLoading] = useState(false)

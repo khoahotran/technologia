@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * Thành phần Chọn số lượng (Quantity Selector Component)
+ * 
+ * Cung cấp giao diện để người dùng tăng/giảm số lượng sản phẩm bằng nút bấm (+/-) 
+ * hoặc nhập trực tiếp từ bàn phím.
+ */
 import { Minus, Plus } from "lucide-react";
 import * as React from "react";
 
@@ -7,22 +13,23 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface QuantitySelectorProps {
-    /** Current quantity value */
+    /** Giá trị số lượng hiện tại */
     value: number;
-    /** Callback when quantity changes */
+    /** Sự kiện gọi lại khi số lượng thay đổi */
     onChange: (value: number) => void;
-    /** Minimum allowed value */
+    /** Giá trị tối thiểu cho phép (Mặc định: 1) */
     min?: number;
-    /** Maximum allowed value */
+    /** Giá trị tối đa cho phép (Mặc định: 99) */
     max?: number;
-    /** Whether the component is disabled */
+    /** Trạng thái vô hiệu hóa toàn bộ component */
     disabled?: boolean;
-    /** Size variant */
+    /** Biến thể kích cỡ hiển thị (sm, md, lg) */
     size?: "sm" | "md" | "lg";
-    /** Custom class name */
+    /** Class CSS tùy chỉnh bổ sung */
     className?: string;
 }
 
+/** Bản đồ kích thước cho các thành phần con (nút, ô nhập, icon) */
 const sizeMap = {
     sm: {
         button: "h-7 w-7",
@@ -41,6 +48,9 @@ const sizeMap = {
     },
 };
 
+/**
+ * Thành phần QuantitySelector
+ */
 export function QuantitySelector({
     value,
     onChange,
@@ -52,21 +62,25 @@ export function QuantitySelector({
 }: QuantitySelectorProps) {
     const sizes = sizeMap[size];
 
+    /** Xử lý khi nhấn nút Giảm (-) */
     const handleDecrement = () => {
         if (value > min) {
             onChange(value - 1);
         }
     };
 
+    /** Xử lý khi nhấn nút Tăng (+) */
     const handleIncrement = () => {
         if (value < max) {
             onChange(value + 1);
         }
     };
 
+    /** Xử lý khi người dùng nhập số trực tiếp vào ô input */
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = parseInt(e.target.value, 10);
         if (!isNaN(newValue)) {
+            // Đảm bảo giá trị nằm trong khoảng [min, max]
             const clampedValue = Math.max(min, Math.min(max, newValue));
             onChange(clampedValue);
         }
@@ -74,19 +88,19 @@ export function QuantitySelector({
 
     return (
         <div className={cn("flex items-center gap-1", className)}>
-            {/* Decrement Button */}
+            {/* Nút Giảm số lượng */}
             <Button
                 variant="outline"
                 size="icon"
                 className={cn(sizes.button, "rounded-full")}
                 onClick={handleDecrement}
                 disabled={disabled || value <= min}
-                aria-label="Decrease quantity"
+                aria-label="Giảm số lượng"
             >
                 <Minus className={sizes.icon} />
             </Button>
 
-            {/* Quantity Input */}
+            {/* Ô nhập số lượng trực tiếp */}
             <input
                 type="number"
                 value={value}
@@ -99,19 +113,20 @@ export function QuantitySelector({
                     "text-center border rounded-md font-medium",
                     "focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent",
                     "disabled:opacity-50 disabled:cursor-not-allowed",
+                    // Ẩn các nút tăng giảm mặc định của trình duyệt để dùng nút custom
                     "[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 )}
-                aria-label="Quantity"
+                aria-label="Số lượng"
             />
 
-            {/* Increment Button */}
+            {/* Nút Tăng số lượng */}
             <Button
                 variant="outline"
                 size="icon"
                 className={cn(sizes.button, "rounded-full")}
                 onClick={handleIncrement}
                 disabled={disabled || value >= max}
-                aria-label="Increase quantity"
+                aria-label="Tăng số lượng"
             >
                 <Plus className={sizes.icon} />
             </Button>

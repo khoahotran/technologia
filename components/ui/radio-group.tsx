@@ -1,11 +1,18 @@
 "use client"
 
+/**
+ * Các thành phần Nhóm chọn một (Radio Group Components)
+ * 
+ * Được xây dựng trên nền tảng `@radix-ui/react-radio-group`.
+ * Dùng để chọn duy nhất một giá trị từ một tập hợp các lựa chọn liên quan.
+ */
 import * as RadioGroupPrimitive from "@radix-ui/react-radio-group"
 import { CircleIcon } from "lucide-react"
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+/** Thành phần bao bọc nhóm các Radio Items */
 function RadioGroup({
   className,
   ...props
@@ -19,6 +26,7 @@ function RadioGroup({
   )
 }
 
+/** Từng mục chọn duy nhất trong nhóm */
 function RadioGroupItem({
   className,
   ...props
@@ -32,6 +40,7 @@ function RadioGroupItem({
       )}
       {...props}
     >
+      {/* Chỉ báo hiển thị khi mục này được chọn (Thường là một chấm tròn nhỏ) */}
       <RadioGroupPrimitive.Indicator
         data-slot="radio-group-indicator"
         className="relative flex items-center justify-center"

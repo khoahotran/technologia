@@ -7,7 +7,19 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 
+/**
+ * Thành phần Gửi Đánh giá (Give Feedback Client)
+ * 
+ * Cung cấp giao diện cho người dùng đánh giá chất lượng sản phẩm và dịch vụ sau khi nhận hàng.
+ * Bao gồm:
+ * - Chọn số sao đánh giá (1-5 sao).
+ * - Nhập nội dung bình luận chi tiết.
+ * - Hiển thị tóm tắt thông tin đơn hàng đang được đánh giá.
+ * 
+ * @param id - Mã định danh đơn hàng cần đánh giá
+ */
 export default function GiveFeedbackClient({ id }: { id: string }) {
+
   const [rating, setRating] = useState(4)
   const [comment, setComment] = useState("")
 
@@ -84,11 +96,10 @@ export default function GiveFeedbackClient({ id }: { id: string }) {
                         className="transition-colors"
                       >
                         <Star
-                          className={`h-8 w-8 ${
-                            star <= rating
+                          className={`h-8 w-8 ${star <= rating
                               ? "fill-[#3E93B3] text-[#3E93B3]"
                               : "fill-none text-gray-300"
-                          }`}
+                            }`}
                         />
                       </button>
                     ))}

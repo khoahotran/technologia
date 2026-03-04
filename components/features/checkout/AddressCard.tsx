@@ -1,13 +1,25 @@
 "use client"
 
+/**
+ * Thành phần Thẻ Địa chỉ (Address Card Component)
+ * 
+ * Hiển thị thông tin liên hệ và địa chỉ giao hàng của người dùng.
+ * Cho phép người dùng chọn sử dụng địa chỉ này hoặc đặt làm thẻ mặc định.
+ */
 import { Button } from "@/components/ui/button"
 
 interface AddressCardProps {
+  /** Tên người nhận */
   name: string
+  /** Số điện thoại người nhận */
   phone: string
+  /** Địa chỉ chi tiết */
   address: string
+  /** Cờ đánh dấu đây có phải là địa chỉ mặc định hay không */
   isDefault?: boolean
+  /** Sự kiện khi nhấn "Sử dụng địa chỉ này" */
   onUse?: () => void
+  /** Sự kiện khi nhấn "Đặt làm mặc định" */
   onSetDefault?: () => void
 }
 
@@ -21,40 +33,45 @@ export function AddressCard({
 }: AddressCardProps) {
   return (
     <div className="bg-white p-6 rounded-xl border border-gray-100 space-y-4">
+      {/* Khối Tên người nhận */}
       <div className="flex justify-between items-start">
         <div className="space-y-1">
-          <p className="text-sm text-gray-500">Customer name</p>
+          <p className="text-sm text-gray-500">Tựa người nhận</p>
           <p className="font-medium text-gray-900">{name}</p>
         </div>
+        {/* Nhãn Mặc định */}
         {isDefault && (
-          <span className="text-sm font-medium text-[#3E93B3]">Default</span>
+          <span className="text-sm font-medium text-[#3E93B3]">Mặc định</span>
         )}
       </div>
 
+      {/* Khối Số điện thoại */}
       <div className="space-y-1">
-        <p className="text-sm text-gray-500">Customer phone number</p>
+        <p className="text-sm text-gray-500">Số điện thoại</p>
         <p className="font-medium text-gray-900">{phone}</p>
       </div>
 
+      {/* Khối Địa chỉ chi tiết */}
       <div className="space-y-1">
-        <p className="text-sm text-gray-500">Customer address (note, no, street, ward, city, province)</p>
+        <p className="text-sm text-gray-500">Địa chỉ cụ thể (Ghi chú, Số nhà, Đường, Phường/Xã, Quận/Huyện, Tỉnh/TP)</p>
         <p className="font-medium text-gray-900">{address}</p>
       </div>
 
+      {/* Khối Các nút thao tác */}
       <div className="flex gap-4 pt-2">
         <Button
           variant="secondary"
           className="flex-1 bg-[#D3E4F4] hover:bg-[#C1D8EB] text-gray-700 font-medium"
           onClick={onUse}
         >
-          use address
+          Sử dụng địa chỉ
         </Button>
         <Button
           variant="secondary"
           className="flex-1 bg-[#D3E4F4] hover:bg-[#C1D8EB] text-gray-700 font-medium"
           onClick={onSetDefault}
         >
-          set as default
+          Thiết lập mặc định
         </Button>
       </div>
     </div>

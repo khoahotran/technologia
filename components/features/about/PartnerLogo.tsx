@@ -1,5 +1,13 @@
+/**
+ * Thành phần Logo Đối tác (Partner Logo Component)
+ * 
+ * Hiển thị logo của một đối tác. Nếu không có hình ảnh logo, 
+ * sẽ hiển thị tên đối tác dưới dạng văn bản thay thế.
+ */
 interface PartnerLogoProps {
+  /** Tên của đối tác (dùng cho thuộc tính alt hoặc hiển thị dạng text) */
   name: string
+  /** Đường dẫn đến hình ảnh logo (tùy chọn) */
   logoUrl?: string
 }
 

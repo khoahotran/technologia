@@ -1,7 +1,18 @@
+/**
+ * Thành phần Ô nhập liệu văn bản dài (Textarea Component)
+ * 
+ * Một trình bao bọc cho thẻ <textarea> của HTML. 
+ * Được thiết kế để nhập các đoạn văn bản có độ dài lớn (Mô tả, nội dung đánh giá...).
+ */
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * Thành phần Textarea
+ * @param className Tùy chỉnh class CSS bổ sung
+ * @param props Các thuộc tính HTML chuẩn của thẻ textarea
+ */
 function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
   return (
     <textarea

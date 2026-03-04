@@ -1,20 +1,20 @@
 /**
- * Formatting utilities
- * Common formatting functions for consistent display across the app
+ * Tiện ích Định dạng (Formatting Utilities)
+ * Cung cấp các hàm dùng chung để chuẩn hóa cách hiển thị tiền tệ, ngày tháng, văn bản.
  */
 
 import { APP_CONFIG } from '../constants/app.constants';
 
 // ===========================================
-// Currency Formatting
+// Định dạng Tiền tệ (Currency Formatting)
 // ===========================================
 
 /**
- * Format a number as currency
- * @param amount - The amount to format
- * @param currency - Currency code (default: VND)
- * @param locale - Locale for formatting (default: vi-VN)
- * @returns Formatted currency string
+ * Định dạng một số thành chuỗi tiền tệ.
+ * @param amount - Số tiền cần định dạng (số hoặc chuỗi)
+ * @param currency - Mã tiền tệ (mặc định: VND)
+ * @param locale - Ngôn ngữ hiển thị (mặc định: vi-VN)
+ * @returns Chuỗi tiền tệ đã được định dạng
  * 
  * @example
  * formatCurrency(100000) // "100.000 ₫"
@@ -40,10 +40,10 @@ export function formatCurrency(
 }
 
 /**
- * Format a number with thousand separators
- * @param num - The number to format
- * @param locale - Locale for formatting
- * @returns Formatted number string
+ * Định dạng số với dấu phân cách hàng nghìn
+ * @param num - Số cần định dạng
+ * @param locale - Ngôn ngữ hiển thị
+ * @returns Chuỗi số đã được định dạng
  * 
  * @example
  * formatNumber(1234567) // "1.234.567"
@@ -62,15 +62,15 @@ export function formatNumber(
 }
 
 // ===========================================
-// Date Formatting
+// Định dạng Ngày tháng (Date Formatting)
 // ===========================================
 
 /**
- * Format a date to localized string
- * @param date - Date to format (Date object, string, or timestamp)
- * @param options - Intl.DateTimeFormatOptions
- * @param locale - Locale for formatting
- * @returns Formatted date string
+ * Định dạng ngày tháng thành chuỗi theo chuẩn quốc gia (Locale)
+ * @param date - Ngày cần định dạng (Date object, chuỗi, hoặc timestamp)
+ * @param options - Cấu hình Intl.DateTimeFormatOptions
+ * @param locale - Ngôn ngữ hiển thị
+ * @returns Chuỗi ngày tháng đã được định dạng
  * 
  * @example
  * formatDate(new Date()) // "03/02/2026"
@@ -100,10 +100,10 @@ export function formatDate(
 }
 
 /**
- * Format a date with time
- * @param date - Date to format
- * @param locale - Locale for formatting
- * @returns Formatted datetime string
+ * Định dạng ngày gồm Cả ngày lẫn giờ
+ * @param date - Ngày/giờ cần định dạng
+ * @param locale - Ngôn ngữ hiển thị
+ * @returns Chuỗi ngày và giờ đã định dạng
  * 
  * @example
  * formatDateTime(new Date()) // "03/02/2026 14:30"
@@ -122,10 +122,10 @@ export function formatDateTime(
 }
 
 /**
- * Get relative time string (e.g., "2 hours ago")
- * @param date - Date to compare
- * @param locale - Locale for formatting
- * @returns Relative time string
+ * Lấy chuỗi mô tả thời gian tương đối so với thời điểm hiện tại
+ * @param date - Thời điểm để so sánh với lúc này
+ * @param locale - Ngôn ngữ hiển thị (VD: "vi-VN" -> "trước")
+ * @returns Chuỗi mô tả tương đối ("1 giờ trước", "5 phút trước",...)
  * 
  * @example
  * formatRelativeTime(new Date(Date.now() - 3600000)) // "1 giờ trước"
@@ -163,15 +163,15 @@ export function formatRelativeTime(
 }
 
 // ===========================================
-// Text Formatting
+// Định dạng Văn bản (Text Formatting)
 // ===========================================
 
 /**
- * Truncate text with ellipsis
- * @param text - Text to truncate
- * @param maxLength - Maximum length before truncation
- * @param suffix - Suffix to add (default: "...")
- * @returns Truncated text
+ * Rút gọn chuỗi văn bản nếu nó quá dài
+ * @param text - Chuỗi văn bản gốc
+ * @param maxLength - Số lượng ký tự tối đa
+ * @param suffix - Thành phần phía sau được thêm nếu văn bản bị cắt (Mặc định: "...")
+ * @returns Chuỗi văn bản đã bị cắt hoặc giữ nguyên
  * 
  * @example
  * truncateText("This is a long text", 10) // "This is a..."
@@ -188,9 +188,8 @@ export function truncateText(
 }
 
 /**
- * Capitalize first letter of each word
- * @param text - Text to capitalize
- * @returns Capitalized text
+ * Viết hoa kí tự đầu tiên của tất cả các từ trong chuỗi văn bản
+ * @param text - Chuỗi văn bản cần được quy chuẩn
  * 
  * @example
  * capitalizeWords("hello world") // "Hello World"
@@ -206,12 +205,12 @@ export function capitalizeWords(text: string | undefined | null): string {
 }
 
 /**
- * Convert string to slug (URL-friendly format)
- * @param text - Text to convert
- * @returns Slugified text
+ * Chuyển đổi một tên thông thường thành dạng Slug (chuỗi thân thiện với URL)
+ * @param text - Chuỗi dùng để tạo Slug
+ * @returns Slug theo định dạng chuẩn SEO (chỉ có kí tự không dấu, thường và dấu gạch nối ngang)
  * 
  * @example
- * slugify("Hello World!") // "hello-world"
+ * slugify("Hello World! 2026") // "hello-world-2026"
  */
 export function slugify(text: string | undefined | null): string {
     if (!text) return '';
@@ -219,21 +218,21 @@ export function slugify(text: string | undefined | null): string {
     return text
         .toLowerCase()
         .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
-        .replace(/[^a-z0-9\s-]/g, '') // Remove special chars
-        .replace(/\s+/g, '-') // Replace spaces with hyphens
-        .replace(/-+/g, '-') // Replace multiple hyphens with single
-        .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+        .replace(/[\u0300-\u036f]/g, '') // Xóa dấu tiếng Việt
+        .replace(/[^a-z0-9\s-]/g, '') // Bỏ hết kí tự đặc biệt khác 
+        .replace(/\s+/g, '-') // Đổi các khoảng trắng thành dấu gạch ngang
+        .replace(/-+/g, '-') // Chỉ giữ một dấu gạch ngang nếu chúng nằm liên tiếp nhau
+        .replace(/^-|-$/g, ''); // Bỏ các dấu gạch ngang rác ở đầu và cuối chuỗi
 }
 
 // ===========================================
-// Phone Number Formatting
+// Định dạng Số điện thoại (Phone Number Formatting)
 // ===========================================
 
 /**
- * Format phone number for display
- * @param phone - Phone number to format
- * @returns Formatted phone number
+ * Làm đẹp hiển thị của Số Điện thoại
+ * @param phone - Số điện thoại gốc
+ * @returns Số điện thoại có định dạng chuẩn (ví dụ "090 123 4567")
  * 
  * @example
  * formatPhone("0901234567") // "090 123 4567"
@@ -241,14 +240,14 @@ export function slugify(text: string | undefined | null): string {
 export function formatPhone(phone: string | undefined | null): string {
     if (!phone) return '';
 
-    // Remove non-numeric characters
+    // Lọc bỏ mọi thứ không phải là số
     const cleaned = phone.replace(/\D/g, '');
 
-    // Vietnam phone format (10 digits)
+    // Nếu chuẩn SDT Việt Nam (10 số) -> tách làm 3 khối : 3 - 3 - 4
     if (cleaned.length === 10) {
         return `${cleaned.slice(0, 3)} ${cleaned.slice(3, 6)} ${cleaned.slice(6)}`;
     }
 
-    // Return as-is if format is unknown
+    // Nếu cấu trúc lạ, trả về chuỗi đã làm sạch thô
     return cleaned;
 }

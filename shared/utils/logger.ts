@@ -1,11 +1,12 @@
 /**
- * Structured Logging System
+ * Hệ thống Ghi nhận Log (Structured Logging System)
  *
- * Moved from lib/logger.ts to shared/utils/logger.ts.
+ * Chuyển đổi từ thư mục lib cũ sang shared/utils.
+ * Phục vụ cho cả Debug trong Development và việc tích hợp các service nhận Log trong Production.
  */
 
 // ===========================================
-// Types
+// Khai báo Kiểu (Types)
 // ===========================================
 
 export type LogLevel = "debug" | "info" | "warn" | "error";
@@ -47,7 +48,8 @@ export interface UserActionEntry {
 }
 
 /**
- * Log transport interface for extensibility
+ * Giao diện truyền dẫn Log (Transport Interface).
+ * Có thể mở rộng để push Error lên Sentry hoặc Ghi nhận hành vi lên Mixpanel
  */
 export interface LogTransport {
     log(entry: LogEntry): void;
@@ -55,7 +57,7 @@ export interface LogTransport {
 }
 
 // ===========================================
-// Console Transport (Default)
+// Console Transport Mặc định
 // ===========================================
 
 const consoleTransport: LogTransport = {
@@ -64,8 +66,8 @@ const consoleTransport: LogTransport = {
         const prefix = `[${timestamp}] [${level.toUpperCase()}]`;
 
         const logFn = {
-            debug: console.warn,
-            info: console.warn,
+            debug: console.warn, // Có thể dùng console.debug
+            info: console.warn,  // Tạm thay bằng warn để tránh bị spam console trên môi trường Prod nếu cần
             warn: console.warn,
             error: console.error,
         }[level];
@@ -91,7 +93,7 @@ const consoleTransport: LogTransport = {
 };
 
 // ===========================================
-// Logger Configuration
+// Cấu hình Logger (Logger Configuration)
 // ===========================================
 
 interface LoggerConfig {
@@ -110,7 +112,7 @@ const LOG_LEVELS: Record<LogLevel, number> = {
 };
 
 // ===========================================
-// Logger Class
+// Class Logger Cốt Lõi (Logger Class)
 // ===========================================
 
 class Logger {
@@ -121,6 +123,7 @@ class Logger {
 
     constructor(config?: Partial<LoggerConfig>) {
         this.config = {
+            // Development in ra cả debug, lên Production thì lọc còn từ Info trở lên
             minLevel: process.env.NODE_ENV === "production" ? "info" : "debug",
             enabled: true,
             includeTimestamp: true,
@@ -174,7 +177,7 @@ class Logger {
             try {
                 transport.log(entry);
             } catch {
-                // Silently fail
+                // Silently fail - Tránh ứng dụng chết rạp nếu lỗi logging
             }
         }
     }
@@ -222,6 +225,7 @@ class Logger {
                 transport.action(entry);
             } catch { }
         }
+        // Thêm vào hàng chờ để dội lô nếu cấu hình gửi sang Analytics Tool
         this.actionQueue.push(entry);
     }
 
@@ -261,6 +265,10 @@ class Logger {
 
 export const logger = new Logger();
 
+/**
+ * Hàm khởi tạo Logger có gắn nhãn ngữ cảnh đặc biệt (VD: 'CartRepository') 
+ * để dễ dàng truy vết nguồn phát xuất của Log.
+ */
 export function createScopedLogger(
     scope: string,
     defaultContext?: Record<string, unknown>

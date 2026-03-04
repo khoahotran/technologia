@@ -4,6 +4,13 @@ import { Ghost } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
+
+/**
+ * Giao diện 404 (Không Tìm Thấy Trang)
+ * 
+ * Hiển thị màn hình thông báo khi người dùng truy cập một đường dẫn không tồn tại.
+ * Cung cấp tùy chọn quay lại trang trước đó hoặc về trang chủ.
+ */
 export default function NotFound() {
   const router = useRouter();
 

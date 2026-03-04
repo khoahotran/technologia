@@ -1,27 +1,34 @@
 "use client";
 
+/**
+ * Thành phần Hiển thị giá (Price Display Component)
+ * 
+ * Chuyên biệt phục vụ việc hiển thị giá tiền sản phẩm, hỗ trợ định dạng tiền tệ, 
+ * hiển thị giá gốc (kèm gạch ngang) và thẻ phần trăm giảm giá.
+ */
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
 import { formatCurrency } from "@/shared/utils/format";
 
 interface PriceDisplayProps {
-    /** Price value (can be string or number) */
+    /** Giá trị giá hiện tại (số hoặc chuỗi) */
     price: string | number;
-    /** Original price for discount display */
+    /** Giá gốc trước khi giảm (tùy chọn) */
     originalPrice?: string | number | undefined;
-    /** Currency code (default: VND) */
+    /** Mã tiền tệ (Mặc định: VND) */
     currency?: string | undefined;
-    /** Size variant */
+    /** Biến thể kích thước chữ (sm, md, lg, xl) */
     size?: "sm" | "md" | "lg" | "xl" | undefined;
-    /** Custom class name */
+    /** Class CSS cho container chính */
     className?: string | undefined;
-    /** Custom class for original price */
+    /** Class CSS riêng cho phần hiển thị giá gốc */
     originalPriceClassName?: string | undefined;
-    /** Show discount percentage */
+    /** Có hiển thị thẻ (%) giảm giá hay không */
     showDiscountPercent?: boolean | undefined;
 }
 
+/** Bản đồ cỡ chữ cho giá hiện tại */
 const sizeMap = {
     sm: "text-sm",
     md: "text-base",
@@ -29,6 +36,7 @@ const sizeMap = {
     xl: "text-2xl",
 };
 
+/** Bản đồ cỡ chữ cho giá gốc (thường nhỏ hơn giá hiện tại) */
 const originalSizeMap = {
     sm: "text-xs",
     md: "text-sm",
@@ -36,6 +44,9 @@ const originalSizeMap = {
     xl: "text-lg",
 };
 
+/**
+ * Thành phần PriceDisplay
+ */
 export function PriceDisplay({
     price,
     originalPrice,
@@ -45,6 +56,7 @@ export function PriceDisplay({
     originalPriceClassName,
     showDiscountPercent = false,
 }: PriceDisplayProps) {
+    // Chuyển đổi dữ liệu sang kiểu số
     const numericPrice = typeof price === "string" ? parseFloat(price) : price;
     const numericOriginal =
         originalPrice !== undefined
@@ -53,21 +65,23 @@ export function PriceDisplay({
                 : originalPrice
             : undefined;
 
+    // Kiểm tra xem có đang thực hiện giảm giá hay không
     const hasDiscount =
         numericOriginal !== undefined && numericOriginal > numericPrice;
 
+    // Tính toán phần trăm giảm giá
     const discountPercent = hasDiscount
         ? Math.round(((numericOriginal! - numericPrice) / numericOriginal!) * 100)
         : 0;
 
     return (
         <div className={cn("flex items-center gap-2 flex-wrap", className)}>
-            {/* Current Price */}
+            {/* Giá hiện tại (Giá sau giảm) */}
             <span className={cn("font-bold text-primary", sizeMap[size])}>
                 {formatCurrency(numericPrice, currency)}
             </span>
 
-            {/* Original Price (strikethrough) */}
+            {/* Giá gốc (Bị gạch ngang) */}
             {hasDiscount && (
                 <span
                     className={cn(
@@ -80,7 +94,7 @@ export function PriceDisplay({
                 </span>
             )}
 
-            {/* Discount Badge */}
+            {/* Thẻ hiển thị số % giảm giá (Badge) */}
             {hasDiscount && showDiscountPercent && (
                 <span className="text-xs font-semibold text-destructive bg-destructive/10 px-2 py-0.5 rounded-full">
                     -{discountPercent}%

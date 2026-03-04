@@ -1,13 +1,21 @@
+/**
+ * Các thành phần Đường dẫn điều hướng (Breadcrumb Components)
+ * 
+ * Giúp người dùng xác định vị trí hiện tại của mình trong cấu trúc phân cấp của website 
+ * và dễ dàng quay lại các cấp cha.
+ */
 import { Slot } from "@radix-ui/react-slot"
 import { ChevronRight, MoreHorizontal } from "lucide-react"
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+/** Thành phần bao bọc chính (thẻ <nav>) */
 function Breadcrumb({ ...props }: React.ComponentProps<"nav">) {
   return <nav aria-label="breadcrumb" data-slot="breadcrumb" {...props} />
 }
 
+/** Danh sách chứa các mục đường dẫn (thẻ <ol>) */
 function BreadcrumbList({ className, ...props }: React.ComponentProps<"ol">) {
   return (
     <ol
@@ -21,6 +29,7 @@ function BreadcrumbList({ className, ...props }: React.ComponentProps<"ol">) {
   )
 }
 
+/** Đại diện cho một mắt xích trong đường dẫn (thẻ <li>) */
 function BreadcrumbItem({ className, ...props }: React.ComponentProps<"li">) {
   return (
     <li
@@ -31,6 +40,7 @@ function BreadcrumbItem({ className, ...props }: React.ComponentProps<"li">) {
   )
 }
 
+/** Liên kết chuyển hướng trong đường dẫn */
 function BreadcrumbLink({
   asChild,
   className,
@@ -49,6 +59,7 @@ function BreadcrumbLink({
   )
 }
 
+/** Hiển thị tên trang hiện tại (mắt xích cuối cùng, không nhấn được) */
 function BreadcrumbPage({ className, ...props }: React.ComponentProps<"span">) {
   return (
     <span
@@ -62,6 +73,7 @@ function BreadcrumbPage({ className, ...props }: React.ComponentProps<"span">) {
   )
 }
 
+/** Dấu phân cách giữa các mục (mặc định là icon Chevron Right) */
 function BreadcrumbSeparator({
   children,
   className,
@@ -80,6 +92,7 @@ function BreadcrumbSeparator({
   )
 }
 
+/** Hiển thị dấu ba chấm khi đường dẫn quá dài */
 function BreadcrumbEllipsis({
   className,
   ...props
@@ -93,7 +106,7 @@ function BreadcrumbEllipsis({
       {...props}
     >
       <MoreHorizontal className="size-4" />
-      <span className="sr-only">More</span>
+      <span className="sr-only">Thêm mục khác</span>
     </span>
   )
 }

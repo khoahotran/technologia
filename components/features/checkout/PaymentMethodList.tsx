@@ -1,5 +1,11 @@
 "use client"
 
+/**
+ * Thành phần Danh sách Phương thức Thanh toán (Payment Method List Component)
+ * 
+ * Hiển thị một danh sách các phương thức thanh toán cùng loại (Ngân hàng/Ví) 
+ * và chứa nút chức năng để liên kết thêm tài khoản mới.
+ */
 import { Info } from "lucide-react"
 
 import { PaymentMethodCard } from "./PaymentMethodCard"
@@ -16,10 +22,15 @@ interface PaymentMethod {
 }
 
 interface PaymentMethodListProps {
+  /** Loại danh sách (Hiển thị tiêu đề khác nhau tùy loại) */
   type: "bank" | "wallet"
+  /** Mảng dữ liệu các phương thức thanh toán */
   methods: PaymentMethod[]
+  /** Sự kiện khi nhấn "Sử dụng" trên một thẻ */
   onUse?: (id: string) => void
+  /** Sự kiện khi nhấn "Đặt mặc định" trên một thẻ */
   onSetDefault?: (id: string) => void
+  /** Sự kiện khi cần nhấn nút "Liên kết mới..." */
   onAddNew?: () => void
 }
 
@@ -30,16 +41,19 @@ export function PaymentMethodList({
   onSetDefault,
   onAddNew,
 }: PaymentMethodListProps) {
-  const title = type === "bank" ? "Linked bank accounts" : "Linked e-wallet accounts"
-  const buttonText = type === "bank" ? "Link new account" : "Link new account"
+  // Thay đổi tiêu đề và chữ ở nút bấm dựa trên loại phương thức
+  const title = type === "bank" ? "Tài khoản ngân hàng đã liên kết" : "Ví điện tử đã liên kết"
+  const buttonText = type === "bank" ? "Thêm thẻ/tài khoản ngân hàng" : "Liên kết ví mới"
 
   return (
     <div className="space-y-6">
+      {/* Tiêu đề danh sách */}
       <div className="flex items-center justify-between">
         <h3 className="font-bold text-gray-900">{title}</h3>
         <Info className="h-5 w-5 text-[#3E93B3]" />
       </div>
 
+      {/* Danh sách các Thẻ */}
       <div className="space-y-4">
         {methods.map((method) => (
           <PaymentMethodCard
@@ -55,6 +69,7 @@ export function PaymentMethodList({
         ))}
       </div>
 
+      {/* Nút thêm mới */}
       <Button
         className="w-full bg-[#C3BFCE] hover:bg-[#B3AFBE] text-white font-medium"
         onClick={onAddNew}

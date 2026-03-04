@@ -1,35 +1,46 @@
 "use client"
 
+/**
+ * Các thành phần Hộp thoại (Dialog Components)
+ * 
+ * Được xây dựng trên nền tảng `@radix-ui/react-dialog`.
+ * Dùng để hiển thị nội dung đè lên giao diện chính (Modal), yêu cầu sự chú ý của người dùng.
+ */
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 import { XIcon } from "lucide-react"
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+/** Gốc của Dialog, quản lý trạng thái hiển thị */
 function Dialog({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Root>) {
   return <DialogPrimitive.Root data-slot="dialog" {...props} />
 }
 
+/** Nút hoặc phần tử dùng để mở Dialog */
 function DialogTrigger({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Trigger>) {
   return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />
 }
 
+/** Cổng kết nối (Portal) để render Dialog ra ngoài cây DOM chính (thường là cuối body) */
 function DialogPortal({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Portal>) {
   return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />
 }
 
+/** Nút dùng để đóng Dialog */
 function DialogClose({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Close>) {
   return <DialogPrimitive.Close data-slot="dialog-close" {...props} />
 }
 
+/** Lớp nền mờ (Overlay) phía sau Dialog */
 function DialogOverlay({
   className,
   ...props
@@ -46,6 +57,7 @@ function DialogOverlay({
   )
 }
 
+/** Nội dung chính của Hộp thoại */
 function DialogContent({
   className,
   children,
@@ -72,7 +84,7 @@ function DialogContent({
             className="ring-offset-background focus:ring-ring data-[state=open]:bg-accent data-[state=open]:text-muted-foreground absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
           >
             <XIcon />
-            <span className="sr-only">Close</span>
+            <span className="sr-only">Đóng</span>
           </DialogPrimitive.Close>
         )}
       </DialogPrimitive.Content>
@@ -80,6 +92,7 @@ function DialogContent({
   )
 }
 
+/** Phần đầu của Dialog, thường chứa Tiêu đề và Mô tả */
 function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -90,6 +103,7 @@ function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
+/** Phần chân của Dialog, thường chứa các nút Xác nhận / Hủy */
 function DialogFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -103,6 +117,7 @@ function DialogFooter({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
+/** Tiêu đề của Hộp thoại */
 function DialogTitle({
   className,
   ...props
@@ -116,6 +131,7 @@ function DialogTitle({
   )
 }
 
+/** Mô tả chi tiết cho nội dung Hộp thoại */
 function DialogDescription({
   className,
   ...props

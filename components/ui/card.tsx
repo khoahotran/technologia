@@ -1,7 +1,12 @@
+/**
+ * Các thành phần Thẻ bài (Card Components)
+ * Cung cấp bộ khung giao diện dạng hộp để nhóm thông tin liên quan.
+ */
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+/** Thành phần bao bọc ngoài cùng của Thẻ (Card Container) */
 function Card({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -15,6 +20,7 @@ function Card({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
+/** Phần đầu của Thẻ (Card Header), thường chứa Tiêu đề và Mô tả */
 function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -28,6 +34,7 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
+/** Tiêu đề chính của Thẻ (Card Title) */
 function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -38,6 +45,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
+/** Dòng mô tả bổ trợ cho tiêu đề (Card Description) */
 function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -48,6 +56,7 @@ function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
+/** Khu vực dành cho các nút hành động nằm ở góc trên bên phải của Header */
 function CardAction({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -61,6 +70,7 @@ function CardAction({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
+/** Phần thân chính chứa nội dung của Thẻ (Card Content) */
 function CardContent({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -71,6 +81,7 @@ function CardContent({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
+/** Phần chân dưới của Thẻ (Card Footer), thường dùng để đặt nút lệnh */
 function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div

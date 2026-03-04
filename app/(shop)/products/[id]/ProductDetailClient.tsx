@@ -22,11 +22,19 @@ import { useAddToCartMutation, useProductDetail, useProductList } from "@/presen
 import { formatCurrency, formatNumber } from "@/shared/utils/format";
 
 interface ProductDetailClientProps {
+    /** Mã định danh sản phẩm lấy từ URL params */
     id: string;
 }
 
+/** Các tab chuyển đổi hiển thị thông tin sản phẩm */
 type TabKey = "chi-tiet" | "thong-so" | "danh-gia";
 
+/**
+ * Giao diện Chi tiết Sản phẩm (Product Detail Client)
+ * 
+ * Hiển thị đầy đủ thông tin về một sản phẩm cụ thể bao gồm hình ảnh, giá cả, 
+ * thông số kỹ thuật, mô tả và cho phép người dùng thêm sản phẩm vào giỏ hàng.
+ */
 export default function ProductDetailClient({ id }: ProductDetailClientProps) {
     const router = useRouter();
     const [quantity, setQuantity] = useState(1);
@@ -38,8 +46,8 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
     const addToCartMutation = useAddToCartMutation();
 
     const { products: relatedProducts } = useProductList({
-        search: product?.category?.name ?? undefined,
         size: 4,
+        ...(product?.category ? { search: product.category } : {})
     });
 
     if (isLoading) {
@@ -92,7 +100,7 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
     const productProperties = [
         { label: "Thương hiệu", value: product.brandName || "Khác" },
         { label: "SKU", value: product.productId.slice(0, 8).toUpperCase() },
-        { label: "Danh mục", value: typeof product.category === 'string' ? product.category : product.category?.name || "Sản phẩm" },
+        { label: "Danh mục", value: product.category || "Sản phẩm" },
         { label: "Tồn kho", value: formatNumber(product.totalStock || 0) },
     ];
 
@@ -157,10 +165,10 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                     </button>
                     <ChevronRight className="w-3.5 h-3.5" />
                     <button
-                        onClick={() => router.push(`/products?search=${typeof product.category === 'string' ? product.category : product.category?.name}`)}
+                        onClick={() => router.push(`/products?search=${product.category || ""}`)}
                         className="hover:text-blue-600 transition-colors"
                     >
-                        {typeof product.category === 'string' ? product.category : product.category?.name || "Sản phẩm"}
+                        {product.category || "Sản phẩm"}
                     </button>
                     <ChevronRight className="w-3.5 h-3.5" />
                     <span className="text-gray-900 font-medium truncate max-w-[200px]">
@@ -379,7 +387,7 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                                             </div>
                                             <div className="flex justify-between border-b py-2">
                                                 <span className="text-gray-500">Danh mục</span>
-                                                <span className="font-medium">{typeof product.category === 'string' ? product.category : product.category?.name || "—"}</span>
+                                                <span className="font-medium">{product.category || "—"}</span>
                                             </div>
                                             <div className="flex justify-between py-2">
                                                 <span className="text-gray-500">Tồn kho</span>

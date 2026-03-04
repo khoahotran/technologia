@@ -7,6 +7,11 @@ import { useMemo, useState } from "react";
 import { OrderCategory } from "@/components/features/orders/OrderCard";
 import { getCheckoutOrders, type CheckoutOrder } from "@/lib/checkout-flow";
 
+/**
+ * Trích xuất danh sách các mục trong đơn hàng để hiển thị trên UI.
+ * @param order - Đối tượng đơn hàng chứa thông tin chi tiết
+ * @returns Danh sách số lượng và tên sản phẩm
+ */
 function toOrderCardItems(order: CheckoutOrder) {
     return order.items.map((item) => ({
         quantity: item.quantity,
@@ -14,6 +19,15 @@ function toOrderCardItems(order: CheckoutOrder) {
     }));
 }
 
+/**
+ * Giao diện Danh sách Đơn hàng (Orders Client View)
+ * 
+ * Quản lý và phân loại các đơn hàng của người dùng theo trạng thái:
+ * - Đơn hàng mới tạo (created)
+ * - Đơn hàng đang giao (shipping)
+ * - Đơn hàng đã hoàn thành (delivered)
+ * - Đơn hàng đã hủy (cancelled)
+ */
 export default function OrdersClient() {
     const [orders] = useState<CheckoutOrder[]>(() => getCheckoutOrders());
 

@@ -1,4 +1,9 @@
-
+/**
+ * Bố cục Xác thực (Auth Layout)
+ * 
+ * Bọc các trang liên quan đến quản lý tài khoản như Đăng nhập, Đăng ký, 
+ * Quên mật khẩu. Cung cấp giao diện nền xám đồng nhất và footer đơn giản.
+ */
 export default function AuthLayout({
     children,
 }: Readonly<{

@@ -1,5 +1,11 @@
 "use client"
 
+/**
+ * Các thành phần Băng chuyền (Carousel Components)
+ * 
+ * Được xây dựng trên nền tảng `embla-carousel-react`.
+ * Dùng để hiển thị một tập hợp các nội dung (ảnh, thẻ...) có thể trượt qua lại.
+ */
 import useEmblaCarousel, {
   type UseEmblaCarouselType,
 } from "embla-carousel-react"
@@ -32,6 +38,9 @@ type CarouselContextProps = {
 
 const CarouselContext = React.createContext<CarouselContextProps | null>(null)
 
+/**
+ * Hook nội bộ để truy cập Context của Carousel
+ */
 function useCarousel() {
   const context = React.useContext(CarouselContext)
 
@@ -42,6 +51,10 @@ function useCarousel() {
   return context
 }
 
+/**
+ * Thành phần gốc Carousel
+ * Quản lý logic trượt, phím tắt và cung cấp Context cho các thành phần con.
+ */
 function Carousel({
   orientation = "horizontal",
   opts,
@@ -75,6 +88,7 @@ function Carousel({
     api?.scrollNext()
   }, [api])
 
+  /** Xử lý điều khiển qua bàn phím (Mũi tên Trái/Phải) */
   const handleKeyDown = React.useCallback(
     (event: React.KeyboardEvent<HTMLDivElement>) => {
       if (event.key === "ArrowLeft") {
@@ -132,6 +146,7 @@ function Carousel({
   )
 }
 
+/** Khung bao bọc các Slide (liên kết với Embla Ref) */
 function CarouselContent({ className, ...props }: React.ComponentProps<"div">) {
   const { carouselRef, orientation } = useCarousel()
 
@@ -153,6 +168,7 @@ function CarouselContent({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
+/** Từng Slide thành phần bên trong Carousel */
 function CarouselItem({ className, ...props }: React.ComponentProps<"div">) {
   const { orientation } = useCarousel()
 
@@ -171,6 +187,7 @@ function CarouselItem({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
+/** Nút điều hướng về Slide trước đó */
 function CarouselPrevious({
   className,
   variant = "outline",
@@ -196,11 +213,12 @@ function CarouselPrevious({
       {...props}
     >
       <ArrowLeft />
-      <span className="sr-only">Previous slide</span>
+      <span className="sr-only">Slide trước</span>
     </Button>
   )
 }
 
+/** Nút điều hướng sang Slide tiếp theo */
 function CarouselNext({
   className,
   variant = "outline",
@@ -226,7 +244,7 @@ function CarouselNext({
       {...props}
     >
       <ArrowRight />
-      <span className="sr-only">Next slide</span>
+      <span className="sr-only">Slide sau</span>
     </Button>
   )
 }

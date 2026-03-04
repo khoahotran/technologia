@@ -1,13 +1,13 @@
 /**
- * User Profile Repository
+ * Triển khai User Repository (User Profile Repository Implementation)
  *
- * Implements IUserRepository with unified HTTP client.
- * Handles:
- * - User profile fetching
- * - Profile updates
- * - Avatar changes  
- * - Password changes
- * - Automatic response validation
+ * Triển khai `IUserRepository` sử dụng HTTP client thống nhất (fetchWithToken).
+ * Chịu trách nhiệm cho tất cả các thao tác liên quan đến hồ sơ người dùng:
+ * - Lấy thông tin hồ sơ cá nhân
+ * - Cập nhật thông tin hồ sơ
+ * - Thay đổi ảnh đại diện (Avatar)
+ * - Thay đổi mật khẩu
+ * - Tự động xác thực Response bằng Zod Schema
  */
 
 import { UserProfileDto, UpdateProfileDto, ChangePasswordDto, UserProfileSchema } from "@/domain/user/dto/profile.dto";
@@ -20,6 +20,7 @@ import { fetchWithToken } from "@/infrastructure/http";
 import { createScopedLogger } from "@/lib/logger";
 
 const logger = createScopedLogger('UserRepository');
+/** Đường dẫn gốc API cho tài nguyên User */
 const BASE_URL = "/users";
 
 // ===========================================
@@ -27,7 +28,9 @@ const BASE_URL = "/users";
 // ===========================================
 
 /**
- * Extract and validate user profile from response
+ * Trích xuất và xác thực dữ liệu UserProfile từ response API
+ * @param response Response thô từ API
+ * @returns UserProfileDto đã được xác thực kiểu với Zod
  */
 function extractUserProfile(response: unknown): UserProfileDto {
     const validated = UserProfileResponseSchema.parse(response);
@@ -47,6 +50,7 @@ function extractUserProfile(response: unknown): UserProfileDto {
 export const UserRepository: IUserRepository = {
     /**
      * Lấy thông tin hồ sơ của người dùng hiện tại (dựa trên Access Token)
+     * Token được đính kèm tự động trong Header bởi fetchWithToken.
      */
     async getMe(): Promise<UserProfileDto> {
         logger.debug('Fetching user profile');
@@ -63,6 +67,7 @@ export const UserRepository: IUserRepository = {
     /**
      * Cập nhật thông tin hồ sơ cá nhân
      * Chấp nhận các thay đổi về tên, email, số điện thoại, v.v.
+     * @param dto Dữ liệu cần cập nhật (có thể là partial)
      */
     async updateMe(dto: UpdateProfileDto): Promise<UserProfileDto> {
         logger.debug('Updating user profile');
@@ -80,10 +85,13 @@ export const UserRepository: IUserRepository = {
 
     /**
      * Thay đổi ảnh đại diện của người dùng
-     * 
+     *
      * Sử dụng FormData để gửi dữ liệu file nhị phân (binary).
-     * Lưu ý: Không tự ý thiết lập 'Content-Type' header khi gửi FormData, 
+     * Lưu ý: Không tự ý thiết lập 'Content-Type' header khi gửi FormData,
      * trình duyệt sẽ tự động thiết lập kèm theo 'boundary' cần thiết.
+     *
+     * @param file File ảnh từ input của người dùng
+     * @returns Object chứa URL của avatar mới
      */
     async changeAvatar(file: File): Promise<{ avatarUrl: string }> {
         logger.debug('Changing avatar');
@@ -110,6 +118,7 @@ export const UserRepository: IUserRepository = {
     /**
      * Thay đổi mật khẩu đăng nhập
      * Yêu cầu xác thực bằng mật khẩu cũ trước khi đặt mật khẩu mới.
+     * @param dto Chứa oldPassword (để xác thực) và newPassword (mật khẩu mới)
      */
     async changePassword(dto: ChangePasswordDto): Promise<void> {
         logger.debug('Changing password');

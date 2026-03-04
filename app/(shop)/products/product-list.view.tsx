@@ -1,5 +1,12 @@
 "use client";
 
+/**
+ * Giao diện Danh sách Sản phẩm (Product List View)
+ * 
+ * Lắp ráp và tích hợp các thành phần ở trang danh sách sản phẩm, 
+ * quản lý trạng thái (state) cho bộ lọc, phân trang, và gọi các custom hooks 
+ * để tương tác với Backend (Lấy danh sách sản phẩm, danh mục, thương hiệu, thêm vào giỏ...).
+ */
 import { Loader2, Flame, Trophy, Music, Tag, Smartphone } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -32,9 +39,13 @@ import {
     useProductList
 } from "@/presentation/hooks";
 
+/**
+ * Thành phần chính để hiển thị Danh sách sản phẩm
+ */
 export default function ProductListView() {
     const searchParams = useSearchParams();
     const [page, setPage] = useState(0); // 0-indexed
+
     const pageSize = 12;
 
     const [activeCategory, setActiveCategory] = useState<number | undefined>(undefined);
@@ -72,7 +83,7 @@ export default function ProductListView() {
     const { data: categories } = useCategories();
     const { data: brands } = useBrands();
 
-    const { products, totalPages, isLoading, isError } = useProductList({
+    const params = {
         page,
         size: pageSize,
         sortBy,
@@ -84,7 +95,14 @@ export default function ProductListView() {
         categoryId: activeCategory,
         brandId: activeBrand,
         keyword: searchParams.get('name') || undefined
-    });
+    };
+
+    // Remove undefined properties to make TS exactOptionalPropertyTypes happy
+    const definedParams = Object.fromEntries(
+        Object.entries(params).filter(([_, v]) => v !== undefined)
+    );
+
+    const { products, totalPages, isLoading, isError } = useProductList(definedParams);
 
     // Reset page when filters change
     useEffect(() => {

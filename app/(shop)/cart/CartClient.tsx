@@ -16,6 +16,15 @@ import {
     useRemoveCartItemMutation,
 } from "@/presentation/hooks";
 
+/**
+ * Giao diện Giỏ hàng (Cart Client View)
+ * 
+ * Quản lý trạng thái hiển thị của giỏ hàng bao gồm:
+ * - Load dữ liệu giỏ hàng từ backend qua custom hooks `useCartQuery`.
+ * - Xử lý thao tác tăng/giảm số lượng, xóa sản phẩm.
+ * - Chọn các mục cụ thể để tính tổng tiền (Tính năng mua một phần giỏ hàng).
+ * - Chuyển tiếp sang trang Shipping/Checkout.
+ */
 export default function CartClient() {
     const { data: cart, isLoading, isError, refetch } = useCartQuery();
     const increaseMutation = useIncreaseCartItemMutation();

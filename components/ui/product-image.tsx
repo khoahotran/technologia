@@ -1,37 +1,51 @@
 "use client";
 
+/**
+ * Thành phần Hình ảnh Sản phẩm (Product Image Component)
+ * 
+ * Một trình bao bọc cho thành phần Image của Next.js, 
+ * được tối ưu hóa cho việc hiển thị ảnh sản phẩm với:
+ * - Trạng thái đang tải (Loading Skeleton).
+ * - Xử lý ảnh lỗi (Fallback).
+ * - Hiệu ứng phóng to khi di chuột (Hover zoom).
+ * - Quản lý tỉ lệ khung hình (Aspect ratio).
+ */
 import Image from "next/image";
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
 interface ProductImageProps {
-    /** Image source URL */
+    /** Đường dẫn ảnh (URL) */
     src?: string;
-    /** Alt text for accessibility */
+    /** Văn bản thay thế cho SEO và khả năng tiếp cận */
     alt: string;
-    /** Aspect ratio of the image container */
+    /** Tỉ lệ khung hình (square: vuông, video: 16/9, portrait: 3/4) */
     aspectRatio?: "square" | "video" | "portrait";
-    /** Whether to add hover zoom effect */
+    /** Có bật hiệu ứng phóng to khi di chuột không */
     hoverZoom?: boolean;
-    /** Custom class name */
+    /** Class CSS tùy chỉnh cho thẻ ảnh thực tế */
     className?: string;
-    /** Container class name */
+    /** Class CSS tùy chỉnh cho khung bao bên ngoài */
     containerClassName?: string;
-    /** Image sizes for responsive loading */
+    /** Kích thước ảnh cho việc tải ảnh linh hoạt (Responsive sizes) */
     sizes?: string;
-    /** Fill mode (default: contain) */
+    /** Cách ảnh lấp đầy khung hình (contain: giữ tỉ lệ, cover: phủ kín) */
     objectFit?: "contain" | "cover";
-    /** Priority loading */
+    /** Có ưu tiên tải trước ảnh này không (LCP optimization) */
     priority?: boolean;
 }
 
+/** Bản đồ các class tỉ lệ khung hình */
 const aspectRatioMap = {
     square: "aspect-square",
     video: "aspect-video",
     portrait: "aspect-[3/4]",
 };
 
+/**
+ * Thành phần ProductImage
+ */
 export function ProductImage({
     src,
     alt,
@@ -46,11 +60,13 @@ export function ProductImage({
     const [hasError, setHasError] = React.useState(false);
     const [isLoading, setIsLoading] = React.useState(true);
 
+    /** Xử lý khi ảnh bị lỗi (không tồn tại hoặc 404) */
     const handleError = () => {
         setHasError(true);
         setIsLoading(false);
     };
 
+    /** Xử lý khi ảnh đã tải xong hoàn toàn */
     const handleLoad = () => {
         setIsLoading(false);
     };
@@ -63,11 +79,12 @@ export function ProductImage({
                 containerClassName
             )}
         >
-            {/* Loading skeleton */}
+            {/* 1. Hiển thị Skeleton khi đang trong trạng thái chờ tải */}
             {isLoading && src && !hasError && (
                 <div className="absolute inset-0 bg-muted/30 animate-pulse" />
             )}
 
+            {/* 2. Hiển thị ảnh thực tế nếu có URL và không gặp lỗi */}
             {src && !hasError ? (
                 <Image
                     src={src}
@@ -77,7 +94,7 @@ export function ProductImage({
                     className={cn(
                         "transition-all duration-300",
                         objectFit === "contain" ? "object-contain p-4" : "object-cover",
-                        hoverZoom && "group-hover:scale-105",
+                        hoverZoom && "group-hover:scale-105", // Phóng to 5% khi di chuột vào nhóm cha
                         isLoading && "opacity-0",
                         !isLoading && "opacity-100",
                         className
@@ -87,7 +104,7 @@ export function ProductImage({
                     onLoad={handleLoad}
                 />
             ) : (
-                // Placeholder
+                // 3. Hiển thị Placeholder (Chỗ trống dự phòng) nếu ko có ảnh hoặc gặp lỗi tải
                 <div className="w-full h-full flex items-center justify-center text-muted-foreground/20">
                     <div className="w-16 h-16 rounded-full bg-muted/30" />
                 </div>

@@ -1,10 +1,22 @@
 "use client";
 
+/**
+ * Các thành phần Hiển thị trạng thái đang tải (Loading Components)
+ * 
+ * Cung cấp các cấp độ hiển thị Loader khác nhau tùy theo quy mô của vùng dữ liệu:
+ * - ScreenLoading: Phủ kín toàn bộ màn hình.
+ * - FullLoading: Phủ kín vùng chứa (Container).
+ * - SmallLoading: Icon xoay kích thước nhỏ (thường dùng trong Nút hoặc văn bản).
+ */
 import { Loader2 } from "lucide-react";
 import React from "react";
 
 import { cn } from "@/lib/utils";
 
+/** 
+ * Hiển thị Loading che kín toàn màn hình với lớp nền mờ 
+ * @param message Thông điệp hiển thị kèm theo (tùy chọn)
+ */
 export const ScreenLoading: React.FC<{ message?: string }> = ({ message }) => {
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/50 backdrop-blur-sm">
@@ -14,6 +26,11 @@ export const ScreenLoading: React.FC<{ message?: string }> = ({ message }) => {
   );
 };
 
+/** 
+ * Hiển thị Loading phủ kín vùng chứa hiện tại (Card, Div...)
+ * @param message Thông điệp hiển thị kèm theo
+ * @param className Các class CSS tùy chỉnh cho layout
+ */
 export const FullLoading: React.FC<{
   message?: string;
   className?: string;
@@ -31,6 +48,9 @@ export const FullLoading: React.FC<{
   );
 };
 
+/** 
+ * Biểu tượng xoay kích thước nhỏ dùng cho inline element
+ */
 export const SmallLoading: React.FC<{ className?: string }> = ({
   className,
 }) => {

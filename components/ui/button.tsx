@@ -4,10 +4,15 @@ import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * Định nghĩa các biến thể giao diện cho Nút bấm (Button variants)
+ * Sử dụng `class-variance-authority` (cva) để quản lý style tập trung.
+ */
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
   {
     variants: {
+      /** Các kiểu dáng hiển thị */
       variant: {
         default: "bg-primary text-primary-foreground hover:bg-primary/90",
         destructive:
@@ -20,6 +25,7 @@ const buttonVariants = cva(
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
         link: "text-primary underline-offset-4 hover:underline",
       },
+      /** Các kích cỡ của nút */
       size: {
         default: "h-9 px-4 py-2 has-[>svg]:px-3",
         sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
@@ -36,6 +42,16 @@ const buttonVariants = cva(
   }
 )
 
+/**
+ * Thành phần Nút bấm (Button Component)
+ * 
+ * Hỗ trợ đa dạng biến thể, kích cỡ và khả năng `asChild` (để dùng link hoặc các component khác làm trigger).
+ * 
+ * @param className Tùy chỉnh class CSS bổ sung
+ * @param variant Kiểu nút (default, outline, ghost...)
+ * @param size Kích thước nút (default, sm, lg, icon)
+ * @param asChild Nếu true, Button sẽ render component con được truyền vào thay vì thẻ <button> gốc
+ */
 function Button({
   className,
   variant,

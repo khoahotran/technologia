@@ -1,5 +1,13 @@
+/**
+ * Thành phần Thẻ Giá trị Cốt lõi (Value Card Component)
+ * 
+ * Hiển thị một giá trị cốt lõi của công ty (Ví dụ: "Chất lượng", "Sáng tạo")
+ * dưới dạng một thẻ đơn giản với tiêu đề và mô tả.
+ */
 interface ValueCardProps {
+  /** Tiêu đề của giá trị cốt lõi */
   title: string
+  /** Nội dung giải thích chi tiết về giá trị đó */
   description: string
 }
 

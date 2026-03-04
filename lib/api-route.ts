@@ -1,3 +1,9 @@
+/**
+ * Tiện ích Route API cho Next.js (API Route Utilities)
+ * 
+ * Cung cấp các hàm bổ trợ cho các Route API trong thư mục app/api.
+ * Chuyên biệt phục vụ việc chuyển tiếp yêu cầu (Proxy) sang User Service và quản lý Cookies.
+ */
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
@@ -5,6 +11,9 @@ import { COOKIE_NAMES, HTTP_STATUS, SERVICE_URLS } from "@/shared/constants";
 
 type JsonRecord = Record<string, unknown>;
 
+/** 
+ * Các cấu hình tùy chọn khi chuyển tiếp yêu cầu JSON sang User Service 
+ */
 interface ForwardToUserServiceOptions {
     path: string;
     method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
@@ -15,6 +24,9 @@ interface ForwardToUserServiceOptions {
     mapSuccess?: (data: JsonRecord) => JsonRecord;
 }
 
+/** 
+ * Các cấu hình tùy chọn khi chuyển tiếp yêu cầu Form Data (Upload file) 
+ */
 interface ForwardFormDataOptions {
     path: string;
     method: "PUT" | "POST" | "PATCH";
@@ -24,6 +36,9 @@ interface ForwardFormDataOptions {
     logLabel: string;
 }
 
+/**
+ * Trợ giúp phân tích thông báo lỗi từ dữ liệu phản hồi của Backend
+ */
 function parseErrorMessage(data: unknown, fallbackError: string): string {
     if (data && typeof data === "object" && "message" in data && typeof data.message === "string") {
         return data.message;
@@ -31,6 +46,9 @@ function parseErrorMessage(data: unknown, fallbackError: string): string {
     return fallbackError;
 }
 
+/**
+ * Giải mã JSON an toàn (ko gây crash nếu Backend trả về chuỗi ko phải JSON)
+ */
 async function parseJsonSafe(res: Response): Promise<JsonRecord> {
     try {
         const json = await res.json();
@@ -43,14 +61,17 @@ async function parseJsonSafe(res: Response): Promise<JsonRecord> {
     }
 }
 
+/**
+ * Trích xuất Token xác thực từ Header hoặc Cookie của Request hiện tại.
+ */
 export async function getAuthToken(request: Request): Promise<string | null> {
-    // 1. Try Authorization header
+    // 1. Thử lấy từ Authorization header (dành cho client gửi trực tiếp)
     const authHeader = request.headers.get("Authorization");
     if (authHeader && authHeader.startsWith("Bearer ")) {
         return authHeader;
     }
 
-    // 2. Fallback to cookie
+    // 2. Dự phòng lấy từ Cookie (dành cho các thao tác SSR hoặc trình duyệt tự gửi)
     const cookieStore = await cookies();
     const token = cookieStore.get(COOKIE_NAMES.ACCESS_TOKEN)?.value;
     if (token) {
@@ -60,30 +81,40 @@ export async function getAuthToken(request: Request): Promise<string | null> {
     return null;
 }
 
+/**
+ * Kiểm tra bắt buộc phải có Authorization Header, nếu ko có -> Trả về phản hồi 401.
+ */
 export function requireAuthorizationHeader(request: Request): string | NextResponse {
     const authHeader = request.headers.get("Authorization");
-    
+
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
         return NextResponse.json(
-            { error: "Authorization header is required" },
+            { error: "Yêu cầu Header Authorization (Bearer token)" },
             { status: HTTP_STATUS.UNAUTHORIZED }
         );
     }
-    
+
     return authHeader;
 }
 
+/**
+ * Thiết lập Access Token vào Cookie của trình duyệt (Dùng sau khi Login/Refresh thành công).
+ * Cookie được đánh dấu httpOnly và secure để đảm bảo an toàn.
+ */
 export async function setAccessTokenCookie(accessToken: string): Promise<void> {
     const cookieStore = await cookies();
     cookieStore.set(COOKIE_NAMES.ACCESS_TOKEN, accessToken, {
-        httpOnly: true,
+        httpOnly: true, // Chống XSS truy cập token
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         path: "/",
-        maxAge: 60 * 60 * 24 * 7,
+        maxAge: 60 * 60 * 24 * 7, // Hết hạn sau 7 ngày
     });
 }
 
+/**
+ * Chuyển tiếp yêu cầu dạng JSON sang User Service.
+ */
 export async function forwardJsonToUserService(options: ForwardToUserServiceOptions): Promise<NextResponse> {
     const { path, method, body, authHeader, fallbackError, logLabel, mapSuccess } = options;
 
@@ -99,25 +130,27 @@ export async function forwardJsonToUserService(options: ForwardToUserServiceOpti
 
         const data = await parseJsonSafe(backendRes);
 
-        console.warn(`[API Proxy] ${logLabel} ${method} ${path} -> Status: ${backendRes.status}`);
         if (!backendRes.ok) {
-            console.error(`[API Proxy] ${logLabel} Error:`, data);
             return NextResponse.json(
                 { error: parseErrorMessage(data, fallbackError) },
                 { status: backendRes.status }
             );
         }
 
+        // Trả kết quả thành công, có thể chạy qua hàm mapSuccess để biến đổi dữ liệu trước khi về Client
         return NextResponse.json(mapSuccess ? mapSuccess(data) : data);
     } catch (error) {
         console.error(`${logLabel} Proxy Error:`, error);
         return NextResponse.json(
-            { error: "Internal Server Error" },
+            { error: "Lỗi kết nối máy chủ dịch vụ" },
             { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
         );
     }
 }
 
+/**
+ * Chuyển tiếp yêu cầu dạng Form Data (thường dùng để Upload ảnh đại diện) sang User Service.
+ */
 export async function forwardFormDataToUserService(options: ForwardFormDataOptions): Promise<NextResponse> {
     const { path, method, formData, authHeader, fallbackError, logLabel } = options;
 
@@ -125,6 +158,7 @@ export async function forwardFormDataToUserService(options: ForwardFormDataOptio
         const backendRes = await fetch(`${SERVICE_URLS.USER_SERVICE}${path}`, {
             method,
             headers: {
+                // Lưu ý: Ko set Content-Type khi gửi FormData để Fetch tự generate Boundary
                 ...(authHeader ? { Authorization: authHeader } : {}),
             },
             body: formData,
@@ -143,7 +177,7 @@ export async function forwardFormDataToUserService(options: ForwardFormDataOptio
     } catch (error) {
         console.error(`${logLabel} Proxy Error:`, error);
         return NextResponse.json(
-            { error: "Internal Server Error" },
+            { error: "Lỗi kết nối máy chủ dịch vụ" },
             { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
         );
     }

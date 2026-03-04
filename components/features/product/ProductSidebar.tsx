@@ -1,5 +1,12 @@
 "use client"
 
+/**
+ * Thành phần Thanh bên Danh mục (Product Sidebar Component)
+ * 
+ * Hiển thị cột bên trái của trang danh sách sản phẩm, chứa các mục điều hướng
+ * theo danh mục thiết bị (Laptop, Điện thoại, Phụ kiện), và các khu vực đặc biệt
+ * (Bán chạy, Khuyến mãi...).
+ */
 import { Laptop, Smartphone, Tablet, Watch, Headphones, MoreHorizontal, Flame, Trophy, Music } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -12,36 +19,39 @@ interface Category {
 }
 
 export function ProductSidebar() {
+  /** Danh sách các danh mục chính */
   const categories: Category[] = [
-    { id: "laptop", name: "Laptop", icon: <Laptop className="h-5 w-5" />, isActive: true },
-    { id: "phone", name: "Phone", icon: <Smartphone className="h-5 w-5" /> },
-    { id: "tablet", name: "Tablet", icon: <Tablet className="h-5 w-5" /> },
-    { id: "accessories", name: "Accessories", icon: <Headphones className="h-5 w-5" /> },
-    { id: "smartwatch", name: "Smart Watch", icon: <Watch className="h-5 w-5" /> },
-    { id: "phonehead", name: "Phonehead", icon: <Headphones className="h-5 w-5" /> },
-    { id: "others", name: "Others", icon: <MoreHorizontal className="h-5 w-5" /> },
+    { id: "laptop", name: "Máy tính xách tay", icon: <Laptop className="h-5 w-5" />, isActive: true },
+    { id: "phone", name: "Điện thoại", icon: <Smartphone className="h-5 w-5" /> },
+    { id: "tablet", name: "Máy tính bảng", icon: <Tablet className="h-5 w-5" /> },
+    { id: "accessories", name: "Phụ kiện", icon: <Headphones className="h-5 w-5" /> },
+    { id: "smartwatch", name: "Đồng hồ thông minh", icon: <Watch className="h-5 w-5" /> },
+    { id: "phonehead", name: "Tai nghe", icon: <Headphones className="h-5 w-5" /> },
+    { id: "others", name: "Khác", icon: <MoreHorizontal className="h-5 w-5" /> },
   ]
 
+  /** Danh sách các mục đặc biệt ở trên cùng */
   const specialSections = [
-    { id: "hot", name: "Hot sales", icon: <Flame className="h-5 w-5" />, color: "bg-blue-100 text-blue-700" },
-    { id: "best", name: "Best Seller", icon: <Trophy className="h-5 w-5" />, color: "bg-blue-100 text-blue-700" },
+    { id: "hot", name: "Khuyến mãi Hot", icon: <Flame className="h-5 w-5" />, color: "bg-blue-100 text-blue-700" },
+    { id: "best", name: "Bán chạy nhất", icon: <Trophy className="h-5 w-5" />, color: "bg-blue-100 text-blue-700" },
   ]
 
+  /** Danh sách các mục tĩnh ở dưới cùng */
   const bottomSections = [
     { id: "hot-bottom", name: "Hot", icon: <Laptop className="h-5 w-5" />, color: "bg-blue-100" },
     { id: "sale", name: "Sale", icon: <Trophy className="h-5 w-5" />, color: "bg-pink-50" },
-    { id: "new", name: "New", icon: <Music className="h-5 w-5" />, color: "bg-gray-50" },
+    { id: "new", name: "Mới", icon: <Music className="h-5 w-5" />, color: "bg-gray-50" },
   ]
 
   return (
     <div className="space-y-8 w-full md:w-64 shrink-0">
-      {/* Special Sections */}
+      {/* Khối Đặc biệt (Khuyến mãi/Bán chạy) */}
       <div className="space-y-2">
         {specialSections.map((section) => (
           <div
             key={section.id}
             className={cn(
-              "flex items-center gap-3 rounded-xl px-4 py-3 font-semibold transition-colors cursor-pointer",
+              "flex items-center gap-3 rounded-xl px-4 py-3 font-semibold transition-colors cursor-pointer hover:opacity-80",
               section.color
             )}
           >
@@ -51,7 +61,7 @@ export function ProductSidebar() {
         ))}
       </div>
 
-      {/* Categories */}
+      {/* Khối Danh mục chính */}
       <div className="space-y-2 bg-orange-50/50 p-4 rounded-2xl">
         {categories.map((category) => (
           <div
@@ -67,13 +77,13 @@ export function ProductSidebar() {
         ))}
       </div>
 
-      {/* Bottom Sections */}
+      {/* Khối Mục ở dưới cùng */}
       <div className="space-y-2">
         {bottomSections.map((section) => (
           <div
             key={section.id}
             className={cn(
-              "flex items-center justify-between rounded-xl px-4 py-3 font-medium transition-colors cursor-pointer",
+              "flex items-center justify-between rounded-xl px-4 py-3 font-medium transition-colors cursor-pointer hover:opacity-80",
               section.color
             )}
           >

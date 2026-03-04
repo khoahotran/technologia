@@ -1,3 +1,9 @@
+/**
+ * Các thành phần Phân trang (Pagination Components)
+ * 
+ * Cung cấp giao diện điều hướng qua các trang dữ liệu (danh sách sản phẩm, tin tức...).
+ * Được tối ưu hóa cho cả thiết bị di động và máy tính.
+ */
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -5,10 +11,11 @@ import {
 } from "lucide-react"
 import * as React from "react"
 
-import type { Button} from "@/components/ui/button";
+import type { Button } from "@/components/ui/button";
 import { buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
+/** Thành phần bao bọc ngoài cùng cho hệ thống phân trang (thẻ <nav>) */
 function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
   return (
     <nav
@@ -21,6 +28,7 @@ function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
   )
 }
 
+/** Danh sách chứa các liên kết phân trang (thẻ <ul>) */
 function PaginationContent({
   className,
   ...props
@@ -34,6 +42,7 @@ function PaginationContent({
   )
 }
 
+/** Đại diện cho một ô/vị trí đơn lẻ trong dãy phân trang (thẻ <li>) */
 function PaginationItem({ ...props }: React.ComponentProps<"li">) {
   return <li data-slot="pagination-item" {...props} />
 }
@@ -43,6 +52,7 @@ type PaginationLinkProps = {
 } & Pick<React.ComponentProps<typeof Button>, "size"> &
   React.ComponentProps<"a">
 
+/** Liên kết chuyển hướng trang cụ thể */
 function PaginationLink({
   className,
   isActive,
@@ -66,40 +76,43 @@ function PaginationLink({
   )
 }
 
+/** Nút điều hướng về Trang Trước (Previous) */
 function PaginationPrevious({
   className,
   ...props
 }: React.ComponentProps<typeof PaginationLink>) {
   return (
     <PaginationLink
-      aria-label="Go to previous page"
+      aria-label="Về trang trước"
       size="default"
       className={cn("gap-1 px-2.5 sm:pl-2.5", className)}
       {...props}
     >
       <ChevronLeftIcon />
-      <span className="hidden sm:block">Previous</span>
+      <span className="hidden sm:block">Trước</span>
     </PaginationLink>
   )
 }
 
+/** Nút điều hướng sang Trang Sau (Next) */
 function PaginationNext({
   className,
   ...props
 }: React.ComponentProps<typeof PaginationLink>) {
   return (
     <PaginationLink
-      aria-label="Go to next page"
+      aria-label="Sang trang sau"
       size="default"
       className={cn("gap-1 px-2.5 sm:pr-2.5", className)}
       {...props}
     >
-      <span className="hidden sm:block">Next</span>
+      <span className="hidden sm:block">Sau</span>
       <ChevronRightIcon />
     </PaginationLink>
   )
 }
 
+/** Hiển thị dấu ba chấm (...) khi có quá nhiều trang */
 function PaginationEllipsis({
   className,
   ...props
@@ -112,7 +125,7 @@ function PaginationEllipsis({
       {...props}
     >
       <MoreHorizontalIcon className="size-4" />
-      <span className="sr-only">More pages</span>
+      <span className="sr-only">Thêm trang khác</span>
     </span>
   )
 }

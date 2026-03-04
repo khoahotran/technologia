@@ -1,5 +1,11 @@
 "use client"
 
+/**
+ * Thành phần Ô đánh dấu (Checkbox Component)
+ * 
+ * Được xây dựng trên nền tảng `@radix-ui/react-checkbox`.
+ * Cho phép người dùng chọn hoặc hủy chọn một tùy chọn nhị phân (Đúng/Sai).
+ */
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox"
 import { CheckIcon } from "lucide-react"
 import * as React from "react"
@@ -19,6 +25,7 @@ function Checkbox({
       )}
       {...props}
     >
+      {/* Chỉ hiển thị dấu Check khi trạng thái checked được kích hoạt */}
       <CheckboxPrimitive.Indicator
         data-slot="checkbox-indicator"
         className="grid place-content-center text-current transition-none"

@@ -196,9 +196,9 @@ export function mapError(error: unknown, context?: string): AppError {
 }
 
 /**
- * Map HTTP response error to domain error
+ * Ánh xạ lỗi phản hồi HTTP sang lỗi Domain.
  *
- * Expects backend error response structure
+ * Yêu cầu cấu trúc phản hồi lỗi từ Backend phải khớp với BackendErrorResponse.
  *
  * @example
  * const response = await fetch(...);
@@ -212,34 +212,34 @@ export function mapHttpError(
   errorData: unknown,
   context?: string
 ): AppError {
-  // Parse error response
+  // Phân tích dữ liệu phản hồi lỗi
   const errorResponse = errorData as BackendErrorResponse | null;
   const message = errorResponse?.message || extractErrorMessage(errorData);
 
-  // Log error
+  // Ghi log lỗi
   logger.error(`HTTP error ${statusCode}${context ? ` in ${context}` : ''}`, {
     statusCode,
     message,
     details: errorResponse?.details,
   });
 
-  // Map to domain error
+  // Ánh xạ sang lỗi domain tương ứng
   return mapHttpStatusToError(statusCode, message, errorResponse?.details);
 }
 
 /**
- * Check if error is retryable
+ * Kiểm tra xem một lỗi có thể thử lại được hay không (Retryable).
  *
- * Non-retryable:
- * - Authentication errors (401, token expired)
- * - Validation errors (400, field validation)
- * - Not found errors (404)
- * - Forbidden errors (403)
+ * Không thể thử lại:
+ * - Lỗi xác thực (401, token hết hạn)
+ * - Lỗi validation (400, dữ liệu không hợp lệ)
+ * - Lỗi không tìm thấy (404)
+ * - Lỗi bị cấm truy cập (403)
  *
- * Retryable:
- * - Network errors
- * - Timeout errors
- * - Server errors (5xx)
+ * Có thể thử lại:
+ * - Lỗi mạng (Network errors)
+ * - Lỗi quá thời gian (Timeout errors)
+ * - Lỗi máy chủ (5xx)
  *
  * @example
  * if (shouldRetryError(error)) {
@@ -249,32 +249,32 @@ export function mapHttpError(
 export function shouldRetryError(error: AppError | unknown): boolean {
   const appError = isAppError(error) ? error : mapError(error);
 
-  // Never retry auth errors
+  // Không bao giờ thử lại lỗi Auth
   if (appError instanceof AuthenticationError || appError instanceof TokenExpiredError) {
     return false;
   }
 
-  // Never retry validation errors
+  // Không bao giờ thử lại lỗi Validation
   if (appError instanceof ValidationError) {
     return false;
   }
 
-  // Never retry not found/forbidden
+  // Không bao giờ thử lại lỗi 404 hoặc 403
   if (appError instanceof NotFoundError || appError instanceof ForbiddenError) {
     return false;
   }
 
-  // Always retry network/timeout
+  // Luôn luôn thử lại nếu là lỗi mạng hoặc timeout
   if (appError instanceof NetworkError || appError instanceof TimeoutError) {
     return true;
   }
 
-  // Retry server errors (5xx)
+  // Thử lại nếu là lỗi Server (5xx)
   return appError.statusCode >= 500;
 }
 
 /**
- * Check if error is network-related
+ * Kiểm tra xem lỗi có liên quan đến đường truyền mạng hay không.
  */
 export function isNetworkError(error: unknown): boolean {
   const appError = isAppError(error) ? error : mapError(error);
@@ -282,7 +282,7 @@ export function isNetworkError(error: unknown): boolean {
 }
 
 /**
- * Check if error is auth-related
+ * Kiểm tra xem lỗi có liên quan đến trạng thái đăng nhập/xác thực hay không.
  */
 export function isAuthError(error: unknown): boolean {
   const appError = isAppError(error) ? error : mapError(error);
@@ -290,14 +290,14 @@ export function isAuthError(error: unknown): boolean {
 }
 
 /**
- * Check if error is validation-related
+ * Kiểm tra xem lỗi có phải do dữ liệu đầu vào không hợp lệ hay không.
  */
 export function isValidationError(error: unknown): boolean {
   return error instanceof ValidationError;
 }
 
 /**
- * Extract field-level validation errors
+ * Trích xuất các lỗi theo từng trường dữ liệu cho Form UI.
  *
  * @example
  * const fieldErrors = extractFieldErrors(error);
@@ -311,48 +311,50 @@ export function extractFieldErrors(error: unknown): Record<string, string[]> {
 }
 
 /**
- * Convert error to user-friendly message
+ * Chuyển đổi lỗi sang thông báo thân thiện với người dùng cuối.
  *
- * For UI display, hiding implementation details
+ * Dùng để hiển thị lên giao diện (Toast/Alert), ẩn đi các chi tiết kỹ thuật phức tạp.
  */
 export function getErrorMessageForUI(error: AppError | unknown): string {
   const appError = isAppError(error) ? error : mapError(error);
 
-  // Specific messages by error type
+  // Thông điệp cụ thể cho từng loại lỗi
   if (appError instanceof NetworkError) {
-    return 'Unable to connect to server. Please check your internet connection.';
+    return 'Không thể kết nối máy chủ. Vui lòng kiểm tra đường truyền internet.';
   }
 
   if (appError instanceof TimeoutError) {
-    return 'Request took too long. Please try again.';
+    return 'Yêu cầu tốn quá nhiều thời gian. Vui lòng thử lại sau.';
   }
 
   if (appError instanceof AuthenticationError) {
-    return 'Your session has expired. Please log in again.';
+    return 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.';
   }
 
   if (appError instanceof ForbiddenError) {
-    return 'You do not have permission to perform this action.';
+    return 'Bạn không có quyền thực hiện hành động này.';
   }
 
   if (appError instanceof NotFoundError) {
-    return 'The requested resource was not found.';
+    return 'Tài nguyên được yêu cầu không tồn tại.';
   }
 
   if (appError instanceof ServerError) {
-    return 'Server error. Please try again later.';
+    return 'Hệ thống đang gặp trục trặc kỹ thuật. Vui lòng thử lại sau.';
   }
 
   if (appError instanceof ValidationError) {
-    return appError.message || 'Please check your input and try again.';
+    return appError.message || 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.';
   }
 
-  // Default message
-  return appError.message || 'An unexpected error occurred. Please try again.';
+  // Thông báo mặc định
+  return appError.message || 'Đã xảy ra lỗi không xác định. Vui lòng thử lại.';
 }
 
 /**
- * Create typed error handler factory
+ * Nhà máy khởi tạo trình xử lý lỗi theo kiểu (Typed Error Handler Factory)
+ * 
+ * Giúp tạo ra một hàm xử lý lỗi tập trung, phân nhánh theo từng loại lỗi domain.
  *
  * @example
  * const handleProductError = createErrorHandler({

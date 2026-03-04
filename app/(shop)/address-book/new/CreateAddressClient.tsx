@@ -12,6 +12,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { addCheckoutAddress } from "@/lib/checkout-flow";
 
+/**
+ * Kiểu dữ liệu lưu trữ trạng thái của biểu mẫu tạo địa chỉ.
+ */
 interface AddressFormState {
     firstName: string;
     lastName: string;
@@ -38,6 +41,12 @@ const INITIAL_FORM: AddressFormState = {
     isDefault: false,
 };
 
+/**
+ * Giao diện Tạo Địa chỉ Mới (Create Address Client)
+ * 
+ * Hiển thị biểu mẫu cho phép người dùng nhập thông tin địa chỉ giao hàng mới.
+ * Thông tin sẽ được thu thập, xác thực cơ bản, và lưu thông qua hàm `addCheckoutAddress`.
+ */
 export default function CreateAddressClient() {
     const router = useRouter();
     const [form, setForm] = useState<AddressFormState>(INITIAL_FORM);

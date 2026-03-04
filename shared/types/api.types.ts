@@ -1,16 +1,16 @@
 /**
- * API Response Types
- * Centralized type definitions for API responses
+ * Lớp kiểu dữ liệu API (API Response Types)
+ * Tập trung các định nghĩa kiểu dữ liệu chuẩn (Type Definitions) dùng chung cho luồng gửi / nhận API.
  */
 
-// Generic API Response wrapper
+// Khuôn mẫu phản hồi chung (Generic API Response wrapper) cho đa số API
 export interface ApiResponse<T> {
     status: number;
     data: T;
     message: string;
 }
 
-// Paginated Response for list endpoints
+// Khuôn mẫu phản hồi có Phân trang (Paginated Response) dành cho các API danh sách
 export interface PaginatedResponse<T> {
     status: number;
     page_number: number;
@@ -21,7 +21,7 @@ export interface PaginatedResponse<T> {
     message: string;
 }
 
-// API Error structure
+// Cấu trúc lỗi chuẩn trả về từ API
 export interface ApiError {
     status: number;
     message: string;
@@ -29,31 +29,31 @@ export interface ApiError {
     timestamp?: string;
 }
 
-// Route context for Next.js API routes
+// Giao diện (Context) cho các Route trên Next.js App Router (Backend)
 export interface RouteContext<T extends Record<string, string> = Record<string, string>> {
     params: Promise<T>;
 }
 
-// HTTP Methods
+// Các phương thức HTTP hợp lệ
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
-// Request config for API calls
+// Cấu hình tham số cho mỗi lần gọi API
 export interface RequestConfig {
     method?: HttpMethod;
     headers?: Record<string, string>;
     body?: unknown;
-    params?: Record<string, string | number | undefined>;
+    params?: Record<string, string | number | undefined>; // Query parameters
     timeout?: number;
 }
 
-// Auth tokens structure
+// Cấu trúc của Tokens dùng để xác thực (Authentication)
 export interface AuthTokens {
     accessToken: string;
     refreshToken: string;
     userId?: number;
 }
 
-// Pagination params for queries
+// Tham số đầu vào cho một thao tác Phân trang khi gọi API
 export interface PaginationParams {
     page?: number;
     size?: number;

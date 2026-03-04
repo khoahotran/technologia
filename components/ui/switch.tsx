@@ -1,5 +1,11 @@
 "use client"
 
+/**
+ * Thành phần Công tắc (Switch Component)
+ * 
+ * Được xây dựng trên nền tảng `@radix-ui/react-switch`.
+ * Một dạng nút trượt dùng để chuyển đổi trạng thái Bật/Tắt (Toggle) một tính năng nào đó.
+ */
 import * as SwitchPrimitive from "@radix-ui/react-switch"
 import * as React from "react"
 
@@ -18,6 +24,7 @@ function Switch({
       )}
       {...props}
     >
+      {/* Nút bấm (Thumb) di chuyển bên trong thanh gạt */}
       <SwitchPrimitive.Thumb
         data-slot="switch-thumb"
         className={cn(

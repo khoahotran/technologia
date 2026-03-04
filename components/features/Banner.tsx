@@ -1,5 +1,13 @@
 "use client"
 
+/**
+ * Thành phần Biểu ngữ Trang chủ (Banner Feature Component)
+ * 
+ * Hiển thị khu vực nổi bật nhất trên trang chủ, bao gồm:
+ * - Một Carousel lớn bên trái với các Slide khuyến mãi tự động trượt.
+ * - Hai biểu ngữ phụ nhỏ hơn bên phải.
+ * - Tích hợp Embla Carousel và Autoplay.
+ */
 import Autoplay from "embla-carousel-autoplay"
 import * as React from "react"
 
@@ -16,6 +24,7 @@ export default function Banner() {
   const [api, setApi] = React.useState<CarouselApi>()
   const [current, setCurrent] = React.useState(0)
 
+  // Kết nối API của Carousel để theo dõi Slide hiện tại 
   React.useEffect(() => {
     if (!api) {
       return
@@ -28,23 +37,24 @@ export default function Banner() {
     })
   }, [api])
 
+  /** Dữ liệu các Slide trong Carousel chính */
   const slides = [
     {
       id: 1,
-      title: "Desktop heading something here",
-      description: "Desktop heading something here",
+      title: "Ưu đãi công nghệ đỉnh cao",
+      description: "Sắm sửa thiết bị mới với mức giá cực kỳ hấp dẫn.",
       color: "bg-gray-100",
     },
     {
       id: 2,
-      title: "New Arrival Collection",
-      description: "Discover the latest trends in technology",
+      title: "Bộ sưu tập Hàng mới về",
+      description: "Khám phá những xu hướng công nghệ mới nhất hiện nay.",
       color: "bg-blue-50",
     },
     {
       id: 3,
-      title: "Special Offer Today",
-      description: "Get up to 50% off on selected items",
+      title: "Khuyến mãi đặc biệt hôm nay",
+      description: "Giảm giá lên đến 50% cho các sản phẩm chọn lọc.",
       color: "bg-pink-50",
     },
   ]
@@ -52,7 +62,7 @@ export default function Banner() {
   return (
     <section className="container mx-auto px-4 py-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-auto lg:h-[400px]">
-        {/* Main Carousel - Takes up 2/3 width on large screens */}
+        {/* 1. Carousel Chính - Chiếm 2/3 bề rộng trên màn hình lớn */}
         <div className="lg:col-span-2 h-full">
           <Carousel
             setApi={setApi}
@@ -75,12 +85,12 @@ export default function Banner() {
                           </p>
                           <div className="pt-4">
                             <Button size="lg" className="rounded-full px-8 bg-white text-gray-900 hover:bg-gray-50 border border-gray-200 shadow-sm">
-                              Button
+                              Khám phá ngay
                             </Button>
                           </div>
                         </div>
 
-                        {/* Carousel Indicators */}
+                        {/* Chỉ báo phân trang (Indicators) của Carousel */}
                         <div className="absolute bottom-8 left-12 flex gap-2 z-10">
                           {slides.map((_, index) => (
                             <div
@@ -99,36 +109,34 @@ export default function Banner() {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            {/* <CarouselPrevious className="left-4" />
-            <CarouselNext className="right-4" /> */}
           </Carousel>
         </div>
 
-        {/* Side Banners - Takes up 1/3 width on large screens */}
+        {/* 2. Các biểu ngữ phụ bên cạnh - Chiếm 1/3 bề rộng */}
         <div className="flex flex-col gap-6 h-full">
-          {/* Top Side Banner */}
+          {/* Biểu ngữ phụ phía trên */}
           <div className="flex-1 bg-blue-50 rounded-3xl p-8 flex flex-col justify-center relative overflow-hidden">
             <div className="z-10 space-y-2">
               <h3 className="text-xl font-bold text-gray-900 w-2/3">
-                Desktop heading something here
+                Giải pháp máy tính để bàn tối ưu
               </h3>
               <div className="pt-4">
                 <Button variant="outline" size="sm" className="bg-transparent border-blue-200 text-blue-600 hover:bg-blue-100 rounded-full px-6">
-                  Button X
+                  Xem thêm
                 </Button>
               </div>
             </div>
           </div>
 
-          {/* Bottom Side Banner */}
+          {/* Biểu ngữ phụ phía dưới */}
           <div className="flex-1 bg-white border border-gray-100 rounded-3xl p-8 flex flex-col justify-center relative overflow-hidden shadow-sm">
             <div className="z-10 space-y-2">
               <h3 className="text-xl font-bold text-gray-900 w-2/3">
-                Desktop heading something here
+                Phụ kiện âm thanh cao cấp
               </h3>
               <div className="pt-4">
                 <Button variant="outline" size="sm" className="bg-transparent border-gray-200 text-gray-600 hover:bg-gray-50 rounded-full px-6">
-                  Button X
+                  Mua ngay
                 </Button>
               </div>
             </div>

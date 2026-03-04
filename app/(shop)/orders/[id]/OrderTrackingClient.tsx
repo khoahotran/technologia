@@ -8,6 +8,17 @@ import { OrderCard } from "@/components/features/orders/OrderCard"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
+/**
+ * Thành phần Theo dõi Đơn hàng (Order Tracking Client)
+ * 
+ * Cho phép người dùng theo dõi chi tiết trạng thái của một đơn hàng cụ thể, bao gồm:
+ * - Dòng thời gian trạng thái (Timeline: Đã đặt, Đã thanh toán, Đang giao, Đã nhận).
+ * - Thông tin chi tiết các sản phẩm trong đơn.
+ * - Địa chỉ nhận hàng và thông tin thanh toán.
+ * - Các hành động tương ứng với trạng thái (Hủy đơn, Đã nhận hàng, Đánh giá).
+ * 
+ * @param id - Mã định danh đơn hàng từ Route Params
+ */
 export default function OrderTrackingClient({ id }: { id: string }) {
     const [orderId, setOrderId] = useState("")
 

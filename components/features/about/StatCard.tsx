@@ -1,9 +1,21 @@
+/**
+ * Thành phần Thẻ Thống kê (Stat Card Component)
+ * 
+ * Hiển thị một con số thống kê nổi bật kèm theo nhãn dãn và biểu tượng.
+ * Dùng nhiều trong phần giới thiệu về quy mô, thành tựu của công ty.
+ */
 import type { LucideIcon } from "lucide-react"
 
+import { cn } from "@/lib/utils"
+
 interface StatCardProps {
+  /** Giá trị thống kê (Ví dụ: "10K+", "50+") */
   value: string
+  /** Nhãn mô tả cho giá trị thống kê (Ví dụ: "Khách hàng", "Đối tác") */
   label: string
+  /** Biểu tượng minh họa từ thư viện lucide-react */
   icon: LucideIcon
+  /** Class CSS định dạng màu sắc cho biểu tượng */
   iconColor?: string
 }
 
@@ -19,8 +31,4 @@ export function StatCard({ value, label, icon: Icon, iconColor = "text-[#3E93B3]
       <p className="text-sm text-gray-700">{label}</p>
     </div>
   )
-}
-
-function cn(...classes: string[]) {
-  return classes.filter(Boolean).join(" ")
 }

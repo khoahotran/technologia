@@ -1,23 +1,23 @@
 /**
- * Application Layer — Use-Cases Index
+ * Tầng Ứng dụng (Application Layer) — Nơi xuất khẩu Use-Cases
  *
- * All use-cases are exported here for consumption by
- * the presentation layer (hooks, components, page handlers).
+ * Mọi Use-Cases (Kịch bản sử dụng) được tập hợp và xuất ra từ đây, 
+ * để tầng kết xuất (Presentation - giao diện, hooks, page handlers) có thể gọi.
  */
 
-// Product Use-Cases
+// Kịch bản thao tác liên quan đến Sản Phẩm
 export * from "./product";
 
-// Brand & Category Use-Cases
+// Kịch bản thao tác liên quan đến Thương Hiệu & Danh Mục
 export * from "./brand";
 export * from "./category";
 
-// Auth Use-Cases
+// Kịch bản Xác Thực Người Dùng
 export * from "./auth/login.use-case";
 export * from "./auth/logout.use-case";
 
-// Cart Use-Cases
+// Kịch bản Giỏ Hàng
 export * from "./cart/add-to-cart.use-case";
 
-// Checkout Use-Case (previously lib/checkout-flow)
+// Kịch bản Thanh Toán (Checkout)
 export * from "./checkout/checkout-flow.use-case";

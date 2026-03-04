@@ -1,30 +1,30 @@
 /**
- * TanStack Query Configuration Constants
- * Defines caching strategies for different data types
+ * Hằng số Cấu hình TanStack Query (Query Configuration Constants)
+ * Định nghĩa các chiến lược bộ nhớ đệm (caching) cho nhiều loại dữ liệu khác nhau.
  */
 
 export const QUERY_CONFIG = {
-    /** Dynamic data that changes frequently (Cart, User Status) */
+    /** Dữ liệu động thay đổi thường xuyên (Cart, User Status) */
     DYNAMIC: {
         staleTime: 0,
-        gcTime: 5 * 60 * 1000, // 5 minutes
+        gcTime: 5 * 60 * 1000, // 5 phút
     },
 
-    /** Standard data (Products, Orders) */
+    /** Dữ liệu tiêu chuẩn (Products, Orders) */
     STANDARD: {
-        staleTime: 5 * 60 * 1000, // 5 minutes
-        gcTime: 15 * 60 * 1000, // 15 minutes
+        staleTime: 5 * 60 * 1000, // 5 phút
+        gcTime: 15 * 60 * 1000, // 15 phút
     },
 
-    /** Static data that rarely changes (Brands, Categories, Config) */
+    /** Dữ liệu tĩnh hiếm khi thay đổi (Brands, Categories, Config) */
     STATIC: {
-        staleTime: 24 * 60 * 60 * 1000, // 24 hours
-        gcTime: 48 * 60 * 60 * 1000, // 48 hours
+        staleTime: 24 * 60 * 60 * 1000, // 24 giờ
+        gcTime: 48 * 60 * 60 * 1000, // 48 giờ
     },
 
-    /** Short term caching for UI states */
+    /** Bộ nhớ đệm ngắn hạn cho các trạng thái giao diện (UI) */
     UI: {
-        staleTime: 10 * 1000, // 10 seconds
-        gcTime: 60 * 1000, // 1 minute
+        staleTime: 10 * 1000, // 10 giây
+        gcTime: 60 * 1000, // 1 phút
     }
 } as const;

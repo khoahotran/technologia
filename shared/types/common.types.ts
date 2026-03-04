@@ -1,39 +1,42 @@
 /**
- * Common utility types used across the application
+ * Kiểu dữ liệu Tiện ích Chung (Common Utility Types)
+ * Được tái sử dụng xuyên suốt nhiều File trong toàn bộ dự án.
  */
 
-// Make all properties optional recursively
+// Biến tất cả các properties của một Đối tượng (Object) thành Tùy chọn (Optional) dựa theo đệ quy sâu.
 export type DeepPartial<T> = {
     [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
 };
 
-// Extract keys that have values of a specific type
+// Trích xuất tự động danh sách các Khóa (Keys) của Object `T` nếu thỏa mãn điều kiện mang giá trị thuộc kiểu `V`.
 export type KeysOfType<T, V> = {
     [K in keyof T]: T[K] extends V ? K : never;
 }[keyof T];
 
-// Nullable type helper
+// Có thể chứa giá trị Null
 export type Nullable<T> = T | null;
 
-// Optional type helper
+// Có thể chứa giá trị Undefined (không tồn tại / không ép buộc ghi)
 export type Optional<T> = T | undefined;
 
-// ID types for entities
+// Kiểu định danh gốc cho các Thực thể dùng chung (EntityId)
 export type EntityId = string | number;
 
-// Status types
+// Hỗ trợ hiển thị Trạng thái (Thường dùng cho Product / Item)
 export type Status = 'AVAILABLE' | 'UNAVAILABLE' | 'OUT_OF_STOCK' | 'DISCONTINUED';
 
-// Sort direction
+// Hướng sắp xếp (Tăng dần / Giảm dần)
 export type SortDirection = 'ASC' | 'DESC';
 
-// Callback function types
+// ===========================================
+// Hữu dụng cho các Type Function Truyền lại (Callbacks)
+// ===========================================
 export type VoidCallback = () => void;
 export type AsyncVoidCallback = () => Promise<void>;
 export type ValueCallback<T> = (value: T) => void;
 export type AsyncValueCallback<T> = (value: T) => Promise<void>;
 
-// Form state type
+// Kiểu dữ liệu đóng gói State của Form
 export interface FormState<T> {
     data: T;
     errors: Partial<Record<keyof T, string>>;
@@ -41,7 +44,7 @@ export interface FormState<T> {
     isValid: boolean;
 }
 
-// Loading state type
+// Kiểu dữ liệu đóng gói quá trình chờ Load Dữ liệu ở UI
 export interface LoadingState<T> {
     data: T | null;
     isLoading: boolean;

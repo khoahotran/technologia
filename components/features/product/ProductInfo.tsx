@@ -1,5 +1,12 @@
 "use client";
 
+/**
+ * Thành phần Thông tin Sản phẩm (Product Info Component)
+ * 
+ * Nằm ở nửa bên phải của trang chi tiết sản phẩm, hiển thị tên, giá,
+ * đánh giá, số lượng đã bán/xem, các tùy chọn phân loại (Màu sắc, Số lượng)
+ * và các nút thao tác như Thêm vào giỏ hàng (Buy Now), Yêu thích, Chia sẻ.
+ */
 import { Heart, Share2 } from "lucide-react";
 import { useState } from "react";
 
@@ -14,16 +21,27 @@ import { formatNumber } from "@/shared/utils/format";
 // ===========================================
 
 interface ProductInfoProps {
+  /** Tên sản phẩm */
   title: string;
+  /** Mã SKU (Mã lưu kho) */
   sku: string;
+  /** Giá bán hiện tại */
   price: number;
+  /** Giá niêm yết (Giá ban đầu) */
   originalPrice?: number;
+  /** Điểm đánh giá trung bình (Ví dụ: 4.5) */
   rating: number;
+  /** Tổng số lượt đánh giá */
   reviewCount: number;
+  /** Số lượng đã bán */
   soldCount: number;
+  /** Số lượt xem sản phẩm */
   viewCount: number;
+  /** Đoạn mô tả ngắn (Tùy chọn) */
   description?: string;
+  /** Sự kiện khi nhấn Thêm vào giỏ hàng hoặc Mua ngay */
   onAddToCart?: (quantity: number) => void;
+  /** Sự kiện khi nhấn Yêu thích */
   onAddToWishlist?: () => void;
 }
 
@@ -43,6 +61,7 @@ export function ProductInfo({
   onAddToCart,
   onAddToWishlist,
 }: ProductInfoProps) {
+  // Trạng thái lưu trữ số lượng muốn mua
   const [quantity, setQuantity] = useState(1);
 
   const handleBuyNow = () => {
@@ -51,7 +70,7 @@ export function ProductInfo({
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Title and Rating */}
+      {/* 1. Tiêu đề và Đánh giá */}
       <div>
         <h1 className="text-2xl md:text-3xl font-bold text-gray-900">
           {title}
@@ -59,13 +78,14 @@ export function ProductInfo({
         <div className="mt-2 flex items-center gap-4 text-sm text-gray-500">
           <span>SKU: {sku}</span>
           <div className="flex items-center gap-1">
+            {/* Hiển thị số sao thực tế bằng Component StarRating */}
             <StarRating rating={rating} size="sm" />
-            <span className="ml-1 text-gray-900">({reviewCount})</span>
+            <span className="ml-1 text-gray-900">({reviewCount} đánh giá)</span>
           </div>
         </div>
       </div>
 
-      {/* Price */}
+      {/* 2. Giá */}
       <PriceDisplay
         price={price}
         originalPrice={originalPrice}
@@ -73,26 +93,27 @@ export function ProductInfo({
         showDiscountPercent
       />
 
-      {/* Stats */}
+      {/* 3. Thống kê bán/xem */}
       <div className="flex gap-8 text-sm text-gray-500">
         <div className="flex items-center gap-2">
           <span className="font-medium text-gray-900">
             {formatNumber(soldCount)}
           </span>
-          Sold
+          Đã bán
         </div>
         <div className="flex items-center gap-2">
           <span className="font-medium text-gray-900">
             {formatNumber(viewCount)}
           </span>
-          Viewed
+          Lượt xem
         </div>
       </div>
 
-      {/* Options */}
+      {/* 4. Các tùy chọn cho khách hàng (Số lượng, Màu sắc...) */}
       <div className="space-y-4 border-t border-b border-gray-100 py-6">
+        {/* Số lượng */}
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-gray-900">Quantity</span>
+          <span className="text-sm font-medium text-gray-900">Số lượng</span>
           <QuantitySelector
             value={quantity}
             onChange={setQuantity}
@@ -101,52 +122,55 @@ export function ProductInfo({
           />
         </div>
 
-        {/* Color Options */}
+        {/* Màu sắc (Demo giao diện tĩnh) */}
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-gray-900">Color</span>
+          <span className="text-sm font-medium text-gray-900">Màu sắc</span>
           <div className="flex gap-2">
             <button
               type="button"
               className="h-6 w-6 rounded-full bg-black ring-2 ring-offset-1 ring-gray-300 cursor-pointer focus:outline-none focus:ring-primary"
-              aria-label="Select black color"
+              aria-label="Chọn màu đen"
             />
             <button
               type="button"
               className="h-6 w-6 rounded-full bg-blue-500 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
-              aria-label="Select blue color"
+              aria-label="Chọn màu xanh"
             />
             <button
               type="button"
               className="h-6 w-6 rounded-full bg-white border border-gray-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
-              aria-label="Select white color"
+              aria-label="Chọn màu trắng"
             />
           </div>
         </div>
       </div>
 
-      {/* Actions */}
+      {/* 5. Các nút Thao tác chính */}
       <div className="flex gap-4">
+        {/* Nút thanh toán/mua */}
         <Button
           className="flex-1 h-12 rounded-full text-base font-semibold"
           size="lg"
           onClick={handleBuyNow}
         >
-          Buy now
+          Mua ngay
         </Button>
+        {/* Nút thêm vào WL */}
         <Button
           variant="outline"
           size="icon"
           className="h-12 w-12 rounded-full border-gray-200"
           onClick={onAddToWishlist}
-          aria-label="Add to wishlist"
+          aria-label="Thêm vào danh sách yêu thích"
         >
           <Heart className="h-5 w-5" />
         </Button>
+        {/* Nút chia sẻ */}
         <Button
           variant="outline"
           size="icon"
           className="h-12 w-12 rounded-full border-gray-200"
-          aria-label="Share product"
+          aria-label="Chia sẻ sản phẩm"
         >
           <Share2 className="h-5 w-5" />
         </Button>

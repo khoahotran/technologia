@@ -14,6 +14,15 @@ import { AuthRepository } from "@/infrastructure/repositories/auth/auth.reposito
 import { UserRepository } from "@/infrastructure/repositories/user/user.repository"
 import { AuthContext } from "@/shared/providers/auth.provider"
 
+/**
+ * Giao diện Đăng nhập (Login Client View)
+ * 
+ * Hiển thị form đăng nhập và xử lý logic xác thực người dùng:
+ * - Đăng nhập bằng tài khoản (Username/Password)
+ * - Đăng nhập bằng Google (Google OAuth)
+ * - Xử lý thông báo lỗi (Unauthorized, token expired, ...)
+ * - Lưu trữ token vào local storage và cập nhật AuthContext.
+ */
 export default function LoginClient() {
     const router = useRouter()
     const auth = useContext(AuthContext)

@@ -17,6 +17,8 @@ export const useProduct = () => {
      * Lấy sản phẩm có phân trang cơ bản 
      * @param page Chỉ mục trang
      * @param size Số sản phẩm mỗi trang
+     * @param sortBy Sắp xếp theo trường dữ liệu nào
+     * @param sortDirection Chiều sắp xếp (ASC tăng dần/ DESC giảm dần)
      */
     getPaged: (
       page: number,
@@ -28,10 +30,14 @@ export const useProduct = () => {
     /** 
      * Tìm kiếm nâng cao kết hợp bộ lọc (Brand, Category, Giá, Query văn bản)
      * Đây là method chính cho trang danh sách sản phẩm.
+     * @param params Object chứa tất cả các tham số lọc và tìm kiếm cần thiết
      */
     searchAndFilter: (params: ProductSearchParams) => productRepository.searchAndFilter(params),
 
-    /** Tìm chi tiết một sản phẩm cụ thể theo ID hoặc Slug */
+    /** 
+     * Tìm chi tiết một sản phẩm cụ thể theo ID hoặc Slug 
+     * @param id ID của sản phẩm
+     */
     getById: (id: string | number) => productRepository.getById(id),
   };
 };

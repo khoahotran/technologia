@@ -12,10 +12,19 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserProfileDto, UpdateProfileDto } from "@/domain/user/dto/profile.dto";
 import { UserRepository } from "@/infrastructure/repositories/user/user.repository";
-import { authStorage } from "@/lib/storage";
-import { useAuth } from "@/presentation/hooks/use-auth.hook";
+import { authStorage } from "@/infrastructure/persistence/storage";
+import { useAuth } from "@/presentation/hooks/use-auth";
 
-
+/**
+ * Giao diện Hồ sơ Người dùng (Profile Page)
+ * 
+ * Hiển thị và quản lý thông tin cá nhân của người dùng đã đăng nhập.
+ * Các tính năng bao gồm:
+ * - Xem và chỉnh sửa thông tin cá nhân (Tên, số điện thoại, ...).
+ * - Cập nhật ảnh đại diện (Avatar).
+ * - Đổi mật khẩu.
+ * - Bảo vệ route bằng cách kiểm tra trạng thái xác thực.
+ */
 export default function ProfilePage() {
     const { isAuthenticated } = useAuth();
     const router = useRouter();

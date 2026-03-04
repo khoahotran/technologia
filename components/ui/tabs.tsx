@@ -1,10 +1,18 @@
 "use client"
 
+/**
+ * Các thành phần Phân thẻ (Tabs Components)
+ * 
+ * Được xây dựng trên nền tảng `@radix-ui/react-tabs`.
+ * Dùng để chia tách nội dung thành các phần có thể chuyển đổi qua lại nhanh chóng 
+ * mà không cần tải lại trang.
+ */
 import * as TabsPrimitive from "@radix-ui/react-tabs"
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+/** Gốc của hệ thống Tabs, quản lý giá trị tab đang được kích hoạt */
 function Tabs({
   className,
   ...props
@@ -18,6 +26,7 @@ function Tabs({
   )
 }
 
+/** Danh sách chứa các nút bấm chuyển Tab (Trigger list) */
 function TabsList({
   className,
   ...props
@@ -34,6 +43,7 @@ function TabsList({
   )
 }
 
+/** Nút bấm đại diện cho một Tab duy nhất */
 function TabsTrigger({
   className,
   ...props
@@ -50,6 +60,7 @@ function TabsTrigger({
   )
 }
 
+/** Nội dung tương ứng sẽ hiển thị khi Tab được chọn */
 function TabsContent({
   className,
   ...props

@@ -1,5 +1,11 @@
 "use client";
 
+/**
+ * Thành phần Thẻ Sản phẩm (Product Card Component)
+ * 
+ * Hiển thị thông tin tóm tắt của một sản phẩm bao gồm hình ảnh, tên, giá, và đánh giá.
+ * Hỗ trợ nhiều biến thể: mặc định, nhỏ gọn (compact), và có thể chọn (selectable).
+ */
 import { Check, ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -16,25 +22,25 @@ import { cn } from "@/lib/utils";
 // ===========================================
 
 interface ProductCardProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "id"> {
-  /** Product ID for navigation */
+  /** ID sản phẩm phục vụ điều hướng */
   id?: string | number | undefined;
-  /** Product title */
+  /** Tiêu đề / Tên sản phẩm */
   title: string;
-  /** Formatted price string */
+  /** Giá sản phẩm (Chuỗi đã được định dạng) */
   price: string;
-  /** Rating out of 5 */
+  /** Điểm đánh giá (0-5) */
   rating?: number | undefined;
-  /** Product image URL */
+  /** URL hình ảnh sản phẩm */
   image?: string | undefined;
-  /** Card variant */
+  /** Biến thể hiển thị (default: chuẩn, compact: hàng ngang, selectable: có ô chọn) */
   variant?: "default" | "compact" | "selectable" | undefined;
-  /** Whether card is selected (for selectable variant) */
+  /** Trạng thái đang được chọn (dùng cho variant selectable) */
   isSelected?: boolean | undefined;
-  /** Callback when card is selected */
+  /** Sự kiện khi nhấn vào ô chọn */
   onSelect?: (() => void) | undefined;
-  /** Badge text (e.g., "Sale", "New") */
+  /** Văn bản hiển thị trên huy hiệu (VD: "Giảm giá", "Mới") */
   badge?: string | undefined;
-  /** Callback when add to cart is clicked */
+  /** Sự kiện khi nhấn nút Thêm vào giỏ hàng */
   onAddToCart?: (() => void) | undefined;
 }
 
@@ -42,6 +48,9 @@ interface ProductCardProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "i
 // Component
 // ===========================================
 
+/**
+ * Thành phần ProductCard
+ */
 export function ProductCard({
   className,
   id,
@@ -58,6 +67,7 @@ export function ProductCard({
 }: ProductCardProps) {
   const router = useRouter();
 
+  /** Chuyển hướng sang trang chi tiết khi nhấn nút hoặc nhấn vào thẻ */
   const handleDetailsClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (id) {
@@ -65,6 +75,7 @@ export function ProductCard({
     }
   };
 
+  /** Xử lý thêm vào giỏ hàng */
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
     onAddToCart?.();
@@ -75,12 +86,12 @@ export function ProductCard({
       className={cn(
         "relative overflow-hidden transition-all duration-300 hover:shadow-lg",
         "bg-white border-transparent hover:border-primary/20 pt-0",
-        isSelected && "ring-2 ring-primary border-primary",
+        isSelected && "ring-2 ring-primary border-primary", // Hiển thị viền nhấn mạnh nếu đang được chọn
         className
       )}
       {...props}
     >
-      {/* Badge */}
+      {/* 1. Huy hiệu (Badge) - Góc trên bên phải */}
       {badge && variant === "default" && (
         <div className="absolute top-3 right-3 z-10">
           <Badge variant="secondary" className="font-semibold rounded-full px-3">
@@ -89,7 +100,7 @@ export function ProductCard({
         </div>
       )}
 
-      {/* Selection Checkbox */}
+      {/* 2. Ô chọn (Selection Checkbox) - Góc trên bên trái */}
       {(variant === "selectable" || isSelected !== undefined) && (
         <button
           type="button"
@@ -105,7 +116,7 @@ export function ProductCard({
           onClick={onSelect}
         >
           {isSelected && <Check className="h-3.5 w-3.5" />}
-          <span className="sr-only">Select {title}</span>
+          <span className="sr-only">Chọn {title}</span>
         </button>
       )}
 
@@ -115,7 +126,7 @@ export function ProductCard({
           variant === "compact" && "flex-row items-center p-4 gap-4"
         )}
       >
-        {/* Product Image */}
+        {/* 3. Hình ảnh Sản phẩm */}
         {variant !== "compact" && (
           <div className="aspect-square w-full bg-muted/30 flex items-center justify-center relative group p-6">
             {image ? (
@@ -127,6 +138,7 @@ export function ProductCard({
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
               />
             ) : (
+              // Trạng thái dự phòng khi không có ảnh
               <div className="w-full h-full flex items-center justify-center text-muted-foreground/20">
                 <div className="w-16 h-16 rounded-full bg-muted/30" />
               </div>
@@ -134,7 +146,7 @@ export function ProductCard({
           </div>
         )}
 
-        {/* Product Info */}
+        {/* 4. Thông tin Sản phẩm (Tên, Đánh giá, Giá) */}
         <div className={cn("flex flex-col flex-1", variant !== "compact" && "p-5")}>
           <div className="mb-2">
             <h3 className="font-bold text-lg leading-tight line-clamp-2 text-foreground group-hover:text-primary transition-colors min-h-[2.5em]">
@@ -143,7 +155,7 @@ export function ProductCard({
           </div>
 
           <div className="mt-auto">
-            {/* Star Rating - Using shared component */}
+            {/* Đánh giá sao */}
             <div className="mb-2">
               <StarRating
                 rating={rating}
@@ -153,28 +165,30 @@ export function ProductCard({
               />
             </div>
 
-            {/* Price and Action */}
+            {/* Giá và các nút hành động */}
             <div className="flex items-center justify-between">
               <span className="text-xl font-bold text-primary">{price}</span>
 
               {variant === "default" && (
                 <div className="flex items-center gap-2">
+                  {/* Nút thêm nhanh vào giỏ */}
                   {onAddToCart && (
                     <Button
                       size="icon"
                       variant="outline"
                       className="h-9 w-9 rounded-full border-primary/30 text-primary hover:bg-primary/10"
                       onClick={handleAddToCart}
-                      aria-label={`Add ${title} to cart`}
+                      aria-label={`Thêm ${title} vào giỏ hàng`}
                     >
                       <ShoppingCart className="h-4 w-4" />
                     </Button>
                   )}
+                  {/* Nút Xem chi tiết */}
                   <Button
                     className="bg-primary hover:bg-primary/90 text-white shadow-none rounded-full px-6 h-9 font-medium"
                     onClick={handleDetailsClick}
                   >
-                    Details
+                    Chi tiết
                   </Button>
                 </div>
               )}

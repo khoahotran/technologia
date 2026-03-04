@@ -1,12 +1,12 @@
 /**
- * Cart Repository
+ * Triển khai Cart Repository (Cart Repository Implementation)
  *
- * Implements ICartRepository with unified HTTP client.
- * Handles:
- * - Cart retrieval and pagination
- * - Add/remove/increase/decrease cart items
- * - Cart price calculation
- * - Automatic response validation
+ * Triển khai `ICartRepository` sử dụng HTTP client thống nhất (fetchWithToken).
+ * Chịu trách nhiệm cho tất cả các thao tác liên quan đến giỏ hàng:
+ * - Lấy danh sách giỏ hàng (có và không có phân trang)
+ * - Thêm / Xóa / Tăng / Giảm số lượng sản phẩm trong giỏ
+ * - Tính toán tổng giá trị
+ * - Tự động xác thực dữ liệu Response
  */
 
 import { fetchWithToken } from "@/infrastructure/http";
@@ -31,6 +31,7 @@ import { createScopedLogger } from "@/lib/logger";
 
 const logger = createScopedLogger('CartRepository');
 
+/** Giỏ hàng rỗng - trả về khi API lỗi hoặc chưa có dữ liệu */
 const EMPTY_CART: CartMap = { cartItems: [] };
 
 // ===========================================
@@ -38,7 +39,9 @@ const EMPTY_CART: CartMap = { cartItems: [] };
 // ===========================================
 
 /**
- * Extract cart data from API response
+ * Trích xuất dữ liệu CartMap từ response API đơn (không phân trang)
+ * @param response Response thô từ API
+ * @returns CartMap hoặc giỏ hàng rỗng nếu parse thất bại
  */
 function extractCartData(response: unknown): CartMap {
     try {
@@ -51,7 +54,9 @@ function extractCartData(response: unknown): CartMap {
 }
 
 /**
- * Extract cart data from paginated listing response
+ * Trích xuất dữ liệu CartMap từ response API phân trang
+ * @param response Response thô từ API (dạng danh sách)
+ * @returns CartMap hoặc giỏ hàng rỗng nếu parse thất bại
  */
 function extractCartDataFromList(response: unknown): CartMap {
     try {
@@ -77,6 +82,7 @@ export const CartRepository: ICartRepository = {
     /**
      * Lấy danh sách giỏ hàng kèm phân trang
      * Dùng khi giỏ hàng có quá nhiều mục và cần hiển thị từng trang.
+     * @param params Tham số phân trang (page, size, sortBy, sortDir)
      */
     async getCartWithPaging(params: CartPagingParams = {}): Promise<CartMap> {
         logger.debug('Fetching cart with paging', params as any);
@@ -110,6 +116,7 @@ export const CartRepository: ICartRepository = {
 
     /**
      * Thêm sản phẩm vào giỏ hàng
+     * @param payload Dữ liệu gồm productId, quantity và các tùy chọn variant
      */
     async addToCart(payload: AddToCartPayload) {
         logger.debug('Adding to cart', payload as any);
@@ -126,6 +133,7 @@ export const CartRepository: ICartRepository = {
 
     /**
      * Tăng số lượng của một mục trong giỏ hàng lên 1 unit
+     * @param cartItemId Mã định danh của mục giỏ hàng cần tăng
      */
     async increase(cartItemId: string) {
         logger.debug('Increasing cart item', { cartItemId });
@@ -141,6 +149,7 @@ export const CartRepository: ICartRepository = {
 
     /**
      * Giảm số lượng của một mục trong giỏ hàng xuống 1 unit
+     * @param cartItemId Mã định danh của mục giỏ hàng cần giảm
      */
     async decrease(cartItemId: string) {
         logger.debug('Decreasing cart item', { cartItemId });
@@ -156,6 +165,7 @@ export const CartRepository: ICartRepository = {
 
     /**
      * Xóa hoàn toàn một mục khỏi giỏ hàng
+     * @param cartItemId Mã định danh của mục giỏ hàng cần xóa
      */
     async remove(cartItemId: string) {
         logger.debug('Removing cart item', { cartItemId });
@@ -168,6 +178,7 @@ export const CartRepository: ICartRepository = {
 
     /**
      * Lấy thông tin chi tiết của một item cụ thể trong giỏ hàng
+     * @param cartItemId Mã định danh của mục giỏ hàng cần xem chi tiết
      */
     async getCartItem(cartItemId: string): Promise<CartItem> {
         logger.debug('Fetching cart item', { cartItemId });
@@ -185,6 +196,7 @@ export const CartRepository: ICartRepository = {
     /**
      * Tính toán tổng giá trị cho các mục được chọn trong giỏ hàng
      * Hỗ trợ việc áp dụng mã giảm giá hoặc tính thuế phí từ Server.
+     * @param payload Danh sách cartItemId được chọn để tính giá
      */
     async calculatePrice(payload: CalculatePricePayload): Promise<number> {
         logger.debug('Calculating cart price', payload as any);

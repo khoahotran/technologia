@@ -24,10 +24,25 @@ import {
     useRemoveCartItemMutation,
 } from "@/presentation/hooks";
 
+/**
+ * Hàm hỗ trợ định dạng địa chỉ thành chuỗi dễ đọc.
+ * 
+ * @param address - Thông tin địa chỉ giao hàng
+ * @returns Chuỗi địa chỉ đã được kết hợp
+ */
 function getAddressDisplay(address: CheckoutAddress) {
     return `${address.line}, ${address.ward}, ${address.city}, ${address.province}`;
 }
 
+/**
+ * Giao diện Thanh toán & Vận chuyển (Shipping & Checkout Client)
+ * 
+ * Hiển thị màn hình cho phép người dùng:
+ * - Chọn địa chỉ giao hàng.
+ * - Xem lại danh sách sản phẩm chuẩn bị thanh toán.
+ * - Chọn phương thức thanh toán.
+ * - Thực hiện đặt hàng và điều hướng tới trang kết quả.
+ */
 export default function ShippingClient() {
     const router = useRouter();
     const searchParams = useSearchParams();

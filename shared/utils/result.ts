@@ -1,14 +1,13 @@
 /**
- * Result Type System
+ * Hệ thống Phân loại Kết quả (Result Type System)
  *
- * Go-style Result pattern for consistent error handling across the application.
- * Provides type-safe success/error handling without throwing exceptions.
- * 
- * Moved from lib/result.ts to shared/utils/result.ts.
+ * Áp dụng pattern Result giống ngôn ngữ Go hoặc Rust để xử lý lỗi nhất quán toàn ứng dụng.
+ * Cung cấp giải pháp an toàn kiểu dữ liệu (type-safe) để quản lý thành công / thất bại
+ * mà KHÔNG cần dùng Try/Catch loạn xạ (throw exceptions).
  */
 
 /**
- * Success result containing data
+ * Kiểu kết quả Thành công (Success)
  */
 export interface Ok<T> {
     readonly ok: true;
@@ -17,7 +16,7 @@ export interface Ok<T> {
 }
 
 /**
- * Error result containing error messages
+ * Kiểu kết quả Thất bại (Error) chứa danh sách mô tả lỗi
  */
 export interface Err {
     readonly ok: false;
@@ -26,16 +25,16 @@ export interface Err {
 }
 
 /**
- * Union type representing either success or failure
+ * Kiểu Union đại diện cho một Thao tác có thể ra kết quả Thành công hoặc Thất bại
  */
 export type Result<T> = Ok<T> | Err;
 
 // ===========================================
-// Result Constructors
+// Hàm tạo Result (Constructors)
 // ===========================================
 
 /**
- * Create a success result
+ * Trả về một đối tượng bọc kết quả báo Thành Công
  */
 export function ok<T>(data: T): Ok<T> {
     return {
@@ -46,7 +45,7 @@ export function ok<T>(data: T): Ok<T> {
 }
 
 /**
- * Create an error result
+ * Trả về một đối tượng bọc kết quả báo Lỗi / Thất bại
  */
 export function err(errors: string | string[]): Err {
     return {
@@ -57,25 +56,25 @@ export function err(errors: string | string[]): Err {
 }
 
 // ===========================================
-// Result Utilities
+// Tiện ích thao tác với Result (Utilities)
 // ===========================================
 
 /**
- * Check if result is successful
+ * Đánh giá Type Guard xem kết quả có Thành công không
  */
 export function isOk<T>(result: Result<T>): result is Ok<T> {
     return result.ok === true;
 }
 
 /**
- * Check if result is an error
+ * Đánh giá Type Guard xem kết quả có phải là Lỗi không
  */
 export function isErr<T>(result: Result<T>): result is Err {
     return result.ok === false;
 }
 
 /**
- * Map over a successful result
+ * Ánh xạ (Map) dữ liệu qua một hàm Biến đổi nếu trạng thái đang là Thành công
  */
 export function mapResult<T, U>(
     result: Result<T>,
@@ -88,7 +87,7 @@ export function mapResult<T, U>(
 }
 
 /**
- * Chain multiple Result-returning operations
+ * Chaining (nối chuỗi) nhiều bước thực thi trả về Result móc nối nhau
  */
 export function flatMapResult<T, U>(
     result: Result<T>,
@@ -101,7 +100,7 @@ export function flatMapResult<T, U>(
 }
 
 /**
- * Unwrap result with default value for errors
+ * Bóc tách lấy Data trong Result, nếu bị Lỗi sẽ thay thế bằng giá trị fallback.
  */
 export function unwrapOr<T>(result: Result<T>, defaultValue: T): T {
     if (isOk(result)) {
@@ -111,7 +110,7 @@ export function unwrapOr<T>(result: Result<T>, defaultValue: T): T {
 }
 
 /**
- * Convert Promise to Result
+ * Chuyển đổi hàm bất đồng bộ Promise thông thường thành pattern Result
  */
 export async function tryCatch<T>(
     promise: Promise<T>,
@@ -129,8 +128,8 @@ export async function tryCatch<T>(
 }
 
 /**
- * Combine multiple results into a single result
- * Returns error if any result is an error
+ * Tổng hợp nhiều kết quả (Result) lại với nhau.
+ * Nếu bất cứ Result đơn lẻ nào thất bại -> Lập tức trả về Error tổng hợp.
  */
 export function combineResults<T extends readonly Result<unknown>[]>(
     results: T
@@ -154,11 +153,11 @@ export function combineResults<T extends readonly Result<unknown>[]>(
 }
 
 // ===========================================
-// API Response Helpers
+// Trợ thủ bóc dỡ API Response (API Response Helpers)
 // ===========================================
 
 /**
- * Backend API response structure
+ * Cấu trúc Response đến từ Backend
  */
 export interface BackendResponse<T> {
     status: number;
@@ -167,7 +166,7 @@ export interface BackendResponse<T> {
 }
 
 /**
- * Convert backend response to Result
+ * Chuyển mô hình BackendResponse sang chuẩn Result hướng Frontend
  */
 export function fromBackendResponse<T>(
     response: BackendResponse<T>,
@@ -180,7 +179,7 @@ export function fromBackendResponse<T>(
 }
 
 /**
- * Parse API error response to Result
+ * Bóc lỗi chung của việc Call API thành chuẩn Result
  */
 export function fromApiError(error: unknown): Err {
     if (error instanceof Error) {

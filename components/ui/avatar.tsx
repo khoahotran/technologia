@@ -1,10 +1,17 @@
 "use client"
 
+/**
+ * Các thành phần Ảnh đại diện (Avatar Components)
+ * 
+ * Được xây dựng trên nền tảng `@radix-ui/react-avatar`.
+ * Hỗ trợ hiển thị ảnh người dùng, có cơ chế dự phòng (Fallback) khi ảnh lỗi hoặc chưa tải.
+ */
 import * as AvatarPrimitive from "@radix-ui/react-avatar"
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+/** Gốc của Avatar, quản lý vòng đời của ảnh và fallback */
 function Avatar({
   className,
   ...props
@@ -21,6 +28,7 @@ function Avatar({
   )
 }
 
+/** Thành phần hiển thị hình ảnh thực tế */
 function AvatarImage({
   className,
   ...props
@@ -34,6 +42,7 @@ function AvatarImage({
   )
 }
 
+/** Thành phần hiển thị thay thế (thường là chữ cái đầu tên) khi không có ảnh */
 function AvatarFallback({
   className,
   ...props

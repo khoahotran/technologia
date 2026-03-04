@@ -1,6 +1,8 @@
 /**
- * Base Repository
- * Abstract base class providing common CRUD operations
+ * Repository Cơ sở (Base Repository)
+ *
+ * Lớp trừu tượng cung cấp các thao tác CRUD dùng chung cho toàn bộ repositories.
+ * Giảm thiểu code lặp bằng Factory Pattern + Zod Validation.
  */
 
 import { z, ZodSchema } from "zod";
@@ -12,6 +14,7 @@ import type { PaginatedResponse } from "@/shared/types";
 // Types
 // ===========================================
 
+/** Tham số phân trang và sắp xếp dùng chung */
 export interface PagingParams {
     page?: number;
     size?: number;
@@ -19,6 +22,7 @@ export interface PagingParams {
     sortDirection?: "ASC" | "DESC";
 }
 
+/** Giá trị phân trang mặc định nếu người dùng không truyền tham số */
 export const DEFAULT_PAGING_PARAMS = {
     page: 0,
     size: 10,
@@ -26,6 +30,10 @@ export const DEFAULT_PAGING_PARAMS = {
     sortDirection: "DESC" as const,
 };
 
+/**
+ * Chuẩn hóa tham số phân trang bằng cách điền giá trị mặc định cho các field bị thiếu
+ * @param params Tham số phân trang tùy chỉnh từ phía gọi hàm
+ */
 export function normalizePagingParams(params: PagingParams = {}) {
     return {
         page: params.page ?? DEFAULT_PAGING_PARAMS.page,
@@ -35,11 +43,12 @@ export function normalizePagingParams(params: PagingParams = {}) {
     };
 }
 
+/** Cấu hình cần thiết để khởi tạo BaseRepository */
 export interface BaseRepositoryConfig<T> {
-    /** Base URL path for the resource (e.g., '/products') */
+    /** Đường dẫn API gốc cho tài nguyên (VD: '/products') */
     basePath: string;
 
-    /** Zod schema for entity validation */
+    /** Zod Schema để xác thực dữ liệu của thực thể */
     entitySchema: ZodSchema<T>;
 }
 
@@ -48,7 +57,8 @@ export interface BaseRepositoryConfig<T> {
 // ===========================================
 
 /**
- * Create a paginated response schema for the given entity schema
+ * Tạo schema xác thực cho Response có phân trang từ Backend
+ * @param entitySchema Zod Schema của thực thể bên trong
  */
 export function createPaginatedResponseSchema<T>(entitySchema: ZodSchema<T>) {
     return z.object({
@@ -63,7 +73,8 @@ export function createPaginatedResponseSchema<T>(entitySchema: ZodSchema<T>) {
 }
 
 /**
- * Create a single entity response schema
+ * Tạo schema xác thực cho Response chứa một thực thể đơn lẻ
+ * @param entitySchema Zod Schema của thực thể bên trong
  */
 export function createEntityResponseSchema<T>(entitySchema: ZodSchema<T>) {
     return z.object({
@@ -74,7 +85,8 @@ export function createEntityResponseSchema<T>(entitySchema: ZodSchema<T>) {
 }
 
 /**
- * Create an array response schema
+ * Tạo schema xác thực cho Response chứa một mảng thực thể (không phân trang)
+ * @param entitySchema Zod Schema của thực thể bên trong
  */
 export function createArrayResponseSchema<T>(entitySchema: ZodSchema<T>) {
     return z.object({
@@ -125,6 +137,7 @@ export function createBaseRepository<T>(config: BaseRepositoryConfig<T>) {
 
         /**
          * Lấy thông tin chi tiết của một thực thể qua ID
+         * @param id Mã định danh duy nhất của thực thể cần lấy
          */
         async getById(id: string | number): Promise<T> {
             const { data } = await httpClient.get(`${basePath}/${id}`);
@@ -135,6 +148,7 @@ export function createBaseRepository<T>(config: BaseRepositoryConfig<T>) {
 
         /**
          * Lấy danh sách thực thể có hỗ trợ Phân trang và Sắp xếp
+         * @param params Tham số phân trang (page, size, sortBy, sortDirection)
          */
         async getPaged(
             params: PagingParams = {}
@@ -153,6 +167,7 @@ export function createBaseRepository<T>(config: BaseRepositoryConfig<T>) {
 
         /**
          * Tạo mới một thực thể
+         * @param payload Dữ liệu cần tạo mới
          */
         async create(payload: Partial<T>): Promise<T> {
             const { data } = await httpClient.post(basePath, payload);
@@ -162,6 +177,8 @@ export function createBaseRepository<T>(config: BaseRepositoryConfig<T>) {
 
         /**
          * Cập nhật thông tin thực thể hiện có (Partial update)
+         * @param id Mã định danh của thực thể cần cập nhật
+         * @param payload Dữ liệu cần cập nhật
          */
         async update(id: string | number, payload: Partial<T>): Promise<T> {
             const { data } = await httpClient.put(`${basePath}/${id}`, payload);
@@ -171,6 +188,7 @@ export function createBaseRepository<T>(config: BaseRepositoryConfig<T>) {
 
         /**
          * Xóa bỏ một thực thể khỏi hệ thống
+         * @param id Mã định danh của thực thể cần xóa
          */
         async delete(id: string | number): Promise<void> {
             await httpClient.delete(`${basePath}/${id}`);
@@ -192,4 +210,5 @@ export function createBaseRepository<T>(config: BaseRepositoryConfig<T>) {
 // Type Helpers
 // ===========================================
 
+/** Kiểu dữ liệu TypeScript suy diễn từ createBaseRepository */
 export type BaseRepository<T> = ReturnType<typeof createBaseRepository<T>>;

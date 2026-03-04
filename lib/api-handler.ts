@@ -1,8 +1,10 @@
 /**
- * API Handler Factory
- * Unified handler for Next.js API routes that proxy to backend services
+ * Nhà máy khởi tạo Trình xử lý API (API Handler Factory)
  * 
- * Usage:
+ * Bộ xử lý hợp nhất các Route API của Next.js đóng vai trò làm Proxy trung gian.
+ * Có nhiệm vụ chuyển tiếp yêu cầu từ Frontend sang các Backend Services (Microservices).
+ * 
+ * Cách dùng:
  * export const GET = createApiHandler({ targetService: 'product', path: '/products' });
  */
 import { cookies } from 'next/headers';
@@ -12,30 +14,32 @@ import { SERVICE_URLS, HTTP_STATUS, REQUEST_CONFIG, COOKIE_NAMES } from '@/share
 import type { RouteContext } from '@/shared/types';
 
 // ===========================================
-// Types
+// Khai báo Kiểu (Types)
 // ===========================================
 
+/** Danh sách các Microservices mục tiêu */
 export type TargetService = 'product' | 'user' | 'payment' | 'cart';
 
+/** Cấu hình cho một trình Handler */
 export interface ApiHandlerConfig {
-    /** Target backend service */
+    /** Service Backend đích cần gọi tới */
     targetService: TargetService;
 
-    /** API path (e.g., '/products' or '/products/:id') */
+    /** Đường dẫn API (Ví dụ: '/products' hoặc hàm tạo đường dẫn '/products/:id') */
     path: string | ((params: Record<string, string>) => string);
 
-    /** Whether this endpoint requires authentication */
+    /** Endpoint này có bắt buộc phải Đăng nhập (Auth) không */
     requiresAuth?: boolean;
 
-    /** Custom timeout in ms */
+    /** Thời gian chờ tối đa (ms) */
     timeout?: number;
 
-    /** Additional headers to send */
+    /** Các Headers bổ sung nếu cần */
     headers?: Record<string, string>;
 }
 
 // ===========================================
-// Service URL Mapping
+// Bản đồ Ánh xạ URL Service (Service URL Mapping)
 // ===========================================
 
 const SERVICE_URL_MAP: Record<TargetService, string> = {
@@ -46,11 +50,11 @@ const SERVICE_URL_MAP: Record<TargetService, string> = {
 };
 
 // ===========================================
-// Helper Functions
+// Các hàm Trợ giúp (Helper Functions)
 // ===========================================
 
 /**
- * Build target URL from config and request
+ * Xây dựng URL đích hoàn chỉnh bao gồm Base URL, Path và Query Params.
  */
 function buildTargetUrl(
     config: ApiHandlerConfig,
@@ -62,54 +66,41 @@ function buildTargetUrl(
         ? config.path(params || {})
         : config.path;
 
-    // Get query params from original request
+    // Lấy nguyên bản chuỗi Query (?key=val) từ request gốc của Client
     const { search } = new URL(req.url);
 
     return `${baseUrl}${path}${search}`;
 }
 
 /**
- * Build headers for proxy request
+ * Xây dựng bộ Headers để gửi sang Backend
+ * Tự động trích xuất Token từ Header của Client hoặc từ Cookie của Next.js
  */
 async function buildHeaders(
     req: Request,
     config: ApiHandlerConfig
 ): Promise<HeadersInit> {
-    // Debug: Log all incoming headers
-    const incomingHeaders: Record<string, string> = {};
-    req.headers.forEach((value, key) => {
-        incomingHeaders[key] = key.toLowerCase() === 'authorization' ? `${value.substring(0, 15)}...` : value;
-    });
-    console.warn(`[API Proxy] Incoming Headers:`, incomingHeaders);
-
     const headers: Record<string, string> = {
         'Content-Type': REQUEST_CONFIG.JSON_CONTENT_TYPE,
     };
 
-    // Forward auth header if present
+    // Ưu tiên lấy Authorization từ Header mà Client gửi lên Proxy
     let authHeader = req.headers.get('Authorization');
-    let source = 'NONE';
 
-    // Fallback to cookie if no Authorization header
+    // Nếu không có trong Header, thử tìm trong hệ thống Cookie của trình duyệt (SSR context)
     if (!authHeader) {
         const cookieStore = await cookies();
         const token = cookieStore.get(COOKIE_NAMES.ACCESS_TOKEN)?.value;
         if (token) {
             authHeader = `Bearer ${token}`;
-            source = 'COOKIE';
         }
-    } else {
-        source = 'HEADER';
     }
 
     if (authHeader) {
         headers['Authorization'] = authHeader;
-        console.warn(`[API Proxy] Auth token sourced from: ${source} (starts with: ${authHeader.substring(0, 15)}...)`);
-    } else {
-        console.warn(`[API Proxy] No auth token found in headers or cookies`);
     }
 
-    // Add custom headers from config
+    // Gộp thêm các header tùy chỉnh từ config
     if (config.headers) {
         Object.assign(headers, config.headers);
     }
@@ -118,7 +109,7 @@ async function buildHeaders(
 }
 
 /**
- * Get request body for non-GET methods
+ * Trích xuất Body của request (dùng cho POST, PUT, PATCH)
  */
 async function getRequestBody(req: Request): Promise<ArrayBuffer | null> {
     if (['GET', 'HEAD'].includes(req.method)) {
@@ -133,22 +124,23 @@ async function getRequestBody(req: Request): Promise<ArrayBuffer | null> {
 }
 
 /**
- * Parse and normalize response
+ * Giải mã phản hồi JSON từ Backend
  */
 async function parseResponse(res: Response): Promise<unknown> {
     try {
         return await res.json();
     } catch {
+        // Fallback về object rỗng nếu Backend ko trả JSON hợp lệ
         return {};
     }
 }
 
 // ===========================================
-// API Handler Factory
+// Nhà máy khởi tạo API Handler (Factory)
 // ===========================================
 
 /**
- * Create a handler for simple routes (no dynamic params)
+ * Khởi tạo một Handler cho các Route tĩnh (Route ko chứa biến động trên URL)
  */
 export function createApiHandler(config: ApiHandlerConfig) {
     return async function handler(req: Request): Promise<NextResponse> {
@@ -157,16 +149,7 @@ export function createApiHandler(config: ApiHandlerConfig) {
             const headers = await buildHeaders(req, config);
             const body = await getRequestBody(req);
 
-            console.warn(`[API Proxy] ${req.method} ${targetUrl} (Body size: ${body?.byteLength || 0} bytes)`);
-
-            // Debug: Log all headers being sent
-            Object.entries(headers).forEach(([key, value]) => {
-                const displayValue = key.toLowerCase() === 'authorization'
-                    ? `${value.substring(0, 15)}...`
-                    : value;
-                console.warn(`[API Proxy] Header: ${key}=${displayValue}`);
-            });
-
+            // Thực hiện chuyển tiếp (Forward) request sang Backend thực sự
             const res = await fetch(targetUrl, {
                 method: req.method,
                 headers,
@@ -175,22 +158,21 @@ export function createApiHandler(config: ApiHandlerConfig) {
 
             const data = await parseResponse(res);
 
-            // Debug: log response status from backend
-            console.warn(`[API Proxy] Backend Response: ${res.status}`, JSON.stringify(data));
-
+            // Nếu Backend báo lỗi (4xx, 5xx) -> Trả lỗi về cho Client
             if (!res.ok) {
                 const errorData = data as { message?: string };
                 return NextResponse.json(
-                    { error: errorData.message || `Proxy Error: ${res.statusText}` },
+                    { error: errorData.message || `Lỗi từ Proxy: ${res.statusText}` },
                     { status: res.status }
                 );
             }
 
+            // Thành công -> Trả dữ liệu về Client
             return NextResponse.json(data);
         } catch (error) {
-            console.error('[API Proxy] Internal Error:', error);
+            console.error('[API Proxy] Lỗi Nội bộ:', error);
             return NextResponse.json(
-                { error: 'Internal Server Error' },
+                { error: 'Lỗi máy chủ nội bộ (Internal Server Error)' },
                 { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
             );
         }
@@ -198,7 +180,7 @@ export function createApiHandler(config: ApiHandlerConfig) {
 }
 
 /**
- * Create a handler for routes with dynamic params (e.g., /products/[id])
+ * Khởi tạo Handler cho các Route Động (Ví dụ: /products/[id])
  */
 export function createDynamicApiHandler<T extends Record<string, string> = Record<string, string>>(
     config: Omit<ApiHandlerConfig, 'path'> & {
@@ -210,20 +192,11 @@ export function createDynamicApiHandler<T extends Record<string, string> = Recor
         context: RouteContext<T>
     ): Promise<NextResponse> {
         try {
+            // Đợi lấy params từ Next.js Route context
             const params = await context.params;
             const targetUrl = buildTargetUrl(config as ApiHandlerConfig, req, params);
             const headers = await buildHeaders(req, config as ApiHandlerConfig);
             const body = await getRequestBody(req);
-
-            console.warn(`[API Proxy] ${req.method} ${targetUrl} (Body size: ${body?.byteLength || 0} bytes)`);
-
-            // Debug: Log all headers being sent
-            Object.entries(headers).forEach(([key, value]) => {
-                const displayValue = key.toLowerCase() === 'authorization'
-                    ? `${value.substring(0, 15)}...`
-                    : value;
-                console.warn(`[API Proxy] Header: ${key}=${displayValue}`);
-            });
 
             const res = await fetch(targetUrl, {
                 method: req.method,
@@ -233,23 +206,19 @@ export function createDynamicApiHandler<T extends Record<string, string> = Recor
 
             const data = await parseResponse(res);
 
-            // Debug: log response status from backend
-            console.warn(`[API Proxy - Dynamic] Backend Response: ${res.status}`, JSON.stringify(data));
-
             if (!res.ok) {
                 const errorData = data as { message?: string };
-                console.error(`[API Proxy - Dynamic] Backend Error Details:`, errorData);
                 return NextResponse.json(
-                    { error: errorData.message || `Proxy Error: ${res.statusText}` },
+                    { error: errorData.message || `Lỗi từ Proxy Động: ${res.statusText}` },
                     { status: res.status }
                 );
             }
 
             return NextResponse.json(data);
         } catch (error) {
-            console.error('[API Proxy - Dynamic] Internal Error:', error);
+            console.error('[API Proxy - Dynamic] Lỗi Nội bộ:', error);
             return NextResponse.json(
-                { error: 'Internal Server Error' },
+                { error: 'Lỗi máy chủ nội bộ' },
                 { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
             );
         }
@@ -257,44 +226,44 @@ export function createDynamicApiHandler<T extends Record<string, string> = Recor
 }
 
 // ===========================================
-// Pre-configured Handlers
+// Các trình Handler được Cấu hình sẵn (Presets)
 // ===========================================
 
 /**
- * Create handlers for a complete CRUD resource
+ * Khởi tạo nhanh bộ Handler cho một tài nguyên CRUD đầy đủ.
  */
 export function createResourceHandlers(
     service: TargetService,
     basePath: string
 ) {
     return {
-        // GET /resource
+        // Lấy danh sách: GET /[basePath]
         list: createApiHandler({
             targetService: service,
             path: basePath,
         }),
 
-        // GET /resource/:id
+        // Lấy chi tiết: GET /[basePath]/:id
         getById: createDynamicApiHandler<{ id: string }>({
             targetService: service,
             path: ({ id }) => `${basePath}/${id}`,
         }),
 
-        // POST /resource
+        // Tạo mới: POST /[basePath]
         create: createApiHandler({
             targetService: service,
             path: basePath,
             requiresAuth: true,
         }),
 
-        // PUT /resource/:id
+        // Cập nhật: PUT /[basePath]/:id
         update: createDynamicApiHandler<{ id: string }>({
             targetService: service,
             path: ({ id }) => `${basePath}/${id}`,
             requiresAuth: true,
         }),
 
-        // DELETE /resource/:id
+        // Xóa: DELETE /[basePath]/:id
         delete: createDynamicApiHandler<{ id: string }>({
             targetService: service,
             path: ({ id }) => `${basePath}/${id}`,

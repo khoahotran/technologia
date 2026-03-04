@@ -1,7 +1,19 @@
+/**
+ * Thành phần Ô nhập liệu (Input Component)
+ * 
+ * Một trình bao bọc (wrapper) cho thẻ <input> chuẩn của HTML, 
+ * được cấu hình sẵn các kiểu dáng (styles) đồng nhất với hệ thống thiết kế.
+ */
 import * as React from "react"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * Thành phần Input
+ * @param className Các class CSS tùy chỉnh bổ sung
+ * @param type Loại input (text, password, email, file...)
+ * @param props Các thuộc tính HTML chuẩn của thẻ input
+ */
 function Input({ className, type, ...props }: React.ComponentProps<"input">) {
   return (
     <input

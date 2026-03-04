@@ -1,5 +1,11 @@
 "use client"
 
+/**
+ * Thành phần Đường kẻ phân cách (Separator Component)
+ * 
+ * Được xây dựng trên nền tảng `@radix-ui/react-separator`.
+ * Dùng để phân chia các khối nội dung theo chiều ngang hoặc chiều dọc một cách tinh tế.
+ */
 import * as SeparatorPrimitive from "@radix-ui/react-separator"
 import * as React from "react"
 
