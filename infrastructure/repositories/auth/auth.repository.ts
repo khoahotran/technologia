@@ -20,17 +20,13 @@ import {
     GoogleLoginDto
 } from "@/domain/user/dto/auth.dto";
 import { IAuthRepository, AuthResponse } from "@/domain/user/repositories/auth.repository.interface";
-import {
-    LoginResponseSchema,
-    RegisterResponseSchema,
-    LogoutResponseSchema,
-    ForgetPasswordResponseSchema,
-    ResetPasswordResponseSchema,
-    RefreshTokenResponseSchema,
-} from "@/shared/validators/api-schemas";
 import { fetchWithToken } from "@/infrastructure/http";
 import { authStorage } from "@/infrastructure/persistence/storage";
 import { createScopedLogger } from "@/lib/logger";
+import { safe } from "@/shared/utils/result";
+import {
+    LoginResponseSchema,
+} from "@/shared/validators/api-schemas";
 
 const logger = createScopedLogger('AuthRepository');
 /** Đường dẫn gốc của Auth API */
@@ -139,23 +135,23 @@ export const AuthRepository: IAuthRepository = {
     async logout(refreshToken: string): Promise<void> {
         logger.debug('Logging out');
 
-        try {
-            // Bước 1: Thông báo cho Server để vô hiệu hóa Refresh Token trong DB
-            await fetchWithToken(
-                `${BASE_URL}/logout`,
-                {
-                    method: 'POST',
-                    body: { refreshToken },
-                    skipAuth: true, // Dùng skipAuth vì Access Token có thể đã hết hạn
-                }
-            );
-        } catch (error) {
-            // Nếu server gặp lỗi (ví dụ 500 hoặc rớt mạng), ta vẫn tiến hành Logout ở client
+        // Bước 1: Thông báo cho Server để vô hiệu hóa Refresh Token (Go-style handling)
+        const [, error] = await safe(fetchWithToken(
+            `${BASE_URL}/logout`,
+            {
+                method: 'POST',
+                body: { refreshToken },
+                skipAuth: true, // Dùng skipAuth vì Access Token có thể đã hết hạn
+            }
+        ));
+
+        if (error) {
+            // Nếu server gặp lỗi, ta vẫn ghi nhận log cảnh báo
             logger.warn('Logout failed on server', { error: error instanceof Error ? error.message : String(error) });
-        } finally {
-            // Bước 2: Dù server có phản hồi thế nào, vẫn xóa sạch tokens ở LocalStorage/Cookies
-            authStorage.clearTokens();
         }
+
+        // Bước 2: Dù server có phản hồi thế nào, vẫn xóa sạch tokens ở LocalStorage/Cookies
+        authStorage.clearTokens();
     },
 
     /**

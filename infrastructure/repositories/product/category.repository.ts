@@ -11,8 +11,8 @@
 import { CategoryEntity, CategoryEntitySchema } from "@/domain/product/entities/category.entity";
 import { CategoryPagingResponse, ICategoryRepository } from "@/domain/product/repositories/category.repository.interface";
 import { fetchWithToken } from "@/infrastructure/http";
-import { CategoryListResponseSchema, CategoryPaginatedResponseSchema } from "@/shared/validators/api-schemas";
 import { createScopedLogger } from "@/lib/logger";
+import { CategoryListResponseSchema, CategoryPaginatedResponseSchema } from "@/shared/validators/api-schemas";
 
 const logger = createScopedLogger('CategoryRepository');
 /** Đường dẫn gốc API cho tài nguyên Category */
@@ -41,7 +41,7 @@ export const CategoryRepository: ICategoryRepository = {
         const response = await fetchWithToken(`${BASE_PATH}/${id}`, { method: 'GET' });
         // Xử lý linh hoạt trường hợp response bọc trong object hoặc trả về trực tiếp
         const data = response instanceof Object && 'data' in response
-            ? (response as any).data
+            ? (response as { data: unknown }).data
             : response;
         return CategoryEntitySchema.parse(data);
     },

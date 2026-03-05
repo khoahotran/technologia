@@ -9,6 +9,7 @@
  */
 
 import { createScopedLogger } from '@/lib/logger';
+import { safeSync } from '@/shared/utils/result';
 
 const logger = createScopedLogger('RequestAdapter');
 
@@ -124,7 +125,7 @@ export function adaptRequest(
     transform,
   } = options;
 
-  try {
+  const [adaptedData, error] = safeSync(() => {
     let adapted = data;
 
     // Custom transformer first
@@ -144,10 +145,14 @@ export function adaptRequest(
 
     logger.debug('Request adapted', { original: data, adapted });
     return adapted;
-  } catch (error) {
+  });
+
+  if (error !== null) {
     logger.error('Failed to adapt request', { data, options, error });
     throw error;
   }
+
+  return adaptedData;
 }
 
 /**

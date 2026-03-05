@@ -15,7 +15,7 @@ import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { useAuth } from "@/presentation/hooks/use-auth.hook"
+import { useAuth } from "@/presentation/hooks/use-auth"
 
 interface HeaderProps {
   /** 

@@ -102,6 +102,8 @@ function isBrowser(): boolean {
 // Address Operations - Các thao tác với địa chỉ
 // ===========================================
 
+import { safeSync } from "@/shared/utils/result";
+
 /**
  * Lấy toàn bộ danh sách địa chỉ từ bộ nhớ máy tính người dùng
  */
@@ -115,15 +117,15 @@ export function getCheckoutAddresses(): CheckoutAddress[] {
     // Nếu chưa từng lưu gì, trả về data mẫu
     if (!raw) return DEFAULT_ADDRESSES;
 
-    try {
-        // Parse chuỗi JSON thành mảng Object TypeScript
-        const parsed = JSON.parse(raw) as CheckoutAddress[];
-        // Đảm bảo nếu mảng rỗng thì vẫn dùng default
-        return parsed.length ? parsed : DEFAULT_ADDRESSES;
-    } catch {
-        // Fallback an toàn nếu dữ liệu JSON bị lỗi format
+    // Go-style handling for JSON parsing
+    const [parsed, error] = safeSync(() => JSON.parse(raw) as CheckoutAddress[]);
+
+    if (error !== null) {
         return DEFAULT_ADDRESSES;
     }
+
+    // Đảm bảo nếu mảng rỗng thì vẫn dùng default
+    return parsed?.length ? parsed : DEFAULT_ADDRESSES;
 }
 
 /**
@@ -197,11 +199,13 @@ export function getCheckoutOrders(): CheckoutOrder[] {
     const raw = localStorage.getItem(ORDER_KEY);
     if (!raw) return [];
 
-    try {
-        return JSON.parse(raw) as CheckoutOrder[];
-    } catch {
+    const [parsed, error] = safeSync(() => JSON.parse(raw) as CheckoutOrder[]);
+
+    if (error !== null) {
         return [];
     }
+
+    return parsed ?? [];
 }
 
 /**

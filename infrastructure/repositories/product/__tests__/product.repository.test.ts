@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 import { ProductRepository } from '../product.repository'
+
 import { fetchWithToken } from '@/infrastructure/http'
 
 // Mock fetchWithToken
@@ -45,7 +46,7 @@ describe('ProductRepository', () => {
                 query: { page: '1', size: '10', sortBy: 'create_at', sortDirection: 'ASC' }
             })
             expect(result.data).toHaveLength(1)
-            expect(result.data[0].name).toBe('Product 1')
+            expect(result.data![0]!.name).toBe('Product 1')
         })
     })
 
@@ -108,7 +109,7 @@ describe('ProductRepository', () => {
                 }
             })
             expect(result.data).toHaveLength(1)
-            expect(result.data[0].name).toBe('Filtered Product')
+            expect(result.data![0]!.name).toBe('Filtered Product')
         })
     })
 

@@ -25,6 +25,7 @@ describe('Auth Store', () => {
 
     const mockUser = {
         userId: 'u1',
+        username: 'test_user',
         email: 'test@example.com',
         name: 'Test User',
         role: 'user' as const,

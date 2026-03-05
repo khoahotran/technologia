@@ -23,7 +23,7 @@ describe('StarRating Component', () => {
 
         const stars = document.querySelectorAll('svg.lucide-star')
         // Click 3rd star
-        fireEvent.click(stars[2])
+        if (stars[2]) fireEvent.click(stars[2])
 
         expect(handleChange).toHaveBeenCalledWith(3)
     })
@@ -33,7 +33,7 @@ describe('StarRating Component', () => {
         render(<StarRating rating={0} onRatingChange={handleChange} />) // interactive default false
 
         const stars = document.querySelectorAll('svg.lucide-star')
-        fireEvent.click(stars[2])
+        if (stars[2]) fireEvent.click(stars[2])
 
         expect(handleChange).not.toHaveBeenCalled()
     })

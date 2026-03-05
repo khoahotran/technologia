@@ -8,6 +8,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 import { COOKIE_NAMES, HTTP_STATUS, SERVICE_URLS } from "@/shared/constants";
+import { safe } from "@/shared/utils/result";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -50,15 +51,14 @@ function parseErrorMessage(data: unknown, fallbackError: string): string {
  * Giải mã JSON an toàn (ko gây crash nếu Backend trả về chuỗi ko phải JSON)
  */
 async function parseJsonSafe(res: Response): Promise<JsonRecord> {
-    try {
-        const json = await res.json();
-        if (json && typeof json === "object") {
-            return json as JsonRecord;
-        }
-        return {};
-    } catch {
+    const [json, error] = await safe(res.json());
+    if (error !== null) {
         return {};
     }
+    if (json && typeof json === "object") {
+        return json as JsonRecord;
+    }
+    return {};
 }
 
 /**
@@ -118,34 +118,34 @@ export async function setAccessTokenCookie(accessToken: string): Promise<void> {
 export async function forwardJsonToUserService(options: ForwardToUserServiceOptions): Promise<NextResponse> {
     const { path, method, body, authHeader, fallbackError, logLabel, mapSuccess } = options;
 
-    try {
-        const backendRes = await fetch(`${SERVICE_URLS.USER_SERVICE}${path}`, {
-            method,
-            headers: {
-                "Content-Type": "application/json",
-                ...(authHeader ? { Authorization: authHeader } : {}),
-            },
-            ...(body ? { body: JSON.stringify(body) } : {}),
-        });
+    const [backendRes, error] = await safe(fetch(`${SERVICE_URLS.USER_SERVICE}${path}`, {
+        method,
+        headers: {
+            "Content-Type": "application/json",
+            ...(authHeader ? { Authorization: authHeader } : {}),
+        },
+        ...(body ? { body: JSON.stringify(body) } : {}),
+    }));
 
-        const data = await parseJsonSafe(backendRes);
-
-        if (!backendRes.ok) {
-            return NextResponse.json(
-                { error: parseErrorMessage(data, fallbackError) },
-                { status: backendRes.status }
-            );
-        }
-
-        // Trả kết quả thành công, có thể chạy qua hàm mapSuccess để biến đổi dữ liệu trước khi về Client
-        return NextResponse.json(mapSuccess ? mapSuccess(data) : data);
-    } catch (error) {
+    if (error !== null) {
         console.error(`${logLabel} Proxy Error:`, error);
         return NextResponse.json(
             { error: "Lỗi kết nối máy chủ dịch vụ" },
             { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
         );
     }
+
+    const data = await parseJsonSafe(backendRes!);
+
+    if (!backendRes!.ok) {
+        return NextResponse.json(
+            { error: parseErrorMessage(data, fallbackError) },
+            { status: backendRes!.status }
+        );
+    }
+
+    // Trả kết quả thành công, có thể chạy qua hàm mapSuccess để biến đổi dữ liệu trước khi về Client
+    return NextResponse.json(mapSuccess ? mapSuccess(data) : data);
 }
 
 /**
@@ -154,31 +154,31 @@ export async function forwardJsonToUserService(options: ForwardToUserServiceOpti
 export async function forwardFormDataToUserService(options: ForwardFormDataOptions): Promise<NextResponse> {
     const { path, method, formData, authHeader, fallbackError, logLabel } = options;
 
-    try {
-        const backendRes = await fetch(`${SERVICE_URLS.USER_SERVICE}${path}`, {
-            method,
-            headers: {
-                // Lưu ý: Ko set Content-Type khi gửi FormData để Fetch tự generate Boundary
-                ...(authHeader ? { Authorization: authHeader } : {}),
-            },
-            body: formData,
-        });
+    const [backendRes, error] = await safe(fetch(`${SERVICE_URLS.USER_SERVICE}${path}`, {
+        method,
+        headers: {
+            // Lưu ý: Ko set Content-Type khi gửi FormData để Fetch tự generate Boundary
+            ...(authHeader ? { Authorization: authHeader } : {}),
+        },
+        body: formData,
+    }));
 
-        const data = await parseJsonSafe(backendRes);
-
-        if (!backendRes.ok) {
-            return NextResponse.json(
-                { error: parseErrorMessage(data, fallbackError) },
-                { status: backendRes.status }
-            );
-        }
-
-        return NextResponse.json(data);
-    } catch (error) {
+    if (error !== null) {
         console.error(`${logLabel} Proxy Error:`, error);
         return NextResponse.json(
             { error: "Lỗi kết nối máy chủ dịch vụ" },
             { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
         );
     }
+
+    const data = await parseJsonSafe(backendRes!);
+
+    if (!backendRes!.ok) {
+        return NextResponse.json(
+            { error: parseErrorMessage(data, fallbackError) },
+            { status: backendRes!.status }
+        );
+    }
+
+    return NextResponse.json(data);
 }

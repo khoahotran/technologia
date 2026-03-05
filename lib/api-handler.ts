@@ -12,6 +12,7 @@ import { NextResponse } from 'next/server';
 
 import { SERVICE_URLS, HTTP_STATUS, REQUEST_CONFIG, COOKIE_NAMES } from '@/shared/constants';
 import type { RouteContext } from '@/shared/types';
+import { safe } from '@/shared/utils/result';
 
 // ===========================================
 // Khai báo Kiểu (Types)
@@ -116,23 +117,23 @@ async function getRequestBody(req: Request): Promise<ArrayBuffer | null> {
         return null;
     }
 
-    try {
-        return await req.arrayBuffer();
-    } catch {
+    const [buffer, error] = await safe(req.arrayBuffer());
+    if (error !== null) {
         return null;
     }
+    return buffer as ArrayBuffer;
 }
 
 /**
  * Giải mã phản hồi JSON từ Backend
  */
 async function parseResponse(res: Response): Promise<unknown> {
-    try {
-        return await res.json();
-    } catch {
+    const [data, error] = await safe(res.json());
+    if (error !== null) {
         // Fallback về object rỗng nếu Backend ko trả JSON hợp lệ
         return {};
     }
+    return data;
 }
 
 // ===========================================
@@ -144,7 +145,7 @@ async function parseResponse(res: Response): Promise<unknown> {
  */
 export function createApiHandler(config: ApiHandlerConfig) {
     return async function handler(req: Request): Promise<NextResponse> {
-        try {
+        const [result, error] = await safe((async () => {
             const targetUrl = buildTargetUrl(config, req);
             const headers = await buildHeaders(req, config);
             const body = await getRequestBody(req);
@@ -169,13 +170,17 @@ export function createApiHandler(config: ApiHandlerConfig) {
 
             // Thành công -> Trả dữ liệu về Client
             return NextResponse.json(data);
-        } catch (error) {
+        })());
+
+        if (error !== null) {
             console.error('[API Proxy] Lỗi Nội bộ:', error);
             return NextResponse.json(
                 { error: 'Lỗi máy chủ nội bộ (Internal Server Error)' },
                 { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
             );
         }
+
+        return result as NextResponse;
     };
 }
 
@@ -191,7 +196,7 @@ export function createDynamicApiHandler<T extends Record<string, string> = Recor
         req: Request,
         context: RouteContext<T>
     ): Promise<NextResponse> {
-        try {
+        const [result, error] = await safe((async () => {
             // Đợi lấy params từ Next.js Route context
             const params = await context.params;
             const targetUrl = buildTargetUrl(config as ApiHandlerConfig, req, params);
@@ -215,13 +220,17 @@ export function createDynamicApiHandler<T extends Record<string, string> = Recor
             }
 
             return NextResponse.json(data);
-        } catch (error) {
+        })());
+
+        if (error !== null) {
             console.error('[API Proxy - Dynamic] Lỗi Nội bộ:', error);
             return NextResponse.json(
                 { error: 'Lỗi máy chủ nội bộ' },
                 { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
             );
         }
+
+        return result as NextResponse;
     };
 }
 

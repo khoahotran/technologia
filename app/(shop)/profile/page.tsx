@@ -12,8 +12,8 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserProfileDto, UpdateProfileDto } from "@/domain/user/dto/profile.dto";
 import { UserRepository } from "@/infrastructure/repositories/user/user.repository";
-import { authStorage } from "@/infrastructure/persistence/storage";
 import { useAuth } from "@/presentation/hooks/use-auth";
+import { safe } from "@/shared/utils/result";
 
 /**
  * Giao diện Hồ sơ Người dùng (Profile Page)
@@ -46,50 +46,44 @@ export default function ProfilePage() {
         confirmPassword: ""
     });
 
-    useEffect(() => {
-        const token = authStorage.getAccessToken();
-        if (!token) {
-            router.push("/login?error=unauthorized");
-        }
-    }, [router]);
-
+    
     useEffect(() => {
         if (!isAuthenticated) {
             router.push("/login");
             return;
         }
 
-        fetchProfile();
-    }, [isAuthenticated, router]);
-
-    const fetchProfile = async () => {
-        try {
+        const fetch = async () => {
             setLoading(true);
-            const data = await UserRepository.getMe();
-            setProfile(data);
-            setUpdateForm({
-                firstname: data.firstName || "",
-                lastname: data.lastName || "",
-                email: data.email || "",
-                phoneNumber: data.phoneNumber || "",
-                displayName: data.displayName || ""
-            });
-            // Update context user if needed
-        } catch {
-            toast.error("Failed to fetch profile");
-        } finally {
+            const [data, error] = await safe(UserRepository.getMe());
+
+            if (error !== null) {
+                toast.error("Failed to fetch profile");
+            } else if (data) {
+                setProfile(data);
+                setUpdateForm({
+                    firstname: data.firstName || "",
+                    lastname: data.lastName || "",
+                    email: data.email || "",
+                    phoneNumber: data.phoneNumber || "",
+                    displayName: data.displayName || ""
+                });
+            }
             setLoading(false);
-        }
-    };
+        };
+
+        fetch();
+    }, [isAuthenticated, router]);
 
     const handleUpdateProfile = async (e: React.FormEvent) => {
         e.preventDefault();
-        try {
-            const updated = await UserRepository.updateMe(updateForm);
+        const [updated, error] = await safe(UserRepository.updateMe(updateForm));
+
+        if (error !== null || !updated) {
+            toast.error("Failed to update profile");
+        } else {
             setProfile(updated);
             toast.success("Profile updated successfully");
-        } catch {
-            toast.error("Failed to update profile");
         }
     };
 
@@ -97,14 +91,15 @@ export default function ProfilePage() {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        try {
-            const { avatarUrl } = await UserRepository.changeAvatar(file);
+        const [result, error] = await safe(UserRepository.changeAvatar(file));
+
+        if (error !== null || !result) {
+            toast.error("Failed to update avatar");
+        } else {
             if (profile) {
-                setProfile({ ...profile, imageUrl: avatarUrl });
+                setProfile({ ...profile, imageUrl: result.avatarUrl });
             }
             toast.success("Avatar updated successfully");
-        } catch {
-            toast.error("Failed to update avatar");
         }
     };
 
@@ -115,15 +110,16 @@ export default function ProfilePage() {
             return;
         }
 
-        try {
-            await UserRepository.changePassword({
-                oldPassword: passwordForm.oldPassword,
-                newPassword: passwordForm.newPassword
-            });
+        const result = await safe(UserRepository.changePassword({
+            oldPassword: passwordForm.oldPassword,
+            newPassword: passwordForm.newPassword
+        }));
+
+        if (result[1] !== null) {
+            toast.error("Failed to change password");
+        } else {
             toast.success("Password changed successfully");
             setPasswordForm({ oldPassword: "", newPassword: "", confirmPassword: "" });
-        } catch {
-            toast.error("Failed to change password");
         }
     };
 

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 import { UserRepository } from '../user.repository'
+
 import { fetchWithToken } from '@/infrastructure/http'
 
 vi.mock('@/infrastructure/http', () => ({
@@ -101,9 +102,9 @@ describe('UserRepository', () => {
             const result = await UserRepository.changeAvatar(file)
 
             // Verify call
-            const callArgs = vi.mocked(fetchWithToken).mock.calls[0]
+            const callArgs = vi.mocked(fetchWithToken).mock.calls[0]!
             expect(callArgs[0]).toBe('/users/change-avatar/me')
-            expect(callArgs[1].method).toBe('PUT')
+            expect(callArgs[1]!.method).toBe('PUT')
 
             expect(result.avatarUrl).toBe('/new-avatar.png')
         })
@@ -121,7 +122,7 @@ describe('UserRepository', () => {
             vi.mocked(fetchWithToken).mockResolvedValue(emptyResponse)
 
             await UserRepository.changePassword(dto)
-            
+
             expect(fetchWithToken).toHaveBeenCalledWith(
                 '/users/change-password/me',
                 {

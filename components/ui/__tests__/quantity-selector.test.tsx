@@ -6,7 +6,7 @@ import { QuantitySelector } from '../quantity-selector'
 describe('QuantitySelector Component', () => {
     it('should render correct initial value', () => {
         render(<QuantitySelector value={5} onChange={vi.fn()} />)
-        const input = screen.getByRole('spinbutton', { name: /quantity/i }) as HTMLInputElement
+        const input = screen.getByRole('spinbutton', { name: /số lượng/i }) as HTMLInputElement
         expect(input.value).toBe('5')
     })
 
@@ -14,7 +14,7 @@ describe('QuantitySelector Component', () => {
         const handleChange = vi.fn()
         render(<QuantitySelector value={5} onChange={handleChange} />)
 
-        fireEvent.click(screen.getByLabelText('Increase quantity'))
+        fireEvent.click(screen.getByLabelText('Tăng số lượng'))
         expect(handleChange).toHaveBeenCalledWith(6)
     })
 
@@ -22,7 +22,7 @@ describe('QuantitySelector Component', () => {
         const handleChange = vi.fn()
         render(<QuantitySelector value={5} onChange={handleChange} />)
 
-        fireEvent.click(screen.getByLabelText('Decrease quantity'))
+        fireEvent.click(screen.getByLabelText('Giảm số lượng'))
         expect(handleChange).toHaveBeenCalledWith(4)
     })
 
@@ -30,7 +30,7 @@ describe('QuantitySelector Component', () => {
         const handleChange = vi.fn()
         render(<QuantitySelector value={1} min={1} onChange={handleChange} />)
 
-        const decBtn = screen.getByLabelText('Decrease quantity')
+        const decBtn = screen.getByLabelText('Giảm số lượng')
         expect(decBtn).toBeDisabled()
 
         fireEvent.click(decBtn)
@@ -41,7 +41,7 @@ describe('QuantitySelector Component', () => {
         const handleChange = vi.fn()
         render(<QuantitySelector value={10} max={10} onChange={handleChange} />)
 
-        const incBtn = screen.getByLabelText('Increase quantity')
+        const incBtn = screen.getByLabelText('Tăng số lượng')
         expect(incBtn).toBeDisabled()
 
         fireEvent.click(incBtn)

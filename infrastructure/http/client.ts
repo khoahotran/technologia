@@ -27,12 +27,13 @@ import {
 import { authStorage } from "@/infrastructure/persistence/storage";
 import { createScopedLogger } from "@/lib/logger";
 import { REQUEST_CONFIG, HTTP_STATUS } from "@/shared/constants";
+import { safe } from "@/shared/utils/result";
 
 // ===========================================
 // Configuration - Cấu hình cơ bản
 // ===========================================
 
-const BASE_URL = process.env["NEXT_PUBLIC_API_URL"] || "http://localhost:3000/api";
+const BASE_URL = (process.env["NEXT_PUBLIC_API_URL"] || "http://localhost:3000/api").replace(/\/?$/, '/');
 const httpLogger = createScopedLogger("HTTP");
 
 // ===========================================
@@ -109,6 +110,12 @@ httpClient.interceptors.request.use(
                 url: config.url,
                 requestId,
             });
+        }
+
+        // Đảm bảo URL là tương đối (Relative path) để không bị Axios/Browser hiểu lầm là tuyệt đối (Root path)
+        // Điều này đảm bảo request luôn đi qua tiền tố '/api' của BASE_URL
+        if (config.url?.startsWith('/')) {
+            config.url = config.url.substring(1);
         }
 
         return config;
@@ -198,36 +205,37 @@ httpClient.interceptors.response.use(
                 return Promise.reject(new AuthenticationError("Yêu cầu xác thực lại"));
             }
 
-            try {
-                // Gửi request xin token mới bằng Refresh Token hiện có
-                const response = await axios.post(`${BASE_URL}/auth/refresh-token`, { refreshToken });
-                const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response.data.data;
+            // Gửi request xin token mới bằng Refresh Token hiện có
+            const [response, refreshError] = await safe(axios.post(`${BASE_URL}/auth/refresh-token`, { refreshToken }));
 
-                // Cập nhật token mới vào kho lưu trữ
-                authStorage.setTokens(newAccessToken, newRefreshToken || refreshToken);
-                // Cập nhật token mặc định cho instance axios
-                httpClient.defaults.headers.common["Authorization"] = "Bearer " + newAccessToken;
-
-                // Thông báo cho toàn bộ request đang chờ trong Queue là "Đã có hàng mới"
-                processQueue(null, newAccessToken);
-
-                // Gắn token mới cho request hiện tại và thực thi lại nó
-                if (originalRequest.headers) {
-                    originalRequest.headers.Authorization = "Bearer " + newAccessToken;
-                }
-                return httpClient(originalRequest);
-
-            } catch (refreshError) {
+            if (refreshError) {
                 // Nếu refresh thất bại (Token hết hạn thực sự) -> Buộc phải Logout người dùng
                 processQueue(refreshError, null);
                 authStorage.clearTokens();
                 if (typeof window !== "undefined") {
                     window.location.href = "/login?error=session_expired";
                 }
-                return Promise.reject(new AuthenticationError("Phiên đăng nhập đã hết hạn"));
-            } finally {
                 isRefreshing = false; // Mở khóa Refresh cho các đợt tiếp theo
+                return Promise.reject(new AuthenticationError("Phiên đăng nhập đã hết hạn"));
             }
+
+            const { accessToken: newAccessToken, refreshToken: newRefreshToken } = response!.data.data;
+
+            // Cập nhật token mới vào kho lưu trữ
+            authStorage.setTokens(newAccessToken, newRefreshToken || refreshToken);
+            // Cập nhật token mặc định cho instance axios
+            httpClient.defaults.headers.common["Authorization"] = "Bearer " + newAccessToken;
+
+            // Thông báo cho toàn bộ request đang chờ trong Queue là "Đã có hàng mới"
+            processQueue(null, newAccessToken);
+
+            // Gắn token mới cho request hiện tại và thực thi lại nó
+            if (originalRequest.headers) {
+                originalRequest.headers.Authorization = "Bearer " + newAccessToken;
+            }
+
+            isRefreshing = false; // Mở khóa Refresh cho các đợt tiếp theo
+            return httpClient(originalRequest);
         }
 
         // Bước 4: Chuyển đổi lỗi API thô thành Domain Errors (AppError)
@@ -263,20 +271,22 @@ export async function withRetry<T>(
     let lastError: unknown;
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
-        try {
-            return await fn();
-        } catch (error) {
-            lastError = error;
-            // Không retry nếu lỗi thuộc về phía Client (4xx) hoặc lỗi Xác thực
-            if (error instanceof AuthenticationError || (error instanceof AppError && error.statusCode < 500)) {
-                throw error;
-            }
+        const [data, error] = await safe(fn());
 
-            // Nếu chưa hết lượt -> Chờ một lúc rồi thử lại
-            if (attempt < maxRetries) {
-                const delay = baseDelay * Math.pow(2, attempt);
-                await new Promise((resolve) => setTimeout(resolve, delay));
-            }
+        if (error === null) {
+            return data as T;
+        }
+
+        lastError = error;
+        // Không retry nếu lỗi thuộc về phía Client (4xx) hoặc lỗi Xác thực
+        if (error instanceof AuthenticationError || (error instanceof AppError && error.statusCode < 500)) {
+            throw error;
+        }
+
+        // Nếu chưa hết lượt -> Chờ một lúc rồi thử lại
+        if (attempt < maxRetries) {
+            const delay = baseDelay * Math.pow(2, attempt);
+            await new Promise((resolve) => setTimeout(resolve, delay));
         }
     }
     throw lastError;

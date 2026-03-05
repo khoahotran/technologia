@@ -10,21 +10,20 @@
  * - Error mapping to domain errors
  */
 
-import { fetchWithToken } from "@/infrastructure/http";
-import {
-  ProductPaginatedResponseSchema,
-  FilterPaginatedResponseSchema,
-  ProductResponseSchema,
-  FilterResponseSchema,
-} from "@/shared/validators/api-schemas";
+import { ProductEntity, ProductEntitySchema } from "@/domain/product/entities/product.entity";
 import type {
   IProductRepository,
   ProductPagingResponse,
   ProductSearchParams,
   FilterProductResponse,
 } from "@/domain/product/repositories/product.repository.interface";
-import { ProductEntity, ProductEntitySchema } from "@/domain/product/entities/product.entity";
+import { fetchWithToken } from "@/infrastructure/http";
 import { createScopedLogger } from "@/lib/logger";
+import { safeSync } from "@/shared/utils/result";
+import {
+  ProductPaginatedResponseSchema,
+  FilterPaginatedResponseSchema,
+} from "@/shared/validators/api-schemas";
 
 const logger = createScopedLogger('ProductRepository');
 
@@ -52,39 +51,43 @@ function normalizeProductEntity(data: unknown): ProductEntity {
  * Normalize filter response from API
  */
 function normalizeFilterResponse(data: unknown): FilterProductResponse {
-  try {
-    const validated = FilterPaginatedResponseSchema.parse(data);
-    return {
-      status: validated.status,
-      page_number: validated.page_number,
-      page_size: validated.page_size,
-      count_items: validated.count_items,
-      count_pages: validated.count_pages,
-      data: validated.data.map(item => ({
-        productId: item.productId,
-        name: item.name,
-        description: item.description,
-        displayPrice: item.displayPrice,
-        totalStock: item.totalStock,
-        status: item.status,
-        variants: item.variants,
-        specsText: item.specsText,
-        brand: item.brand,
-        category: item.category,
-        averageRating: item.averageRating ?? undefined,
-        minPrice: item.minPrice ?? undefined,
-        maxPrice: item.maxPrice ?? undefined,
-        minRating: item.minRating ?? undefined,
-        maxRating: item.maxRating ?? undefined,
-        sortBy: item.sortBy,
-        sortOrder: item.sortOrder,
-      })),
-      message: validated.message,
-    };
-  } catch (error) {
+  const [validated, error] = safeSync(() => FilterPaginatedResponseSchema.parse(data));
+
+  if (error) {
     logger.error('Failed to normalize filter response', error);
     throw error;
   }
+
+  // data will be correctly narrowed because of synchronous nature or just use validated
+  const result = validated!;
+
+  return {
+    status: result.status,
+    page_number: result.page_number,
+    page_size: result.page_size,
+    count_items: result.count_items,
+    count_pages: result.count_pages,
+    data: result.data.map(item => ({
+      productId: item.productId,
+      name: item.name,
+      description: item.description,
+      displayPrice: item.displayPrice,
+      totalStock: item.totalStock,
+      status: item.status,
+      variants: item.variants,
+      specsText: item.specsText,
+      brand: item.brand,
+      category: item.category,
+      averageRating: item.averageRating ?? undefined,
+      minPrice: item.minPrice ?? undefined,
+      maxPrice: item.maxPrice ?? undefined,
+      minRating: item.minRating ?? undefined,
+      maxRating: item.maxRating ?? undefined,
+      sortBy: item.sortBy,
+      sortOrder: item.sortOrder,
+    })),
+    message: result.message,
+  };
 }
 
 // ===========================================
@@ -109,11 +112,11 @@ export const ProductRepository: IProductRepository = {
     });
 
     // Xử lý linh hoạt các định dạng Response khác nhau từ API
-    const products = Array.isArray(response)
+    const products = (Array.isArray(response)
       ? response
       : response instanceof Object && 'data' in response
-        ? (response as any).data
-        : [response];
+        ? (response as { data: unknown[] }).data
+        : [response]) as unknown[];
 
     // Chuyển đổi dữ liệu thô sang Entity chuẩn của Domain
     return products.map(normalizeProductEntity);
@@ -133,7 +136,7 @@ export const ProductRepository: IProductRepository = {
 
     // Bóc tách khối 'data' nếu kết quả bị bọc trong Response Object
     const data = response instanceof Object && 'data' in response
-      ? (response as any).data
+      ? (response as { data: unknown }).data
       : response;
 
     return normalizeProductEntity(data);

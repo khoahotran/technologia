@@ -5,9 +5,8 @@
  * Tách biệt rõ ràng giữa lỗi mạng, lỗi xác thực, lỗi dữ liệu và lỗi hệ thống.
  * 
  * @example
- * try {
- *   await api.get('/products');
- * } catch (error) {
+ * const [data, error] = await safe(api.get('/products'));
+ * if (error) {
  *   if (error instanceof AuthenticationError) {
  *     // Xử lý lỗi đăng nhập
  *   } else if (error instanceof NetworkError) {

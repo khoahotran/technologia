@@ -2,9 +2,14 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { renderHook, waitFor } from '@testing-library/react'
 import { ReactNode } from 'react'
 import { describe, it, expect, vi } from 'vitest'
-import { RepositoryProvider } from '@/shared/providers/repository.provider'
+
 import { useBrands } from '../use-brand'
 import { useCategories } from '../use-category'
+
+import { IBrandRepository } from '@/domain/product/repositories/brand.repository.interface'
+import { ICategoryRepository } from '@/domain/product/repositories/category.repository.interface'
+import { RepositoryProvider } from '@/shared/providers/repository.provider'
+
 
 const mockBrandRepository = {
     getAll: vi.fn(),
@@ -41,8 +46,8 @@ const createWrapper = () => {
     const Wrapper = ({ children }: { children: ReactNode }) => (
         <QueryClientProvider client={qc}>
             <RepositoryProvider mockRepositories={{
-                brandRepository: mockBrandRepository as any,
-                categoryRepository: mockCategoryRepository as any
+                brandRepository: mockBrandRepository as unknown as IBrandRepository,
+                categoryRepository: mockCategoryRepository as unknown as ICategoryRepository
             }}>
                 {children}
             </RepositoryProvider>

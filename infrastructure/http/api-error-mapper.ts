@@ -8,7 +8,6 @@
  * ở cấp độ ứng dụng (Application Layer).
  */
 
-import { HTTP_STATUS } from '@/shared/constants';
 import {
   AppError,
   AuthenticationError,
@@ -23,6 +22,7 @@ import {
   isAppError,
 } from '@/domain/errors';
 import { createScopedLogger } from '@/lib/logger';
+import { HTTP_STATUS } from '@/shared/constants';
 
 const logger = createScopedLogger('ErrorMapper');
 
@@ -363,9 +363,8 @@ export function getErrorMessageForUI(error: AppError | unknown): string {
  *   onNotFound: () => setShowNotFound(true),
  * });
  *
- * try {
- *   await api.get('/product');
- * } catch (error) {
+ * const [data, error] = await safe(api.get('/product'));
+ * if (error !== null) {
  *   handleProductError(error);
  * }
  */

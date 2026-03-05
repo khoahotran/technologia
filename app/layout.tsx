@@ -1,10 +1,10 @@
 import { GoogleOAuthProvider } from "@react-oauth/google";
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { Toaster } from "sonner";
 
 import Loading from "./loading";
 
+import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/shared/providers/auth.provider";
 import { LanguageProvider } from "@/shared/providers/language.provider";
 import { QueryProvider } from "@/shared/providers/query.provider";

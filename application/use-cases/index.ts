@@ -8,9 +8,8 @@
 // Kịch bản thao tác liên quan đến Sản Phẩm
 export * from "./product";
 
-// Kịch bản thao tác liên quan đến Thương Hiệu & Danh Mục
-export * from "./brand";
-export * from "./category";
+export * from "./brand/use-brand";
+export * from "./category/use-category";
 
 // Kịch bản Xác Thực Người Dùng
 export * from "./auth/login.use-case";

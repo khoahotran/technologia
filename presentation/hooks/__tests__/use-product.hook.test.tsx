@@ -13,7 +13,8 @@ vi.mock('@/infrastructure/repositories/product/product.repository', () => ({
     }
 }))
 
-import { useProductList, productKeys } from '../use-product'
+import { useProductList } from '../use-product'
+
 import { ProductRepository } from '@/infrastructure/repositories/product/product.repository'
 
 const createWrapper = () => {
@@ -36,7 +37,7 @@ describe('useProductList', () => {
 
     it('should fetch with default params when no params are provided', async () => {
         const mockData = {
-            data: [{ productId: '1', name: 'Product 1' }],
+            data: [{ productId: '1', name: 'Product 1', price: 100, stock: 10, image: 'test.jpg', brand: 'test', category: 'test', status: 'active' }],
             page_number: 0,
             status: 200,
             page_size: 10,
@@ -44,7 +45,7 @@ describe('useProductList', () => {
             count_pages: 1,
             message: 'OK'
         }
-        ;(ProductRepository.searchAndFilter as any).mockResolvedValue(mockData)
+            ; vi.mocked(ProductRepository.searchAndFilter).mockResolvedValue(mockData)
 
         const { result } = renderHook(() => useProductList(), { wrapper: createWrapper() })
 
@@ -54,12 +55,12 @@ describe('useProductList', () => {
 
         expect(ProductRepository.searchAndFilter).toHaveBeenCalled()
         expect(result.current.products).toHaveLength(1)
-        expect(result.current.products[0].name).toBe('Product 1')
+        expect(result.current.products![0]!.name).toBe('Product 1')
     })
 
     it('should fetch data when params are provided', async () => {
         const mockData = {
-            data: [{ productId: '1', name: 'Product 1' }],
+            data: [{ productId: '1', name: 'Product 1', price: 100, stock: 10, image: 'test.jpg', brand: 'test', category: 'test', status: 'active' }],
             page_number: 0,
             status: 200,
             page_size: 10,
@@ -67,7 +68,7 @@ describe('useProductList', () => {
             count_pages: 1,
             message: 'OK'
         }
-        ;(ProductRepository.searchAndFilter as any).mockResolvedValue(mockData)
+            ; vi.mocked(ProductRepository.searchAndFilter).mockResolvedValue(mockData)
 
         const params = { page: 0, size: 12, search: 'test' }
         const { result } = renderHook(() => useProductList(params), { wrapper: createWrapper() })
@@ -85,6 +86,6 @@ describe('useProductList', () => {
         )
 
         expect(result.current.products).toHaveLength(1)
-        expect(result.current.products[0].name).toBe('Product 1')
+        expect(result.current.products![0]!.name).toBe('Product 1')
     })
 })

@@ -7,6 +7,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { AuthRepository } from "@/infrastructure/repositories/auth/auth.repository"
+import { safe } from "@/shared/utils/result"
 
 export default function ForgotPasswordClient() {
     const [email, setEmail] = useState("")
@@ -20,16 +21,17 @@ export default function ForgotPasswordClient() {
         setError("")
         setSuccess(false)
 
-        try {
-            await AuthRepository.forgotPassword({ email })
-            setSuccess(true)
-        } catch (err: unknown) {
+        const [, err] = await safe(AuthRepository.forgotPassword({ email }))
+
+        if (err !== null) {
             console.error(err)
             const errorObj = err as { response?: { data?: { message?: string } } };
             setError(errorObj.response?.data?.message || "Failed to send reset email. Please try again.")
-        } finally {
-            setLoading(false)
+        } else {
+            setSuccess(true)
         }
+
+        setLoading(false)
     }
 
     return (

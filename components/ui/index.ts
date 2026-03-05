@@ -25,6 +25,8 @@ export * from "./carousel";
 export * from "./avatar";
 export * from "./breadcrumb";
 export * from "./pagination";
+export * from "./alert";
+export * from "./alert-dialog";
 
 // Các UI Components tùy chỉnh cho dự án (Domain-aware UI)
 export * from "./star-rating";

@@ -46,8 +46,8 @@ describe('Pagination Components', () => {
                 <PaginationNext href="/next" />
             </>
         )
-        const prev = screen.getByRole('link', { name: /go to previous page/i })
-        const next = screen.getByRole('link', { name: /go to next page/i })
+        const prev = screen.getByRole('link', { name: /về trang trước/i })
+        const next = screen.getByRole('link', { name: /sang trang sau/i })
         
         expect(prev).toBeInTheDocument()
         expect(prev).toHaveAttribute('href', '/prev')
@@ -57,7 +57,7 @@ describe('Pagination Components', () => {
 
     it('should render ellipsis', () => {
         render(<PaginationEllipsis />)
-        const ellipsisText = screen.getByText('More pages')
+        const ellipsisText = screen.getByText('Thêm trang khác')
         expect(ellipsisText).toBeInTheDocument()
         expect(ellipsisText).toHaveClass('sr-only') // Ensures accessibility text is hidden
     })

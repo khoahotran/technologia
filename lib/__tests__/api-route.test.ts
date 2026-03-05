@@ -31,7 +31,7 @@ describe("api-route utilities", () => {
         expect(typeof result).not.toBe("string");
         if (typeof result !== "string") {
             expect(result.status).toBe(401);
-            expect(await result.json()).toEqual({ error: "Authorization header is required" });
+            expect(await result.json()).toEqual({ error: "Yêu cầu Header Authorization (Bearer token)" });
         }
     });
 

@@ -12,12 +12,12 @@
 
 import { UserProfileDto, UpdateProfileDto, ChangePasswordDto, UserProfileSchema } from "@/domain/user/dto/profile.dto";
 import { IUserRepository } from "@/domain/user/repositories/user.repository.interface";
+import { fetchWithToken } from "@/infrastructure/http";
+import { createScopedLogger } from "@/lib/logger";
 import {
     UserProfileResponseSchema,
     ChangeAvatarResponseSchema,
 } from "@/shared/validators/api-schemas";
-import { fetchWithToken } from "@/infrastructure/http";
-import { createScopedLogger } from "@/lib/logger";
 
 const logger = createScopedLogger('UserRepository');
 /** Đường dẫn gốc API cho tài nguyên User */

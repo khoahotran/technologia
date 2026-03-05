@@ -42,8 +42,8 @@ describe('Cart Store', () => {
         })
 
         expect(result.current.items).toHaveLength(1)
-        expect(result.current.items[0].productId).toBe('p1')
-        expect(result.current.items[0].quantity).toBe(1)
+        expect(result.current.items[0]!.productId).toBe('p1')
+        expect(result.current.items[0]!.quantity).toBe(1)
     })
 
     it('should increase quantity if item exists', () => {
@@ -55,7 +55,7 @@ describe('Cart Store', () => {
         })
 
         expect(result.current.items).toHaveLength(1)
-        expect(result.current.items[0].quantity).toBe(3)
+        expect(result.current.items[0]!.quantity).toBe(3)
     })
 
     it('should remove item', () => {
@@ -77,7 +77,7 @@ describe('Cart Store', () => {
             result.current.updateQuantity('p1', 5)
         })
 
-        expect(result.current.items[0].quantity).toBe(5)
+        expect(result.current.items[0]!.quantity).toBe(5)
     })
 
     it('should calculate total correctly', () => {

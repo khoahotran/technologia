@@ -6,6 +6,8 @@
  */
 import { NextResponse } from "next/server";
 
+import { safe } from "@/shared/utils/result";
+
 /**
  * Tạo một request chuyển tiếp (Proxy)
  * @param req Đối tượng Request gốc nhận được từ Next.js API Route
@@ -16,7 +18,7 @@ export async function createProxy(
     req: Request,
     targetUrl: string
 ) {
-    try {
+    const [result, error] = await safe((async () => {
         const { search } = new URL(req.url);
         // Gắn thêm các tham số truy vấn (query params) từ request gốc vào URL đích
         const finalUrl = targetUrl + search;
@@ -34,18 +36,23 @@ export async function createProxy(
             body: ["GET", "HEAD"].includes(req.method) ? null : await req.arrayBuffer(),
         });
 
-        const data = await res.json().catch(() => ({}));
+        const [data, jsonError] = await safe(res.json());
+        const finalData = jsonError ? {} : data;
 
         if (!res.ok) {
             return NextResponse.json(
-                { error: data.message || `Lỗi từ Proxy: ${res.statusText}` },
+                { error: finalData.message || `Lỗi từ Proxy: ${res.statusText}` },
                 { status: res.status }
             );
         }
 
-        return NextResponse.json(data);
-    } catch (error) {
+        return NextResponse.json(finalData);
+    })());
+
+    if (error !== null) {
         console.error("[Proxy] Lỗi Hệ thống:", error);
         return NextResponse.json({ error: "Lỗi máy chủ nội bộ (Proxy Internal Error)" }, { status: 500 });
     }
+
+    return result as NextResponse;
 }

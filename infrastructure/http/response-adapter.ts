@@ -15,6 +15,7 @@ import { z, ZodSchema } from 'zod';
 
 import { AppError, ValidationError } from '@/domain/errors';
 import { createScopedLogger } from '@/lib/logger';
+import { safeSync } from '@/shared/utils/result';
 
 const logger = createScopedLogger('ResponseAdapter');
 
@@ -61,14 +62,15 @@ export function adaptResponse<T extends ZodSchema>(
   schema: T,
   context?: string
 ): z.infer<T> {
-  try {
+  const [result, error] = safeSync(() => {
     // BƯỚC 1: Xác thực cấu trúc 'bọc' bên ngoài của API (status, message, data)
     const apiResponse = ApiResponseSchema.parse(data);
 
     // BƯỚC 2: Xác thực khối 'data' bên trong bằng Domain Schema cụ thể
     return schema.parse(apiResponse.data);
-  } catch (error) {
-    const err = error as z.ZodError | Error;
+  });
+
+  if (error !== null) {
     // Tạo câu báo lỗi thân thiện nếu Zod phát hiện mismatch kiểu dữ liệu
     const message = error instanceof z.ZodError
       ? `Invalid response format${context ? ` for ${context}` : ''}: ${error.issues[0]?.message}`
@@ -79,6 +81,8 @@ export function adaptResponse<T extends ZodSchema>(
     // Ném ra ValidationError để ứng dụng xử lý (hiển thị popup/log)
     throw new ValidationError(message, {});
   }
+
+  return result as z.infer<T>;
 }
 
 /**
@@ -102,7 +106,7 @@ export function adaptPaginatedResponse<T extends ZodSchema>(
   totalItems: number;
   totalPages: number;
 } {
-  try {
+  const [result, error] = safeSync(() => {
     // BƯỚC 1: Xác thực cấu trúc phân trang chuẩn của hệ thống
     const paginatedResponse = PaginatedResponseSchema.parse(data);
 
@@ -117,7 +121,9 @@ export function adaptPaginatedResponse<T extends ZodSchema>(
       totalItems: paginatedResponse.data.count_items,
       totalPages: paginatedResponse.data.count_pages,
     };
-  } catch (error) {
+  });
+
+  if (error !== null) {
     const message = error instanceof z.ZodError
       ? `Invalid paginated response${context ? ` for ${context}` : ''}: ${error.issues[0]?.message}`
       : 'Failed to parse paginated response';
@@ -125,6 +131,8 @@ export function adaptPaginatedResponse<T extends ZodSchema>(
     logger.error(message, { context, data });
     throw new ValidationError(message, {});
   }
+
+  return result!;
 }
 
 /**
@@ -147,10 +155,12 @@ export function adaptResponseWithMapper<TOut>(
   mapper: (raw: unknown) => TOut,
   context?: string
 ): TOut {
-  try {
+  const [result, error] = safeSync(() => {
     const apiResponse = ApiResponseSchema.parse(data);
     return mapper(apiResponse.data);
-  } catch (error) {
+  });
+
+  if (error !== null) {
     const message = error instanceof z.ZodError
       ? `Invalid response structure${context ? ` for ${context}` : ''}`
       : error instanceof Error
@@ -160,6 +170,8 @@ export function adaptResponseWithMapper<TOut>(
     logger.error(message, { context });
     throw new AppError(message, 'ADAPTER_ERROR', 500, error);
   }
+
+  return result as TOut;
 }
 
 /**
@@ -179,24 +191,23 @@ export function safeAdapt<T extends ZodSchema>(
   schema: T,
   context?: string
 ): z.infer<T> | null {
-  try {
-    return adaptResponse(data, schema, context);
-  } catch {
+  const [result, error] = safeSync(() => adaptResponse(data, schema, context));
+
+  if (error !== null) {
     logger.warn(`Failed to adapt response${context ? ` for ${context}` : ''}`);
     return null;
   }
+
+  return result;
 }
 
 /**
  * Check if response is successful
  */
 export function isSuccessResponse(data: unknown): boolean {
-  try {
-    const response = ApiResponseSchema.parse(data);
-    return response.status >= 200 && response.status < 300;
-  } catch {
-    return false;
-  }
+  const [response, error] = safeSync(() => ApiResponseSchema.parse(data));
+  if (error !== null) return false;
+  return response!.status >= 200 && response!.status < 300;
 }
 
 /**
@@ -204,10 +215,7 @@ export function isSuccessResponse(data: unknown): boolean {
  * without validation (low-level utility)
  */
 export function unwrapResponse(data: unknown): unknown {
-  try {
-    const response = ApiResponseSchema.parse(data);
-    return response.data;
-  } catch {
-    return null;
-  }
+  const [response, error] = safeSync(() => ApiResponseSchema.parse(data));
+  if (error !== null) return null;
+  return response!.data;
 }

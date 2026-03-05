@@ -43,7 +43,7 @@ export function ProductTabs() {
           <p>
             Đây là phần hiển thị nội dung mô tả chi tiết của sản phẩm.
             Văn bản giả mặc định: Lorem Ipsum is simply dummy text of the printing and typesetting industry.
-            Lorem Ipsum has been the industry's standard dummy text ever since the 1500s...
+            Lorem Ipsum has been the industry`&apos;`s standard dummy text ever since the 1500s...
           </p>
           <div className="flex justify-center pt-4">
             <Button variant="link" className="text-blue-500 hover:text-blue-600">

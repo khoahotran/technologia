@@ -11,8 +11,8 @@
 import { BrandEntity, BrandEntitySchema } from "@/domain/product/entities/brand.entity";
 import { BrandPagingResponse, IBrandRepository } from "@/domain/product/repositories/brand.repository.interface";
 import { fetchWithToken } from "@/infrastructure/http";
-import { BrandListResponseSchema, BrandPaginatedResponseSchema } from "@/shared/validators/api-schemas";
 import { createScopedLogger } from "@/lib/logger";
+import { BrandListResponseSchema, BrandPaginatedResponseSchema } from "@/shared/validators/api-schemas";
 
 const logger = createScopedLogger('BrandRepository');
 /** Đường dẫn gốc API cho tài nguyên Brand */
@@ -41,7 +41,7 @@ export const BrandRepository: IBrandRepository = {
         const response = await fetchWithToken(`${BASE_PATH}/${id}`, { method: 'GET' });
         // Xử lý linh hoạt trường hợp response bọc trong object hoặc trả về trực tiếp
         const data = response instanceof Object && 'data' in response
-            ? (response as any).data
+            ? (response as { data: unknown }).data
             : response;
         return BrandEntitySchema.parse(data);
     },

@@ -94,7 +94,7 @@ describe('API Handler Utility', () => {
             const data = await response.json()
 
             expect(response.status).toBe(500)
-            expect(data).toEqual({ error: 'Internal Server Error' })
+            expect(data).toEqual({ error: 'Lỗi máy chủ nội bộ (Internal Server Error)' })
         })
     })
 

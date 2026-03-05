@@ -5,6 +5,8 @@ import ProductDetailClient from '../ProductDetailClient'
 
 import * as PresentationHooks from '@/presentation/hooks'
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 // Mock Hooks
 vi.mock('@/presentation/hooks', () => ({
     useProductDetail: vi.fn(),
@@ -29,6 +31,7 @@ vi.mock('sonner', () => ({
 }))
 
 const mockMutate = vi.fn()
+const mockMutateAsync = vi.fn().mockResolvedValue(undefined)
 
 describe('ProductDetailClient', () => {
     const mockProduct = {
@@ -38,7 +41,7 @@ describe('ProductDetailClient', () => {
         averageRating: 4.5,
         totalStock: 10,
         variants: [{ variantId: 'v1', images: ['/test.jpg'] }],
-        category: { name: 'Test' },
+        category: 'Test',
         brandName: 'Brand',
         description: 'Desc',
         specsText: '',
@@ -48,6 +51,7 @@ describe('ProductDetailClient', () => {
         vi.clearAllMocks()
         vi.mocked(PresentationHooks.useAddToCartMutation).mockReturnValue({
             mutate: mockMutate,
+            mutateAsync: mockMutateAsync,
             isPending: false,
         } as any)
     })
@@ -102,6 +106,6 @@ describe('ProductDetailClient', () => {
         const buyButton = screen.getByText('Buy now')
         fireEvent.click(buyButton)
 
-        expect(mockMutate).toHaveBeenCalled()
+        expect(mockMutateAsync).toHaveBeenCalled()
     })
 })

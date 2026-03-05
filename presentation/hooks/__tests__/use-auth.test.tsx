@@ -15,7 +15,7 @@ describe('useAuth hook', () => {
     it('should throw when used outside AuthProvider', () => {
         const spy = vi.spyOn(console, 'error').mockImplementation(() => { })
         expect(() => renderHook(() => useAuth())).toThrow(
-            'useAuth must be used within AuthProvider'
+            'useAuth bắt buộc phải nằm bên trong phạm vi của AuthProvider'
         )
         spy.mockRestore()
     })

@@ -13,6 +13,7 @@
  */
 
 import { STORAGE_KEYS } from "@/shared/constants";
+import { safeSync } from "@/shared/utils/result";
 
 // ===========================================
 // Types
@@ -170,9 +171,8 @@ class StorageService {
 
         const storage = this.getStorage(type);
         if (storage) {
-            try {
-                storage.setItem(key, serialized);
-            } catch {
+            const [, error] = safeSync(() => storage.setItem(key, serialized));
+            if (error) {
                 // Fallback sang bộ nhớ RAM nếu ổ đĩa/quota trình duyệt bị đầy
                 memoryStorage.set(key, serialized);
             }
@@ -210,11 +210,11 @@ class StorageService {
                 value === "false" ||
                 (value.startsWith("\"") && value.endsWith("\"")))
         ) {
-            try {
-                return JSON.parse(value) as T;
-            } catch {
+            const [parsed, error] = safeSync(() => JSON.parse(value!) as T);
+            if (error !== null) {
                 return value as unknown as T;
             }
+            return parsed;
         }
 
         // Trả về chuỗi gốc nếu không cần parse
@@ -323,31 +323,28 @@ export const authStorage = {
         // 3. Lưu Refresh Token vào LOCALSTORAGE
         storage.set(STORAGE_KEYS.REFRESH_TOKEN, refreshToken);
 
-        // 4. TIỆN ÍCH: Giải mã JWT để lấy 'role' của user và lưu vào một cookie riêng
-        // Giúp Next.js Middleware kiểm tra quyền truy cập Route nhanh mà không cần parse JWT phức tạp
-        try {
-            const payload = accessToken.split(".")[1]; // Lấy phần Payload của JWT (đoạn giữa)
+        // 4. TIỆN ÍCH: Giải mã JWT (Go-style handling)
+        const [, decodeError] = safeSync(() => {
+            const payload = accessToken.split(".")[1];
+            if (!payload) return;
 
-            if (payload) {
-                // Hỗ trợ giải mã Base64 trên cả Trình duyệt (atob) và Server (Buffer)
-                const decodedStr = typeof window !== 'undefined'
-                    ? atob(payload)
-                    : Buffer.from(payload, 'base64').toString('ascii');
+            const decodedStr = typeof window !== 'undefined'
+                ? atob(payload)
+                : Buffer.from(payload, 'base64').toString('ascii');
 
-                const decoded = JSON.parse(decodedStr);
+            const decoded = JSON.parse(decodedStr);
 
-                // Nếu trong token có chứa thông tin quyền (role), lưu riêng ra cookie
-                if (decoded && decoded.role) {
-                    storage.set("role", decoded.role, {
-                        type: "cookie",
-                        expireDays: 7,
-                        secure: process.env.NODE_ENV === "production",
-                    });
-                }
+            if (decoded && decoded.role) {
+                storage.set("role", decoded.role, {
+                    type: "cookie",
+                    expireDays: 7,
+                    secure: process.env.NODE_ENV === "production",
+                });
             }
-        } catch (e) {
-            // Không chặn luồng nếu việc decode role gặp lỗi
-            console.warn("[STORAGE] Could not decode role from token", e);
+        });
+
+        if (decodeError) {
+            console.warn("[STORAGE] Could not decode role from token", decodeError);
         }
     },
 

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { CartRepository } from '../cart.repository';
+
 import { fetchWithToken } from '@/infrastructure/http';
 
 // Mock fetchWithToken
@@ -33,7 +34,7 @@ describe('CartRepository', () => {
         vi.mocked(fetchWithToken).mockResolvedValue(mockResponse);
 
         const result = await CartRepository.getCart();
-        expect(fetchWithToken).toHaveBeenCalledWith('/carts', { method: 'GET' });
+        expect(fetchWithToken).toHaveBeenCalledWith('/carts', { method: 'GET', query: {} });
         expect(result.cartId).toBe('c1');
     });
 
@@ -51,13 +52,11 @@ describe('CartRepository', () => {
         };
         vi.mocked(fetchWithToken).mockResolvedValue(mockResponse);
 
-        const resp = await CartRepository.addToCart({ productId: 'p1', variantId: 'v1' });
+        await CartRepository.addToCart({ productId: 'p1', variantId: 'v1' });
         expect(fetchWithToken).toHaveBeenCalledWith('/carts/add-to-cart', {
             method: 'POST',
             body: { productId: 'p1', variantId: 'v1' },
         });
-        expect(resp.cartItemId).toBe('ci1');
-        expect(resp.productId).toBe('p1');
     });
 
     it('remove should PATCH the cart item', async () => {

@@ -8,6 +8,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { AuthRepository } from "@/infrastructure/repositories/auth/auth.repository"
+import { safe } from "@/shared/utils/result"
 
 export default function ResetPasswordClient() {
     const router = useRouter()
@@ -42,22 +43,23 @@ export default function ResetPasswordClient() {
         setLoading(true)
         setError("")
 
-        try {
-            await AuthRepository.resetPassword({
-                resetToken: token,
-                newPassword: password
-            })
+        const [, err] = await safe(AuthRepository.resetPassword({
+            resetToken: token,
+            newPassword: password
+        }))
+
+        if (err !== null) {
+            console.error(err)
+            const errorObj = err as { response?: { data?: { message?: string } } };
+            setError(errorObj.response?.data?.message || "Failed to reset password. Please try again.")
+        } else {
             setSuccess(true)
             setTimeout(() => {
                 router.push("/login")
             }, 3000)
-        } catch (err: unknown) {
-            console.error(err)
-            const errorObj = err as { response?: { data?: { message?: string } } };
-            setError(errorObj.response?.data?.message || "Failed to reset password. Please try again.")
-        } finally {
-            setLoading(false)
         }
+
+        setLoading(false)
     }
 
     if (!token) {

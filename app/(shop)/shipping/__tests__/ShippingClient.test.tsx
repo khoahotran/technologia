@@ -1,8 +1,10 @@
+import { UseQueryResult } from "@tanstack/react-query";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import ShippingClient from "../ShippingClient";
 
+import { CartMap } from "@/domain/cart/entities/cart.entity";
 import * as PresentationHooks from "@/presentation/hooks";
 
 const mockRefetch = vi.fn();
@@ -44,7 +46,7 @@ describe("ShippingClient", () => {
             isLoading: false,
             isError: true,
             refetch: mockRefetch,
-        } as any);
+        } as unknown as UseQueryResult<CartMap, Error>);
 
         render(<ShippingClient />);
 

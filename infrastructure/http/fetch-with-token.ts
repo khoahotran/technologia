@@ -12,14 +12,21 @@
  * ensuring consistency and maintainability.
  */
 
-import { z, ZodSchema } from 'zod';
+import { ZodSchema } from 'zod';
 
 import { AppError, AuthenticationError, NetworkError, TimeoutError } from '@/domain/errors';
 import { authStorage } from '@/infrastructure/persistence/storage';
 import { createScopedLogger } from '@/lib/logger';
 import { HTTP_STATUS, REQUEST_CONFIG } from '@/shared/constants';
+import { safe, safeSync } from '@/shared/utils/result';
 
 const logger = createScopedLogger('FetchWithToken');
+
+// ===========================================
+// Global State for Token Refresh Concurrency
+// ===========================================
+let isRefreshing = false;
+let refreshPromise: Promise<boolean> | null = null;
 
 // ===========================================
 // Types
@@ -62,7 +69,8 @@ export interface RequestConfig {
 // ===========================================
 
 export const defaultConfig: RequestConfig = {
-  baseUrl: process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:3000/api',
+  // Đảm bảo baseUrl luôn kết thúc bằng / để URL constructor hoạt động chính xác với paths tương đối
+  baseUrl: (process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:3000/api').replace(/\/?$/, '/'),
   timeout: REQUEST_CONFIG.TIMEOUT,
 };
 
@@ -74,11 +82,12 @@ export const defaultConfig: RequestConfig = {
  * Build complete URL with query parameters
  */
 function buildUrl(baseUrl: string, endpoint: string, query?: Record<string, string | number | boolean | undefined>): string {
-  const url = new URL(endpoint, baseUrl);
+  // Loại bỏ dấu gạch chéo ở đầu endpoint nếu có để tránh bị URL constructor hiểu là đường dẫn gốc (Root path)
+  const relativePath = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+  const url = new URL(relativePath, baseUrl);
 
   if (query) {
     Object.entries(query).forEach(([key, value]) => {
-      // Skip undefined values
       if (value !== undefined) {
         url.searchParams.append(key, String(value));
       }
@@ -92,24 +101,24 @@ function buildUrl(baseUrl: string, endpoint: string, query?: Record<string, stri
  * Get access token from storage (SSR-safe)
  */
 async function getAccessToken(): Promise<string | null> {
-  try {
-    return authStorage.getAccessToken();
-  } catch {
+  const [token, error] = safeSync(() => authStorage.getAccessToken());
+  if (error) {
     logger.error('Failed to retrieve access token');
     return null;
   }
+  return token;
 }
 
 /**
  * Get refresh token from storage
  */
 async function getRefreshToken(): Promise<string | null> {
-  try {
-    return authStorage.getRefreshToken();
-  } catch {
+  const [token, error] = safeSync(() => authStorage.getRefreshToken());
+  if (error) {
     logger.error('Failed to retrieve refresh token');
     return null;
   }
+  return token;
 }
 
 /**
@@ -117,11 +126,15 @@ async function getRefreshToken(): Promise<string | null> {
  */
 async function createHeaders(
   skipAuth: boolean = false,
-  customHeaders?: Record<string, string>
+  customHeaders?: Record<string, string>,
+  isFormData: boolean = false
 ): Promise<HeadersInit> {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
+  const headers: Record<string, string> = {};
+
+  // Chỉ set Content-Type JSON nếu KHÔNG PHẢI FormData
+  if (!isFormData) {
+    headers['Content-Type'] = 'application/json';
+  }
 
   if (!skipAuth) {
     const token = await getAccessToken();
@@ -135,44 +148,59 @@ async function createHeaders(
 
 /**
  * Thử thực hiện làm mới access token bằng refresh token
+ * Sử dụng cơ chế khóa (Lock) để tránh nhiều request refresh cùng lúc
  */
 async function refreshAccessToken(): Promise<boolean> {
-  try {
-    // 1. Lấy mã refresh token đang lưu trong bộ nhớ máy
+  // Nếu đã có một tiến trình refresh đang chạy, trả về promise đó
+  if (isRefreshing && refreshPromise) {
+    return refreshPromise;
+  }
+
+  isRefreshing = true;
+  refreshPromise = (async () => {
+    // 1. Lấy mã refresh token đang lưu trong bộ nhớ máy (Go-style handling)
     const refreshToken = await getRefreshToken();
     if (!refreshToken) {
       logger.warn('No refresh token available');
       return false;
     }
 
-    // 2. Gửi request POST lên endpoint refresh token của backend
-    const response = await fetch(
+    // 2. Gửi request POST lên endpoint refresh token (Go-style handling)
+    const [response, fetchError] = await safe(fetch(
       buildUrl(defaultConfig.baseUrl, '/auth/refresh-token'),
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ refreshToken }),
       }
-    );
+    ));
 
-    // Nếu server từ chối làm mới (refresh token hết hạn/vô hiệu)
-    if (!response.ok) {
-      logger.error('Token refresh failed', { status: response.status });
+    if (fetchError || !response?.ok) {
+      logger.error('Token refresh failed', { status: response?.status, error: fetchError });
+      isRefreshing = false;
+      refreshPromise = null;
       return false;
     }
 
     // 3. Trích xuất cặp token mới từ body response
-    const data = await response.json();
+    const [data, jsonError] = await safe(response.json());
+    if (jsonError) {
+      logger.error('Token refresh JSON parse error', jsonError);
+      isRefreshing = false;
+      refreshPromise = null;
+      return false;
+    }
+
     const { accessToken: newAccessToken, refreshToken: newRefreshToken } = data.data || data;
 
-    // 4. Cập nhật chúng vào Storage để dùng cho các request tiếp theo
+    // 4. Cập nhật chúng vào Storage
     authStorage.setTokens(newAccessToken, newRefreshToken || refreshToken);
+    isRefreshing = false;
+    refreshPromise = null;
     return true;
-  } catch (error) {
-    // Xử lý lỗi runtime (mạng lag, server sập giữa chừng) trong quá trình refresh
-    logger.error('Token refresh error', error);
-    return false;
-  }
+  })();
+
+  return refreshPromise;
 }
 
 /**
@@ -193,12 +221,12 @@ async function validateResponse(
 
   // Validate with schema if provided
   if (schema) {
-    try {
-      return schema.parse(data);
-    } catch (validationError) {
+    const [parsed, validationError] = safeSync(() => schema.parse(data));
+    if (validationError) {
       logger.error('Response validation failed', { validationError, data });
       throw new Error('Invalid server response format');
     }
+    return parsed;
   }
 
   return data;
@@ -246,57 +274,58 @@ export async function fetchWithToken<TResponse = unknown>(
       const url = buildUrl(defaultConfig.baseUrl, endpoint, query);
       logger.debug(`Fetching ${method} ${endpoint}`, { attempt, retries });
 
+      // Kiểm tra xem body có phải FormData không
+      const isFormData = body instanceof FormData;
+
       // Tạo Headers chứa Content-Type và Authentication nếu cần
-      const headers = await createHeaders(skipAuth, customHeaders);
+      const headers = await createHeaders(skipAuth, customHeaders, isFormData);
 
       // Cấu hình ngắt request nếu quá thời gian (Timeout handling)
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), timeout);
 
-      try {
-        // Thực thi request HTTP thực tế thông qua Fetch API chuẩn
-        const response = await fetch(url, {
-          method,
-          headers,
-          body: body ? JSON.stringify(body) : null, // Dùng null thay cho undefined để khớp kiểu BodyInit
-          signal: controller.signal,
-        });
+      const [response, fetchError] = await safe(fetch(url, {
+        method,
+        headers,
+        body: body
+          ? (isFormData ? body : JSON.stringify(body))
+          : null,
+        signal: controller.signal,
+      }));
 
-        clearTimeout(timeoutId);
+      clearTimeout(timeoutId);
 
-        // KỊCH BẢN ĐẶC BIỆT: Token hết hạn (401)
-        if (response.status === HTTP_STATUS.UNAUTHORIZED && !skipAuth && attempt === 1) {
-          logger.debug('Token expired, attempting refresh');
-          const refreshed = await refreshAccessToken();
-
-          if (refreshed) {
-            // Nếu làm mới token thành công, thực hiện ĐỆ QUY (lần duy nhất) để thử lại request gốc với token mới
-            return fetchWithToken<TResponse>(endpoint, {
-              ...options,
-              retries: 0, // Quan trọng: Reset retry về 0 để tránh vòng lặp vô tận
-            });
-          }
-
-          // Thất bại trong việc làm mới: Cưỡng chế đăng xuất bằng cách xóa tokens và báo lỗi
-          authStorage.clearTokens();
-          throw new AuthenticationError('Session expired');
-        }
-
-        // Kiểm tra mã trạng thái HTTP (2xx) và parse JSON + Zod verification
-        const validated = await validateResponse(response, schema) as TResponse;
-        logger.debug(`Success ${method} ${endpoint}`);
-
-        return validated;
-      } catch (error) {
-        clearTimeout(timeoutId);
-
+      if (fetchError !== null) {
         // Ném lỗi timeout cụ thể nếu bị trigger bởi AbortController
-        if (error instanceof DOMException && error.name === 'AbortError') {
+        if (fetchError instanceof DOMException && fetchError.name === 'AbortError') {
           throw new TimeoutError(`Request timeout after ${timeout}ms`, timeout);
         }
-
-        throw error;
+        throw fetchError;
       }
+
+      // KỊCH BẢN ĐẶC BIỆT: Token hết hạn (401) hoặc bị từ chối quyền (403)
+      if ((response!.status === HTTP_STATUS.UNAUTHORIZED || response!.status === HTTP_STATUS.FORBIDDEN) && !skipAuth && attempt === 1) {
+        logger.debug('Token expired, attempting refresh');
+        const refreshed = await refreshAccessToken();
+
+        if (refreshed) {
+          // Nếu làm mới token thành công, thực hiện ĐỆ QUY (lần duy nhất) để thử lại request gốc với token mới
+          return fetchWithToken<TResponse>(endpoint, {
+            ...options,
+            retries: 0, // Quan trọng: Reset retry về 0 để tránh vòng lặp vô tận
+          });
+        }
+
+        // Thất bại trong việc làm mới: Cưỡng chế đăng xuất bằng cách xóa tokens và báo lỗi
+        authStorage.clearTokens();
+        throw new AuthenticationError('Session expired');
+      }
+
+      // Kiểm tra mã trạng thái HTTP (2xx) và parse JSON + Zod verification
+      const validated = await validateResponse(response!, schema) as TResponse;
+      logger.debug(`Success ${method} ${endpoint}`);
+
+      return validated;
     } catch (error) {
       // CHUYỂN ĐỔI LỖI: Gom tất cả các loại exception về AppError thống nhất
       if (error instanceof AppError) {

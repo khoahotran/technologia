@@ -3,6 +3,7 @@ import {
     CartMap,
     AddToCartPayload,
     CalculatePricePayload,
+    CartItemActionResponse,
 } from "../entities/cart.entity";
 
 /**
@@ -37,6 +38,26 @@ export interface ICartRepository {
     addToCart(payload: AddToCartPayload): Promise<void>;
 
     /**
+     * Tăng số lượng của một mục trong giỏ hàng lên 1 unit
+     */
+    increase(cartItemId: string): Promise<CartItemActionResponse>;
+
+    /**
+     * Giảm số lượng của một mục trong giỏ hàng xuống 1 unit
+     */
+    decrease(cartItemId: string): Promise<CartItemActionResponse>;
+
+    /**
+     * Xóa một mục ra khỏi giỏ hàng.
+     */
+    remove(cartItemId: string): Promise<void>;
+
+    /**
+     * Lấy thông tin chi tiết một item trong giỏ.
+     */
+    getCartItem(cartItemId: string): Promise<CartItem>;
+
+    /**
      * Cập nhật số lượng của một mục sản phẩm đã có trong giỏ.
      * @param cartItemId ID của bản ghi mục giỏ hàng (không phải productId).
      * @param quantity Số lượng mới cần thiết lập.
@@ -57,5 +78,5 @@ export interface ICartRepository {
     /**
      * Tính toán tổng giá trị giỏ hàng (bao gồm giảm giá nếu có).
      */
-    calculatePrice(payload: CalculatePricePayload): Promise<any>;
+    calculatePrice(payload: CalculatePricePayload): Promise<number>;
 }

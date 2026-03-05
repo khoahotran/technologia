@@ -4,7 +4,7 @@ import { GoogleLogin, type CredentialResponse } from "@react-oauth/google"
 import { Facebook, Youtube, Instagram, Linkedin } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useState, useContext, useEffect } from "react"
+import { useState, useContext } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,6 +13,7 @@ import { authStorage } from "@/infrastructure/persistence/storage"
 import { AuthRepository } from "@/infrastructure/repositories/auth/auth.repository"
 import { UserRepository } from "@/infrastructure/repositories/user/user.repository"
 import { AuthContext } from "@/shared/providers/auth.provider"
+import { safe } from "@/shared/utils/result"
 
 /**
  * Giao diện Đăng nhập (Login Client View)
@@ -27,23 +28,18 @@ export default function LoginClient() {
     const router = useRouter()
     const auth = useContext(AuthContext)
     const [loading, setLoading] = useState(false)
-    const [error, setError] = useState("")
-    const [formData, setFormData] = useState({
-        username: "",
-        password: ""
-    })
-
-    useEffect(() => {
+    const [error, setError] = useState(() => {
         const searchParams = new URLSearchParams(window.location.search);
         const errorType = searchParams.get("error");
         if (errorType === "forbidden") {
-            setError("Your session has no permission or expired. Please login again.");
+            return "Your session has no permission or expired. Please login again.";
         } else if (errorType === "session_expired") {
-            setError("Your session has expired. Please login again.");
+            return "Your session has expired. Please login again.";
         } else if (errorType === "unauthorized") {
-            setError("Please login to access this feature.");
+            return "Please login to access this feature.";
         }
-    }, []);
+        return "";
+    });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -54,73 +50,76 @@ export default function LoginClient() {
         setError("")
         setLoading(true)
 
-        try {
-            console.warn("Attempting local login for:", formData.username);
-            // 1. Login to get token
-            const { token, refreshToken, userId } = await AuthRepository.login({
-                username: formData.username,
-                password: formData.password
-            });
+        console.warn("Attempting local login for:", formData.username);
+        // 1. Login to get token
+        const [authData, authErr] = await safe(AuthRepository.login({
+            username: formData.username,
+            password: formData.password
+        }));
 
-            // 2. Store tokens in storage
-            console.log("[LOGIN] After login - storing tokens", {
-                hasToken: !!token,
-                hasRefreshToken: !!refreshToken,
-                tokenLength: token?.length,
-                refreshTokenLength: refreshToken?.length,
-            });
-
-            authStorage.setTokens(token, refreshToken);
-            console.log("[LOGIN] authStorage.setTokens() completed");
-
-            // Verify tokens were stored
-            const storedToken = authStorage.getAccessToken();
-            const storedRefresh = authStorage.getRefreshToken();
-            console.log("[LOGIN] Verification - tokens in storage after setTokens()", {
-                hasStoredToken: !!storedToken,
-                hasStoredRefresh: !!storedRefresh,
-                storedTokenMatches: storedToken === token,
-                storedRefreshMatches: storedRefresh === refreshToken,
-            });
-
-            httpClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-            console.log("[LOGIN] Updated httpClient default headers");
-
-            // 3. User info
-            let finalUser = {
-                userId,
-                username: formData.username,
-                email: "",
-                role: "CUSTOMER"
-            };
-
-            try {
-                const userProfile = await UserRepository.getMe();
-                finalUser = {
-                    userId: userProfile.userId,
-                    username: userProfile.username,
-                    email: userProfile.email,
-                    role: userProfile.role || "CUSTOMER",
-                };
-            } catch (profileErr) {
-                console.warn("Failed to fetch profile after login:", profileErr);
-            }
-
-            if (auth) {
-                auth.login(token, refreshToken, finalUser);
-            }
-
-            console.warn("Local Login Success. Redirecting...");
-            router.push("/")
-            router.refresh()
-        } catch (err: unknown) {
-            console.error("Local Login Error Details:", err)
-            const appError = err as { message?: string, details?: { data?: { message?: string } } };
+        if (authErr !== null) {
+            console.error("Local Login Error Details:", authErr)
+            const appError = authErr as { message?: string, details?: { data?: { message?: string } } };
             const msg = appError.details?.data?.message || appError.message || "Login failed.";
             setError(msg);
-        } finally {
-            setLoading(false)
+            setLoading(false);
+            return;
         }
+
+        const { token, refreshToken, userId } = authData!;
+
+        // 2. Store tokens in storage
+        console.warn("[LOGIN] After login - storing tokens", {
+            hasToken: !!token,
+            hasRefreshToken: !!refreshToken,
+            tokenLength: token?.length,
+            refreshTokenLength: refreshToken?.length,
+        });
+
+        authStorage.setTokens(token, refreshToken);
+        console.warn("[LOGIN] authStorage.setTokens() completed");
+
+        // Verify tokens were stored
+        const storedToken = authStorage.getAccessToken();
+        const storedRefresh = authStorage.getRefreshToken();
+        console.warn("[LOGIN] Verification - tokens in storage after setTokens()", {
+            hasStoredToken: !!storedToken,
+            hasStoredRefresh: !!storedRefresh,
+            storedTokenMatches: storedToken === token,
+            storedRefreshMatches: storedRefresh === refreshToken,
+        });
+
+        httpClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        console.warn("[LOGIN] Updated httpClient default headers");
+
+        // 3. User info
+        let finalUser = {
+            userId,
+            username: formData.username,
+            email: "",
+            role: "CUSTOMER"
+        };
+
+        const [userProfile, profileErr] = await safe(UserRepository.getMe());
+        if (profileErr !== null) {
+            console.warn("Failed to fetch profile after login:", profileErr);
+        } else if (userProfile) {
+            finalUser = {
+                userId: userProfile.userId,
+                username: userProfile.username,
+                email: userProfile.email,
+                role: userProfile.role || "CUSTOMER",
+            };
+        }
+
+        if (auth) {
+            auth.login(token, refreshToken, finalUser);
+        }
+
+        console.warn("Local Login Success. Redirecting...");
+        router.push("/")
+        router.refresh()
+        setLoading(false)
     }
 
     const onGoogleSuccess = async (credentialResponse: CredentialResponse) => {
@@ -128,56 +127,60 @@ export default function LoginClient() {
         setLoading(true);
         setError("");
 
-        try {
-            if (!credentialResponse.credential) {
-                console.error("Google Login: No credential received");
-                setError("Google login failed - no credential received.");
-                return;
-            }
+        if (!credentialResponse.credential) {
+            console.error("Google Login: No credential received");
+            setError("Google login failed - no credential received.");
+            setLoading(false);
+            return;
+        }
 
-            // credentialResponse.credential is the ID Token (JWT)
-            const { token, refreshToken, userId } = await AuthRepository.loginGoogle({
-                idToken: credentialResponse.credential
-            });
+        // credentialResponse.credential is the ID Token (JWT)
+        const [authData, authErr] = await safe(AuthRepository.loginGoogle({
+            idToken: credentialResponse.credential
+        }));
 
-            console.warn("Backend Google Login Success:", { userId });
-
-            authStorage.setTokens(token, refreshToken);
-            httpClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
-            let finalUser = {
-                userId,
-                username: "google_user",
-                email: "",
-                role: "CUSTOMER"
-            };
-
-            try {
-                const userProfile = await UserRepository.getMe();
-                finalUser = {
-                    userId: userProfile.userId,
-                    username: userProfile.username,
-                    email: userProfile.email,
-                    role: userProfile.role || "CUSTOMER"
-                };
-            } catch (profileErr) {
-                console.warn("Failed to fetch profile after Google login:", profileErr);
-            }
-
-            if (auth) {
-                auth.login(token, refreshToken, finalUser);
-            }
-
-            router.push("/");
-            router.refresh();
-        } catch (err: unknown) {
-            console.error("Backend Google Login Error:", err);
-            const appError = err as { message?: string, details?: { data?: { message?: string } } };
+        if (authErr !== null) {
+            console.error("Backend Google Login Error:", authErr);
+            const appError = authErr as { message?: string, details?: { data?: { message?: string } } };
             const msg = appError.details?.data?.message || appError.message || "Google login failed.";
             setError(msg);
-        } finally {
             setLoading(false);
+            return;
         }
+
+        const { token, refreshToken, userId } = authData!;
+        console.warn("Backend Google Login Success:", { userId });
+
+        authStorage.setTokens(token, refreshToken);
+        httpClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+        let finalUser = {
+            userId,
+            username: "google_user",
+            email: "",
+            role: "CUSTOMER"
+        };
+
+        const [userProfile, profileErr] = await safe(UserRepository.getMe());
+
+        if (profileErr !== null) {
+            console.warn("Failed to fetch profile after Google login:", profileErr);
+        } else if (userProfile) {
+            finalUser = {
+                userId: userProfile.userId,
+                username: userProfile.username,
+                email: userProfile.email,
+                role: userProfile.role || "CUSTOMER"
+            };
+        }
+
+        if (auth) {
+            auth.login(token, refreshToken, finalUser);
+        }
+
+        router.push("/");
+        router.refresh();
+        setLoading(false);
     }
 
     return (

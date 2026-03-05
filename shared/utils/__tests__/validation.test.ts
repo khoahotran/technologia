@@ -30,12 +30,12 @@ describe('Validation Utilities', () => {
         it('should fail for short password', () => {
             expect(validatePassword('short')).toEqual({
                 isValid: false,
-                message: expect.stringContaining('at least')
+                message: 'Mật khẩu phải từ 6 ký tự trở lên'
             })
         })
 
         it('should check for empty password', () => {
-            expect(validatePassword('')).toEqual({ isValid: false, message: 'Password is required' })
+            expect(validatePassword('')).toEqual({ isValid: false, message: 'Vui lòng nhập mật khẩu' })
         })
     })
 
@@ -76,7 +76,7 @@ describe('Validation Utilities', () => {
         it('should fail invalid chars', () => {
             expect(validateUsername('user@name')).toEqual({
                 isValid: false,
-                message: expect.stringContaining('letters, numbers')
+                message: 'Tên người dùng chỉ được sử dụng chữ cái alpha b, số, dấu gạch dưới'
             })
         })
     })

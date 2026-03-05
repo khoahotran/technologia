@@ -35,7 +35,7 @@ describe('ProductCard Component', () => {
 
     it('should navigate to details page on click', () => {
         render(<ProductCard {...defaultProps} />)
-        fireEvent.click(screen.getByText('Details'))
+        fireEvent.click(screen.getByText('Chi tiết'))
         expect(mockRouter.push).toHaveBeenCalledWith('/products/p1')
     })
 

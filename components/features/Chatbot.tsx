@@ -100,7 +100,7 @@ export function Chatbot() {
 
       setMessages(prev => [...prev, {
         id: crypto.randomUUID(),
-        text: responseText,
+        text: responseText as string,
         sender: 'bot',
         timestamp: new Date()
       }])

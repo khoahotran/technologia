@@ -4,6 +4,7 @@
  * Chuyển đổi từ thư mục lib cũ sang shared/utils.
  * Phục vụ cho cả Debug trong Development và việc tích hợp các service nhận Log trong Production.
  */
+import { safe, safeSync } from "./result";
 
 // ===========================================
 // Khai báo Kiểu (Types)
@@ -174,11 +175,7 @@ class Logger {
 
     private dispatch(entry: LogEntry): void {
         for (const transport of this.transports) {
-            try {
-                transport.log(entry);
-            } catch {
-                // Silently fail - Tránh ứng dụng chết rạp nếu lỗi logging
-            }
+            safeSync(() => transport.log(entry));
         }
     }
 
@@ -221,9 +218,7 @@ class Logger {
         };
 
         for (const transport of this.transports) {
-            try {
-                transport.action(entry);
-            } catch { }
+            safeSync(() => transport.action(entry));
         }
         // Thêm vào hàng chờ để dội lô nếu cấu hình gửi sang Analytics Tool
         this.actionQueue.push(entry);
@@ -245,11 +240,11 @@ class Logger {
         this.flushInterval = setInterval(async () => {
             const actions = this.getQueuedActions();
             if (actions.length > 0) {
-                try {
-                    await flushFn(actions);
-                    this.clearActionQueue();
-                } catch (error) {
+                const [, error] = await safe(flushFn(actions));
+                if (error !== null) {
                     this.error("Failed to flush action queue", error);
+                } else {
+                    this.clearActionQueue();
                 }
             }
         }, intervalMs);

@@ -82,3 +82,14 @@ export interface CalculatePricePayload {
     /** Danh sách ID các mục trong giỏ cần tính toán (cho phép đặt hàng từng phần) */
     cartItemIds: string[];
 }
+/**
+ * Dữ liệu phản hồi sau khi thay đổi số lượng một bản ghi trong giỏ hàng.
+ */
+export interface CartItemActionResponse {
+    /** Mã định danh của mục giỏ hàng */
+    cartItemId: string;
+    /** Số lượng mới của mục này trong giỏ hàng */
+    quantityInCart: number;
+    /** Số lượng sản phẩm còn lại trong kho hệ thống */
+    quantityInStock: number;
+}

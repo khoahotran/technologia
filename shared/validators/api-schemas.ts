@@ -38,7 +38,7 @@ export type BaseResponse<T> = {
 // ===========================================
 
 export const BrandResponseSchema = z.object({
-  brandId: z.union([z.string(), z.number()]).transform(String),
+  brandId: z.union([z.string(), z.number()]).transform(Number),
   name: z.string(),
 });
 
@@ -65,7 +65,7 @@ export const BrandPaginatedResponseSchema = z.object({
 // ===========================================
 
 export const CategoryResponseSchema = z.object({
-  categoryId: z.union([z.string(), z.number()]).transform(String),
+  categoryId: z.union([z.string(), z.number()]).transform(Number),
   name: z.string(),
 });
 
@@ -375,6 +375,6 @@ export const CartTotalPriceResponseSchema = z.object({
 export const ErrorResponseSchema = z.object({
   status: z.number(),
   message: z.string(),
-  errors: z.record(z.union([z.string(), z.array(z.string())])).optional(),
+  errors: z.record(z.string(), z.union([z.string(), z.array(z.string())])).optional(),
   details: z.unknown().optional(),
 });

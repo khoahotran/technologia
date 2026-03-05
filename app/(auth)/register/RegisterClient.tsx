@@ -9,6 +9,7 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { AuthRepository } from "@/infrastructure/repositories/auth/auth.repository"
+import { safe } from "@/shared/utils/result"
 
 /**
  * Giao diện Đăng ký (Register Client View)
@@ -45,17 +46,23 @@ export default function RegisterClient() {
             return
         }
 
-        try {
-            await AuthRepository.register({
-                username: formData.username,
-                password: formData.password,
-                phoneNumber: formData.phoneNumber,
-                email: formData.email,
-                firstname: formData.firstName,
-                lastname: formData.lastName
-                // role is removed from DTO as it's optional/handled by backend or we update DTO
-            });
+        const [, err] = await safe(AuthRepository.register({
+            username: formData.username,
+            password: formData.password,
+            phoneNumber: formData.phoneNumber,
+            email: formData.email,
+            firstname: formData.firstName,
+            lastname: formData.lastName
+            // role is removed from DTO as it's optional/handled by backend or we update DTO
+        }));
 
+        if (err !== null) {
+            console.error(err)
+            const errorObj = err as { response?: { data?: { message?: string } } };
+            const errorMessage = errorObj.response?.data?.message || "Registration failed";
+            setError(errorMessage)
+            toast.error(errorMessage);
+        } else {
             toast.success("Registration successful! Redirecting to login...", {
                 duration: 2000,
             })
@@ -64,16 +71,9 @@ export default function RegisterClient() {
             setTimeout(() => {
                 router.push("/login")
             }, 2000)
-
-        } catch (err: unknown) {
-            console.error(err)
-            const errorObj = err as { response?: { data?: { message?: string } } };
-            const errorMessage = errorObj.response?.data?.message || "Registration failed";
-            setError(errorMessage)
-            toast.error(errorMessage);
-        } finally {
-            setLoading(false)
         }
+
+        setLoading(false)
     }
 
     return (

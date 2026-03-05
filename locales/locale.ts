@@ -5,6 +5,8 @@
  * các tệp từ điển ngôn ngữ (.json) tương ứng cho ứng dụng.
  */
 
+import { safe } from "@/shared/utils/result";
+
 let currentLocale = "en";
 
 /**
@@ -47,13 +49,13 @@ export function getLocale() {
  */
 export async function loadLocale(locale?: string) {
     const target = locale || currentLocale;
-    try {
-        // Sử dụng dynamic import để tối ưu hóa bundle size
-        const messages = await import(`@/locales/${target}.json`);
-        return messages.default || messages;
-    } catch {
+    const [messages, error] = await safe(import(`@/locales/${target}.json`));
+
+    if (error !== null) {
         console.warn(`Locale "${target}" không tìm thấy, đang chuyển về dùng tiếng Anh ("en").`);
-        const fallback = await import(`@/locales/en.json`);
-        return fallback.default || fallback;
+        const [fallback] = await safe(import(`@/locales/en.json`));
+        return fallback?.default || fallback || {};
     }
+
+    return messages?.default || messages;
 }

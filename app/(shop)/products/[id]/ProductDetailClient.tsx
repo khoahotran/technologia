@@ -20,6 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { isAppError, type AppError } from "@/domain/errors";
 import { useAddToCartMutation, useProductDetail, useProductList } from "@/presentation/hooks";
 import { formatCurrency, formatNumber } from "@/shared/utils/format";
+import { safe } from "@/shared/utils/result";
 
 interface ProductDetailClientProps {
     /** Mã định danh sản phẩm lấy từ URL params */
@@ -104,7 +105,7 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
         { label: "Tồn kho", value: formatNumber(product.totalStock || 0) },
     ];
 
-    const handleAddToCart = () => {
+    const handleAddToCart = async () => {
         const variantId = product.variants?.[0]?.variantId;
         if (!variantId) {
             toast.error("Sản phẩm chưa có biến thể");
@@ -112,35 +113,44 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
         }
 
         const iterations = Math.max(1, quantity);
-        let completed = 0;
+        let successCount = 0;
+
+        // Thực hiện thêm từng đơn vị sản phẩm một cách tuần tự (Sequential)
+        // Backend hiện tại chỉ hỗ trợ tăng 1 đơn vị mỗi lần gọi API
         for (let i = 0; i < iterations; i += 1) {
-            addToCartMutation.mutate(
-                {
-                    productId: product.productId,
-                    variantId,
-                },
-                {
-                    onSuccess: () => {
-                        completed += 1;
-                        if (completed === iterations) {
-                            toast.success(`Đã thêm ${iterations} sản phẩm vào giỏ hàng`);
-                        }
-                    },
-                    onError: (err: unknown) => {
-                        let message = "Không thể thêm vào giỏ hàng.";
-                        const appError = err as AppError;
-                        if (appError?.details && typeof appError.details === 'object' && 'data' in (appError.details as object)) {
-                            const data = (appError.details as { data?: { message?: string } }).data;
-                            if (data?.message) message = data.message;
-                        }
-                        if (appError?.statusCode === 401) {
-                            message = "Vui lòng đăng nhập để thêm vào giỏ hàng.";
-                            router.push("/login");
-                        }
-                        toast.error(message);
-                    },
+            const [, err] = await safe(addToCartMutation.mutateAsync({
+                productId: product.productId,
+                variantId,
+            }));
+
+            if (err !== null) {
+                let message = "Không thể thêm vào giỏ hàng.";
+                const appError = err as AppError;
+
+                // Xử lý lỗi đặc thù: Chưa đăng nhập
+                if (appError?.statusCode === 401) {
+                    toast.error("Vui lòng đăng nhập để thực hiện tính năng này.");
+                    router.push("/login");
+                    return;
                 }
-            );
+
+                // Trích xuất message từ chi tiết lỗi backend nếu có
+                if (appError?.details && typeof appError.details === 'object' && 'data' in (appError.details as object)) {
+                    const data = (appError.details as { data?: { message?: string } }).data;
+                    if (data?.message) message = data.message;
+                } else if (appError?.message) {
+                    message = appError.message;
+                }
+
+                toast.error(message);
+                return; // Stop on first error
+            }
+
+            successCount += 1;
+        }
+
+        if (successCount > 0) {
+            toast.success(`Đã thêm ${successCount} sản phẩm vào giỏ hàng`);
         }
     };
 

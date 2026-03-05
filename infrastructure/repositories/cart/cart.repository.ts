@@ -9,34 +9,29 @@
  * - Tự động xác thực dữ liệu Response
  */
 
-import { fetchWithToken } from "@/infrastructure/http";
 import {
     CartItem,
     CartMap,
-    CartMapSchema,
     CartItemSchema,
     AddToCartPayload,
     CalculatePricePayload
 } from "@/domain/cart/entities/cart.entity";
-import { ICartRepository, CartPagingParams } from "@/domain/cart/repositories/cart.repository.interface";
+import { ICartRepository } from "@/domain/cart/repositories/cart.repository.interface";
+import { fetchWithToken } from "@/infrastructure/http";
+import { createScopedLogger } from "@/lib/logger";
+import { safeSync } from "@/shared/utils/result";
 import {
     CartResponseSchema,
     CartItemActionResponseSchema,
     AddToCartResponseSchema,
     CartTotalPriceResponseSchema,
     CartItemDetailResponseSchema,
-    CartItemListResponseSchema,
 } from "@/shared/validators/api-schemas";
-import { createScopedLogger } from "@/lib/logger";
 
 const logger = createScopedLogger('CartRepository');
 
 /** Giỏ hàng rỗng - trả về khi API lỗi hoặc chưa có dữ liệu */
 const EMPTY_CART: CartMap = { cartItems: [] };
-
-// ===========================================
-// Helper Functions
-// ===========================================
 
 /**
  * Trích xuất dữ liệu CartMap từ response API đơn (không phân trang)
@@ -44,28 +39,14 @@ const EMPTY_CART: CartMap = { cartItems: [] };
  * @returns CartMap hoặc giỏ hàng rỗng nếu parse thất bại
  */
 function extractCartData(response: unknown): CartMap {
-    try {
-        const validated = CartResponseSchema.parse(response);
-        return validated.data.map || EMPTY_CART;
-    } catch (error) {
+    const [validated, error] = safeSync(() => CartResponseSchema.parse(response));
+
+    if (error !== null) {
         logger.error('Failed to parse cart response', error);
         return EMPTY_CART;
     }
-}
 
-/**
- * Trích xuất dữ liệu CartMap từ response API phân trang
- * @param response Response thô từ API (dạng danh sách)
- * @returns CartMap hoặc giỏ hàng rỗng nếu parse thất bại
- */
-function extractCartDataFromList(response: unknown): CartMap {
-    try {
-        const validated = CartItemListResponseSchema.parse(response);
-        return validated.data.map || EMPTY_CART;
-    } catch (error) {
-        logger.error('Failed to parse cart item list response', error);
-        return EMPTY_CART;
-    }
+    return validated!.data.map || EMPTY_CART;
 }
 
 // ===========================================
@@ -80,34 +61,17 @@ function extractCartDataFromList(response: unknown): CartMap {
  */
 export const CartRepository: ICartRepository = {
     /**
-     * Lấy danh sách giỏ hàng kèm phân trang
-     * Dùng khi giỏ hàng có quá nhiều mục và cần hiển thị từng trang.
-     * @param params Tham số phân trang (page, size, sortBy, sortDir)
+     * Lấy toàn bộ thông tin giỏ hàng hiện tại của người dùng
      */
-    async getCartWithPaging(params: CartPagingParams = {}): Promise<CartMap> {
-        logger.debug('Fetching cart with paging', params as any);
+    async getCart(page?: number, size?: number): Promise<CartMap> {
+        logger.debug('Fetching cart', { page, size });
 
         const response = await fetchWithToken("/carts", {
             method: 'GET',
             query: {
-                page: String(params.page ?? 0),
-                size: String(params.size ?? 10),
-                ...(params.sortDir && { sortDir: params.sortDir }),
-                ...(params.sortBy && { sortBy: params.sortBy }),
-            },
-        });
-
-        return extractCartDataFromList(response);
-    },
-
-    /**
-     * Lấy toàn bộ thông tin giỏ hàng hiện tại của người dùng
-     */
-    async getCart(): Promise<CartMap> {
-        logger.debug('Fetching cart');
-
-        const response = await fetchWithToken("/carts", {
-            method: 'GET',
+                ...(page !== undefined && { page: String(page) }),
+                ...(size !== undefined && { size: String(size) }),
+            }
         });
 
         // Trích xuất và bóc tách dữ liệu từ cấu trúc Response API
@@ -118,8 +82,8 @@ export const CartRepository: ICartRepository = {
      * Thêm sản phẩm vào giỏ hàng
      * @param payload Dữ liệu gồm productId, quantity và các tùy chọn variant
      */
-    async addToCart(payload: AddToCartPayload) {
-        logger.debug('Adding to cart', payload as any);
+    async addToCart(payload: AddToCartPayload): Promise<void> {
+        logger.debug('Adding to cart', { ...payload });
 
         const response = await fetchWithToken("/carts/add-to-cart", {
             method: 'POST',
@@ -127,8 +91,7 @@ export const CartRepository: ICartRepository = {
         });
 
         // Xác thực kết quả thao tác từ Server
-        const validated = AddToCartResponseSchema.parse(response);
-        return validated.data;
+        AddToCartResponseSchema.parse(response);
     },
 
     /**
@@ -199,7 +162,7 @@ export const CartRepository: ICartRepository = {
      * @param payload Danh sách cartItemId được chọn để tính giá
      */
     async calculatePrice(payload: CalculatePricePayload): Promise<number> {
-        logger.debug('Calculating cart price', payload as any);
+        logger.debug('Calculating cart price', { ...payload });
 
         const response = await fetchWithToken("/carts/price", {
             method: 'POST',
@@ -209,4 +172,27 @@ export const CartRepository: ICartRepository = {
         const validated = CartTotalPriceResponseSchema.parse(response);
         return validated.data;
     },
+
+    async updateQuantity(cartItemId: string, quantity: number): Promise<void> {
+        logger.debug('Updating cart item quantity', { cartItemId, quantity });
+        await fetchWithToken(`/cart-items/${cartItemId}`, {
+            method: 'PATCH',
+            body: { quantity }
+        });
+    },
+
+    async removeFromCart(cartItemIds: string[]): Promise<void> {
+        logger.debug('Removing multiple cart items', { cartItemIds });
+        await fetchWithToken("/cart-items/batch-delete", {
+            method: 'DELETE',
+            body: { cartItemIds }
+        });
+    },
+
+    async clearCart(): Promise<void> {
+        logger.debug('Clearing whole cart');
+        await fetchWithToken("/carts/clear", {
+            method: 'POST'
+        });
+    }
 };

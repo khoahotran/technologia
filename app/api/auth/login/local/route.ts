@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { forwardJsonToUserService, setAccessTokenCookie } from "@/lib/api-route";
 import { HTTP_STATUS } from "@/shared/constants";
+import { safe } from "@/shared/utils/result";
 
 /**
  * Local Login API Route
@@ -9,7 +10,7 @@ import { HTTP_STATUS } from "@/shared/constants";
  */
 
 export async function POST(request: Request) {
-    try {
+    const [result, error] = await safe((async () => {
         const body = await request.json();
         const { username, password } = body;
 
@@ -44,11 +45,15 @@ export async function POST(request: Request) {
                 userId: backendData.userId,
             },
         });
-    } catch (error) {
+    })());
+
+    if (error !== null) {
         console.error("Login Local Proxy Error:", error);
         return NextResponse.json(
             { error: "Internal Server Error" },
             { status: HTTP_STATUS.INTERNAL_SERVER_ERROR }
         );
     }
+
+    return result as NextResponse;
 }
