@@ -10,9 +10,8 @@
 
 import { CategoryEntity, CategoryEntitySchema } from "@/domain/product/entities/category.entity";
 import { CategoryPagingResponse, ICategoryRepository } from "@/domain/product/repositories/category.repository.interface";
-import { fetchWithToken } from "@/infrastructure/http";
+import { fetchWithToken, adaptResponse, adaptPaginatedResponse, adaptListResponse } from "@/infrastructure/http";
 import { createScopedLogger } from "@/lib/logger";
-import { CategoryListResponseSchema, CategoryPaginatedResponseSchema } from "@/shared/validators/api-schemas";
 
 const logger = createScopedLogger('CategoryRepository');
 /** Đường dẫn gốc API cho tài nguyên Category */
@@ -27,8 +26,7 @@ export const CategoryRepository: ICategoryRepository = {
         logger.debug('Fetching all categories');
 
         const response = await fetchWithToken(BASE_PATH, { method: 'GET' });
-        const validated = CategoryListResponseSchema.parse(response);
-        return validated.data;
+        return adaptListResponse(response, CategoryEntitySchema, 'categories');
     },
 
     /**
@@ -39,11 +37,7 @@ export const CategoryRepository: ICategoryRepository = {
         logger.debug(`Fetching category by ID: ${id}`);
 
         const response = await fetchWithToken(`${BASE_PATH}/${id}`, { method: 'GET' });
-        // Xử lý linh hoạt trường hợp response bọc trong object hoặc trả về trực tiếp
-        const data = response instanceof Object && 'data' in response
-            ? (response as { data: unknown }).data
-            : response;
-        return CategoryEntitySchema.parse(data);
+        return adaptResponse(response, CategoryEntitySchema, `category-${id}`);
     },
 
     /**
@@ -63,23 +57,9 @@ export const CategoryRepository: ICategoryRepository = {
 
         const response = await fetchWithToken(`${BASE_PATH}/paged`, {
             method: 'GET',
-            query: {
-                page: String(page),
-                size: String(size),
-                sortBy,
-                sortDirection,
-            },
+            query: { page: String(page), size: String(size), sortBy, sortDirection },
         });
 
-        const validated = CategoryPaginatedResponseSchema.parse(response);
-        return {
-            status: validated.status,
-            page_number: validated.page_number,
-            page_size: validated.page_size,
-            count_items: validated.count_items,
-            count_pages: validated.count_pages,
-            data: validated.data,
-            message: validated.message,
-        };
+        return adaptPaginatedResponse(response, CategoryEntitySchema, "categories-paged");
     },
 };

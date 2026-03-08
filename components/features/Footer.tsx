@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Thành phần Chân trang (Footer Feature Component)
  * 
@@ -11,8 +13,10 @@ import { Facebook, Youtube, Instagram, Linkedin, Headphones } from "lucide-react
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/shared/providers/language.provider";
 
 export default function Footer() {
+  const { t } = useLanguage();
   return (
     <footer className="bg-white pt-16 pb-8 border-t border-gray-100">
       <div className="container mx-auto px-4">
@@ -21,7 +25,7 @@ export default function Footer() {
           <div className="space-y-6">
             <div className="space-y-4">
               <p className="text-gray-600 text-sm max-w-xs">
-                Luôn kết nối với cộng đồng công nghệ của chúng tôi
+                {t('footer_stay_connected', {}, "Stay connected with our tech community")}
               </p>
               <div className="flex space-x-3">
                 <Button variant="secondary" size="icon" className="rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100">
@@ -42,38 +46,38 @@ export default function Footer() {
 
           {/* Cột 2: Liên kết nhanh */}
           <div>
-            <h3 className="font-bold text-gray-900 mb-6 uppercase tracking-wider text-sm">Liên kết nhanh</h3>
+            <h3 className="font-bold text-gray-900 mb-6 uppercase tracking-wider text-sm">{t('footer_quick_links', {}, "Quick Links")}</h3>
             <ul className="space-y-4">
-              <li><Link href="/about" className="text-gray-600 hover:text-primary transition-colors text-sm">Về chúng tôi</Link></li>
-              <li><Link href="/contact" className="text-gray-600 hover:text-primary transition-colors text-sm">Liên hệ</Link></li>
-              <li><Link href="/products" className="text-gray-600 hover:text-primary transition-colors text-sm">Sản phẩm</Link></li>
-              <li><Link href="/login" className="text-gray-600 hover:text-primary transition-colors text-sm">Đăng nhập</Link></li>
-              <li><Link href="/signup" className="text-gray-600 hover:text-primary transition-colors text-sm">Đăng ký</Link></li>
+              <li><Link href="/about" className="text-gray-600 hover:text-primary transition-colors text-sm">{t('footer_about_us', {}, "About Us")}</Link></li>
+              <li><Link href="/contact" className="text-gray-600 hover:text-primary transition-colors text-sm">{t('footer_contact_us', {}, "Contact")}</Link></li>
+              <li><Link href="/products" className="text-gray-600 hover:text-primary transition-colors text-sm">{t('footer_products', {}, "Products")}</Link></li>
+              <li><Link href="/login" className="text-gray-600 hover:text-primary transition-colors text-sm">{t('footer_login', {}, "Login")}</Link></li>
+              <li><Link href="/signup" className="text-gray-600 hover:text-primary transition-colors text-sm">{t('footer_signup', {}, "Sign Up")}</Link></li>
             </ul>
           </div>
 
           {/* Cột 3: Khu vực Khách hàng */}
           <div>
-            <h3 className="font-bold text-gray-900 mb-6 uppercase tracking-wider text-sm">Chăm sóc khách hàng</h3>
+            <h3 className="font-bold text-gray-900 mb-6 uppercase tracking-wider text-sm">{t('footer_customer_service', {}, "Customer Service")}</h3>
             <ul className="space-y-4">
-              <li><Link href="/account" className="text-gray-600 hover:text-primary transition-colors text-sm">Tài khoản của tôi</Link></li>
-              <li><Link href="/orders" className="text-gray-600 hover:text-primary transition-colors text-sm">Đơn hàng</Link></li>
-              <li><Link href="/cart" className="text-gray-600 hover:text-primary transition-colors text-sm">Giỏ hàng</Link></li>
-              <li><Link href="/terms" className="text-gray-600 hover:text-primary transition-colors text-sm">Điều khoản sử dụng</Link></li>
-              <li><Link href="/privacy" className="text-gray-600 hover:text-primary transition-colors text-sm">Chính sách bảo mật</Link></li>
+              <li><Link href="/account" className="text-gray-600 hover:text-primary transition-colors text-sm">{t('footer_my_account', {}, "My Account")}</Link></li>
+              <li><Link href="/orders" className="text-gray-600 hover:text-primary transition-colors text-sm">{t('footer_orders', {}, "Orders")}</Link></li>
+              <li><Link href="/cart" className="text-gray-600 hover:text-primary transition-colors text-sm">{t('footer_cart', {}, "Cart")}</Link></li>
+              <li><Link href="/terms" className="text-gray-600 hover:text-primary transition-colors text-sm">{t('footer_terms', {}, "Terms of Use")}</Link></li>
+              <li><Link href="/privacy" className="text-gray-600 hover:text-primary transition-colors text-sm">{t('footer_privacy', {}, "Privacy Policy")}</Link></li>
             </ul>
           </div>
 
           {/* Cột 4: Thông tin liên hệ */}
           <div>
-            <h3 className="font-bold text-gray-900 mb-6 uppercase tracking-wider text-sm">Liên hệ</h3>
+            <h3 className="font-bold text-gray-900 mb-6 uppercase tracking-wider text-sm">{t('footer_contact_info', {}, "Contact Info")}</h3>
             <div className="space-y-4">
-              <p className="text-gray-600 text-sm">Chúng tôi luôn lắng nghe ý kiến của bạn!</p>
+              <p className="text-gray-600 text-sm">{t('footer_listening', {}, "We're always listening to your feedback!")}</p>
 
               <div className="flex items-center space-x-3 py-2">
                 <Headphones className="h-8 w-8 text-gray-800" />
                 <div>
-                  <p className="text-xs text-gray-500">Bạn có câu hỏi?</p>
+                  <p className="text-xs text-gray-500">{t('footer_questions', {}, "Have questions?")}</p>
                   <p className="font-bold text-blue-900">(+84) 123 456 789</p>
                 </div>
               </div>
@@ -82,13 +86,13 @@ export default function Footer() {
               <div className="flex space-x-4 pt-2">
                 <div className="border rounded-md px-3 py-1.5 flex items-center space-x-2 cursor-pointer hover:bg-gray-50">
                   <div className="text-xs">
-                    <p className="text-[10px] leading-none text-gray-500">Tải về trên</p>
+                    <p className="text-[10px] leading-none text-gray-500">{t('footer_download_on', {}, "Download on")}</p>
                     <p className="font-semibold leading-tight text-gray-800">Google Play</p>
                   </div>
                 </div>
                 <div className="border rounded-md px-3 py-1.5 flex items-center space-x-2 cursor-pointer hover:bg-gray-50">
                   <div className="text-xs">
-                    <p className="text-[10px] leading-none text-gray-500">Tải về trên</p>
+                    <p className="text-[10px] leading-none text-gray-500">{t('footer_download_on', {}, "Download on")}</p>
                     <p className="font-semibold leading-tight text-gray-800">Amazon.com</p>
                   </div>
                 </div>

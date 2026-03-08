@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { PriceDisplay } from "@/components/ui/price-display";
 import { QuantitySelector } from "@/components/ui/quantity-selector";
 import { StarRating } from "@/components/ui/star-rating";
+import { useLanguage } from "@/shared/providers/language.provider";
 import { formatNumber } from "@/shared/utils/format";
 
 // ===========================================
@@ -61,6 +62,8 @@ export function ProductInfo({
   onAddToCart,
   onAddToWishlist,
 }: ProductInfoProps) {
+  const { t, locale } = useLanguage();
+  const currentLocale = locale === 'vi' ? 'vi-VN' : 'en-US';
   // Trạng thái lưu trữ số lượng muốn mua
   const [quantity, setQuantity] = useState(1);
 
@@ -80,7 +83,7 @@ export function ProductInfo({
           <div className="flex items-center gap-1">
             {/* Hiển thị số sao thực tế bằng Component StarRating */}
             <StarRating rating={rating} size="sm" />
-            <span className="ml-1 text-gray-900">({reviewCount} đánh giá)</span>
+            <span className="ml-1 text-gray-900">{t('reviews_count', { count: formatNumber(reviewCount, currentLocale) }, `(${reviewCount} reviews)`)}</span>
           </div>
         </div>
       </div>
@@ -97,15 +100,15 @@ export function ProductInfo({
       <div className="flex gap-8 text-sm text-gray-500">
         <div className="flex items-center gap-2">
           <span className="font-medium text-gray-900">
-            {formatNumber(soldCount)}
+            {formatNumber(soldCount, currentLocale)}
           </span>
-          Đã bán
+          {t('sold', {}, "Sold")}
         </div>
         <div className="flex items-center gap-2">
           <span className="font-medium text-gray-900">
-            {formatNumber(viewCount)}
+            {formatNumber(viewCount, currentLocale)}
           </span>
-          Lượt xem
+          {t('viewed', {}, "Viewed")}
         </div>
       </div>
 
@@ -113,7 +116,7 @@ export function ProductInfo({
       <div className="space-y-4 border-t border-b border-gray-100 py-6">
         {/* Số lượng */}
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-gray-900">Số lượng</span>
+          <span className="text-sm font-medium text-gray-900">{t('quantity', {}, "Quantity")}</span>
           <QuantitySelector
             value={quantity}
             onChange={setQuantity}
@@ -124,22 +127,22 @@ export function ProductInfo({
 
         {/* Màu sắc (Demo giao diện tĩnh) */}
         <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-gray-900">Màu sắc</span>
+          <span className="text-sm font-medium text-gray-900">{t('color', {}, "Color")}</span>
           <div className="flex gap-2">
             <button
               type="button"
               className="h-6 w-6 rounded-full bg-black ring-2 ring-offset-1 ring-gray-300 cursor-pointer focus:outline-none focus:ring-primary"
-              aria-label="Chọn màu đen"
+              aria-label={t('select_color_black', {}, "Select black color")}
             />
             <button
               type="button"
               className="h-6 w-6 rounded-full bg-blue-500 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
-              aria-label="Chọn màu xanh"
+              aria-label={t('select_color_blue', {}, "Select blue color")}
             />
             <button
               type="button"
               className="h-6 w-6 rounded-full bg-white border border-gray-300 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary"
-              aria-label="Chọn màu trắng"
+              aria-label={t('select_color_white', {}, "Select white color")}
             />
           </div>
         </div>
@@ -153,7 +156,7 @@ export function ProductInfo({
           size="lg"
           onClick={handleBuyNow}
         >
-          Mua ngay
+          {t('buy_now', {}, "Buy Now")}
         </Button>
         {/* Nút thêm vào WL */}
         <Button
@@ -161,7 +164,7 @@ export function ProductInfo({
           size="icon"
           className="h-12 w-12 rounded-full border-gray-200"
           onClick={onAddToWishlist}
-          aria-label="Thêm vào danh sách yêu thích"
+          aria-label={t('add_to_wishlist', {}, "Add to wishlist")}
         >
           <Heart className="h-5 w-5" />
         </Button>
@@ -170,7 +173,7 @@ export function ProductInfo({
           variant="outline"
           size="icon"
           className="h-12 w-12 rounded-full border-gray-200"
-          aria-label="Chia sẻ sản phẩm"
+          aria-label={t('share_product', {}, "Share product")}
         >
           <Share2 className="h-5 w-5" />
         </Button>

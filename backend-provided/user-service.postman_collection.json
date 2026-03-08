@@ -1,1 +1,3305 @@
-{"info":{"_postman_id":"210cd52c-c5a3-48c5-941a-a5dfb48f9e65","name":"user-service","schema":"https://schema.getpostman.com/json/collection/v2.1.0/collection.json","_exporter_id":"39122289","_collection_link":"https://go.postman.co/collection/34391158-210cd52c-c5a3-48c5-941a-a5dfb48f9e65?source=collection_link"},"item":[{"name":"User-profile API","item":[{"name":"Get Profile Me","request":{"auth":{"type":"bearer","bearer":[{"key":"token","value":"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwN2syMiIsImlhdCI6MTc2ODM3NDM5NiwiZXhwIjoxNzY4Mzc1Mjk2LCJyb2xlIjoiQ1VTVE9NRVIifQ.7be3CTb4oMlLicfgbcyKT6e5zSLy4m_9lo80PhEfG7c","type":"string"}]},"method":"GET","header":[],"url":{"raw":"http://localhost:8081/api/users/profile/me","protocol":"http","host":["localhost"],"port":"8081","path":["api","users","profile","me"]}},"response":[{"name":"Get Profile Me Success","originalRequest":{"method":"GET","header":[],"url":{"raw":"http://localhost:8081/api/users/profile/me","protocol":"http","host":["localhost"],"port":"8081","path":["api","users","profile","me"]}},"status":"OK","code":200,"_postman_previewlanguage":null,"header":[{"key":"Vary","value":"Origin"},{"key":"Vary","value":"Access-Control-Request-Method"},{"key":"Vary","value":"Access-Control-Request-Headers"},{"key":"X-Content-Type-Options","value":"nosniff"},{"key":"X-XSS-Protection","value":"0"},{"key":"Cache-Control","value":"no-cache, no-store, max-age=0, must-revalidate"},{"key":"Pragma","value":"no-cache"},{"key":"Expires","value":"0"},{"key":"Content-Type","value":"application/json"},{"key":"Transfer-Encoding","value":"chunked"},{"key":"Date","value":"Wed, 14 Jan 2026 08:15:29 GMT"},{"key":"Keep-Alive","value":"timeout=60"},{"key":"Connection","value":"keep-alive"}],"cookie":[],"body":"{\n    \"status\": 200,\n    \"data\": {\n        \"userId\": 1,\n        \"username\": \"chi.nguyen2407k22\",\n        \"firstName\": \"Quế Chi\",\n        \"lastName\": \"Nguyễn Ngọc\",\n        \"email\": \"abc@example.com\",\n        \"phoneNumber\": null,\n        \"imageUrl\": null,\n        \"displayName\": \"Heh\"\n    },\n    \"message\": \"Get user profile successfully!\"\n}"}]},{"name":"Update Profile Me","request":{"auth":{"type":"bearer","bearer":[{"key":"token","value":"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwN2syMiIsImlhdCI6MTc2ODM3ODIwOSwiZXhwIjoxNzY4Mzc5MTA5LCJyb2xlIjoiQ1VTVE9NRVIifQ.kQnbDOiVX1M6BvKfG-8CVgShaFMzlkbrByVtVtK4CSQ","type":"string"}]},"method":"PUT","header":[],"body":{"mode":"raw","raw":"{\r\n    \"firstname\": \"Quế Chi\",\r\n    \"lastname\":\"Nguyễn Ngọc\",\r\n    \"email\":\"abc@example.com\",\r\n    \"phoneNumber\":\"0123456789\",\r\n    \"displayName\":\"Heh\"\r\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"http://localhost:8081/api/users/profile/me","protocol":"http","host":["localhost"],"port":"8081","path":["api","users","profile","me"]}},"response":[{"name":"Update Profile Me Success","originalRequest":{"method":"PUT","header":[],"body":{"mode":"raw","raw":"{\r\n    \"firstname\": \"Quế Chi\",\r\n    \"lastname\":\"Nguyễn Ngọc\",\r\n    \"email\":\"abc@example.com\",\r\n    \"phoneNumber\":\"0123456789\",\r\n    \"displayName\":\"Heh\"\r\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"http://localhost:8081/api/users/profile/me","protocol":"http","host":["localhost"],"port":"8081","path":["api","users","profile","me"]}},"status":"OK","code":200,"_postman_previewlanguage":null,"header":[{"key":"Vary","value":"Origin"},{"key":"Vary","value":"Access-Control-Request-Method"},{"key":"Vary","value":"Access-Control-Request-Headers"},{"key":"X-Content-Type-Options","value":"nosniff"},{"key":"X-XSS-Protection","value":"0"},{"key":"Cache-Control","value":"no-cache, no-store, max-age=0, must-revalidate"},{"key":"Pragma","value":"no-cache"},{"key":"Expires","value":"0"},{"key":"Content-Type","value":"application/json"},{"key":"Transfer-Encoding","value":"chunked"},{"key":"Date","value":"Wed, 14 Jan 2026 08:15:12 GMT"},{"key":"Keep-Alive","value":"timeout=60"},{"key":"Connection","value":"keep-alive"}],"cookie":[],"body":"{\n    \"status\": 200,\n    \"data\": {\n        \"userId\": 0,\n        \"username\": \"chi.nguyen2407k22\",\n        \"firstName\": \"Quế Chi\",\n        \"lastName\": \"Nguyễn Ngọc\",\n        \"email\": \"abc@example.com\",\n        \"phoneNumber\": \"0123456789\",\n        \"imageUrl\": null,\n        \"displayName\": \"Heh\"\n    },\n    \"message\": \"Update user profile successfully!\"\n}"}]},{"name":"Change Avatar","request":{"auth":{"type":"bearer","bearer":[{"key":"token","value":"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwN2syMiIsImlhdCI6MTc2ODM3ODIwOSwiZXhwIjoxNzY4Mzc5MTA5LCJyb2xlIjoiQ1VTVE9NRVIifQ.kQnbDOiVX1M6BvKfG-8CVgShaFMzlkbrByVtVtK4CSQ","type":"string"}]},"method":"PUT","header":[],"body":{"mode":"formdata","formdata":[{"key":"avatar","type":"file","uuid":"dc2ffaa2-f3c9-457e-9331-2255bfb6e4c7","src":"9AGT2xft3/avocador.png"}]},"url":{"raw":"http://localhost:8081/api/users/change-avatar/me","protocol":"http","host":["localhost"],"port":"8081","path":["api","users","change-avatar","me"]}},"response":[{"name":"Change Avatar success","originalRequest":{"method":"PUT","header":[],"body":{"mode":"formdata","formdata":[{"key":"avatar","type":"file","uuid":"dc2ffaa2-f3c9-457e-9331-2255bfb6e4c7","src":"9AGT2xft3/avocador.png"}]},"url":{"raw":"http://localhost:8081/api/users/change-avatar/me?avatar","protocol":"http","host":["localhost"],"port":"8081","path":["api","users","change-avatar","me"],"query":[{"key":"avatar","value":null,"type":"text"}]}},"status":"OK","code":200,"_postman_previewlanguage":null,"header":[{"key":"Vary","value":"Origin"},{"key":"Vary","value":"Access-Control-Request-Method"},{"key":"Vary","value":"Access-Control-Request-Headers"},{"key":"X-Content-Type-Options","value":"nosniff"},{"key":"X-XSS-Protection","value":"0"},{"key":"Cache-Control","value":"no-cache, no-store, max-age=0, must-revalidate"},{"key":"Pragma","value":"no-cache"},{"key":"Expires","value":"0"},{"key":"Content-Type","value":"application/json"},{"key":"Transfer-Encoding","value":"chunked"},{"key":"Date","value":"Wed, 14 Jan 2026 08:52:48 GMT"},{"key":"Keep-Alive","value":"timeout=60"},{"key":"Connection","value":"keep-alive"}],"cookie":[],"body":"{\n    \"status\": 200,\n    \"data\": {\n        \"avatarUrl\": \"https://res.cloudinary.com/dgghmjv8k/image/upload/v1768380766/ecom_avatars/gyeyyknjjcsdoyamoj8z.png\"\n    },\n    \"message\": \"Change avatar successfully!\"\n}"}]},{"name":"Change password","request":{"auth":{"type":"bearer","bearer":[{"key":"token","value":"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwN2syMiIsImlhdCI6MTc2ODM4MTUxOSwiZXhwIjoxNzY4MzgyNDE5LCJyb2xlIjoiQ1VTVE9NRVIifQ.yBVkEVYsT4Hacx5G5J0nR01UHutwPbkYJBciHgMUHx8","type":"string"}]},"method":"PUT","header":[],"body":{"mode":"raw","raw":"{\r\n    \"oldPassword\":\"newPasswordnkaaa\",\r\n    \"newPassword\":\"thisisnewpasswordnka\"\r\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"http://localhost:8081/api/users/change-password/me","protocol":"http","host":["localhost"],"port":"8081","path":["api","users","change-password","me"]}},"response":[{"name":"Change password success","originalRequest":{"method":"PUT","header":[],"body":{"mode":"raw","raw":"{\r\n    \"oldPassword\":\"thisisnewpasswordnka\",\r\n    \"newPassword\":\"awwwwwwwwwwwwwwwwwww\"\r\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"http://localhost:8081/api/users/change-password/me","protocol":"http","host":["localhost"],"port":"8081","path":["api","users","change-password","me"]}},"status":"OK","code":200,"_postman_previewlanguage":null,"header":[{"key":"Vary","value":"Origin"},{"key":"Vary","value":"Access-Control-Request-Method"},{"key":"Vary","value":"Access-Control-Request-Headers"},{"key":"X-Content-Type-Options","value":"nosniff"},{"key":"X-XSS-Protection","value":"0"},{"key":"Cache-Control","value":"no-cache, no-store, max-age=0, must-revalidate"},{"key":"Pragma","value":"no-cache"},{"key":"Expires","value":"0"},{"key":"Content-Type","value":"application/json"},{"key":"Transfer-Encoding","value":"chunked"},{"key":"Date","value":"Wed, 14 Jan 2026 09:07:35 GMT"},{"key":"Keep-Alive","value":"timeout=60"},{"key":"Connection","value":"keep-alive"}],"cookie":[],"body":"{\n    \"status\": 200,\n    \"data\": null,\n    \"message\": \"Change password successfully!\"\n}"}]}]},{"name":"Authentication API","item":[{"name":"Register API","request":{"auth":{"type":"noauth"},"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\r\n    \"username\": \"chi.nguyen2407k22\",\r\n    \"password\": \"Aibietdautrui2407@!\",\r\n    \"phoneNumber\": \"0123456789\",\r\n    \"email\": \"chi.nguyen2407k22@hcmut.edu.vn\",\r\n    \"firstname\":\"\",\r\n    \"lastname\":\"\"\r\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"http://localhost:8081/api/auth/register/local","protocol":"http","host":["localhost"],"port":"8081","path":["api","auth","register","local"]}},"response":[{"name":"Register successful","originalRequest":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\r\n    \"username\": \"chi.nguyen2407k22\",\r\n    \"password\": \"Aibietdautrui2407@!\",\r\n    \"phoneNumber\": \"0123456789\",\r\n    \"email\": \"chi.nguyen2407k22@hcmut.edu.vn\",\r\n    \"firstname\":\"\",\r\n    \"lastname\":\"\"\r\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"http://localhost:8081/api/auth/register/local","protocol":"http","host":["localhost"],"port":"8081","path":["api","auth","register","local"]}},"status":"OK","code":200,"_postman_previewlanguage":null,"header":[{"key":"Vary","value":"Origin"},{"key":"Vary","value":"Access-Control-Request-Method"},{"key":"Vary","value":"Access-Control-Request-Headers"},{"key":"X-Content-Type-Options","value":"nosniff"},{"key":"X-XSS-Protection","value":"0"},{"key":"Cache-Control","value":"no-cache, no-store, max-age=0, must-revalidate"},{"key":"Pragma","value":"no-cache"},{"key":"Expires","value":"0"},{"key":"Content-Type","value":"application/json"},{"key":"Transfer-Encoding","value":"chunked"},{"key":"Date","value":"Sat, 20 Dec 2025 19:18:27 GMT"},{"key":"Keep-Alive","value":"timeout=60"},{"key":"Connection","value":"keep-alive"}],"cookie":[],"body":"{\n    \"status\": 200,\n    \"data\": {\n        \"userId\": 1,\n        \"username\": \"chi.nguyen2407k22\",\n        \"phoneNumber\": \"0123456789\",\n        \"email\": \"chi.nguyen2407k22@hcmut.edu.vn\",\n        \"firstName\": null,\n        \"lastName\": null,\n        \"role\": \"CUSTOMER\",\n        \"status\": \"ACTIVE\",\n        \"createdAt\": \"2025-12-20T19:18:27.353677\",\n        \"updatedAt\": \"2025-12-20T19:18:27.354070\",\n        \"displayName\": null,\n        \"loginType\": \"LOCAL\"\n    },\n    \"message\": \"Registration successful!\"\n}"},{"name":"success (v2)","originalRequest":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\r\n    \"username\": \"chi.nguyen2407k22\",\r\n    \"password\": \"Aibietdautrui2407@!\",\r\n    \"phoneNumber\": \"0123456789\",\r\n    \"email\": \"chi.nguyen2407k22@hcmut.edu.vn\",\r\n    \"firstname\":\"\",\r\n    \"lastname\":\"\"\r\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"http://localhost:8081/api/auth/register/local","protocol":"http","host":["localhost"],"port":"8081","path":["api","auth","register","local"]}},"status":"OK","code":200,"_postman_previewlanguage":null,"header":[{"key":"Vary","value":"Origin"},{"key":"Vary","value":"Access-Control-Request-Method"},{"key":"Vary","value":"Access-Control-Request-Headers"},{"key":"X-Content-Type-Options","value":"nosniff"},{"key":"X-XSS-Protection","value":"0"},{"key":"Cache-Control","value":"no-cache, no-store, max-age=0, must-revalidate"},{"key":"Pragma","value":"no-cache"},{"key":"Expires","value":"0"},{"key":"Content-Type","value":"application/json"},{"key":"Transfer-Encoding","value":"chunked"},{"key":"Date","value":"Sat, 31 Jan 2026 06:39:51 GMT"},{"key":"Keep-Alive","value":"timeout=60"},{"key":"Connection","value":"keep-alive"}],"cookie":[],"body":"{\n    \"status\": 200,\n    \"data\": {\n        \"userId\": \"4b57a94a-c357-4081-8a38-b524b397afbd\",\n        \"username\": \"chi.nguyen2407k22\",\n        \"phoneNumber\": \"0123456789\",\n        \"email\": \"chi.nguyen2407k22@hcmut.edu.vn\",\n        \"firstName\": null,\n        \"lastName\": null,\n        \"role\": \"CUSTOMER\",\n        \"status\": \"ACTIVE\",\n        \"createdAt\": \"2026-01-31T06:39:47.816015975\",\n        \"updatedAt\": \"2026-01-31T06:39:47.816094881\",\n        \"displayName\": null,\n        \"loginType\": \"LOCAL\"\n    },\n    \"message\": \"Registration successful!\"\n}"}]},{"name":"Login","request":{"auth":{"type":"noauth"},"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\r\n    \"username\": \"chi.nguyen2407k22\",\r\n    \"password\": \"Aibietdautrui2407@!\"\r\n}"},"url":{"raw":"http://localhost:8081/api/auth/login/local","protocol":"http","host":["localhost"],"port":"8081","path":["api","auth","login","local"]}},"response":[{"name":"Login successful","originalRequest":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\r\n    \"username\": \"chi.nguyen2407k22\",\r\n    \"password\": \"Aibietdautrui2407@!\"\r\n}"},"url":{"raw":"http://localhost:8081/api/auth/login/local","protocol":"http","host":["localhost"],"port":"8081","path":["api","auth","login","local"]}},"status":"OK","code":200,"_postman_previewlanguage":null,"header":[{"key":"Vary","value":"Origin"},{"key":"Vary","value":"Access-Control-Request-Method"},{"key":"Vary","value":"Access-Control-Request-Headers"},{"key":"X-Content-Type-Options","value":"nosniff"},{"key":"X-XSS-Protection","value":"0"},{"key":"Cache-Control","value":"no-cache, no-store, max-age=0, must-revalidate"},{"key":"Pragma","value":"no-cache"},{"key":"Expires","value":"0"},{"key":"Content-Type","value":"application/json"},{"key":"Transfer-Encoding","value":"chunked"},{"key":"Date","value":"Sun, 21 Dec 2025 13:58:55 GMT"},{"key":"Keep-Alive","value":"timeout=60"},{"key":"Connection","value":"keep-alive"}],"cookie":[],"body":"{\n    \"status\": 200,\n    \"data\": {\n        \"accessToken\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwN2syMiIsImlhdCI6MTc2NjMyNTUzNSwiZXhwIjoxNzY2MzI5MTM1LCJyb2xlIjoiQ1VTVE9NRVIifQ.31FY4qjFGqiuxmKQwvEjfhAWgxsyesqXsN9B2s8Pfiw\",\n        \"refreshToken\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwN2syMiIsImlhdCI6MTc2NjMyNTUzNSwiZXhwIjoxNzY2OTMwMzM1fQ.j7wF85oZY_Y7akC5LUD39WXDYSYdm05Edr_rR-hGmsA\",\n        \"userId\": 1\n    },\n    \"message\": \"Login successful!\"\n}"}]},{"name":"Google Login","request":{"auth":{"type":"noauth"},"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\r\n    \"idToken\":\"eyJhbGciOiJSUzI1NiIsImtpZCI6IjRiYTZlZmVmNWUxNzIxNDk5NzFhMmQzYWJiNWYzMzJlMGY3ODcxNjUiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI3OTY0NDEwNzM3MTEtNHMyOG5mOXYyaG9waThmMGRuMGxjZGg0MWRvY2Z1NWkuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI3OTY0NDEwNzM3MTEtNHMyOG5mOXYyaG9waThmMGRuMGxjZGg0MWRvY2Z1NWkuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDM1MzQyNDYxNTg5MjQxNTM4NTYiLCJlbWFpbCI6InF1ZWNoaWxlb0BnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwibmJmIjoxNzY3ODkwNTg0LCJuYW1lIjoiQ2hpIE5ndXnhu4VuIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0swajhnanhRNEpraVJDeWY0ZVNpMXIxTGo4RkJaNW5oenRVTHMxT0Z6WmVFVWNRRUk9czk2LWMiLCJnaXZlbl9uYW1lIjoiQ2hpIiwiZmFtaWx5X25hbWUiOiJOZ3V54buFbiIsImlhdCI6MTc2Nzg5MDg4NCwiZXhwIjoxNzY3ODk0NDg0LCJqdGkiOiJiNjhjZmFhOWRkNmY4YjVjNDViOTZmOTc3YmJkMTUyMjRiYTg1ZThiIn0.k_Vt22L6gOlxbnE8Es7xHLp8phCcAJw0PG4WqYAxtG8sgh44DfVF1fLAjL55hjBt_XZlZiohr7ZCu1s1JOpfMvIjhLPLaZ634gNuhJQMddPkeqrbg0Rf7MxpVO_kz4EQ3GC3JJgnAzWh9rFJ6kQUhNmnmnDbH389jt4YwfubI13TY8fW7olPc_K5RzchsGHkHWqLdH2A7pCTNv3Ye2-yYrEC-CjL6S8bX3yW0KlXcNQbxmEgSTeU3FA7IAD9-hWPNVZ0Nsgg0tIkQLRphH5m31JGG8uQGw4w7HepqWrtH0UZoR9qNGVb1LqMeJ7xDH2J85HN-UBRPo1z7Nsnd_nZwA\"\r\n}"},"url":{"raw":"http://localhost:8081/api/auth/login/google","protocol":"http","host":["localhost"],"port":"8081","path":["api","auth","login","google"]}},"response":[{"name":"Google Login Successful","originalRequest":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\r\n    \"idToken\":\"eyJhbGciOiJSUzI1NiIsImtpZCI6IjRiYTZlZmVmNWUxNzIxNDk5NzFhMmQzYWJiNWYzMzJlMGY3ODcxNjUiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI3OTY0NDEwNzM3MTEtNHMyOG5mOXYyaG9waThmMGRuMGxjZGg0MWRvY2Z1NWkuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI3OTY0NDEwNzM3MTEtNHMyOG5mOXYyaG9waThmMGRuMGxjZGg0MWRvY2Z1NWkuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDM1MzQyNDYxNTg5MjQxNTM4NTYiLCJlbWFpbCI6InF1ZWNoaWxlb0BnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwibmJmIjoxNzY3ODkwNTg0LCJuYW1lIjoiQ2hpIE5ndXnhu4VuIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0swajhnanhRNEpraVJDeWY0ZVNpMXIxTGo4RkJaNW5oenRVTHMxT0Z6WmVFVWNRRUk9czk2LWMiLCJnaXZlbl9uYW1lIjoiQ2hpIiwiZmFtaWx5X25hbWUiOiJOZ3V54buFbiIsImlhdCI6MTc2Nzg5MDg4NCwiZXhwIjoxNzY3ODk0NDg0LCJqdGkiOiJiNjhjZmFhOWRkNmY4YjVjNDViOTZmOTc3YmJkMTUyMjRiYTg1ZThiIn0.k_Vt22L6gOlxbnE8Es7xHLp8phCcAJw0PG4WqYAxtG8sgh44DfVF1fLAjL55hjBt_XZlZiohr7ZCu1s1JOpfMvIjhLPLaZ634gNuhJQMddPkeqrbg0Rf7MxpVO_kz4EQ3GC3JJgnAzWh9rFJ6kQUhNmnmnDbH389jt4YwfubI13TY8fW7olPc_K5RzchsGHkHWqLdH2A7pCTNv3Ye2-yYrEC-CjL6S8bX3yW0KlXcNQbxmEgSTeU3FA7IAD9-hWPNVZ0Nsgg0tIkQLRphH5m31JGG8uQGw4w7HepqWrtH0UZoR9qNGVb1LqMeJ7xDH2J85HN-UBRPo1z7Nsnd_nZwA\"\r\n}"},"url":{"raw":"http://localhost:8081/api/auth/login/google","protocol":"http","host":["localhost"],"port":"8081","path":["api","auth","login","google"]}},"status":"OK","code":200,"_postman_previewlanguage":null,"header":[{"key":"Vary","value":"Origin"},{"key":"Vary","value":"Access-Control-Request-Method"},{"key":"Vary","value":"Access-Control-Request-Headers"},{"key":"X-Content-Type-Options","value":"nosniff"},{"key":"X-XSS-Protection","value":"0"},{"key":"Cache-Control","value":"no-cache, no-store, max-age=0, must-revalidate"},{"key":"Pragma","value":"no-cache"},{"key":"Expires","value":"0"},{"key":"Content-Type","value":"application/json"},{"key":"Transfer-Encoding","value":"chunked"},{"key":"Date","value":"Thu, 08 Jan 2026 17:11:39 GMT"},{"key":"Keep-Alive","value":"timeout=60"},{"key":"Connection","value":"keep-alive"}],"cookie":[],"body":"{\n    \"status\": 200,\n    \"data\": {\n        \"token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJxdWVjaGlsZW8iLCJpYXQiOjE3Njc4OTIyOTksImV4cCI6MTc2Nzg5MzE5OSwicm9sZSI6IkNVU1RPTUVSIn0.YX8a-Bta6DXfWTeLGKbYty2SAiIpt0gFu3zh7xZPcJI\",\n        \"refreshToken\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJxdWVjaGlsZW8iLCJpYXQiOjE3Njc4OTIyOTksImV4cCI6MTc2ODQ5NzA5OX0.FTNrzIeWQyHVt-_AUeRjLaQwyim9Vnh7PnDGKx1cQ0U\",\n        \"userId\": 1\n    },\n    \"message\": \"Google login successful!\"\n}"}]},{"name":"Logout","request":{"method":"POST","header":[],"body":{"mode":"raw","raw":"{\r\n    \"refreshToken\":\"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwN2syMiIsImlhdCI6MTc2ODMyMjgwOSwiZXhwIjoxNzY4OTI3NjA5fQ.XNyiNz12Bng7la_34C98IPeeGkBSyUDSx9ukXHXK6tQ\"\r\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"http://localhost:8081/api/auth/logout","protocol":"http","host":["localhost"],"port":"8081","path":["api","auth","logout"]}},"response":[{"name":"Logout successful","originalRequest":{"method":"POST","header":[],"body":{"mode":"raw","raw":"{\r\n    \"refreshToken\":\"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwN2syMiIsImlhdCI6MTc2ODMyMjgwOSwiZXhwIjoxNzY4OTI3NjA5fQ.XNyiNz12Bng7la_34C98IPeeGkBSyUDSx9ukXHXK6tQ\"\r\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"http://localhost:8081/api/auth/logout","protocol":"http","host":["localhost"],"port":"8081","path":["api","auth","logout"]}},"status":"OK","code":200,"_postman_previewlanguage":null,"header":[{"key":"Vary","value":"Origin"},{"key":"Vary","value":"Access-Control-Request-Method"},{"key":"Vary","value":"Access-Control-Request-Headers"},{"key":"X-Content-Type-Options","value":"nosniff"},{"key":"X-XSS-Protection","value":"0"},{"key":"Cache-Control","value":"no-cache, no-store, max-age=0, must-revalidate"},{"key":"Pragma","value":"no-cache"},{"key":"Expires","value":"0"},{"key":"Content-Type","value":"application/json"},{"key":"Transfer-Encoding","value":"chunked"},{"key":"Date","value":"Tue, 13 Jan 2026 16:47:02 GMT"},{"key":"Keep-Alive","value":"timeout=60"},{"key":"Connection","value":"keep-alive"}],"cookie":[],"body":"{\n    \"status\": 200,\n    \"data\": {},\n    \"message\": \"Logout successful!\"\n}"}]},{"name":"Forget Password","request":{"method":"POST","header":[],"body":{"mode":"raw","raw":"{\r\n    \"email\":\"chi.nguyen2407k22@hcmut.edu.vn\"\r\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"http://localhost:8081/api/auth/forget-password","protocol":"http","host":["localhost"],"port":"8081","path":["api","auth","forget-password"]}},"response":[{"name":"Forget Password successful","originalRequest":{"method":"POST","header":[],"body":{"mode":"raw","raw":"{\r\n    \"email\":\"chi.nguyen2407k22@hcmut.edu.vn\"\r\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"http://localhost:8081/api/auth/forget-password","protocol":"http","host":["localhost"],"port":"8081","path":["api","auth","forget-password"]}},"status":"OK","code":200,"_postman_previewlanguage":null,"header":[{"key":"Vary","value":"Origin"},{"key":"Vary","value":"Access-Control-Request-Method"},{"key":"Vary","value":"Access-Control-Request-Headers"},{"key":"X-Content-Type-Options","value":"nosniff"},{"key":"X-XSS-Protection","value":"0"},{"key":"Cache-Control","value":"no-cache, no-store, max-age=0, must-revalidate"},{"key":"Pragma","value":"no-cache"},{"key":"Expires","value":"0"},{"key":"Content-Type","value":"application/json"},{"key":"Transfer-Encoding","value":"chunked"},{"key":"Date","value":"Tue, 13 Jan 2026 17:34:33 GMT"},{"key":"Keep-Alive","value":"timeout=60"},{"key":"Connection","value":"keep-alive"}],"cookie":[],"body":"{\n    \"status\": 200,\n    \"data\": {\n        \"email\": \"chi.nguyen2407k22@hcmut.edu.vn\",\n        \"resetToken\": \"0294cd87-1143-45b8-85d2-c63aaf84500b\"\n    },\n    \"message\": \"Password reset link sent to email successfully!\"\n}"}]},{"name":"Reset Password","request":{"method":"POST","header":[],"body":{"mode":"raw","raw":"{\r\n    \"resetToken\":\"3e837502-b6fe-468c-a990-206cc26465e6\",\r\n    \"newPassword\":\"newPasswordnkaaa\"\r\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"http://localhost:8081/api/auth/reset-password","protocol":"http","host":["localhost"],"port":"8081","path":["api","auth","reset-password"]}},"response":[{"name":"Reset Password success","originalRequest":{"method":"POST","header":[],"body":{"mode":"raw","raw":"{\r\n    \"resetToken\":\"a599dad4-6556-4714-977c-863133166fab\",\r\n    \"newPassword\":\"newPasswordnkaaa\"\r\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"http://localhost:8081/api/auth/reset-password","protocol":"http","host":["localhost"],"port":"8081","path":["api","auth","reset-password"]}},"status":"OK","code":200,"_postman_previewlanguage":null,"header":[{"key":"Vary","value":"Origin"},{"key":"Vary","value":"Access-Control-Request-Method"},{"key":"Vary","value":"Access-Control-Request-Headers"},{"key":"X-Content-Type-Options","value":"nosniff"},{"key":"X-XSS-Protection","value":"0"},{"key":"Cache-Control","value":"no-cache, no-store, max-age=0, must-revalidate"},{"key":"Pragma","value":"no-cache"},{"key":"Expires","value":"0"},{"key":"Content-Type","value":"application/json"},{"key":"Transfer-Encoding","value":"chunked"},{"key":"Date","value":"Wed, 14 Jan 2026 09:03:18 GMT"},{"key":"Keep-Alive","value":"timeout=60"},{"key":"Connection","value":"keep-alive"}],"cookie":[],"body":"{\n    \"status\": 200,\n    \"data\": null,\n    \"message\": \"Password reset successfully!\"\n}"}]},{"name":"Refresh Token (get new access token)","request":{"auth":{"type":"noauth"},"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\r\n    \"refreshToken\":\"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwN2syMiIsImlhdCI6MTc2ODM4MzE0MywiZXhwIjoxNzY4OTg3OTQzfQ.mi1YolBOSQ64LfWnoOioOt_xNJjuDdvorLTdBBzpmWw\"\r\n}"},"url":{"raw":"http://localhost:8081/api/auth/refresh-token","protocol":"http","host":["localhost"],"port":"8081","path":["api","auth","refresh-token"]}},"response":[{"name":"Refresh token","originalRequest":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\r\n    \"refreshToken\":\"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwN2syMiIsImlhdCI6MTc2ODM4MzE0MywiZXhwIjoxNzY4OTg3OTQzfQ.mi1YolBOSQ64LfWnoOioOt_xNJjuDdvorLTdBBzpmWw\"\r\n}"},"url":{"raw":"http://localhost:8081/api/auth/refresh-token","protocol":"http","host":["localhost"],"port":"8081","path":["api","auth","refresh-token"]}},"status":"OK","code":200,"_postman_previewlanguage":null,"header":[{"key":"Vary","value":"Origin"},{"key":"Vary","value":"Access-Control-Request-Method"},{"key":"Vary","value":"Access-Control-Request-Headers"},{"key":"X-Content-Type-Options","value":"nosniff"},{"key":"X-XSS-Protection","value":"0"},{"key":"Cache-Control","value":"no-cache, no-store, max-age=0, must-revalidate"},{"key":"Pragma","value":"no-cache"},{"key":"Expires","value":"0"},{"key":"Content-Type","value":"application/json"},{"key":"Transfer-Encoding","value":"chunked"},{"key":"Date","value":"Wed, 14 Jan 2026 09:33:33 GMT"},{"key":"Keep-Alive","value":"timeout=60"},{"key":"Connection","value":"keep-alive"}],"cookie":[],"body":"{\n    \"status\": 200,\n    \"data\": {\n        \"accessToken\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwN2syMiIsImlhdCI6MTc2ODM4MzIxMywiZXhwIjoxNzY4Mzg0MTEzLCJyb2xlIjoiQ1VTVE9NRVIifQ.4bHaDA6Ys6B6WwROScALVS_KtI_zXQHxRbTEFLhCybM\"\n    },\n    \"message\": \"Token refreshed successfully!\"\n}"}]}]}]}
+{
+  "info": {
+    "_postman_id": "210cd52c-c5a3-48c5-941a-a5dfb48f9e65",
+    "name": "user-service",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "34391158",
+    "_collection_link": "https://go.postman.co/collection/34391158-210cd52c-c5a3-48c5-941a-a5dfb48f9e65?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "User-profile API",
+      "item": [
+        {
+          "name": "Get Profile Me",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwN2syMiIsImlhdCI6MTc2ODM3NDM5NiwiZXhwIjoxNzY4Mzc1Mjk2LCJyb2xlIjoiQ1VTVE9NRVIifQ.7be3CTb4oMlLicfgbcyKT6e5zSLy4m_9lo80PhEfG7c",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8081/api/users/profile/me",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8081",
+              "path": [
+                "api",
+                "users",
+                "profile",
+                "me"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Get Profile Me Success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8081/api/users/profile/me",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8081",
+                  "path": [
+                    "api",
+                    "users",
+                    "profile",
+                    "me"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Wed, 14 Jan 2026 08:15:29 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": 200,\n    \"data\": {\n        \"userId\": 1,\n        \"username\": \"chi.nguyen2407k22\",\n        \"firstName\": \"Quế Chi\",\n        \"lastName\": \"Nguyễn Ngọc\",\n        \"email\": \"abc@example.com\",\n        \"phoneNumber\": null,\n        \"imageUrl\": null,\n        \"displayName\": \"Heh\"\n    },\n    \"message\": \"Get user profile successfully!\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Profile Me",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwN2syMiIsImlhdCI6MTc2ODM3ODIwOSwiZXhwIjoxNzY4Mzc5MTA5LCJyb2xlIjoiQ1VTVE9NRVIifQ.kQnbDOiVX1M6BvKfG-8CVgShaFMzlkbrByVtVtK4CSQ",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"firstname\": \"Quế Chi\",\r\n    \"lastname\":\"Nguyễn Ngọc\",\r\n    \"email\":\"abc@example.com\",\r\n    \"phoneNumber\":\"0123456789\",\r\n    \"displayName\":\"Heh\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/users/profile/me",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8081",
+              "path": [
+                "api",
+                "users",
+                "profile",
+                "me"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Update Profile Me Success",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"firstname\": \"Quế Chi\",\r\n    \"lastname\":\"Nguyễn Ngọc\",\r\n    \"email\":\"abc@example.com\",\r\n    \"phoneNumber\":\"0123456789\",\r\n    \"displayName\":\"Heh\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8081/api/users/profile/me",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8081",
+                  "path": [
+                    "api",
+                    "users",
+                    "profile",
+                    "me"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Wed, 14 Jan 2026 08:15:12 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": 200,\n    \"data\": {\n        \"userId\": 0,\n        \"username\": \"chi.nguyen2407k22\",\n        \"firstName\": \"Quế Chi\",\n        \"lastName\": \"Nguyễn Ngọc\",\n        \"email\": \"abc@example.com\",\n        \"phoneNumber\": \"0123456789\",\n        \"imageUrl\": null,\n        \"displayName\": \"Heh\"\n    },\n    \"message\": \"Update user profile successfully!\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Change Avatar",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwN2syMiIsImlhdCI6MTc2ODM3ODIwOSwiZXhwIjoxNzY4Mzc5MTA5LCJyb2xlIjoiQ1VTVE9NRVIifQ.kQnbDOiVX1M6BvKfG-8CVgShaFMzlkbrByVtVtK4CSQ",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "avatar",
+                  "type": "file",
+                  "uuid": "dc2ffaa2-f3c9-457e-9331-2255bfb6e4c7",
+                  "src": "9AGT2xft3/avocador.png"
+                }
+              ]
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/users/change-avatar/me",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8081",
+              "path": [
+                "api",
+                "users",
+                "change-avatar",
+                "me"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Change Avatar success",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "formdata",
+                  "formdata": [
+                    {
+                      "key": "avatar",
+                      "type": "file",
+                      "uuid": "dc2ffaa2-f3c9-457e-9331-2255bfb6e4c7",
+                      "src": "9AGT2xft3/avocador.png"
+                    }
+                  ]
+                },
+                "url": {
+                  "raw": "http://localhost:8081/api/users/change-avatar/me?avatar",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8081",
+                  "path": [
+                    "api",
+                    "users",
+                    "change-avatar",
+                    "me"
+                  ],
+                  "query": [
+                    {
+                      "key": "avatar",
+                      "value": null,
+                      "type": "text"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Wed, 14 Jan 2026 08:52:48 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": 200,\n    \"data\": {\n        \"avatarUrl\": \"https://res.cloudinary.com/dgghmjv8k/image/upload/v1768380766/ecom_avatars/gyeyyknjjcsdoyamoj8z.png\"\n    },\n    \"message\": \"Change avatar successfully!\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Change password",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwN2syMiIsImlhdCI6MTc2ODM4MTUxOSwiZXhwIjoxNzY4MzgyNDE5LCJyb2xlIjoiQ1VTVE9NRVIifQ.yBVkEVYsT4Hacx5G5J0nR01UHutwPbkYJBciHgMUHx8",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"oldPassword\":\"newPasswordnkaaa\",\r\n    \"newPassword\":\"thisisnewpasswordnka\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/users/change-password/me",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8081",
+              "path": [
+                "api",
+                "users",
+                "change-password",
+                "me"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Change password success",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"oldPassword\":\"thisisnewpasswordnka\",\r\n    \"newPassword\":\"awwwwwwwwwwwwwwwwwww\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8081/api/users/change-password/me",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8081",
+                  "path": [
+                    "api",
+                    "users",
+                    "change-password",
+                    "me"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Wed, 14 Jan 2026 09:07:35 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": 200,\n    \"data\": null,\n    \"message\": \"Change password successfully!\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Authentication API",
+      "item": [
+        {
+          "name": "Register API",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"username\": \"chi.nguyen2407k22\",\r\n    \"password\": \"Aibietdautrui2407@!\",\r\n    \"phoneNumber\": \"0123456789\",\r\n    \"email\": \"chi.nguyen2407k22@hcmut.edu.vn\",\r\n    \"firstname\":\"\",\r\n    \"lastname\":\"\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/auth/register/local",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "auth",
+                "register",
+                "local"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Register successful",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"username\": \"chi.nguyen2407k22\",\r\n    \"password\": \"Aibietdautrui2407@!\",\r\n    \"phoneNumber\": \"0123456789\",\r\n    \"email\": \"chi.nguyen2407k22@hcmut.edu.vn\",\r\n    \"firstname\":\"\",\r\n    \"lastname\":\"\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8081/api/auth/register/local",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8081",
+                  "path": [
+                    "api",
+                    "auth",
+                    "register",
+                    "local"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Sat, 20 Dec 2025 19:18:27 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": 200,\n    \"data\": {\n        \"userId\": 1,\n        \"username\": \"chi.nguyen2407k22\",\n        \"phoneNumber\": \"0123456789\",\n        \"email\": \"chi.nguyen2407k22@hcmut.edu.vn\",\n        \"firstName\": null,\n        \"lastName\": null,\n        \"role\": \"CUSTOMER\",\n        \"status\": \"ACTIVE\",\n        \"createdAt\": \"2025-12-20T19:18:27.353677\",\n        \"updatedAt\": \"2025-12-20T19:18:27.354070\",\n        \"displayName\": null,\n        \"loginType\": \"LOCAL\"\n    },\n    \"message\": \"Registration successful!\"\n}"
+            },
+            {
+              "name": "success (v2)",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"username\": \"chi.nguyen2407k22\",\r\n    \"password\": \"Aibietdautrui2407@!\",\r\n    \"phoneNumber\": \"0123456789\",\r\n    \"email\": \"chi.nguyen2407k22@hcmut.edu.vn\",\r\n    \"firstname\":\"\",\r\n    \"lastname\":\"\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8081/api/auth/register/local",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8081",
+                  "path": [
+                    "api",
+                    "auth",
+                    "register",
+                    "local"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Sat, 31 Jan 2026 06:39:51 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": 200,\n    \"data\": {\n        \"userId\": \"4b57a94a-c357-4081-8a38-b524b397afbd\",\n        \"username\": \"chi.nguyen2407k22\",\n        \"phoneNumber\": \"0123456789\",\n        \"email\": \"chi.nguyen2407k22@hcmut.edu.vn\",\n        \"firstName\": null,\n        \"lastName\": null,\n        \"role\": \"CUSTOMER\",\n        \"status\": \"ACTIVE\",\n        \"createdAt\": \"2026-01-31T06:39:47.816015975\",\n        \"updatedAt\": \"2026-01-31T06:39:47.816094881\",\n        \"displayName\": null,\n        \"loginType\": \"LOCAL\"\n    },\n    \"message\": \"Registration successful!\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"username\": \"chi.nguyen2407k22\",\r\n    \"password\": \"Aibietdautrui2407@!\"\r\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/auth/login/local",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8081",
+              "path": [
+                "api",
+                "auth",
+                "login",
+                "local"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Login successful",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"username\": \"chi.nguyen2407k22\",\r\n    \"password\": \"Aibietdautrui2407@!\"\r\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8081/api/auth/login/local",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8081",
+                  "path": [
+                    "api",
+                    "auth",
+                    "login",
+                    "local"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Sun, 21 Dec 2025 13:58:55 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": 200,\n    \"data\": {\n        \"accessToken\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwN2syMiIsImlhdCI6MTc2NjMyNTUzNSwiZXhwIjoxNzY2MzI5MTM1LCJyb2xlIjoiQ1VTVE9NRVIifQ.31FY4qjFGqiuxmKQwvEjfhAWgxsyesqXsN9B2s8Pfiw\",\n        \"refreshToken\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwN2syMiIsImlhdCI6MTc2NjMyNTUzNSwiZXhwIjoxNzY2OTMwMzM1fQ.j7wF85oZY_Y7akC5LUD39WXDYSYdm05Edr_rR-hGmsA\",\n        \"userId\": 1\n    },\n    \"message\": \"Login successful!\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Google Login",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"idToken\":\"eyJhbGciOiJSUzI1NiIsImtpZCI6IjRiYTZlZmVmNWUxNzIxNDk5NzFhMmQzYWJiNWYzMzJlMGY3ODcxNjUiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI3OTY0NDEwNzM3MTEtNHMyOG5mOXYyaG9waThmMGRuMGxjZGg0MWRvY2Z1NWkuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI3OTY0NDEwNzM3MTEtNHMyOG5mOXYyaG9waThmMGRuMGxjZGg0MWRvY2Z1NWkuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDM1MzQyNDYxNTg5MjQxNTM4NTYiLCJlbWFpbCI6InF1ZWNoaWxlb0BnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwibmJmIjoxNzY3ODkwNTg0LCJuYW1lIjoiQ2hpIE5ndXnhu4VuIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0swajhnanhRNEpraVJDeWY0ZVNpMXIxTGo4RkJaNW5oenRVTHMxT0Z6WmVFVWNRRUk9czk2LWMiLCJnaXZlbl9uYW1lIjoiQ2hpIiwiZmFtaWx5X25hbWUiOiJOZ3V54buFbiIsImlhdCI6MTc2Nzg5MDg4NCwiZXhwIjoxNzY3ODk0NDg0LCJqdGkiOiJiNjhjZmFhOWRkNmY4YjVjNDViOTZmOTc3YmJkMTUyMjRiYTg1ZThiIn0.k_Vt22L6gOlxbnE8Es7xHLp8phCcAJw0PG4WqYAxtG8sgh44DfVF1fLAjL55hjBt_XZlZiohr7ZCu1s1JOpfMvIjhLPLaZ634gNuhJQMddPkeqrbg0Rf7MxpVO_kz4EQ3GC3JJgnAzWh9rFJ6kQUhNmnmnDbH389jt4YwfubI13TY8fW7olPc_K5RzchsGHkHWqLdH2A7pCTNv3Ye2-yYrEC-CjL6S8bX3yW0KlXcNQbxmEgSTeU3FA7IAD9-hWPNVZ0Nsgg0tIkQLRphH5m31JGG8uQGw4w7HepqWrtH0UZoR9qNGVb1LqMeJ7xDH2J85HN-UBRPo1z7Nsnd_nZwA\"\r\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/auth/login/google",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8081",
+              "path": [
+                "api",
+                "auth",
+                "login",
+                "google"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Google Login Successful",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"idToken\":\"eyJhbGciOiJSUzI1NiIsImtpZCI6IjRiYTZlZmVmNWUxNzIxNDk5NzFhMmQzYWJiNWYzMzJlMGY3ODcxNjUiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2FjY291bnRzLmdvb2dsZS5jb20iLCJhenAiOiI3OTY0NDEwNzM3MTEtNHMyOG5mOXYyaG9waThmMGRuMGxjZGg0MWRvY2Z1NWkuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJhdWQiOiI3OTY0NDEwNzM3MTEtNHMyOG5mOXYyaG9waThmMGRuMGxjZGg0MWRvY2Z1NWkuYXBwcy5nb29nbGV1c2VyY29udGVudC5jb20iLCJzdWIiOiIxMDM1MzQyNDYxNTg5MjQxNTM4NTYiLCJlbWFpbCI6InF1ZWNoaWxlb0BnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwibmJmIjoxNzY3ODkwNTg0LCJuYW1lIjoiQ2hpIE5ndXnhu4VuIiwicGljdHVyZSI6Imh0dHBzOi8vbGgzLmdvb2dsZXVzZXJjb250ZW50LmNvbS9hL0FDZzhvY0swajhnanhRNEpraVJDeWY0ZVNpMXIxTGo4RkJaNW5oenRVTHMxT0Z6WmVFVWNRRUk9czk2LWMiLCJnaXZlbl9uYW1lIjoiQ2hpIiwiZmFtaWx5X25hbWUiOiJOZ3V54buFbiIsImlhdCI6MTc2Nzg5MDg4NCwiZXhwIjoxNzY3ODk0NDg0LCJqdGkiOiJiNjhjZmFhOWRkNmY4YjVjNDViOTZmOTc3YmJkMTUyMjRiYTg1ZThiIn0.k_Vt22L6gOlxbnE8Es7xHLp8phCcAJw0PG4WqYAxtG8sgh44DfVF1fLAjL55hjBt_XZlZiohr7ZCu1s1JOpfMvIjhLPLaZ634gNuhJQMddPkeqrbg0Rf7MxpVO_kz4EQ3GC3JJgnAzWh9rFJ6kQUhNmnmnDbH389jt4YwfubI13TY8fW7olPc_K5RzchsGHkHWqLdH2A7pCTNv3Ye2-yYrEC-CjL6S8bX3yW0KlXcNQbxmEgSTeU3FA7IAD9-hWPNVZ0Nsgg0tIkQLRphH5m31JGG8uQGw4w7HepqWrtH0UZoR9qNGVb1LqMeJ7xDH2J85HN-UBRPo1z7Nsnd_nZwA\"\r\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8081/api/auth/login/google",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8081",
+                  "path": [
+                    "api",
+                    "auth",
+                    "login",
+                    "google"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Thu, 08 Jan 2026 17:11:39 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": 200,\n    \"data\": {\n        \"token\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJxdWVjaGlsZW8iLCJpYXQiOjE3Njc4OTIyOTksImV4cCI6MTc2Nzg5MzE5OSwicm9sZSI6IkNVU1RPTUVSIn0.YX8a-Bta6DXfWTeLGKbYty2SAiIpt0gFu3zh7xZPcJI\",\n        \"refreshToken\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJxdWVjaGlsZW8iLCJpYXQiOjE3Njc4OTIyOTksImV4cCI6MTc2ODQ5NzA5OX0.FTNrzIeWQyHVt-_AUeRjLaQwyim9Vnh7PnDGKx1cQ0U\",\n        \"userId\": 1\n    },\n    \"message\": \"Google login successful!\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"refreshToken\":\"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwN2syMiIsImlhdCI6MTc2ODMyMjgwOSwiZXhwIjoxNzY4OTI3NjA5fQ.XNyiNz12Bng7la_34C98IPeeGkBSyUDSx9ukXHXK6tQ\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/auth/logout",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8081",
+              "path": [
+                "api",
+                "auth",
+                "logout"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Logout successful",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"refreshToken\":\"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwN2syMiIsImlhdCI6MTc2ODMyMjgwOSwiZXhwIjoxNzY4OTI3NjA5fQ.XNyiNz12Bng7la_34C98IPeeGkBSyUDSx9ukXHXK6tQ\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8081/api/auth/logout",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8081",
+                  "path": [
+                    "api",
+                    "auth",
+                    "logout"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Tue, 13 Jan 2026 16:47:02 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": 200,\n    \"data\": {},\n    \"message\": \"Logout successful!\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Forget Password",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"email\":\"chi.nguyen2407k22@hcmut.edu.vn\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/auth/forget-password",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8081",
+              "path": [
+                "api",
+                "auth",
+                "forget-password"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Forget Password successful",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"email\":\"chi.nguyen2407k22@hcmut.edu.vn\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8081/api/auth/forget-password",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8081",
+                  "path": [
+                    "api",
+                    "auth",
+                    "forget-password"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Tue, 13 Jan 2026 17:34:33 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": 200,\n    \"data\": {\n        \"email\": \"chi.nguyen2407k22@hcmut.edu.vn\",\n        \"resetToken\": \"0294cd87-1143-45b8-85d2-c63aaf84500b\"\n    },\n    \"message\": \"Password reset link sent to email successfully!\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"resetToken\":\"3e837502-b6fe-468c-a990-206cc26465e6\",\r\n    \"newPassword\":\"newPasswordnkaaa\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/auth/reset-password",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8081",
+              "path": [
+                "api",
+                "auth",
+                "reset-password"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Reset Password success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"resetToken\":\"a599dad4-6556-4714-977c-863133166fab\",\r\n    \"newPassword\":\"newPasswordnkaaa\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8081/api/auth/reset-password",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8081",
+                  "path": [
+                    "api",
+                    "auth",
+                    "reset-password"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Wed, 14 Jan 2026 09:03:18 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": 200,\n    \"data\": null,\n    \"message\": \"Password reset successfully!\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Refresh Token (get new access token)",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"refreshToken\":\"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwN2syMiIsImlhdCI6MTc2ODM4MzE0MywiZXhwIjoxNzY4OTg3OTQzfQ.mi1YolBOSQ64LfWnoOioOt_xNJjuDdvorLTdBBzpmWw\"\r\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/auth/refresh-token",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8081",
+              "path": [
+                "api",
+                "auth",
+                "refresh-token"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Refresh token",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"refreshToken\":\"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwN2syMiIsImlhdCI6MTc2ODM4MzE0MywiZXhwIjoxNzY4OTg3OTQzfQ.mi1YolBOSQ64LfWnoOioOt_xNJjuDdvorLTdBBzpmWw\"\r\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8081/api/auth/refresh-token",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8081",
+                  "path": [
+                    "api",
+                    "auth",
+                    "refresh-token"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Wed, 14 Jan 2026 09:33:33 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": 200,\n    \"data\": {\n        \"accessToken\": \"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwN2syMiIsImlhdCI6MTc2ODM4MzIxMywiZXhwIjoxNzY4Mzg0MTEzLCJyb2xlIjoiQ1VTVE9NRVIifQ.4bHaDA6Ys6B6WwROScALVS_KtI_zXQHxRbTEFLhCybM\"\n    },\n    \"message\": \"Token refreshed successfully!\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Address API",
+      "item": [
+        {
+          "name": "Create New Address",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwN2syMiIsImlhdCI6MTc3MjQ2OTg0MywiZXhwIjoxNzcyNDcwNzQzLCJ1c2VySWQiOiI5Y2MxNjZlOS0xMGUxLTQ0NGEtOWE0MC1mZGI1ZTYyZGM2NDYiLCJyb2xlIjoiQ1VTVE9NRVIifQ.bVjYjOzqclz3T8PaJh4eNwrCa5zRY9DCT6PLk3kHYno",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{   \r\n    \"province\":\"\",\r\n    \"city\": \"Hồ Chí Minh City\",\r\n    \"ward\": \"Thủ Đức\",\r\n    \"street\":\"Tạ Quang Bửu\",\r\n    \"no\":\"10\",\r\n    \"isDefault\": false,\r\n    \"receiverPhoneNumber\":\"0123456789\",\r\n    \"receiverName\":\"QC\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/addresses",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8081",
+              "path": [
+                "api",
+                "addresses"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "Create New Address",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{   \r\n    \"province\":\"\",\r\n    \"city\": \"Hồ Chí Minh City\",\r\n    \"ward\": \"Thủ Đức\",\r\n    \"street\":\"Tạ Quang Bửu\",\r\n    \"no\":\"10\",\r\n    \"isDefault\": false,\r\n    \"receiverPhoneNumber\":\"0123456789\",\r\n    \"receiverName\":\"QC\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8081/api/addresses",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8081",
+                  "path": [
+                    "api",
+                    "addresses"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Mon, 02 Mar 2026 16:44:30 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": 200,\n    \"data\": {\n        \"addressId\": \"19e174e7-0e0b-43a3-8d02-a1ebd29da740\",\n        \"customerId\": \"9cc166e9-10e1-444a-9a40-fdb5e62dc646\",\n        \"province\": \"\",\n        \"city\": \"Hồ Chí Minh City\",\n        \"ward\": \"Thủ Đức\",\n        \"street\": \"Tạ Quang Bửu\",\n        \"no\": \"10\",\n        \"isDefault\": true,\n        \"receiverPhoneNumber\": \"0123456789\",\n        \"receiverName\": \"QC\",\n        \"updatedAt\": \"2026-03-02T16:44:30.285980\"\n    },\n    \"message\": \"Address created successfully!\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "update address",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwN2syMiIsImlhdCI6MTc3MjQ2OTg0MywiZXhwIjoxNzcyNDcwNzQzLCJ1c2VySWQiOiI5Y2MxNjZlOS0xMGUxLTQ0NGEtOWE0MC1mZGI1ZTYyZGM2NDYiLCJyb2xlIjoiQ1VTVE9NRVIifQ.bVjYjOzqclz3T8PaJh4eNwrCa5zRY9DCT6PLk3kHYno",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{   \r\n    \"province\":\"\",\r\n    \"city\": \"Hồ Chí Minh\",\r\n    \"ward\": \"Thủ\",\r\n    \"receiverPhoneNumber\":\"0123456777\",\r\n    \"receiverName\":\"ABC\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/addresses/14de40c9-8b8c-4ec0-aa43-e0adb85c9fe0",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8081",
+              "path": [
+                "api",
+                "addresses",
+                "14de40c9-8b8c-4ec0-aa43-e0adb85c9fe0"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "update address",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{   \r\n    \"province\":\"\",\r\n    \"city\": \"Hồ Chí Minh\",\r\n    \"ward\": \"Thủ\",\r\n    \"receiverPhoneNumber\":\"0123456777\",\r\n    \"receiverName\":\"ABC\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8081/api/addresses/14de40c9-8b8c-4ec0-aa43-e0adb85c9fe0",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8081",
+                  "path": [
+                    "api",
+                    "addresses",
+                    "14de40c9-8b8c-4ec0-aa43-e0adb85c9fe0"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Mon, 02 Mar 2026 16:44:42 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": 500,\n    \"data\": null,\n    \"message\": \"Failed to update address: Unknown error\"\n}"
+            },
+            {
+              "name": "success",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{   \r\n    \"province\":\"\",\r\n    \"city\": \"Hồ Chí Minh\",\r\n    \"ward\": \"Thủ\",\r\n    \"receiverPhoneNumber\":\"0123456777\",\r\n    \"receiverName\":\"ABC\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8081/api/addresses/19e174e7-0e0b-43a3-8d02-a1ebd29da740",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8081",
+                  "path": [
+                    "api",
+                    "addresses",
+                    "19e174e7-0e0b-43a3-8d02-a1ebd29da740"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Mon, 02 Mar 2026 16:45:45 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": 200,\n    \"data\": {\n        \"addressId\": \"19e174e7-0e0b-43a3-8d02-a1ebd29da740\",\n        \"customerId\": \"9cc166e9-10e1-444a-9a40-fdb5e62dc646\",\n        \"province\": \"\",\n        \"city\": \"Hồ Chí Minh\",\n        \"ward\": \"Thủ\",\n        \"street\": \"Tạ Quang Bửu\",\n        \"no\": \"10\",\n        \"isDefault\": true,\n        \"receiverPhoneNumber\": \"0123456777\",\n        \"receiverName\": \"ABC\",\n        \"updatedAt\": \"2026-03-02T16:45:45.213233\"\n    },\n    \"message\": \"Address updated successfully!\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Set default address",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwN2syMiIsImlhdCI6MTc3MjQ3MDg1MiwiZXhwIjoxNzcyNDcxNzUyLCJ1c2VySWQiOiI5Y2MxNjZlOS0xMGUxLTQ0NGEtOWE0MC1mZGI1ZTYyZGM2NDYiLCJyb2xlIjoiQ1VTVE9NRVIifQ.a1_aFjDRw75I6xHHdsVtu_ZWJLS5XMkd1VtkXPxyPKw",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8081/api/addresses/set-default/ee69aa38-9e99-40a2-8192-f785bb81c367",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8081",
+              "path": [
+                "api",
+                "addresses",
+                "set-default",
+                "ee69aa38-9e99-40a2-8192-f785bb81c367"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "success",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8081/api/addresses/set-default/cf967a09-2c53-44e8-9aea-49aaa7807118",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8081",
+                  "path": [
+                    "api",
+                    "addresses",
+                    "set-default",
+                    "cf967a09-2c53-44e8-9aea-49aaa7807118"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Mon, 02 Mar 2026 17:19:45 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": 200,\n    \"data\": {\n        \"addressId\": \"cf967a09-2c53-44e8-9aea-49aaa7807118\",\n        \"customerId\": \"98a4b197-889f-4ae7-834a-33bcb416668a\",\n        \"province\": \"\",\n        \"city\": \"Hồ Chí Minh City\",\n        \"ward\": \"Thủ Đức\",\n        \"street\": \"Tạ Quang Bửu\",\n        \"no\": \"10\",\n        \"isDefault\": true,\n        \"receiverPhoneNumber\": \"0123456789\",\n        \"receiverName\": \"QC\",\n        \"updatedAt\": \"2026-03-02T17:19:45.759814\"\n    },\n    \"message\": \"Default address updated successfully!\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get All Addresses",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwN2syMiIsImlhdCI6MTc3MjQ3MjM5NCwiZXhwIjoxNzcyNDczMjk0LCJ1c2VySWQiOiI1NjBiZjlmOS04NWE1LTRkMzctOTcyMy1hYmU2YTA4ZTY5NjMiLCJyb2xlIjoiQ1VTVE9NRVIifQ.nzpVqhabsSkp2-P9u859I0ycPeygVhFzfr1Ro7uRDwk",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8081/api/addresses",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8081",
+              "path": [
+                "api",
+                "addresses"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8081/api/addresses",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8081",
+                  "path": [
+                    "api",
+                    "addresses"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Mon, 02 Mar 2026 17:28:38 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "[\n    {\n        \"addressId\": \"ddca33da-bebd-4a82-b9b7-79dcac2592a6\",\n        \"customerId\": \"560bf9f9-85a5-4d37-9723-abe6a08e6963\",\n        \"province\": \"\",\n        \"city\": \"Hồ Chí Minh City\",\n        \"ward\": \"Thủ Đức\",\n        \"street\": \"Tạ Quang Bửu\",\n        \"no\": \"10\",\n        \"isDefault\": true,\n        \"receiverPhoneNumber\": \"0123456789\",\n        \"receiverName\": \"QC\",\n        \"updatedAt\": \"2026-03-02 17:26:46.355224\"\n    },\n    {\n        \"addressId\": \"fc313ba4-74f0-4dfe-a72b-48c881183642\",\n        \"customerId\": \"560bf9f9-85a5-4d37-9723-abe6a08e6963\",\n        \"province\": \"\",\n        \"city\": \"Hồ Chí Minh City\",\n        \"ward\": \"Thủ Đức\",\n        \"street\": \"Tạ Quang Bửu\",\n        \"no\": \"10\",\n        \"isDefault\": false,\n        \"receiverPhoneNumber\": \"0123456789\",\n        \"receiverName\": \"QC\",\n        \"updatedAt\": \"2026-03-02 17:26:47.817299\"\n    }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Delete address",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwN2syMiIsImlhdCI6MTc3MjQ3MjM5NCwiZXhwIjoxNzcyNDczMjk0LCJ1c2VySWQiOiI1NjBiZjlmOS04NWE1LTRkMzctOTcyMy1hYmU2YTA4ZTY5NjMiLCJyb2xlIjoiQ1VTVE9NRVIifQ.nzpVqhabsSkp2-P9u859I0ycPeygVhFzfr1Ro7uRDwk",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8081/api/addresses/fc313ba4-74f0-4dfe-a72b-48c881183642",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8081",
+              "path": [
+                "api",
+                "addresses",
+                "fc313ba4-74f0-4dfe-a72b-48c881183642"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "success",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8081/api/addresses/fc313ba4-74f0-4dfe-a72b-48c881183642",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8081",
+                  "path": [
+                    "api",
+                    "addresses",
+                    "fc313ba4-74f0-4dfe-a72b-48c881183642"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Mon, 02 Mar 2026 17:30:33 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": 200,\n    \"data\": null,\n    \"message\": \"Address fc313ba4-74f0-4dfe-a72b-48c881183642 deleted successfully!\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Address By Id",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwN2syMiIsImlhdCI6MTc3MjQ3MjM5NCwiZXhwIjoxNzcyNDczMjk0LCJ1c2VySWQiOiI1NjBiZjlmOS04NWE1LTRkMzctOTcyMy1hYmU2YTA4ZTY5NjMiLCJyb2xlIjoiQ1VTVE9NRVIifQ.nzpVqhabsSkp2-P9u859I0ycPeygVhFzfr1Ro7uRDwk",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8081/api/addresses/ddca33da-bebd-4a82-b9b7-79dcac2592a6",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8081",
+              "path": [
+                "api",
+                "addresses",
+                "ddca33da-bebd-4a82-b9b7-79dcac2592a6"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8081/api/addresses/ddca33da-bebd-4a82-b9b7-79dcac2592a6",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8081",
+                  "path": [
+                    "api",
+                    "addresses",
+                    "ddca33da-bebd-4a82-b9b7-79dcac2592a6"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Mon, 02 Mar 2026 17:31:35 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": 200,\n    \"data\": {\n        \"addressId\": \"ddca33da-bebd-4a82-b9b7-79dcac2592a6\",\n        \"customerId\": \"560bf9f9-85a5-4d37-9723-abe6a08e6963\",\n        \"province\": \"\",\n        \"city\": \"Hồ Chí Minh City\",\n        \"ward\": \"Thủ Đức\",\n        \"street\": \"Tạ Quang Bửu\",\n        \"no\": \"10\",\n        \"isDefault\": true,\n        \"receiverPhoneNumber\": \"0123456789\",\n        \"receiverName\": \"QC\",\n        \"updatedAt\": \"2026-03-02 17:26:46.355224\"\n    },\n    \"message\": \"Get address by id ddca33da-bebd-4a82-b9b7-79dcac2592a6 successfully!\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get addresses paging",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwIiwiaWF0IjoxNzcyNTU2NjQwLCJleHAiOjE3NzI1NTc1NDAsInVzZXJJZCI6Ijg5M2M2Mzg3LTIxZTctNGExZC1hZDc4LTUwYjlhYThmODc5MiIsInJvbGUiOiJDVVNUT01FUiJ9.8B8dm8naQ4QGgb4lzPD-QgNPVZDBQuI5tgQrhISIdfc",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8081/api/addresses/paged?page=0&size=2&sortBy=updatedAt&sortDirection=ASC",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8081",
+              "path": [
+                "api",
+                "addresses",
+                "paged"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "2"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "updatedAt"
+                },
+                {
+                  "key": "sortDirection",
+                  "value": "ASC"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8081/api/addresses/paged?page=1&size=2&sortBy=updatedAt&sortDirection=ASC",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8081",
+                  "path": [
+                    "api",
+                    "addresses",
+                    "paged"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "size",
+                      "value": "2"
+                    },
+                    {
+                      "key": "sortBy",
+                      "value": "updatedAt"
+                    },
+                    {
+                      "key": "sortDirection",
+                      "value": "ASC"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Mon, 02 Mar 2026 17:35:31 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": 200,\n    \"page_number\": 1,\n    \"page_size\": 2,\n    \"count_items\": 5,\n    \"count_pages\": 3,\n    \"data\": [\n        {\n            \"addressId\": \"172e0435-22f2-4df0-8e3b-15c16e37232f\",\n            \"customerId\": \"560bf9f9-85a5-4d37-9723-abe6a08e6963\",\n            \"province\": \"\",\n            \"city\": \"Hồ Chí Minh City\",\n            \"ward\": \"Thủ Đức\",\n            \"street\": \"Tạ Quang Bửu\",\n            \"no\": \"10\",\n            \"isDefault\": false,\n            \"receiverPhoneNumber\": \"0123456789\",\n            \"receiverName\": \"QC\",\n            \"updatedAt\": \"2026-03-02 17:32:48.926408\"\n        },\n        {\n            \"addressId\": \"41e6ef76-a16f-40c5-ab37-b4ecf80c6af4\",\n            \"customerId\": \"560bf9f9-85a5-4d37-9723-abe6a08e6963\",\n            \"province\": \"\",\n            \"city\": \"Hồ Chí Minh City\",\n            \"ward\": \"Thủ Đức\",\n            \"street\": \"Tạ Quang Bửu\",\n            \"no\": \"10\",\n            \"isDefault\": false,\n            \"receiverPhoneNumber\": \"0123456789\",\n            \"receiverName\": \"QC\",\n            \"updatedAt\": \"2026-03-02 17:32:50.176988\"\n        }\n    ],\n    \"message\": \"Get addresses successfully with index 1 size 2\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Payment Account API",
+      "item": [
+        {
+          "name": "Create new payment account",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwIiwiaWF0IjoxNzcyNTU2NjQwLCJleHAiOjE3NzI1NTc1NDAsInVzZXJJZCI6Ijg5M2M2Mzg3LTIxZTctNGExZC1hZDc4LTUwYjlhYThmODc5MiIsInJvbGUiOiJDVVNUT01FUiJ9.8B8dm8naQ4QGgb4lzPD-QgNPVZDBQuI5tgQrhISIdfc",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"accountNumber\":\"SDC00100400\",\r\n    \"bankName\":\"MBBANK\",\r\n    \"holderName\":\"ITSME\",\r\n    \"isDefault\":false,\r\n    \"type\":\"BANK_ACCOUNT\",\r\n    \"status\":\"ACTIVE\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/payment-accounts",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8081",
+              "path": [
+                "api",
+                "payment-accounts"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"accountNumber\":\"SDC00100400\",\r\n    \"bankName\":\"MBBANK\",\r\n    \"holderName\":\"ITSME\",\r\n    \"isDefault\":false,\r\n    \"type\":\"BANK_ACCOUNT\",\r\n    \"status\":\"ACTIVE\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8081/api/payment-accounts",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8081",
+                  "path": [
+                    "api",
+                    "payment-accounts"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Tue, 03 Mar 2026 16:54:42 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": 200,\n    \"data\": {\n        \"paymentAccountId\": \"82cffa9d-cb89-459d-b506-d18abb4e912d\",\n        \"customerId\": \"893c6387-21e7-4a1d-ad78-50b9aa8f8792\",\n        \"accountNumber\": \"SDC00100400\",\n        \"bankName\": \"MBBANK\",\n        \"holderName\": \"ITSME\",\n        \"isDefault\": false,\n        \"type\": \"BANK_ACCOUNT\",\n        \"status\": \"ACTIVE\",\n        \"updatedAt\": \"2026-03-03T16:54:42.150568\"\n    },\n    \"message\": \"Payment account created successfully!\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Payment Account",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwIiwiaWF0IjoxNzcyNTU2NjQwLCJleHAiOjE3NzI1NTc1NDAsInVzZXJJZCI6Ijg5M2M2Mzg3LTIxZTctNGExZC1hZDc4LTUwYjlhYThmODc5MiIsInJvbGUiOiJDVVNUT01FUiJ9.8B8dm8naQ4QGgb4lzPD-QgNPVZDBQuI5tgQrhISIdfc",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"bankName\":\"OCBBank\",\r\n    \"holderName\":\"ITSME\",\r\n    \"isDefault\":false,\r\n    \"type\":\"BANK_ACCOUNT\",\r\n    \"status\":\"ACTIVE\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/payment-accounts/82cffa9d-cb89-459d-b506-d18abb4e912d",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8081",
+              "path": [
+                "api",
+                "payment-accounts",
+                "82cffa9d-cb89-459d-b506-d18abb4e912d"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "success",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"bankName\":\"OCBBank\",\r\n    \"holderName\":\"ITSME\",\r\n    \"isDefault\":false,\r\n    \"type\":\"BANK_ACCOUNT\",\r\n    \"status\":\"ACTIVE\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8081/api/payment-accounts/82cffa9d-cb89-459d-b506-d18abb4e912d",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8081",
+                  "path": [
+                    "api",
+                    "payment-accounts",
+                    "82cffa9d-cb89-459d-b506-d18abb4e912d"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Tue, 03 Mar 2026 16:55:57 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": 200,\n    \"data\": {\n        \"paymentAccountId\": \"82cffa9d-cb89-459d-b506-d18abb4e912d\",\n        \"customerId\": \"893c6387-21e7-4a1d-ad78-50b9aa8f8792\",\n        \"accountNumber\": \"SDC00100400\",\n        \"bankName\": \"OCBBank\",\n        \"holderName\": \"ITSME\",\n        \"isDefault\": false,\n        \"type\": \"BANK_ACCOUNT\",\n        \"status\": \"ACTIVE\",\n        \"updatedAt\": \"2026-03-03T16:55:57.768023\"\n    },\n    \"message\": \"Payment account updated successfully!\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Set default payment account",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwIiwiaWF0IjoxNzcyNTU2NjQwLCJleHAiOjE3NzI1NTc1NDAsInVzZXJJZCI6Ijg5M2M2Mzg3LTIxZTctNGExZC1hZDc4LTUwYjlhYThmODc5MiIsInJvbGUiOiJDVVNUT01FUiJ9.8B8dm8naQ4QGgb4lzPD-QgNPVZDBQuI5tgQrhISIdfc",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"accountNumber\":\"SDC00100400\",\r\n    \"bankName\":\"MBBANK\",\r\n    \"holderName\":\"ITSME\",\r\n    \"isDefault\":false,\r\n    \"type\":\"BANK_ACCOUNT\",\r\n    \"status\":\"ACTIVE\"\r\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/payment-accounts/set-default/82cffa9d-cb89-459d-b506-d18abb4e912d",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8081",
+              "path": [
+                "api",
+                "payment-accounts",
+                "set-default",
+                "82cffa9d-cb89-459d-b506-d18abb4e912d"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "success",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"accountNumber\":\"SDC00100400\",\r\n    \"bankName\":\"MBBANK\",\r\n    \"holderName\":\"ITSME\",\r\n    \"isDefault\":false,\r\n    \"type\":\"BANK_ACCOUNT\",\r\n    \"status\":\"ACTIVE\"\r\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8081/api/payment-accounts/set-default/82cffa9d-cb89-459d-b506-d18abb4e912d",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8081",
+                  "path": [
+                    "api",
+                    "payment-accounts",
+                    "set-default",
+                    "82cffa9d-cb89-459d-b506-d18abb4e912d"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Tue, 03 Mar 2026 16:57:01 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": 200,\n    \"data\": {\n        \"paymentAccountId\": \"82cffa9d-cb89-459d-b506-d18abb4e912d\",\n        \"customerId\": \"893c6387-21e7-4a1d-ad78-50b9aa8f8792\",\n        \"accountNumber\": \"SDC00100400\",\n        \"bankName\": \"OCBBank\",\n        \"holderName\": \"ITSME\",\n        \"isDefault\": true,\n        \"type\": \"BANK_ACCOUNT\",\n        \"status\": \"ACTIVE\",\n        \"updatedAt\": \"2026-03-03T16:57:01.415440\"\n    },\n    \"message\": \"Set default payment account successfully!\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete payment account",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwIiwiaWF0IjoxNzcyNTU3NDA3LCJleHAiOjE3NzI1NTgzMDcsInVzZXJJZCI6IjJmNmZiNjQ5LTRjNjktNDlmZC05NzNiLWJlMThiMTFhYWQxOCIsInJvbGUiOiJDVVNUT01FUiJ9.vhIZNJktLi1JcBxyn4rYDJlkKCQl0x2HSVC-osj1rqM",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"accountNumber\":\"SDC00100400\",\r\n    \"bankName\":\"MBBANK\",\r\n    \"holderName\":\"ITSME\",\r\n    \"isDefault\":false,\r\n    \"type\":\"BANK_ACCOUNT\",\r\n    \"status\":\"ACTIVE\"\r\n}"
+            },
+            "url": {
+              "raw": "http://localhost:8081/api/payment-accounts/4e85d137-1c70-458f-b0fd-c31900b99894",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8081",
+              "path": [
+                "api",
+                "payment-accounts",
+                "4e85d137-1c70-458f-b0fd-c31900b99894"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "success",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"accountNumber\":\"SDC00100400\",\r\n    \"bankName\":\"MBBANK\",\r\n    \"holderName\":\"ITSME\",\r\n    \"isDefault\":false,\r\n    \"type\":\"BANK_ACCOUNT\",\r\n    \"status\":\"ACTIVE\"\r\n}"
+                },
+                "url": {
+                  "raw": "http://localhost:8081/api/payment-accounts/4e85d137-1c70-458f-b0fd-c31900b99894",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8081",
+                  "path": [
+                    "api",
+                    "payment-accounts",
+                    "4e85d137-1c70-458f-b0fd-c31900b99894"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Tue, 03 Mar 2026 17:04:58 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": 200,\n    \"data\": null,\n    \"message\": \"Delete payment account successfully!\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get all payment respones",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwIiwiaWF0IjoxNzcyNTU4ODQzLCJleHAiOjE3NzI1NTk3NDMsInVzZXJJZCI6IjAzM2Y4YjY2LWNjOWItNDVjYS05NWRkLTNhNmNkY2M4MjY1NiIsInJvbGUiOiJDVVNUT01FUiJ9.p2XmPi_zVbgK8iwlj2RZTiPDKh-fACO-Z6O3vhwOuJE",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8081/api/payment-accounts",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8081",
+              "path": [
+                "api",
+                "payment-accounts"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8081/api/payment-accounts",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8081",
+                  "path": [
+                    "api",
+                    "payment-accounts"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Tue, 03 Mar 2026 17:38:30 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "[\n    {\n        \"paymentAccountId\": \"2eeaec07-0121-4516-be40-9198dd42c150\",\n        \"customerId\": \"52ca6bcf-ae99-40a8-8284-958023b66d1c\",\n        \"accountNumber\": \"SDC001004005\",\n        \"bankName\": \"MBBANK\",\n        \"holderName\": \"ITSME\",\n        \"isDefault\": true,\n        \"type\": \"BANK_ACCOUNT\",\n        \"status\": \"ACTIVE\",\n        \"updatedAt\": \"2026-03-03 17:38:16.625312\"\n    },\n    {\n        \"paymentAccountId\": \"f86ef6b4-345c-498b-94d2-fa701b6aeb2b\",\n        \"customerId\": \"52ca6bcf-ae99-40a8-8284-958023b66d1c\",\n        \"accountNumber\": \"SDC001004004\",\n        \"bankName\": \"MBBANK\",\n        \"holderName\": \"ITSME\",\n        \"isDefault\": false,\n        \"type\": \"BANK_ACCOUNT\",\n        \"status\": \"ACTIVE\",\n        \"updatedAt\": \"2026-03-03 17:38:24.706828\"\n    }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Get payment response by id",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwIiwiaWF0IjoxNzcyNTU5OTEzLCJleHAiOjE3NzI1NjA4MTMsInVzZXJJZCI6IjExMTYxNTEyLThiMTAtNDkwMy04YTFjLTk3YTFjNDU1ZjhiMSIsInJvbGUiOiJDVVNUT01FUiJ9.l3D4biadK-OSvJi-uRhW2ilIaTusBJMGSbvKY0pVY58",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8081/api/payment-accounts/8565a822-4e4b-42aa-9f80-efcfb31b3025",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8081",
+              "path": [
+                "api",
+                "payment-accounts",
+                "8565a822-4e4b-42aa-9f80-efcfb31b3025"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8081/api/payment-accounts/8565a822-4e4b-42aa-9f80-efcfb31b3025",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8081",
+                  "path": [
+                    "api",
+                    "payment-accounts",
+                    "8565a822-4e4b-42aa-9f80-efcfb31b3025"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Tue, 03 Mar 2026 17:45:43 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": 200,\n    \"data\": {\n        \"paymentAccountId\": \"8565a822-4e4b-42aa-9f80-efcfb31b3025\",\n        \"customerId\": \"11161512-8b10-4903-8a1c-97a1c455f8b1\",\n        \"accountNumber\": \"SDC001004004\",\n        \"bankName\": \"MBBANK\",\n        \"holderName\": \"ITSME\",\n        \"isDefault\": true,\n        \"type\": \"BANK_ACCOUNT\",\n        \"status\": \"ACTIVE\",\n        \"updatedAt\": \"2026-03-03 17:45:27.010702\"\n    },\n    \"message\": \"Get payment account by id 8565a822-4e4b-42aa-9f80-efcfb31b3025 successfully!\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get payment response paging",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwIiwiaWF0IjoxNzcyNTYwMDA1LCJleHAiOjE3NzI1NjA5MDUsInVzZXJJZCI6IjExMTYxNTEyLThiMTAtNDkwMy04YTFjLTk3YTFjNDU1ZjhiMSIsInJvbGUiOiJDVVNUT01FUiJ9.cbKLi_e9Q-Sd8qFoecyZ2_raX8Gz9p64D5LKlu67mKw",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8081/api/payment-accounts/paged?page=0&size=2&sortBy&sortDirection",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8081",
+              "path": [
+                "api",
+                "payment-accounts",
+                "paged"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0",
+                  "type": "text"
+                },
+                {
+                  "key": "size",
+                  "value": "2",
+                  "type": "text"
+                },
+                {
+                  "key": "sortBy",
+                  "value": null,
+                  "type": "text"
+                },
+                {
+                  "key": "sortDirection",
+                  "value": null,
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8081/api/payment-accounts/paged?page=0&size=2&sortBy&sortDirection",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8081",
+                  "path": [
+                    "api",
+                    "payment-accounts",
+                    "paged"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "0"
+                    },
+                    {
+                      "key": "size",
+                      "value": "2"
+                    },
+                    {
+                      "key": "sortBy",
+                      "value": null
+                    },
+                    {
+                      "key": "sortDirection",
+                      "value": null
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Tue, 03 Mar 2026 17:47:59 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": 200,\n    \"page_number\": 0,\n    \"page_size\": 2,\n    \"count_items\": 1,\n    \"count_pages\": 1,\n    \"data\": [\n        {\n            \"paymentAccountId\": \"8565a822-4e4b-42aa-9f80-efcfb31b3025\",\n            \"customerId\": \"11161512-8b10-4903-8a1c-97a1c455f8b1\",\n            \"accountNumber\": \"SDC001004004\",\n            \"bankName\": \"MBBANK\",\n            \"holderName\": \"ITSME\",\n            \"isDefault\": true,\n            \"type\": \"BANK_ACCOUNT\",\n            \"status\": \"ACTIVE\",\n            \"updatedAt\": \"2026-03-03 17:45:27.010702\"\n        }\n    ],\n    \"message\": \"Get payment accounts successfully with index 0 size 2\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

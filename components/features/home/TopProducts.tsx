@@ -15,8 +15,9 @@ import {
 } from "@/components/ui/carousel"
 import { ProductCard } from "@/components/ui/product-card"
 import { useProductList } from "@/presentation/hooks";
+import { useLanguage } from "@/shared/providers/language.provider";
 
-const formatter = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' });
+
 
 interface TopProductsProps {
   /** 
@@ -28,7 +29,11 @@ interface TopProductsProps {
   className?: string;
 }
 
-export function TopProducts({ title = "Sản phẩm hàng đầu", className }: TopProductsProps) {
+export function TopProducts({ title, className }: TopProductsProps) {
+  const { t, locale } = useLanguage();
+  const currentLocale = locale === 'vi' ? 'vi-VN' : 'en-US';
+  const formatter = new Intl.NumberFormat(currentLocale, { style: 'currency', currency: 'VND' });
+  const displayTitle = title || t('top_products', {}, "Top Products");
   // Lấy danh sách 10 sản phẩm có đánh giá trung bình cao nhất
   const { products, isLoading } = useProductList({ page: 0, size: 10, sortBy: "averageRating", sortDirection: "DESC" });
 
@@ -36,7 +41,7 @@ export function TopProducts({ title = "Sản phẩm hàng đầu", className }: 
     return (
       <section className={`container mx-auto px-4 py-12 ${className}`}>
         <div className="space-y-4">
-          <h2 className="text-2xl font-bold text-gray-900 mb-8">{title}</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-8">{displayTitle}</h2>
           {/* Vùng xương hiển thị (Loading Skeleton) mô phỏng cấu trúc lưới dạng 4 cột */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {[...Array(4)].map((_, i) => (
@@ -50,7 +55,7 @@ export function TopProducts({ title = "Sản phẩm hàng đầu", className }: 
 
   return (
     <section className={`container mx-auto px-4 py-12 ${className}`}>
-      <h2 className="text-2xl font-bold text-gray-900 mb-8">{title}</h2>
+      <h2 className="text-2xl font-bold text-gray-900 mb-8">{displayTitle}</h2>
 
       {/* Thành phần Carousel bọc danh mục sản phẩm, cấu hình tự động trượt sau 2s */}
       <Carousel
@@ -71,7 +76,7 @@ export function TopProducts({ title = "Sản phẩm hàng đầu", className }: 
               <ProductCard
                 id={String(product.productId)}
                 title={product.name}
-                price={product.displayPrice ? formatter.format(product.displayPrice) : "Liên hệ"}
+                price={product.displayPrice ? formatter.format(product.displayPrice) : t('contact', {}, "Contact")}
                 rating={product.averageRating || 0}
                 image={product.variants?.[0]?.images?.[0] || "https://placehold.co/400x400"}
                 variant="default"

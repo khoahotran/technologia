@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
+import { useLanguage } from "@/shared/providers/language.provider";
 
 /** Định nghĩa cấu trúc một tin nhắn */
 interface Message {
@@ -24,39 +25,42 @@ interface Message {
   timestamp: Date
 }
 
-/** Danh sách các câu hỏi gợi ý nhanh */
-const QUICK_QUESTIONS = [
-  "Đơn hàng của tôi ở đâu?",
-  "Chính sách đổi trả như thế nào?",
-  "Có miễn phí vận chuyển không?",
-  "Làm sao để liên hệ hỗ trợ?"
-]
-
-/** 
- * Bản đồ các phản hồi tự động dựa trên từ khóa xuất hiện trong câu hỏi
- */
-const AUTO_RESPONSES: Record<string, string> = {
-  "đơn hàng": "Bạn có thể theo dõi trạng thái đơn hàng trong phần 'Đơn hàng' của tài khoản. Nếu bạn có mã đơn hàng, tôi có thể kiểm tra giúp bạn.",
-  "order": "Bạn có thể theo dõi trạng thái đơn hàng trong phần 'Đơn hàng' của tài khoản. Nếu bạn có mã đơn hàng, tôi có thể kiểm tra giúp bạn.",
-  "đổi trả": "Chúng tôi chấp nhận đổi trả trong vòng 30 ngày kể từ khi mua hàng. Sản phẩm phải còn nguyên vẹn trạng thái ban đầu.",
-  "vận chuyển": "Miễn phí vận chuyển cho đơn hàng trên 1.000.000 VNĐ. Phí vận chuyển tiêu chuẩn là 30.000 VNĐ.",
-  "liên hệ": "Bạn có thể liên hệ đội ngũ hỗ trợ tại support@techstore.com hoặc gọi (+84) 123 456 789.",
-  "xin chào": "Xin chào! 👋 Tôi là trợ lý ảo. Tôi có thể giúp gì cho bạn hôm nay?",
-  "hello": "Xin chào! 👋 Tôi là trợ lý ảo. Tôi có thể giúp gì cho bạn hôm nay?",
-  "tạm biệt": "Tạm biệt bạn! Chúc bạn một ngày tốt lành.",
-  "default": "Tôi chưa hiểu rõ ý của bạn. Vui lòng liên hệ đội ngũ hỗ trợ trực tiếp để được trợ giúp chi tiết hơn."
-}
-
-/**
- * Thành phần Chatbot
- */
 export function Chatbot() {
+  const { t } = useLanguage()
   const [isOpen, setIsOpen] = useState(false)
   const [isMinimized, setIsMinimized] = useState(false)
+
+  /** Danh sách các câu hỏi gợi ý nhanh */
+  const QUICK_QUESTIONS = [
+    t('chatbot_q1', {}, "Where is my order?"),
+    t('chatbot_q2', {}, "What is the return policy?"),
+    t('chatbot_q3', {}, "Is there free shipping?"),
+    t('chatbot_q4', {}, "How to contact support?")
+  ]
+
+  /** 
+   * Bản đồ các phản hồi tự động dựa trên từ khóa xuất hiện trong câu hỏi
+   */
+  const AUTO_RESPONSES: Record<string, string> = {
+    "đơn hàng": t('chatbot_res_order', {}, "You can track your order status in the 'Orders' section of your account. If you have an order ID, I can check it for you."),
+    "order": t('chatbot_res_order', {}, "You can track your order status in the 'Orders' section of your account. If you have an order ID, I can check it for you."),
+    "đổi trả": t('chatbot_res_return', {}, "We accept returns within 30 days of purchase. The product must be in its original condition."),
+    "return": t('chatbot_res_return', {}, "We accept returns within 30 days of purchase. The product must be in its original condition."),
+    "vận chuyển": t('chatbot_res_shipping', {}, "Free shipping for orders over 1,000,000 VND. Standard shipping fee is 30,000 VND."),
+    "shipping": t('chatbot_res_shipping', {}, "Free shipping for orders over 1,000,000 VND. Standard shipping fee is 30,000 VND."),
+    "liên hệ": t('chatbot_res_contact', {}, "You can contact our support team at support@techstore.com or call (+84) 123 456 789."),
+    "contact": t('chatbot_res_contact', {}, "You can contact our support team at support@techstore.com or call (+84) 123 456 789."),
+    "xin chào": t('chatbot_res_greeting', {}, "Hello! 👋 I'm a virtual assistant. How can I help you today?"),
+    "hello": t('chatbot_res_greeting', {}, "Hello! 👋 I'm a virtual assistant. How can I help you today?"),
+    "tạm biệt": t('chatbot_res_goodbye', {}, "Goodbye! Have a nice day."),
+    "bye": t('chatbot_res_goodbye', {}, "Goodbye! Have a nice day."),
+    "default": t('chatbot_res_default', {}, "I don't quite understand. Please contact our support team for more detailed assistance.")
+  }
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "welcome",
-      text: "Xin chào! 👋 Tôi là trợ lý ảo của TechStore. Tôi có thể giúp gì cho bạn?",
+      text: t('chatbot_welcome', {}, "Hello! 👋 I'm TechStore's virtual assistant. How can I help you?"),
       sender: "bot",
       timestamp: new Date()
     }
@@ -121,7 +125,7 @@ export function Chatbot() {
           <CardHeader className="bg-primary text-primary-foreground p-4 rounded-t-lg flex flex-row items-center justify-between space-y-0">
             <div className="flex items-center gap-2">
               <MessageCircle className="h-5 w-5" />
-              <CardTitle className="text-base">Hỗ trợ trực tuyến</CardTitle>
+              <CardTitle className="text-base">{t('chatbot_title', {}, "Online Support")}</CardTitle>
             </div>
             <div className="flex items-center gap-1">
               <Button variant="ghost" size="icon" className="h-6 w-6 text-primary-foreground hover:bg-primary/80" onClick={() => setIsMinimized(true)}>
@@ -174,7 +178,7 @@ export function Chatbot() {
                 <Input
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
-                  placeholder="Nhập tin nhắn..."
+                  placeholder={t('chatbot_placeholder', {}, "Type a message...")}
                   className="flex-1"
                 />
                 <Button type="submit" size="icon" disabled={!inputValue.trim()}>

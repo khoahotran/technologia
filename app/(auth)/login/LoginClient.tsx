@@ -8,11 +8,11 @@ import { useState, useContext } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { httpClient } from "@/infrastructure/http/client"
 import { authStorage } from "@/infrastructure/persistence/storage"
 import { AuthRepository } from "@/infrastructure/repositories/auth/auth.repository"
 import { UserRepository } from "@/infrastructure/repositories/user/user.repository"
 import { AuthContext } from "@/shared/providers/auth.provider"
+import { useLanguage } from "@/shared/providers/language.provider";
 import { safe } from "@/shared/utils/result"
 
 /**
@@ -25,18 +25,24 @@ import { safe } from "@/shared/utils/result"
  * - Lưu trữ token vào local storage và cập nhật AuthContext.
  */
 export default function LoginClient() {
+    const { t } = useLanguage()
     const router = useRouter()
     const auth = useContext(AuthContext)
     const [loading, setLoading] = useState(false)
+    const [formData, setFormData] = useState({
+        username: "",
+        password: ""
+    })
     const [error, setError] = useState(() => {
+        if (typeof window === 'undefined') return "";
         const searchParams = new URLSearchParams(window.location.search);
         const errorType = searchParams.get("error");
         if (errorType === "forbidden") {
-            return "Your session has no permission or expired. Please login again.";
+            return t('login_err_forbidden', {}, "Your session has no permission or expired. Please login again.");
         } else if (errorType === "session_expired") {
-            return "Your session has expired. Please login again.";
+            return t('login_err_expired', {}, "Your session has expired. Please login again.");
         } else if (errorType === "unauthorized") {
-            return "Please login to access this feature.";
+            return t('login_err_unauthorized', {}, "Please login to access this feature.");
         }
         return "";
     });
@@ -57,10 +63,10 @@ export default function LoginClient() {
             password: formData.password
         }));
 
-        if (authErr !== null) {
+        if (authErr) {
             console.error("Local Login Error Details:", authErr)
             const appError = authErr as { message?: string, details?: { data?: { message?: string } } };
-            const msg = appError.details?.data?.message || appError.message || "Login failed.";
+            const msg = appError.details?.data?.message || appError.message || t('login_err_failed', {}, "Login failed.");
             setError(msg);
             setLoading(false);
             return;
@@ -89,8 +95,8 @@ export default function LoginClient() {
             storedRefreshMatches: storedRefresh === refreshToken,
         });
 
-        httpClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        console.warn("[LOGIN] Updated httpClient default headers");
+        authStorage.setTokens(token, refreshToken);
+        console.warn("[LOGIN] authStorage.setTokens() completed");
 
         // 3. User info
         let finalUser = {
@@ -101,7 +107,7 @@ export default function LoginClient() {
         };
 
         const [userProfile, profileErr] = await safe(UserRepository.getMe());
-        if (profileErr !== null) {
+        if (profileErr) {
             console.warn("Failed to fetch profile after login:", profileErr);
         } else if (userProfile) {
             finalUser = {
@@ -139,10 +145,10 @@ export default function LoginClient() {
             idToken: credentialResponse.credential
         }));
 
-        if (authErr !== null) {
+        if (authErr) {
             console.error("Backend Google Login Error:", authErr);
             const appError = authErr as { message?: string, details?: { data?: { message?: string } } };
-            const msg = appError.details?.data?.message || appError.message || "Google login failed.";
+            const msg = appError.details?.data?.message || appError.message || t('login_err_failed', {}, "Google login failed.");
             setError(msg);
             setLoading(false);
             return;
@@ -152,7 +158,6 @@ export default function LoginClient() {
         console.warn("Backend Google Login Success:", { userId });
 
         authStorage.setTokens(token, refreshToken);
-        httpClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
         let finalUser = {
             userId,
@@ -163,7 +168,7 @@ export default function LoginClient() {
 
         const [userProfile, profileErr] = await safe(UserRepository.getMe());
 
-        if (profileErr !== null) {
+        if (profileErr) {
             console.warn("Failed to fetch profile after Google login:", profileErr);
         } else if (userProfile) {
             finalUser = {
@@ -189,7 +194,7 @@ export default function LoginClient() {
             <div className="bg-white flex items-center justify-center p-8 order-2 md:order-1">
                 <div className="w-full max-w-md space-y-8">
                     <div className="text-center">
-                        <h2 className="text-3xl font-bold text-gray-800">SIGN IN</h2>
+                        <h2 className="text-3xl font-bold text-gray-800">{t('login_sign_in', {}, "SIGN IN")}</h2>
                     </div>
 
                     <form className="space-y-6" onSubmit={handleSubmit}>
@@ -202,8 +207,8 @@ export default function LoginClient() {
                         <Input
                             name="username"
                             type="text"
-                            placeholder="Username/Email"
-                            className="h-12 bg-[#F9F8FE] border-gray-200"
+                            placeholder={t('login_username_placeholder', {}, "Username/Email")}
+                            className="h-12 bg-background border-gray-200"
                             value={formData.username}
                             onChange={handleChange}
                             required
@@ -213,15 +218,15 @@ export default function LoginClient() {
                             <Input
                                 name="password"
                                 type="password"
-                                placeholder="Password"
-                                className="h-12 bg-[#F9F8FE] border-gray-200"
+                                placeholder={t('login_password_placeholder', {}, "Password")}
+                                className="h-12 bg-background border-gray-200"
                                 value={formData.password}
                                 onChange={handleChange}
                                 required
                             />
                             <div className="text-right">
-                                <Link href="/forgot-password" className="text-sm text-[#8AB0C3] hover:underline">
-                                    Forgot Password?
+                                <Link href="/forgot-password" className="text-sm text-secondary hover:underline">
+                                    {t('login_forgot_password', {}, "Forgot Password?")}
                                 </Link>
                             </div>
                         </div>
@@ -229,9 +234,9 @@ export default function LoginClient() {
                         <Button
                             type="submit"
                             disabled={loading}
-                            className="w-full h-12 bg-[#8AB0C3] hover:bg-[#7A9EB0] text-white font-semibold text-base"
+                            className="w-full h-12 bg-secondary hover:bg-secondary/90 text-white font-semibold text-base"
                         >
-                            {loading ? "Signing In..." : "Sign In"}
+                            {loading ? t('login_signing_in', {}, "Signing In...") : t('login_sign_in', {}, "SIGN IN")}
                         </Button>
 
                         <div className="relative">
@@ -239,27 +244,34 @@ export default function LoginClient() {
                                 <div className="w-full border-t border-gray-200"></div>
                             </div>
                             <div className="relative flex justify-center text-sm">
-                                <span className="px-4 bg-white text-gray-500">Or</span>
+                                <span className="px-4 bg-white text-gray-500">{t('login_or', {}, "Or")}</span>
                             </div>
                         </div>
 
                         <div className="flex flex-col space-y-3 items-center">
                             <div className="w-full">
-                                <GoogleLogin
-                                    onSuccess={onGoogleSuccess}
-                                    onError={() => setError("Google login failed. Please try again.")}
-                                    useOneTap
-                                    width="100%"
-                                    theme="outline"
-                                    shape="rectangular"
-                                />
+                                {process.env["NEXT_PUBLIC_GOOGLE_CLIENT_ID"] ? (
+                                    <GoogleLogin
+                                        onSuccess={onGoogleSuccess}
+                                        onError={() => setError(t('login_err_google_failed', {}, "Google login failed. Please try again."))}
+                                        useOneTap
+                                        width="100%"
+                                        theme="outline"
+                                        shape="rectangular"
+                                    />
+                                ) : (
+                                    <div className="text-sm text-amber-600 bg-amber-50 p-3 rounded-lg border border-amber-100 text-center">
+                                        {t('login_google_config_missing', {}, "Google Login is not configured. (Missing client_id)")}
+                                    </div>
+                                )}
                             </div>
                         </div>
 
+
                         <div className="text-center text-sm text-gray-600">
-                            Do not have account?{" "}
-                            <Link href="/register" className="text-[#3E93B3] hover:underline font-medium">
-                                Sign Up
+                            {t('login_no_account', {}, "Do not have account?")}{" "}
+                            <Link href="/register" className="text-primary hover:underline font-medium">
+                                {t('login_sign_up', {}, "Sign Up")}
                             </Link>
                         </div>
                     </form>
@@ -267,7 +279,7 @@ export default function LoginClient() {
             </div>
 
             {/* Right Panel - Welcome */}
-            <div className="bg-[#3E93B3] text-white flex flex-col justify-center items-center p-12 relative overflow-hidden order-1 md:order-2">
+            <div className="bg-primary text-white flex flex-col justify-center items-center p-12 relative overflow-hidden order-1 md:order-2">
                 {/* Decorative waves */}
                 <div className="absolute bottom-0 left-0 right-0">
                     <svg viewBox="0 0 1200 400" className="w-full">
@@ -287,11 +299,11 @@ export default function LoginClient() {
                 </div>
 
                 <div className="relative z-10 text-center space-y-6 max-w-md">
-                    <h1 className="text-5xl font-bold" style={{ fontFamily: 'cursive' }}>
-                        Welcome back
+                    <h1 className="text-5xl font-extrabold tracking-tight">
+                        {t('login_welcome_back', {}, "Welcome back")}
                     </h1>
                     <p className="text-xl leading-relaxed">
-                        Access your account to shop with ease, discover great deals, and enjoy a personalized shopping experience.
+                        {t('login_welcome_desc', {}, "Access your account to shop with ease, discover great deals, and enjoy a personalized shopping experience.")}
                     </p>
 
                     {/* Social Media Icons */}

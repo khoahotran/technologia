@@ -10,6 +10,7 @@
  * - Error mapping to domain errors
  */
 
+import { FilterResponseEntitySchema } from "@/domain/product/entities/filter.entity";
 import { ProductEntity, ProductEntitySchema } from "@/domain/product/entities/product.entity";
 import type {
   IProductRepository,
@@ -17,13 +18,10 @@ import type {
   ProductSearchParams,
   FilterProductResponse,
 } from "@/domain/product/repositories/product.repository.interface";
-import { fetchWithToken } from "@/infrastructure/http";
+import { fetchWithToken, adaptResponse, adaptPaginatedResponse, adaptListResponse } from "@/infrastructure/http";
 import { createScopedLogger } from "@/lib/logger";
-import { safeSync } from "@/shared/utils/result";
-import {
-  ProductPaginatedResponseSchema,
-  FilterPaginatedResponseSchema,
-} from "@/shared/validators/api-schemas";
+
+
 
 const logger = createScopedLogger('ProductRepository');
 
@@ -40,55 +38,6 @@ const DEFAULT_SORT_DIRECTION = "DESC" as const;
 // Helper Functions
 // ===========================================
 
-/**
- * Normalize product entity from API response
- */
-function normalizeProductEntity(data: unknown): ProductEntity {
-  return ProductEntitySchema.parse(data);
-}
-
-/**
- * Normalize filter response from API
- */
-function normalizeFilterResponse(data: unknown): FilterProductResponse {
-  const [validated, error] = safeSync(() => FilterPaginatedResponseSchema.parse(data));
-
-  if (error) {
-    logger.error('Failed to normalize filter response', error);
-    throw error;
-  }
-
-  // data will be correctly narrowed because of synchronous nature or just use validated
-  const result = validated!;
-
-  return {
-    status: result.status,
-    page_number: result.page_number,
-    page_size: result.page_size,
-    count_items: result.count_items,
-    count_pages: result.count_pages,
-    data: result.data.map(item => ({
-      productId: item.productId,
-      name: item.name,
-      description: item.description,
-      displayPrice: item.displayPrice,
-      totalStock: item.totalStock,
-      status: item.status,
-      variants: item.variants,
-      specsText: item.specsText,
-      brand: item.brand,
-      category: item.category,
-      averageRating: item.averageRating ?? undefined,
-      minPrice: item.minPrice ?? undefined,
-      maxPrice: item.maxPrice ?? undefined,
-      minRating: item.minRating ?? undefined,
-      maxRating: item.maxRating ?? undefined,
-      sortBy: item.sortBy,
-      sortOrder: item.sortOrder,
-    })),
-    message: result.message,
-  };
-}
 
 // ===========================================
 // Product Repository Implementation
@@ -111,15 +60,7 @@ export const ProductRepository: IProductRepository = {
       method: 'GET',
     });
 
-    // Xử lý linh hoạt các định dạng Response khác nhau từ API
-    const products = (Array.isArray(response)
-      ? response
-      : response instanceof Object && 'data' in response
-        ? (response as { data: unknown[] }).data
-        : [response]) as unknown[];
-
-    // Chuyển đổi dữ liệu thô sang Entity chuẩn của Domain
-    return products.map(normalizeProductEntity);
+    return adaptListResponse(response, ProductEntitySchema, 'products');
   },
 
   /**
@@ -134,12 +75,7 @@ export const ProductRepository: IProductRepository = {
       method: 'GET',
     });
 
-    // Bóc tách khối 'data' nếu kết quả bị bọc trong Response Object
-    const data = response instanceof Object && 'data' in response
-      ? (response as { data: unknown }).data
-      : response;
-
-    return normalizeProductEntity(data);
+    return adaptResponse(response, ProductEntitySchema, `product-${id}`);
   },
 
   /**
@@ -158,27 +94,10 @@ export const ProductRepository: IProductRepository = {
 
     const response = await fetchWithToken(`${BASE_PATH}/paged`, {
       method: 'GET',
-      query: {
-        page: String(page),
-        size: String(size),
-        sortBy,
-        sortDirection,
-      },
+      query: { page: String(page), size: String(size), sortBy, sortDirection },
     });
 
-    // Xác thực cấu trúc phân trang từ server
-    const validated = ProductPaginatedResponseSchema.parse(response);
-
-    return {
-      status: validated.status,
-      page_number: validated.page_number,
-      page_size: validated.page_size,
-      count_items: validated.count_items,
-      count_pages: validated.count_pages,
-      // Chuyển đổi và xác thực từng item sang ProductEntity (bao gồm việc đổi string thành Date)
-      data: validated.data.map(normalizeProductEntity),
-      message: validated.message,
-    };
+    return adaptPaginatedResponse(response, ProductEntitySchema, "products-paged");
   },
 
   /**
@@ -193,41 +112,17 @@ export const ProductRepository: IProductRepository = {
    * @param params Các tham số tìm kiếm và lọc
    */
   async searchAndFilter(params: ProductSearchParams): Promise<FilterProductResponse> {
-    const {
-      page = 0,
-      size = DEFAULT_PAGE_SIZE,
-      sortBy = DEFAULT_SORT_BY,
-      sortDirection = DEFAULT_SORT_DIRECTION,
-      keyword,
-      minPrice,
-      maxPrice,
-      minRating,
-      maxRating,
-      categoryId,
-      brandId,
-    } = params;
+    logger.debug('Searching and filtering products', params as Record<string, unknown>);
 
-    logger.debug('Searching and filtering products', { page, size, keyword, minPrice, maxPrice });
-
-    // Gửi request kèm theo toàn bộ Query Params đã được chuỗi hóa
     const response = await fetchWithToken(`${BASE_PATH}/search-filter`, {
       method: 'GET',
-      query: {
-        page: String(page),
-        size: String(size),
-        sortBy,
-        sortDirection,
-        ...(keyword && { keyword }),
-        ...(minPrice !== undefined && { minPrice: String(minPrice) }),
-        ...(maxPrice !== undefined && { maxPrice: String(maxPrice) }),
-        ...(minRating !== undefined && { minRating: String(minRating) }),
-        ...(maxRating !== undefined && { maxRating: String(maxRating) }),
-        ...(categoryId !== undefined && { categoryId: String(categoryId) }),
-        ...(brandId !== undefined && { brandId: String(brandId) }),
-      },
+      query: Object.fromEntries(
+        Object.entries(params as Record<string, unknown>)
+          .filter(([_, v]) => v !== undefined)
+          .map(([k, v]) => [k, String(v)])
+      ),
     });
 
-    // Sử dụng helper để chuẩn hóa kết quả tìm kiếm phức tạp
-    return normalizeFilterResponse(response);
+    return adaptPaginatedResponse(response, FilterResponseEntitySchema, "products-filter");
   },
 };

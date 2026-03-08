@@ -9,7 +9,7 @@
  */
 
 // HTTP Client - Lớp giao tiếp API trung tâm
-export * from "./http/client";
+export * from "./http";
 
 // Repositories - Triển khai các logic truy xuất dữ liệu
 export * from "./repositories";

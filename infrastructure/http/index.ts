@@ -27,6 +27,7 @@ export {
 // Response transformations - Chuẩn hóa dữ liệu nhận về
 export {
   adaptResponse,
+  adaptListResponse,
   adaptPaginatedResponse,
   adaptResponseWithMapper,
   safeAdapt,
@@ -50,5 +51,4 @@ export {
   type BackendErrorResponse,
 } from './api-error-mapper';
 
-// Legacy client export - Dùng cho các thành phần cũ vẫn dùng trực tiếp Axios instance
-export { httpClient } from './client';
+// No legacy client export

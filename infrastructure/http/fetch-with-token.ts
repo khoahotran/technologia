@@ -20,6 +20,9 @@ import { createScopedLogger } from '@/lib/logger';
 import { HTTP_STATUS, REQUEST_CONFIG } from '@/shared/constants';
 import { safe, safeSync } from '@/shared/utils/result';
 
+import { mapHttpError } from './api-error-mapper';
+
+
 const logger = createScopedLogger('FetchWithToken');
 
 // ===========================================
@@ -103,10 +106,14 @@ function buildUrl(baseUrl: string, endpoint: string, query?: Record<string, stri
 async function getAccessToken(): Promise<string | null> {
   const [token, error] = safeSync(() => authStorage.getAccessToken());
   if (error) {
-    logger.error('Failed to retrieve access token');
+    logger.error('Failed to retrieve access token', error);
     return null;
   }
+  if (!token) {
+    console.warn('[AUTH DEBUG] Access Token is NULL/Empty');
+  }
   return token;
+
 }
 
 /**
@@ -182,8 +189,8 @@ async function refreshAccessToken(): Promise<boolean> {
       return false;
     }
 
-    // 3. Trích xuất cặp token mới từ body response
-    const [data, jsonError] = await safe(response.json());
+    // 3. Trích xuất cặp token mới từ body response (Go-style handling)
+    const [body, jsonError] = await safe(response.json());
     if (jsonError) {
       logger.error('Token refresh JSON parse error', jsonError);
       isRefreshing = false;
@@ -191,7 +198,17 @@ async function refreshAccessToken(): Promise<boolean> {
       return false;
     }
 
-    const { accessToken: newAccessToken, refreshToken: newRefreshToken } = data.data || data;
+    // Backend flexible handling (Some use accessToken, some use token)
+    const data = body.data || body;
+    const newAccessToken = data.accessToken || data.token;
+    const newRefreshToken = data.refreshToken;
+
+    if (!newAccessToken) {
+      logger.error('Token refresh failed: No token in response');
+      isRefreshing = false;
+      refreshPromise = null;
+      return false;
+    }
 
     // 4. Cập nhật chúng vào Storage
     authStorage.setTokens(newAccessToken, newRefreshToken || refreshToken);
@@ -199,6 +216,7 @@ async function refreshAccessToken(): Promise<boolean> {
     refreshPromise = null;
     return true;
   })();
+
 
   return refreshPromise;
 }
@@ -208,13 +226,13 @@ async function refreshAccessToken(): Promise<boolean> {
  */
 async function validateResponse(
   response: Response,
-  schema?: ZodSchema
+  schema?: ZodSchema,
+  context?: string
 ): Promise<unknown> {
   if (!response.ok) {
     const data = await response.json().catch(() => ({}));
-    throw new Error(
-      data.message || `HTTP ${response.status}: ${response.statusText}`
-    );
+    // Ánh xạ lỗi HTTP thành Domain Error (AppError)
+    throw mapHttpError(response.status, data, context);
   }
 
   const data = await response.json();
@@ -231,6 +249,7 @@ async function validateResponse(
 
   return data;
 }
+
 
 // ===========================================
 // Main Fetch Function with Retry Logic
@@ -279,6 +298,17 @@ export async function fetchWithToken<TResponse = unknown>(
 
       // Tạo Headers chứa Content-Type và Authentication nếu cần
       const headers = await createHeaders(skipAuth, customHeaders, isFormData);
+      const headersObj = headers as Record<string, string>;
+
+      // DEBUG: Log Authorization header (masking token for security)
+      if (headersObj['Authorization']) {
+        const authHeader = headersObj['Authorization'];
+        const maskedToken = authHeader.substring(0, 20) + '...';
+        console.warn(`[HTTP DEBUG] ${method} ${endpoint} - Authorization: ${maskedToken}`);
+      } else if (!skipAuth) {
+        console.warn(`[HTTP DEBUG] ${method} ${endpoint} - MISSING Authorization header`);
+      }
+
 
       // Cấu hình ngắt request nếu quá thời gian (Timeout handling)
       const controller = new AbortController();
@@ -291,11 +321,13 @@ export async function fetchWithToken<TResponse = unknown>(
           ? (isFormData ? body : JSON.stringify(body))
           : null,
         signal: controller.signal,
+        credentials: 'include', // Ensure cookies are sent (fixes "no cookie" issue)
       }));
+
 
       clearTimeout(timeoutId);
 
-      if (fetchError !== null) {
+      if (fetchError) {
         // Ném lỗi timeout cụ thể nếu bị trigger bởi AbortController
         if (fetchError instanceof DOMException && fetchError.name === 'AbortError') {
           throw new TimeoutError(`Request timeout after ${timeout}ms`, timeout);
@@ -303,8 +335,10 @@ export async function fetchWithToken<TResponse = unknown>(
         throw fetchError;
       }
 
-      // KỊCH BẢN ĐẶC BIỆT: Token hết hạn (401) hoặc bị từ chối quyền (403)
-      if ((response!.status === HTTP_STATUS.UNAUTHORIZED || response!.status === HTTP_STATUS.FORBIDDEN) && !skipAuth && attempt === 1) {
+      // KỊCH BẢN ĐẶC BIỆT: Token hết hạn (401)
+      // CHỈ refresh trên 401. Tránh refresh trên 403 để ngăn vòng lặp vô tận khi thật sự bị cấm (Forbidden)
+      if (response!.status === HTTP_STATUS.UNAUTHORIZED && !skipAuth && attempt === 1) {
+
         logger.debug('Token expired, attempting refresh');
         const refreshed = await refreshAccessToken();
 
@@ -322,7 +356,8 @@ export async function fetchWithToken<TResponse = unknown>(
       }
 
       // Kiểm tra mã trạng thái HTTP (2xx) và parse JSON + Zod verification
-      const validated = await validateResponse(response!, schema) as TResponse;
+      const validated = await validateResponse(response!, schema, endpoint) as TResponse;
+
       logger.debug(`Success ${method} ${endpoint}`);
 
       return validated;

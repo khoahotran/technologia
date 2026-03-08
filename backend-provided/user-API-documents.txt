@@ -192,3 +192,32 @@ Response:{
     "data": null,
     "message": "Change password successfully!"
 }
+PART3: ADDRESS API
+1/ Tạo một địa chỉ mới
+
+
+POST: http://localhost:8083/api/carts/add-to-cart
+Request Authorization: Bearer Token.
+Body:
+{  
+    "province":"",
+    "city": "Hồ Chí Minh City",
+    "ward": "Thủ Đức",
+    "street":"Tạ Quang Bửu",
+    "no":"10",
+    "isDefault": false,
+    "receiverPhoneNumber":"0123456789",
+    "receiverName":"QC"
+}
+Response:
+{
+    "status": 200,
+    "data": {
+        "cartItemId": UUID,
+        "productId": UUID,
+        "variantId": String,
+        "quantityInCart": int,
+        "quantityInStock": int
+    },
+    "message": "Add product to cart successfully!"
+}

@@ -51,7 +51,7 @@ export async function loadLocale(locale?: string) {
     const target = locale || currentLocale;
     const [messages, error] = await safe(import(`@/locales/${target}.json`));
 
-    if (error !== null) {
+    if (error) {
         console.warn(`Locale "${target}" không tìm thấy, đang chuyển về dùng tiếng Anh ("en").`);
         const [fallback] = await safe(import(`@/locales/en.json`));
         return fallback?.default || fallback || {};

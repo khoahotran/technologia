@@ -9,6 +9,7 @@
 import { Landmark, Wallet } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { useLanguage } from "@/shared/providers/language.provider"
 
 interface PaymentMethodCardProps {
   /** Loại phương thức: Thẻ ngân hàng (bank) hoặc Ví điện tử (wallet) */
@@ -36,6 +37,7 @@ export function PaymentMethodCard({
   onUse,
   onSetDefault,
 }: PaymentMethodCardProps) {
+  const { t } = useLanguage()
   return (
     <div className="bg-white p-6 rounded-xl border border-gray-100 space-y-4">
       {/* Tên Phương thức và Biểu tượng */}
@@ -50,7 +52,7 @@ export function PaymentMethodCard({
         </div>
         {/* Nhãn Mặc định */}
         {isDefault && (
-          <span className="text-sm font-medium text-gray-500">Mặc định</span>
+          <span className="text-sm font-medium text-gray-500">{t('default', {}, "Default")}</span>
         )}
       </div>
 
@@ -58,7 +60,7 @@ export function PaymentMethodCard({
       <div className="space-y-1 pl-7">
         <p className="text-sm text-gray-500 uppercase">{accountName}</p>
         <p className="text-sm text-gray-500">
-          {type === "bank" ? "Tài khoản ngân hàng" : "Số ví điện tử"}
+          {type === "bank" ? t('bank_account_label', {}, "Bank account") : t('wallet_number_label', {}, "Digital wallet number")}
         </p>
         <p className="font-medium text-gray-900">{accountNumber}</p>
       </div>
@@ -70,14 +72,14 @@ export function PaymentMethodCard({
           className="flex-1 bg-[#D3E4F4] hover:bg-[#C1D8EB] text-gray-700 font-medium text-xs"
           onClick={onUse}
         >
-          {type === "bank" ? "Sử dụng tài khoản" : "Sử dụng ví này"}
+          {type === "bank" ? t('use_account_btn', {}, "Use account") : t('use_wallet_btn', {}, "Use this wallet")}
         </Button>
         <Button
           variant="secondary"
           className="flex-1 bg-[#D3E4F4] hover:bg-[#C1D8EB] text-gray-700 font-medium text-xs"
           onClick={onSetDefault}
         >
-          Thiết lập mặc định
+          {t('set_as_default', {}, "Set as default")}
         </Button>
       </div>
     </div>

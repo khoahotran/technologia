@@ -5,8 +5,9 @@
  * 
  * Hiển thị thông tin liên hệ và địa chỉ giao hàng của người dùng.
  * Cho phép người dùng chọn sử dụng địa chỉ này hoặc đặt làm thẻ mặc định.
- */
+*/
 import { Button } from "@/components/ui/button"
+import { useLanguage } from "@/shared/providers/language.provider"
 
 interface AddressCardProps {
   /** Tên người nhận */
@@ -31,29 +32,30 @@ export function AddressCard({
   onUse,
   onSetDefault,
 }: AddressCardProps) {
+  const { t } = useLanguage()
   return (
     <div className="bg-white p-6 rounded-xl border border-gray-100 space-y-4">
       {/* Khối Tên người nhận */}
       <div className="flex justify-between items-start">
         <div className="space-y-1">
-          <p className="text-sm text-gray-500">Tựa người nhận</p>
+          <p className="text-sm text-gray-500">{t('receiver_name', {}, "Receiver Title")}</p>
           <p className="font-medium text-gray-900">{name}</p>
         </div>
         {/* Nhãn Mặc định */}
         {isDefault && (
-          <span className="text-sm font-medium text-[#3E93B3]">Mặc định</span>
+          <span className="text-sm font-medium text-[#3E93B3]">{t('default', {}, "Default")}</span>
         )}
       </div>
 
       {/* Khối Số điện thoại */}
       <div className="space-y-1">
-        <p className="text-sm text-gray-500">Số điện thoại</p>
+        <p className="text-sm text-gray-500">{t('customer_phone', {}, "Customer phone number")}</p>
         <p className="font-medium text-gray-900">{phone}</p>
       </div>
 
       {/* Khối Địa chỉ chi tiết */}
       <div className="space-y-1">
-        <p className="text-sm text-gray-500">Địa chỉ cụ thể (Ghi chú, Số nhà, Đường, Phường/Xã, Quận/Huyện, Tỉnh/TP)</p>
+        <p className="text-sm text-gray-500">{t('detailed_address', {}, "Detailed address (Note, House number, Street, Ward, District, City)")}</p>
         <p className="font-medium text-gray-900">{address}</p>
       </div>
 
@@ -64,14 +66,14 @@ export function AddressCard({
           className="flex-1 bg-[#D3E4F4] hover:bg-[#C1D8EB] text-gray-700 font-medium"
           onClick={onUse}
         >
-          Sử dụng địa chỉ
+          {t('use_address', {}, "Use address")}
         </Button>
         <Button
           variant="secondary"
           className="flex-1 bg-[#D3E4F4] hover:bg-[#C1D8EB] text-gray-700 font-medium"
           onClick={onSetDefault}
         >
-          Thiết lập mặc định
+          {t('set_as_default', {}, "Set as default")}
         </Button>
       </div>
     </div>

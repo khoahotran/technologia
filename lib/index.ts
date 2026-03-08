@@ -7,7 +7,6 @@
 
 // Công cụ cốt lõi & Hằng số
 export * from "./utils";
-export * from "./constants";
 
 // Xử lý Lỗi & Kết quả
 export * from "./result";
@@ -19,10 +18,8 @@ export * from "./logger";
 export * from "./fetch-auth";
 export * from "./handle-response";
 export * from "./api-handler";
-export * from "./api-proxy";
 export * from "./api-route";
 
-// Dữ liệu giả lập & Luồng nghiệp vụ cũ
-export * from "./mock-data";
+// Luồng nghiệp vụ cũ
 export * from "./checkout-flow";
 export * from "./store";

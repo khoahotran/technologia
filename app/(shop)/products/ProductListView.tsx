@@ -38,11 +38,14 @@ import {
     useCategories,
     useProductList
 } from "@/presentation/hooks";
+import { useLanguage } from "@/shared/providers/language.provider";
 
 /**
  * Thành phần chính để hiển thị Danh sách sản phẩm
  */
-export default function ProductListView() {
+export function ProductListView() {
+    const { t, locale } = useLanguage();
+    const currentLocale = locale === 'vi' ? 'vi-VN' : 'en-US';
     const searchParams = useSearchParams();
     const [page, setPage] = useState(0); // 0-indexed
 
@@ -153,16 +156,16 @@ export default function ProductListView() {
         return items;
     };
 
-    const currencyFormat = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' });
+    const currencyFormat = new Intl.NumberFormat(currentLocale, { style: 'currency', currency: 'VND' });
 
     return (
         <div className="min-h-screen bg-background py-8">
             <div className="container mx-auto px-4 max-w-7xl">
                 {/* Breadcrumb */}
                 <div className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
-                    <Link href="/" className="hover:text-primary font-bold">Home</Link>
+                    <Link href="/" className="hover:text-primary font-bold">{t('home', {}, "Home")}</Link>
                     <span>&gt;</span>
-                    <span className="font-bold text-foreground">Product Filter</span>
+                    <span className="font-bold text-foreground">{t('product_filter', {}, "Product Filter")}</span>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -174,34 +177,34 @@ export default function ProductListView() {
                                 className={`w-full justify-start gap-3 h-12 rounded-xl text-md font-semibold ${activeTab === 'all' ? 'bg-blue-100/50 text-blue-700' : 'bg-transparent text-gray-600'}`}
                                 onClick={() => { setActiveTab('all'); setActiveCategory(undefined); setActiveBrand(undefined); }}
                             >
-                                <Tag className="w-5 h-5" /> All Products
+                                <Tag className="w-5 h-5" /> {t('all_products', {}, "All Products")}
                             </Button>
                             <Button
                                 variant="ghost"
                                 className={`w-full justify-start gap-3 h-12 rounded-xl text-md font-semibold ${activeTab === 'hot' ? 'bg-blue-100/50 text-blue-700' : 'bg-transparent text-gray-600'}`}
                                 onClick={() => setActiveTab('hot')}
                             >
-                                <Flame className="w-5 h-5" /> Hot sales
+                                <Flame className="w-5 h-5" /> {t('hot_sales', {}, "Hot sales")}
                             </Button>
                             <Button
                                 variant="ghost"
                                 className={`w-full justify-start gap-3 h-12 rounded-xl text-md font-semibold ${activeTab === 'best' ? 'bg-blue-100/50 text-blue-700' : 'bg-transparent text-gray-600'}`}
                                 onClick={() => setActiveTab('best')}
                             >
-                                <Trophy className="w-5 h-5" /> Best Seller
+                                <Trophy className="w-5 h-5" /> {t('best_seller', {}, "Best Seller")}
                             </Button>
                             <Button
                                 variant="ghost"
                                 className={`w-full justify-start gap-3 h-12 rounded-xl text-md font-semibold ${activeTab === 'new' ? 'bg-blue-100/50 text-blue-700' : 'bg-transparent text-gray-600'}`}
                                 onClick={() => setActiveTab('new')}
                             >
-                                <Music className="w-5 h-5" /> New
+                                <Music className="w-5 h-5" /> {t('new', {}, "New")}
                             </Button>
                         </div>
 
                         {/* Categories List */}
                         <div className="space-y-4">
-                            <h3 className="font-bold text-lg text-gray-900 px-4">Categories</h3>
+                            <h3 className="font-bold text-lg text-gray-900 px-4">{t('categories', {}, "Categories")}</h3>
                             <div className="px-4 space-y-3">
                                 <Select
                                     value={activeCategory ? String(activeCategory) : "all"}
@@ -210,11 +213,11 @@ export default function ProductListView() {
                                     <SelectTrigger className="w-full h-10 px-4 bg-white border border-gray-200 rounded-lg shadow-sm">
                                         <div className="flex items-center gap-2">
                                             <Smartphone className="w-4 h-4 text-gray-500" />
-                                            <SelectValue placeholder="All Categories" />
+                                            <SelectValue placeholder={t('all_categories', {}, "All Categories")} />
                                         </div>
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="all">All Categories</SelectItem>
+                                        <SelectItem value="all">{t('all_categories', {}, "All Categories")}</SelectItem>
                                         {categories?.map((cat) => (
                                             <SelectItem key={cat.categoryId} value={String(cat.categoryId)}>
                                                 {cat.name}
@@ -224,7 +227,7 @@ export default function ProductListView() {
                                 </Select>
 
                                 <div className="flex flex-col gap-2 pt-1 border-t border-gray-100">
-                                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider pl-1 py-1">Popular</p>
+                                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider pl-1 py-1">{t('popular', {}, "Popular")}</p>
                                     {categories?.slice(0, 3).map((cat) => (
                                         <Button
                                             key={cat.categoryId}
@@ -241,7 +244,7 @@ export default function ProductListView() {
 
                         {/* Brands List */}
                         <div className="space-y-4">
-                            <h3 className="font-bold text-lg text-gray-900 px-4">Brands</h3>
+                            <h3 className="font-bold text-lg text-gray-900 px-4">{t('brands', {}, "Brands")}</h3>
                             <div className="px-4">
                                 <Select
                                     value={activeBrand ? String(activeBrand) : "all"}
@@ -250,11 +253,11 @@ export default function ProductListView() {
                                     <SelectTrigger className="w-full h-10 px-4 bg-white border border-gray-200 rounded-lg shadow-sm">
                                         <div className="flex items-center gap-2">
                                             <Tag className="w-4 h-4 text-gray-500" />
-                                            <SelectValue placeholder="All Brands" />
+                                            <SelectValue placeholder={t('all_brands', {}, "All Brands")} />
                                         </div>
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="all">All Brands</SelectItem>
+                                        <SelectItem value="all">{t('all_brands', {}, "All Brands")}</SelectItem>
                                         {brands?.map((brand) => (
                                             <SelectItem key={brand.brandId} value={String(brand.brandId)}>
                                                 {brand.name}
@@ -264,7 +267,7 @@ export default function ProductListView() {
                                 </Select>
 
                                 <div className="flex flex-col gap-2 pt-1 border-t border-gray-100">
-                                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider pl-1 py-1">Popular</p>
+                                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider pl-1 py-1">{t('popular', {}, "Popular")}</p>
                                     {brands?.slice(0, 3).map((brand) => (
                                         <Button
                                             key={brand.brandId}
@@ -289,31 +292,38 @@ export default function ProductListView() {
                                     key={product.productId}
                                     id={String(product.productId)}
                                     title={product.name}
-                                    price={product.displayPrice ? currencyFormat.format(product.displayPrice) : "Contact"}
+                                    price={product.displayPrice ? currencyFormat.format(product.displayPrice) : t('contact', {}, "Contact")}
                                     rating={product.averageRating || 0}
                                     image={product.variants?.[0]?.images?.[0] || "https://placehold.co/400x400"}
                                     variant="default"
-                                    {...(product.status === 'NEW' && { badge: 'New' })}
+                                    {...(product.status === 'NEW' && { badge: t('new', {}, "New") })}
                                     className="w-full bg-white rounded-[1.5rem]"
                                     onAddToCart={() => {
                                         const variantId = product.variants?.[0]?.variantId;
                                         if (!variantId) {
-                                            toast.error("Product has no available variant");
+                                            toast.error(t('no_variants', {}, "Product has no available variant"));
                                             return;
                                         }
                                         addToCartMutation.mutate(
                                             { productId: product.productId, variantId },
                                             {
-                                                onSuccess: () => toast.success("Added to cart"),
-                                                onError: () => toast.error("Failed to add to cart. Please login and try again.")
+                                                onSuccess: () => toast.success(t('added_to_cart', {}, "Added to cart")),
+                                                onError: (err: any) => {
+                                                    if (err?.statusCode === 401 || err?.statusCode === 403) {
+                                                        toast.error(t('login_required_action', {}, "Please login to perform this action."));
+                                                    } else {
+                                                        toast.error(t('add_to_cart_failed', {}, "Failed to add to cart. Please try again."));
+                                                    }
+                                                }
                                             }
                                         );
+
                                     }}
                                 />
                             ))}
                             {products?.length === 0 && (
                                 <div className="col-span-full text-center py-20 text-gray-500">
-                                    No products found matching your criteria.
+                                    {t('no_products_found', {}, "No products found matching your criteria.")}
                                 </div>
                             )}
                         </div>

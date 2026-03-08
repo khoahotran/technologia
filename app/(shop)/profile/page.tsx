@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserProfileDto, UpdateProfileDto } from "@/domain/user/dto/profile.dto";
 import { UserRepository } from "@/infrastructure/repositories/user/user.repository";
 import { useAuth } from "@/presentation/hooks/use-auth";
+import { useLanguage } from "@/shared/providers/language.provider";
 import { safe } from "@/shared/utils/result";
 
 /**
@@ -26,6 +27,7 @@ import { safe } from "@/shared/utils/result";
  * - Bảo vệ route bằng cách kiểm tra trạng thái xác thực.
  */
 export default function ProfilePage() {
+    const { t } = useLanguage();
     const { isAuthenticated } = useAuth();
     const router = useRouter();
     const [profile, setProfile] = useState<UserProfileDto | null>(null);
@@ -46,7 +48,7 @@ export default function ProfilePage() {
         confirmPassword: ""
     });
 
-    
+
     useEffect(() => {
         if (!isAuthenticated) {
             router.push("/login");
@@ -57,8 +59,8 @@ export default function ProfilePage() {
             setLoading(true);
             const [data, error] = await safe(UserRepository.getMe());
 
-            if (error !== null) {
-                toast.error("Failed to fetch profile");
+            if (error) {
+                toast.error(t('failed_fetch_profile', {}, "Failed to fetch profile"));
             } else if (data) {
                 setProfile(data);
                 setUpdateForm({
@@ -73,17 +75,17 @@ export default function ProfilePage() {
         };
 
         fetch();
-    }, [isAuthenticated, router]);
+    }, [isAuthenticated, router, t]);
 
     const handleUpdateProfile = async (e: React.FormEvent) => {
         e.preventDefault();
         const [updated, error] = await safe(UserRepository.updateMe(updateForm));
 
-        if (error !== null || !updated) {
-            toast.error("Failed to update profile");
+        if (error || !updated) {
+            toast.error(t('failed_update_profile', {}, "Failed to update profile"));
         } else {
             setProfile(updated);
-            toast.success("Profile updated successfully");
+            toast.success(t('profile_updated', {}, "Profile updated successfully"));
         }
     };
 
@@ -93,20 +95,20 @@ export default function ProfilePage() {
 
         const [result, error] = await safe(UserRepository.changeAvatar(file));
 
-        if (error !== null || !result) {
-            toast.error("Failed to update avatar");
+        if (error || !result) {
+            toast.error(t('failed_update_avatar', {}, "Failed to update avatar"));
         } else {
             if (profile) {
                 setProfile({ ...profile, imageUrl: result.avatarUrl });
             }
-            toast.success("Avatar updated successfully");
+            toast.success(t('avatar_updated', {}, "Avatar updated successfully"));
         }
     };
 
     const handleChangePassword = async (e: React.FormEvent) => {
         e.preventDefault();
         if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-            toast.error("Passwords do not match");
+            toast.error(t('passwords_not_match', {}, "Passwords do not match"));
             return;
         }
 
@@ -115,25 +117,25 @@ export default function ProfilePage() {
             newPassword: passwordForm.newPassword
         }));
 
-        if (result[1] !== null) {
-            toast.error("Failed to change password");
+        if (result[1]) {
+            toast.error(t('failed_change_password', {}, "Failed to change password"));
         } else {
-            toast.success("Password changed successfully");
+            toast.success(t('password_changed', {}, "Password changed successfully"));
             setPasswordForm({ oldPassword: "", newPassword: "", confirmPassword: "" });
         }
     };
 
-    if (loading) return <div>Loading...</div>;
+    if (loading) return <div>{t('loading', {}, "Loading...")}</div>;
 
     return (
         <div className="container mx-auto py-10">
-            <h1 className="text-2xl font-bold mb-6">User Profile</h1>
+            <h1 className="text-2xl font-bold mb-6">{t('user_profile', {}, "User Profile")}</h1>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Sidebar / Avatar Card */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>Overview</CardTitle>
+                        <CardTitle>{t('overview', {}, "Overview")}</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-col items-center">
                         <div className="relative group">
@@ -142,7 +144,7 @@ export default function ProfilePage() {
                                 <AvatarFallback>{profile?.username?.[0]?.toUpperCase()}</AvatarFallback>
                             </Avatar>
                             <label htmlFor="avatar-upload" className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white opacity-0 group-hover:opacity-100 rounded-full cursor-pointer transition-opacity">
-                                Change
+                                {t('change', {}, "Change")}
                             </label>
                             <input type="file" id="avatar-upload" className="hidden" accept="image/*" onChange={handleAvatarChange} />
                         </div>
@@ -156,27 +158,27 @@ export default function ProfilePage() {
                 <div className="md:col-span-2">
                     <Tabs defaultValue="details">
                         <TabsList className="mb-4">
-                            <TabsTrigger value="details">Details</TabsTrigger>
-                            <TabsTrigger value="password">Security</TabsTrigger>
+                            <TabsTrigger value="details">{t('details', {}, "Details")}</TabsTrigger>
+                            <TabsTrigger value="password">{t('security', {}, "Security")}</TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="details">
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>Personal Information</CardTitle>
+                                    <CardTitle>{t('personal_info', {}, "Personal Information")}</CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     <form onSubmit={handleUpdateProfile} className="space-y-4">
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="space-y-2">
-                                                <Label>First Name</Label>
+                                                <Label>{t('first_name', {}, "First Name")}</Label>
                                                 <Input
                                                     value={updateForm.firstname}
                                                     onChange={(e) => setUpdateForm({ ...updateForm, firstname: e.target.value })}
                                                 />
                                             </div>
                                             <div className="space-y-2">
-                                                <Label>Last Name</Label>
+                                                <Label>{t('last_name', {}, "Last Name")}</Label>
                                                 <Input
                                                     value={updateForm.lastname}
                                                     onChange={(e) => setUpdateForm({ ...updateForm, lastname: e.target.value })}
@@ -185,7 +187,7 @@ export default function ProfilePage() {
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label>Display Name</Label>
+                                            <Label>{t('display_name', {}, "Display Name")}</Label>
                                             <Input
                                                 value={updateForm.displayName}
                                                 onChange={(e) => setUpdateForm({ ...updateForm, displayName: e.target.value })}
@@ -193,7 +195,7 @@ export default function ProfilePage() {
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label>Email</Label>
+                                            <Label>{t('email', {}, "Email")}</Label>
                                             <Input
                                                 value={updateForm.email}
                                                 onChange={(e) => setUpdateForm({ ...updateForm, email: e.target.value })}
@@ -202,14 +204,14 @@ export default function ProfilePage() {
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label>Phone Number</Label>
+                                            <Label>{t('phone_number', {}, "Phone Number")}</Label>
                                             <Input
                                                 value={updateForm.phoneNumber}
                                                 onChange={(e) => setUpdateForm({ ...updateForm, phoneNumber: e.target.value })}
                                             />
                                         </div>
 
-                                        <Button type="submit">Save Changes</Button>
+                                        <Button type="submit">{t('save_changes', {}, "Save Changes")}</Button>
                                     </form>
                                 </CardContent>
                             </Card>
@@ -218,12 +220,12 @@ export default function ProfilePage() {
                         <TabsContent value="password">
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>Change Password</CardTitle>
+                                    <CardTitle>{t('change_password', {}, "Change Password")}</CardTitle>
                                 </CardHeader>
                                 <CardContent>
                                     <form onSubmit={handleChangePassword} className="space-y-4">
                                         <div className="space-y-2">
-                                            <Label>Current Password</Label>
+                                            <Label>{t('current_password', {}, "Current Password")}</Label>
                                             <Input
                                                 type="password"
                                                 value={passwordForm.oldPassword}
@@ -231,7 +233,7 @@ export default function ProfilePage() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label>New Password</Label>
+                                            <Label>{t('new_password', {}, "New Password")}</Label>
                                             <Input
                                                 type="password"
                                                 value={passwordForm.newPassword}
@@ -239,14 +241,14 @@ export default function ProfilePage() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label>Confirm New Password</Label>
+                                            <Label>{t('confirm_new_password', {}, "Confirm New Password")}</Label>
                                             <Input
                                                 type="password"
                                                 value={passwordForm.confirmPassword}
                                                 onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
                                             />
                                         </div>
-                                        <Button type="submit">Update Password</Button>
+                                        <Button type="submit">{t('update_password', {}, "Update Password")}</Button>
                                     </form>
                                 </CardContent>
                             </Card>

@@ -19,8 +19,10 @@ import {
   type CarouselApi,
   CarouselItem,
 } from "@/components/ui/carousel"
+import { useLanguage } from "@/shared/providers/language.provider";
 
 export default function Banner() {
+  const { t } = useLanguage();
   const [api, setApi] = React.useState<CarouselApi>()
   const [current, setCurrent] = React.useState(0)
 
@@ -41,20 +43,20 @@ export default function Banner() {
   const slides = [
     {
       id: 1,
-      title: "Ưu đãi công nghệ đỉnh cao",
-      description: "Sắm sửa thiết bị mới với mức giá cực kỳ hấp dẫn.",
+      title: t('banner_slide1_title', {}, "Top Tech Deals"),
+      description: t('banner_slide1_desc', {}, "Get new devices at extremely attractive prices."),
       color: "bg-gray-100",
     },
     {
       id: 2,
-      title: "Bộ sưu tập Hàng mới về",
-      description: "Khám phá những xu hướng công nghệ mới nhất hiện nay.",
+      title: t('banner_slide2_title', {}, "New Arrivals Collection"),
+      description: t('banner_slide2_desc', {}, "Explore the latest tech trends today."),
       color: "bg-blue-50",
     },
     {
       id: 3,
-      title: "Khuyến mãi đặc biệt hôm nay",
-      description: "Giảm giá lên đến 50% cho các sản phẩm chọn lọc.",
+      title: t('banner_slide3_title', {}, "Special Offer Today"),
+      description: t('banner_slide3_desc', {}, "Up to 50% off select products."),
       color: "bg-pink-50",
     },
   ]
@@ -85,7 +87,7 @@ export default function Banner() {
                           </p>
                           <div className="pt-4">
                             <Button size="lg" className="rounded-full px-8 bg-white text-gray-900 hover:bg-gray-50 border border-gray-200 shadow-sm">
-                              Khám phá ngay
+                              {t('banner_explore_now', {}, "Explore Now")}
                             </Button>
                           </div>
                         </div>
@@ -118,11 +120,11 @@ export default function Banner() {
           <div className="flex-1 bg-blue-50 rounded-3xl p-8 flex flex-col justify-center relative overflow-hidden">
             <div className="z-10 space-y-2">
               <h3 className="text-xl font-bold text-gray-900 w-2/3">
-                Giải pháp máy tính để bàn tối ưu
+                {t('banner_side1_title', {}, "Ultimate Desktop Solutions")}
               </h3>
               <div className="pt-4">
                 <Button variant="outline" size="sm" className="bg-transparent border-blue-200 text-blue-600 hover:bg-blue-100 rounded-full px-6">
-                  Xem thêm
+                  {t('view_more', {}, "View more")}
                 </Button>
               </div>
             </div>
@@ -132,11 +134,11 @@ export default function Banner() {
           <div className="flex-1 bg-white border border-gray-100 rounded-3xl p-8 flex flex-col justify-center relative overflow-hidden shadow-sm">
             <div className="z-10 space-y-2">
               <h3 className="text-xl font-bold text-gray-900 w-2/3">
-                Phụ kiện âm thanh cao cấp
+                {t('banner_side2_title', {}, "Premium Audio Accessories")}
               </h3>
               <div className="pt-4">
                 <Button variant="outline" size="sm" className="bg-transparent border-gray-200 text-gray-600 hover:bg-gray-50 rounded-full px-6">
-                  Mua ngay
+                  {t('buy_now', {}, "Buy now")}
                 </Button>
               </div>
             </div>

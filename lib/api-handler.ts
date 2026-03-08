@@ -7,10 +7,11 @@
  * Cách dùng:
  * export const GET = createApiHandler({ targetService: 'product', path: '/products' });
  */
-import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
 
-import { SERVICE_URLS, HTTP_STATUS, REQUEST_CONFIG, COOKIE_NAMES } from '@/shared/constants';
+import { buildHeaders, parseJsonSafe } from './api-utils';
+
+import { SERVICE_URLS, HTTP_STATUS } from '@/shared/constants';
 import type { RouteContext } from '@/shared/types';
 import { safe } from '@/shared/utils/result';
 
@@ -74,42 +75,6 @@ function buildTargetUrl(
 }
 
 /**
- * Xây dựng bộ Headers để gửi sang Backend
- * Tự động trích xuất Token từ Header của Client hoặc từ Cookie của Next.js
- */
-async function buildHeaders(
-    req: Request,
-    config: ApiHandlerConfig
-): Promise<HeadersInit> {
-    const headers: Record<string, string> = {
-        'Content-Type': REQUEST_CONFIG.JSON_CONTENT_TYPE,
-    };
-
-    // Ưu tiên lấy Authorization từ Header mà Client gửi lên Proxy
-    let authHeader = req.headers.get('Authorization');
-
-    // Nếu không có trong Header, thử tìm trong hệ thống Cookie của trình duyệt (SSR context)
-    if (!authHeader) {
-        const cookieStore = await cookies();
-        const token = cookieStore.get(COOKIE_NAMES.ACCESS_TOKEN)?.value;
-        if (token) {
-            authHeader = `Bearer ${token}`;
-        }
-    }
-
-    if (authHeader) {
-        headers['Authorization'] = authHeader;
-    }
-
-    // Gộp thêm các header tùy chỉnh từ config
-    if (config.headers) {
-        Object.assign(headers, config.headers);
-    }
-
-    return headers;
-}
-
-/**
  * Trích xuất Body của request (dùng cho POST, PUT, PATCH)
  */
 async function getRequestBody(req: Request): Promise<ArrayBuffer | null> {
@@ -118,52 +83,72 @@ async function getRequestBody(req: Request): Promise<ArrayBuffer | null> {
     }
 
     const [buffer, error] = await safe(req.arrayBuffer());
-    if (error !== null) {
+    if (error) {
         return null;
     }
     return buffer as ArrayBuffer;
-}
-
-/**
- * Giải mã phản hồi JSON từ Backend
- */
-async function parseResponse(res: Response): Promise<unknown> {
-    const [data, error] = await safe(res.json());
-    if (error !== null) {
-        // Fallback về object rỗng nếu Backend ko trả JSON hợp lệ
-        return {};
-    }
-    return data;
 }
 
 // ===========================================
 // Nhà máy khởi tạo API Handler (Factory)
 // ===========================================
 
-/**
- * Khởi tạo một Handler cho các Route tĩnh (Route ko chứa biến động trên URL)
- */
 export function createApiHandler(config: ApiHandlerConfig) {
     return async function handler(req: Request): Promise<NextResponse> {
         const [result, error] = await safe((async () => {
             const targetUrl = buildTargetUrl(config, req);
-            const headers = await buildHeaders(req, config);
+            const headers = await buildHeaders(req, config.headers);
             const body = await getRequestBody(req);
+
+            const headersObj = headers as Record<string, string>;
+            const authHeader = headersObj['Authorization'];
+
+            // DEBUG LOGS
+            console.warn(`[PROXY DEBUG] Forwarding ${req.method} to: ${targetUrl}`);
+
+            if (authHeader) {
+                const masked = authHeader.substring(0, 20) + '...';
+                console.warn(`[PROXY DEBUG] Authorization: ${masked}`);
+
+                try {
+                    const token = authHeader.replace('Bearer ', '');
+                    const parts = token.split('.');
+                    if (parts.length === 3 && parts[1]) {
+                        const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString());
+                        const now = Math.floor(Date.now() / 1000);
+                        console.warn(`[PROXY DEBUG] JWT Details - Sub: ${payload.sub}, Role: ${payload.role}, Exp in: ${payload.exp - now}s`);
+
+                        // HỖ TRỢ MICROSERVICES: Tự động trích xuất userId từ token và gắn vào header X-User-Id
+                        // Nhiều microservices mong đợi header này nếu không muốn tự decode JWT lại.
+                        const userId = payload.userId || payload.sub;
+                        if (userId) {
+                            headersObj['X-User-Id'] = String(userId);
+                            console.warn(`[PROXY DEBUG] Added header X-User-Id: ${userId}`);
+                        }
+                    }
+                } catch (e) {
+                    // Ignore parsing errors for non-JWT tokens
+                }
+            }
 
             // Thực hiện chuyển tiếp (Forward) request sang Backend thực sự
             const res = await fetch(targetUrl, {
                 method: req.method,
-                headers,
+                headers: headersObj as unknown as HeadersInit,
                 body,
             });
 
-            const data = await parseResponse(res);
+            const data = await parseJsonSafe(res);
 
             // Nếu Backend báo lỗi (4xx, 5xx) -> Trả lỗi về cho Client
             if (!res.ok) {
-                const errorData = data as { message?: string };
+                const errorData = data as { message?: string, error?: string };
+                console.warn(`[PROXY ERROR] Backend responded with ${res.status}:`, errorData);
                 return NextResponse.json(
-                    { error: errorData.message || `Lỗi từ Proxy: ${res.statusText}` },
+                    {
+                        error: errorData.message || errorData.error || `Lỗi từ Backend: ${res.statusText}`,
+                        statusCode: res.status // Gắn status code để frontend dễ xử lý logic 401/403
+                    },
                     { status: res.status }
                 );
             }
@@ -172,7 +157,7 @@ export function createApiHandler(config: ApiHandlerConfig) {
             return NextResponse.json(data);
         })());
 
-        if (error !== null) {
+        if (error) {
             console.error('[API Proxy] Lỗi Nội bộ:', error);
             return NextResponse.json(
                 { error: 'Lỗi máy chủ nội bộ (Internal Server Error)' },
@@ -183,6 +168,7 @@ export function createApiHandler(config: ApiHandlerConfig) {
         return result as NextResponse;
     };
 }
+
 
 /**
  * Khởi tạo Handler cho các Route Động (Ví dụ: /products/[id])
@@ -200,7 +186,7 @@ export function createDynamicApiHandler<T extends Record<string, string> = Recor
             // Đợi lấy params từ Next.js Route context
             const params = await context.params;
             const targetUrl = buildTargetUrl(config as ApiHandlerConfig, req, params);
-            const headers = await buildHeaders(req, config as ApiHandlerConfig);
+            const headers = await buildHeaders(req, config.headers);
             const body = await getRequestBody(req);
 
             const res = await fetch(targetUrl, {
@@ -209,7 +195,7 @@ export function createDynamicApiHandler<T extends Record<string, string> = Recor
                 body,
             });
 
-            const data = await parseResponse(res);
+            const data = await parseJsonSafe(res);
 
             if (!res.ok) {
                 const errorData = data as { message?: string };
@@ -222,7 +208,7 @@ export function createDynamicApiHandler<T extends Record<string, string> = Recor
             return NextResponse.json(data);
         })());
 
-        if (error !== null) {
+        if (error) {
             console.error('[API Proxy - Dynamic] Lỗi Nội bộ:', error);
             return NextResponse.json(
                 { error: 'Lỗi máy chủ nội bộ' },

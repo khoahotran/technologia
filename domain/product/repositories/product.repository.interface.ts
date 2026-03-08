@@ -1,39 +1,17 @@
 import { FilterResponseEntity } from "../entities/filter.entity";
 import { ProductEntity } from "../entities/product.entity";
 
+import type { DomainPaginatedResponse } from "@/shared/types";
+
 /**
  * Cấu trúc phản hồi phân trang chuẩn cho danh sách Sản phẩm.
  */
-export interface ProductPagingResponse {
-    /** Mã trạng thái HTTP hoặc mã nội bộ */
-    status: number;
-    /** Số thứ tự trang hiện tại */
-    page_number: number;
-    /** Số lượng phần tử tối đa trên mỗi trang */
-    page_size: number;
-    /** Tổng số lượng sản phẩm khớp bộ lọc trong DB */
-    count_items: number;
-    /** Tổng số trang khả dụng */
-    count_pages: number;
-    /** Danh sách thực thể Sản phẩm tương ứng */
-    data: ProductEntity[];
-    /** Thông báo từ hệ thống */
-    message: string;
-}
+export type ProductPagingResponse = DomainPaginatedResponse<ProductEntity>;
 
 /**
  * Phản hồi chi tiết khi thực hiện lọc sản phẩm, bao gồm thông tin metadata của bộ lọc.
  */
-export interface FilterProductResponse {
-    status: number;
-    page_number: number;
-    page_size: number;
-    count_items: number;
-    count_pages: number;
-    /** Dữ liệu sản phẩm kèm theo metadata lọc (min/max price hiện tại...) */
-    data: FilterResponseEntity[];
-    message: string;
-}
+export type FilterProductResponse = DomainPaginatedResponse<FilterResponseEntity>;
 
 /**
  * Các tham số dùng để tìm kiếm và lọc sản phẩm.

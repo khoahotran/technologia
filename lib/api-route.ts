@@ -7,6 +7,8 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
+import { getAuthToken as getAuthTokenUtil, parseErrorMessage, parseJsonSafe } from "./api-utils";
+
 import { COOKIE_NAMES, HTTP_STATUS, SERVICE_URLS } from "@/shared/constants";
 import { safe } from "@/shared/utils/result";
 
@@ -38,47 +40,10 @@ interface ForwardFormDataOptions {
 }
 
 /**
- * Trợ giúp phân tích thông báo lỗi từ dữ liệu phản hồi của Backend
- */
-function parseErrorMessage(data: unknown, fallbackError: string): string {
-    if (data && typeof data === "object" && "message" in data && typeof data.message === "string") {
-        return data.message;
-    }
-    return fallbackError;
-}
-
-/**
- * Giải mã JSON an toàn (ko gây crash nếu Backend trả về chuỗi ko phải JSON)
- */
-async function parseJsonSafe(res: Response): Promise<JsonRecord> {
-    const [json, error] = await safe(res.json());
-    if (error !== null) {
-        return {};
-    }
-    if (json && typeof json === "object") {
-        return json as JsonRecord;
-    }
-    return {};
-}
-
-/**
  * Trích xuất Token xác thực từ Header hoặc Cookie của Request hiện tại.
  */
 export async function getAuthToken(request: Request): Promise<string | null> {
-    // 1. Thử lấy từ Authorization header (dành cho client gửi trực tiếp)
-    const authHeader = request.headers.get("Authorization");
-    if (authHeader && authHeader.startsWith("Bearer ")) {
-        return authHeader;
-    }
-
-    // 2. Dự phòng lấy từ Cookie (dành cho các thao tác SSR hoặc trình duyệt tự gửi)
-    const cookieStore = await cookies();
-    const token = cookieStore.get(COOKIE_NAMES.ACCESS_TOKEN)?.value;
-    if (token) {
-        return `Bearer ${token}`;
-    }
-
-    return null;
+    return getAuthTokenUtil(request);
 }
 
 /**
@@ -127,7 +92,7 @@ export async function forwardJsonToUserService(options: ForwardToUserServiceOpti
         ...(body ? { body: JSON.stringify(body) } : {}),
     }));
 
-    if (error !== null) {
+    if (error) {
         console.error(`${logLabel} Proxy Error:`, error);
         return NextResponse.json(
             { error: "Lỗi kết nối máy chủ dịch vụ" },
@@ -163,7 +128,7 @@ export async function forwardFormDataToUserService(options: ForwardFormDataOptio
         body: formData,
     }));
 
-    if (error !== null) {
+    if (error) {
         console.error(`${logLabel} Proxy Error:`, error);
         return NextResponse.json(
             { error: "Lỗi kết nối máy chủ dịch vụ" },

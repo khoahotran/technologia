@@ -143,7 +143,7 @@ function extractErrorMessage(error: unknown): string {
   }
 
   // Nếu là object tùy chỉnh (thường là body response từ Axios)
-  if (typeof error === 'object' && error !== null) {
+  if (typeof error === 'object' && error) {
     const obj = error as Record<string, unknown>;
 
     // Kiểm tra các trường chứa message phổ biến
@@ -364,7 +364,7 @@ export function getErrorMessageForUI(error: AppError | unknown): string {
  * });
  *
  * const [data, error] = await safe(api.get('/product'));
- * if (error !== null) {
+ * if (error) {
  *   handleProductError(error);
  * }
  */

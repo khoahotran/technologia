@@ -20,7 +20,7 @@ import {
     GoogleLoginDto
 } from "@/domain/user/dto/auth.dto";
 import { IAuthRepository, AuthResponse } from "@/domain/user/repositories/auth.repository.interface";
-import { fetchWithToken } from "@/infrastructure/http";
+import { fetchWithToken, adaptResponse } from "@/infrastructure/http";
 import { authStorage } from "@/infrastructure/persistence/storage";
 import { createScopedLogger } from "@/lib/logger";
 import { safe } from "@/shared/utils/result";
@@ -43,8 +43,7 @@ const BASE_URL = "/auth";
  * @returns AuthResponse chứa accessToken, refreshToken và userId
  */
 function extractTokens(fullResponse: unknown): AuthResponse {
-    const response = LoginResponseSchema.parse(fullResponse);
-    const data = response.data;
+    const data = adaptResponse(fullResponse, LoginResponseSchema.shape.data, 'auth-tokens');
 
     // Lưu tokens vào secure storage để dùng cho các request tiếp theo
     authStorage.setTokens(data.accessToken, data.refreshToken);

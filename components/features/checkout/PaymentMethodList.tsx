@@ -11,6 +11,7 @@ import { Info } from "lucide-react"
 import { PaymentMethodCard } from "./PaymentMethodCard"
 
 import { Button } from "@/components/ui/button"
+import { useLanguage } from "@/shared/providers/language.provider"
 
 interface PaymentMethod {
   id: string
@@ -41,9 +42,10 @@ export function PaymentMethodList({
   onSetDefault,
   onAddNew,
 }: PaymentMethodListProps) {
+  const { t } = useLanguage()
   // Thay đổi tiêu đề và chữ ở nút bấm dựa trên loại phương thức
-  const title = type === "bank" ? "Tài khoản ngân hàng đã liên kết" : "Ví điện tử đã liên kết"
-  const buttonText = type === "bank" ? "Thêm thẻ/tài khoản ngân hàng" : "Liên kết ví mới"
+  const title = type === "bank" ? t('linked_bank_accounts_title', {}, "Linked bank accounts") : t('linked_wallets_title', {}, "Linked digital wallets")
+  const buttonText = type === "bank" ? t('add_bank_btn', {}, "Add bank card/account") : t('link_new_wallet_btn', {}, "Link new wallet")
 
   return (
     <div className="space-y-6">

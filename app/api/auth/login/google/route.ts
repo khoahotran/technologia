@@ -43,7 +43,7 @@ export async function POST(request: Request) {
         });
     })());
 
-    if (error !== null) {
+    if (error) {
         console.error("Google Login Proxy Error:", error);
         return NextResponse.json(
             { error: "Internal Server Error" },

@@ -109,7 +109,7 @@ export function useProductList(params: ProductListParams = {}) {
 
     // Side Effect: Thực hiện tải trước (Prefetch) dữ liệu trang kế tiếp
     React.useEffect(() => {
-        const totalPages = query.data?.count_pages ?? 1;
+        const totalPages = query.data?.totalPages ?? 1;
 
         // Nếu người dùng chưa ở trang cuối cùng, ta đoán già đoán non là họ sẽ click sang trang tiếp
         if (query.data && currentPage < totalPages - 1) {
@@ -128,10 +128,10 @@ export function useProductList(params: ProductListParams = {}) {
 
     // Trả ra các field được "làm đẹp" lại cho UI dễ sử dụng
     return {
-        products: query.data?.data ?? [],
-        totalPages: query.data?.count_pages ?? 0,
-        totalItems: query.data?.count_items ?? 0,
-        currentPage: query.data?.page_number ?? 0,
+        products: query.data?.items ?? [],
+        totalPages: query.data?.totalPages ?? 0,
+        totalItems: query.data?.totalItems ?? 0,
+        currentPage: query.data?.pageNumber ?? 0,
         isLoading: query.isLoading,
         isError: query.isError,
         isFetching: query.isFetching,

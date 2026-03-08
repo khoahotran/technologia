@@ -289,7 +289,7 @@ export function getErrorMessage(error: unknown): string {
     }
     if (
         typeof error === "object" &&
-        error !== null &&
+        error &&
         "message" in error
     ) {
         const msg = (error as Record<string, unknown>)["message"];

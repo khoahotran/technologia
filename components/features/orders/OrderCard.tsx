@@ -6,6 +6,7 @@
  * Chứa các thẻ hiển thị đơn hàng (OrderCard) và khu vực phân loại đơn hàng (OrderCategory).
  */
 import { cn } from "@/lib/utils"
+import { useLanguage } from "@/shared/providers/language.provider"
 
 interface OrderCardProps {
   /** Mã định danh đơn hàng */
@@ -75,6 +76,7 @@ interface OrderCategoryProps {
  * Hiển thị một cột hoặc danh sách chứa các Thẻ Đơn hàng (OrderCard) có cùng trạng thái.
  */
 export function OrderCategory({ title, icon, count, orders, status }: OrderCategoryProps) {
+  const { t } = useLanguage()
   return (
     <div className="space-y-4">
       {/* Khối Tiêu đề danh mục */}
@@ -86,7 +88,7 @@ export function OrderCategory({ title, icon, count, orders, status }: OrderCateg
           <h3 className="font-bold text-gray-900">{title}</h3>
           {count !== undefined && (
             <div className="flex items-center gap-1">
-              <span className="text-sm text-gray-500">Đơn hàng</span>
+              <span className="text-sm text-gray-500">{t('orders_label', {}, "Orders")}</span>
               <div className="bg-[#F4A460] text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
                 {count}
               </div>
@@ -110,7 +112,7 @@ export function OrderCategory({ title, icon, count, orders, status }: OrderCateg
       {/* Nút tải thêm nếu vượt quá 3 đơn hàng */}
       {orders.length > 3 && (
         <button className="text-sm text-[#3E93B3] hover:underline font-medium">
-          Xem thêm
+          {t('view_more', {}, "View more")}
         </button>
       )}
     </div>

@@ -211,7 +211,7 @@ class StorageService {
                 (value.startsWith("\"") && value.endsWith("\"")))
         ) {
             const [parsed, error] = safeSync(() => JSON.parse(value!) as T);
-            if (error !== null) {
+            if (error) {
                 return value as unknown as T;
             }
             return parsed;
@@ -292,12 +292,22 @@ export const authStorage = {
     getAccessToken(): string | null {
         // Thử lấy từ Cookie trước (vì Cookie hỗ trợ SSR tốt hơn)
         const cookieToken = storage.get<string>(STORAGE_KEYS.ACCESS_TOKEN, { type: "cookie" });
+        if (cookieToken) {
+            // console.warn(`[AUTH STORAGE] Found token in COOKIE`);
+            return cookieToken;
+        }
 
         // Fallback sang LocalStorage nếu không tìm thấy trong Cookie
         const localStorageToken = storage.get<string>(STORAGE_KEYS.ACCESS_TOKEN);
+        if (localStorageToken) {
+            // console.warn(`[AUTH STORAGE] Found token in LOCALSTORAGE`);
+            return localStorageToken;
+        }
 
-        return cookieToken ?? localStorageToken;
+        console.warn(`[AUTH STORAGE] NO TOKEN FOUND in any storage`);
+        return null;
     },
+
 
     /**
      * Lấy Refresh Token dùng để cấp lại Access Token mới
@@ -333,8 +343,11 @@ export const authStorage = {
                 : Buffer.from(payload, 'base64').toString('ascii');
 
             const decoded = JSON.parse(decodedStr);
+            console.warn(`[AUTH STORAGE] Decoded Token Payload:`, decoded);
+            console.warn(`[AUTH STORAGE] Role found in JWT: "${decoded.role}"`);
 
             if (decoded && decoded.role) {
+
                 storage.set("role", decoded.role, {
                     type: "cookie",
                     expireDays: 7,

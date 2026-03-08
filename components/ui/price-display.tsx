@@ -9,6 +9,7 @@
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/shared/providers/language.provider";
 import { formatCurrency } from "@/shared/utils/format";
 
 interface PriceDisplayProps {
@@ -56,6 +57,8 @@ export function PriceDisplay({
     originalPriceClassName,
     showDiscountPercent = false,
 }: PriceDisplayProps) {
+    const { locale } = useLanguage();
+    const currentLocale = locale === 'vi' ? 'vi-VN' : 'en-US';
     // Chuyển đổi dữ liệu sang kiểu số
     const numericPrice = typeof price === "string" ? parseFloat(price) : price;
     const numericOriginal =
@@ -78,7 +81,7 @@ export function PriceDisplay({
         <div className={cn("flex items-center gap-2 flex-wrap", className)}>
             {/* Giá hiện tại (Giá sau giảm) */}
             <span className={cn("font-bold text-primary", sizeMap[size])}>
-                {formatCurrency(numericPrice, currency)}
+                {formatCurrency(numericPrice, currency, currentLocale)}
             </span>
 
             {/* Giá gốc (Bị gạch ngang) */}
@@ -90,7 +93,7 @@ export function PriceDisplay({
                         originalPriceClassName
                     )}
                 >
-                    {formatCurrency(numericOriginal!, currency)}
+                    {formatCurrency(numericOriginal!, currency, currentLocale)}
                 </span>
             )}
 

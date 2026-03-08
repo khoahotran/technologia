@@ -23,6 +23,7 @@ import {
     useCartQuery,
     useRemoveCartItemMutation,
 } from "@/presentation/hooks";
+import { useLanguage } from "@/shared/providers/language.provider";
 
 /**
  * Hàm hỗ trợ định dạng địa chỉ thành chuỗi dễ đọc.
@@ -44,6 +45,8 @@ function getAddressDisplay(address: CheckoutAddress) {
  * - Thực hiện đặt hàng và điều hướng tới trang kết quả.
  */
 export default function ShippingClient() {
+    const { t, locale } = useLanguage();
+    const currentLocale = locale === 'vi' ? 'vi-VN' : 'en-US';
     const router = useRouter();
     const searchParams = useSearchParams();
     const selectedQuery = searchParams.get("items");
@@ -111,11 +114,11 @@ export default function ShippingClient() {
 
     const handlePlaceOrder = async () => {
         if (!activeAddress) {
-            toast.error("Please create/select a shipping address first");
+            toast.error(t('select_address_first', {}, "Please create/select a shipping address first"));
             return;
         }
         if (selectedCartItems.length === 0) {
-            toast.error("No cart items selected");
+            toast.error(t('no_items_selected', {}, "No cart items selected"));
             return;
         }
 
@@ -148,14 +151,14 @@ export default function ShippingClient() {
             )
         );
 
-        toast.success("Order placed successfully");
+        toast.success(t('order_placed_success', {}, "Order placed successfully"));
         router.push("/orders");
     };
 
     if (isLoading) {
         return (
             <div className="min-h-screen bg-[#F9F8FE] flex items-center justify-center">
-                <p className="text-gray-500">Loading checkout...</p>
+                <p className="text-gray-500">{t('loading_checkout', {}, "Loading checkout...")}</p>
             </div>
         );
     }
@@ -173,16 +176,16 @@ export default function ShippingClient() {
         return (
             <div className="min-h-screen bg-[#F9F8FE] flex items-center justify-center px-4">
                 <div className="bg-white p-6 rounded-xl border border-gray-100 text-center max-w-md">
-                    <p className="text-red-500 font-medium">Cannot load checkout data from backend.</p>
+                    <p className="text-red-500 font-medium">{t('cannot_load_checkout', {}, "Cannot load checkout data from backend.")}</p>
                     <p className="text-sm text-gray-500 mt-2">
-                        Please login first or check cart service connection.
+                        {t('login_to_view_cart', {}, "Please login first or check cart service connection.")}
                     </p>
                     <button
                         type="button"
                         onClick={() => refetch()}
                         className="mt-4 px-4 py-2 rounded-lg bg-[#8AB0C3] text-white"
                     >
-                        Retry
+                        {t('retry', {}, "Retry")}
                     </button>
                 </div>
             </div>
@@ -194,10 +197,10 @@ export default function ShippingClient() {
             <div className="container mx-auto px-4 py-8">
                 <Link href="/cart" className="inline-flex items-center gap-2 text-gray-700 hover:text-gray-900 mb-6">
                     <ArrowLeft className="h-4 w-4" />
-                    <span className="font-medium">Back to cart</span>
+                    <span className="font-medium">{t('back_to_cart', {}, "Back to cart")}</span>
                 </Link>
 
-                <h1 className="text-2xl font-bold text-gray-900 mb-8">Shipping Detail</h1>
+                <h1 className="text-2xl font-bold text-gray-900 mb-8">{t('shipping_detail', {}, "Shipping Detail")}</h1>
 
                 <div className="grid lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-1 space-y-6">
@@ -208,33 +211,33 @@ export default function ShippingClient() {
                     <div className="lg:col-span-2 space-y-6">
                         <div className="bg-white p-6 rounded-xl border border-gray-100">
                             <div className="flex items-center justify-between mb-4">
-                                <h2 className="font-bold text-gray-900">Address</h2>
+                                <h2 className="font-bold text-gray-900">{t('address', {}, "Address")}</h2>
                                 <Link
                                     href="/address-book"
                                     className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
                                 >
-                                    Choose other address
+                                    {t('choose_other_address', {}, "Choose other address")}
                                     <ChevronDown className="h-4 w-4" />
                                 </Link>
                             </div>
                             {activeAddress ? (
                                 <div className="space-y-2 text-sm">
-                                    <p className="text-gray-500">Customer name</p>
+                                    <p className="text-gray-500">{t('customer_name', {}, "Customer name")}</p>
                                     <p className="font-medium text-gray-900">{activeAddress.fullName}</p>
-                                    <p className="text-gray-500">Customer phone number</p>
+                                    <p className="text-gray-500">{t('customer_phone', {}, "Customer phone number")}</p>
                                     <p className="font-medium text-gray-900">{activeAddress.phone}</p>
-                                    <p className="text-gray-500">Customer address</p>
+                                    <p className="text-gray-500">{t('customer_address', {}, "Customer address")}</p>
                                     <p className="font-medium text-gray-900">{getAddressDisplay(activeAddress)}</p>
                                 </div>
                             ) : (
                                 <div className="text-sm text-gray-500">
-                                    No address found. <Link href="/address-book/new" className="text-[#3E93B3]">Create one now</Link>.
+                                    {t('no_address_found', {}, "No address found.")} <Link href="/address-book/new" className="text-[#3E93B3]">{t('create_one_now', {}, "Create one now")}</Link>.
                                 </div>
                             )}
                         </div>
 
                         <div className="bg-white p-6 rounded-xl border border-gray-100">
-                            <h2 className="font-bold text-gray-900 mb-4">My order</h2>
+                            <h2 className="font-bold text-gray-900 mb-4">{t('my_order', {}, "My order")}</h2>
 
                             <div className="space-y-3 mb-6">
                                 {selectedCartItems.map((item) => (
@@ -242,7 +245,7 @@ export default function ShippingClient() {
                                         <span className="text-gray-600">{item.currentQuantity}x</span>
                                         <span className="flex-1 ml-4 text-gray-900">{item.name}</span>
                                         <span className="font-medium text-[#3E93B3]">
-                                            {new Intl.NumberFormat("vi-VN").format(item.priceAfterDiscount ?? item.price ?? 0)} VND
+                                            {t('price_vnd', { price: new Intl.NumberFormat(currentLocale).format(item.priceAfterDiscount ?? item.price ?? 0) }, `${new Intl.NumberFormat(currentLocale).format(item.priceAfterDiscount ?? item.price ?? 0)} VND`)}
                                         </span>
                                     </div>
                                 ))}
@@ -250,33 +253,33 @@ export default function ShippingClient() {
 
                             <div className="border-t border-gray-100 pt-4 space-y-2">
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-gray-600">Sub-total</span>
+                                    <span className="text-gray-600">{t('sub_total', {}, "Sub-total")}</span>
                                     <span className="font-medium text-gray-900">
-                                        {new Intl.NumberFormat("vi-VN").format(subtotal)} VND
+                                        {t('price_vnd', { price: new Intl.NumberFormat(currentLocale).format(subtotal) }, `${new Intl.NumberFormat(currentLocale).format(subtotal)} VND`)}
                                     </span>
                                 </div>
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-gray-600">Shipping</span>
-                                    <span className="font-medium text-green-500">Free Shipping</span>
+                                    <span className="text-gray-600">{t('shipping', {}, "Shipping")}</span>
+                                    <span className="font-medium text-green-500">{t('free_shipping', {}, "Free Shipping")}</span>
                                 </div>
                                 <div className="flex justify-between text-base font-bold pt-2 border-t border-gray-100">
-                                    <span className="text-gray-900">Order total</span>
+                                    <span className="text-gray-900">{t('order_total', {}, "Order total")}</span>
                                     <span className="text-[#3E93B3]">
-                                        {new Intl.NumberFormat("vi-VN").format(total)} VND
+                                        {t('price_vnd', { price: new Intl.NumberFormat(currentLocale).format(total) }, `${new Intl.NumberFormat(currentLocale).format(total)} VND`)}
                                     </span>
                                 </div>
                             </div>
                         </div>
 
                         <div className="bg-white p-6 rounded-xl border border-gray-100">
-                            <h2 className="font-bold text-gray-900 mb-4">Payment</h2>
+                            <h2 className="font-bold text-gray-900 mb-4">{t('payment', {}, "Payment")}</h2>
 
                             <RadioGroup value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as "bank" | "wallet" | "cod")} className="space-y-4">
                                 <div className="flex items-start space-x-3">
                                     <RadioGroupItem value="bank" id="bank" className="mt-1" />
                                     <div className="flex-1">
                                         <Label htmlFor="bank" className="font-medium text-gray-900 cursor-pointer">
-                                            Direct bank transfer
+                                            {t('direct_bank_transfer', {}, "Direct bank transfer")}
                                         </Label>
                                     </div>
                                 </div>
@@ -284,7 +287,7 @@ export default function ShippingClient() {
                                     <RadioGroupItem value="wallet" id="wallet" className="mt-1" />
                                     <div className="flex-1">
                                         <Label htmlFor="wallet" className="font-medium text-gray-900 cursor-pointer">
-                                            E-wallet
+                                            {t('e_wallet', {}, "E-wallet")}
                                         </Label>
                                     </div>
                                 </div>
@@ -293,7 +296,7 @@ export default function ShippingClient() {
                                     <div className="flex-1">
                                         <Label htmlFor="cod" className="font-medium text-gray-900 cursor-pointer flex items-center gap-2">
                                             <Checkbox checked={paymentMethod === "cod"} className="pointer-events-none" />
-                                            Cash on delivery
+                                            {t('cash_on_delivery', {}, "Cash on delivery")}
                                         </Label>
                                     </div>
                                 </div>
@@ -306,7 +309,7 @@ export default function ShippingClient() {
                                 onClick={handlePlaceOrder}
                                 className="w-64 h-12 bg-[#8AB0C3] hover:bg-[#7A9EB0] text-white font-semibold text-base"
                             >
-                                Place order
+                                {t('place_order', {}, "Place order")}
                             </Button>
                         </div>
                     </div>

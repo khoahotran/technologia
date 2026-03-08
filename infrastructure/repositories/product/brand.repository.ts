@@ -10,9 +10,8 @@
 
 import { BrandEntity, BrandEntitySchema } from "@/domain/product/entities/brand.entity";
 import { BrandPagingResponse, IBrandRepository } from "@/domain/product/repositories/brand.repository.interface";
-import { fetchWithToken } from "@/infrastructure/http";
+import { fetchWithToken, adaptResponse, adaptPaginatedResponse, adaptListResponse } from "@/infrastructure/http";
 import { createScopedLogger } from "@/lib/logger";
-import { BrandListResponseSchema, BrandPaginatedResponseSchema } from "@/shared/validators/api-schemas";
 
 const logger = createScopedLogger('BrandRepository');
 /** Đường dẫn gốc API cho tài nguyên Brand */
@@ -27,8 +26,7 @@ export const BrandRepository: IBrandRepository = {
         logger.debug('Fetching all brands');
 
         const response = await fetchWithToken(BASE_PATH, { method: 'GET' });
-        const validated = BrandListResponseSchema.parse(response);
-        return validated.data;
+        return adaptListResponse(response, BrandEntitySchema, 'brands');
     },
 
     /**
@@ -39,11 +37,7 @@ export const BrandRepository: IBrandRepository = {
         logger.debug(`Fetching brand by ID: ${id}`);
 
         const response = await fetchWithToken(`${BASE_PATH}/${id}`, { method: 'GET' });
-        // Xử lý linh hoạt trường hợp response bọc trong object hoặc trả về trực tiếp
-        const data = response instanceof Object && 'data' in response
-            ? (response as { data: unknown }).data
-            : response;
-        return BrandEntitySchema.parse(data);
+        return adaptResponse(response, BrandEntitySchema, `brand-${id}`);
     },
 
     /**
@@ -63,23 +57,9 @@ export const BrandRepository: IBrandRepository = {
 
         const response = await fetchWithToken(`${BASE_PATH}/paged`, {
             method: 'GET',
-            query: {
-                page: String(page),
-                size: String(size),
-                sortBy,
-                sortDirection,
-            },
+            query: { page: String(page), size: String(size), sortBy, sortDirection },
         });
 
-        const validated = BrandPaginatedResponseSchema.parse(response);
-        return {
-            status: validated.status,
-            page_number: validated.page_number,
-            page_size: validated.page_size,
-            count_items: validated.count_items,
-            count_pages: validated.count_pages,
-            data: validated.data,
-            message: validated.message,
-        };
+        return adaptPaginatedResponse(response, BrandEntitySchema, "brands-paged");
     },
 };

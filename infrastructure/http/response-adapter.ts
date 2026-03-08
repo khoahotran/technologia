@@ -15,6 +15,7 @@ import { z, ZodSchema } from 'zod';
 
 import { AppError, ValidationError } from '@/domain/errors';
 import { createScopedLogger } from '@/lib/logger';
+import type { DomainPaginatedResponse } from '@/shared/types';
 import { safeSync } from '@/shared/utils/result';
 
 const logger = createScopedLogger('ResponseAdapter');
@@ -27,24 +28,23 @@ const logger = createScopedLogger('ResponseAdapter');
  * All API responses follow this structure
  */
 export const ApiResponseSchema = z.object({
-  status: z.number(),
-  message: z.string(),
+  status: z.number().optional().default(200),
+  message: z.string().optional().default('Success'),
   data: z.unknown(),
 });
 
+
 /**
- * Paginated list response structure
+ * Paginated list response structure (Matches actual API)
  */
 export const PaginatedResponseSchema = z.object({
   status: z.number(),
   message: z.string(),
-  data: z.object({
-    items: z.array(z.unknown()),
-    page_number: z.number(),
-    page_size: z.number(),
-    count_items: z.number(),
-    count_pages: z.number(),
-  }),
+  data: z.array(z.unknown()),
+  page_number: z.number(),
+  page_size: z.number(),
+  count_items: z.number(),
+  count_pages: z.number(),
 });
 
 // ===========================================
@@ -70,7 +70,7 @@ export function adaptResponse<T extends ZodSchema>(
     return schema.parse(apiResponse.data);
   });
 
-  if (error !== null) {
+  if (error) {
     // Tạo câu báo lỗi thân thiện nếu Zod phát hiện mismatch kiểu dữ liệu
     const message = error instanceof z.ZodError
       ? `Invalid response format${context ? ` for ${context}` : ''}: ${error.issues[0]?.message}`
@@ -99,31 +99,25 @@ export function adaptPaginatedResponse<T extends ZodSchema>(
   data: unknown,
   itemSchema: T,
   context?: string
-): {
-  items: z.infer<T>[];
-  pageNumber: number;
-  pageSize: number;
-  totalItems: number;
-  totalPages: number;
-} {
+): DomainPaginatedResponse<z.infer<T>> {
   const [result, error] = safeSync(() => {
     // BƯỚC 1: Xác thực cấu trúc phân trang chuẩn của hệ thống
     const paginatedResponse = PaginatedResponseSchema.parse(data);
 
     // BƯỚC 2: Xác thực mảng các items bên trong
-    const itemArray = z.array(itemSchema).parse(paginatedResponse.data.items);
+    const itemArray = z.array(itemSchema).parse(paginatedResponse.data);
 
     // Ánh xạ các trường từ snake_case của API sang camelCase của Domain model
     return {
       items: itemArray,
-      pageNumber: paginatedResponse.data.page_number,
-      pageSize: paginatedResponse.data.page_size,
-      totalItems: paginatedResponse.data.count_items,
-      totalPages: paginatedResponse.data.count_pages,
+      pageNumber: paginatedResponse.page_number,
+      pageSize: paginatedResponse.page_size,
+      totalItems: paginatedResponse.count_items,
+      totalPages: paginatedResponse.count_pages,
     };
   });
 
-  if (error !== null) {
+  if (error) {
     const message = error instanceof z.ZodError
       ? `Invalid paginated response${context ? ` for ${context}` : ''}: ${error.issues[0]?.message}`
       : 'Failed to parse paginated response';
@@ -133,6 +127,44 @@ export function adaptPaginatedResponse<T extends ZodSchema>(
   }
 
   return result!;
+}
+
+/**
+ * Xác thực và trích xuất danh sách dữ liệu (Hỗ trợ cả dạng bọc hoặc mảng trực tiếp)
+ *
+ * @example
+ * const brands = adaptListResponse(apiResponse, BrandSchema, 'brands');
+ */
+export function adaptListResponse<T extends ZodSchema>(
+  data: unknown,
+  itemSchema: T,
+  context?: string
+): z.infer<T>[] {
+  const [result, error] = safeSync(() => {
+    // 1. Nếu là object bọc (ApiResponseSchema)
+    if (data instanceof Object && 'status' in data && 'data' in data) {
+      const apiResponse = ApiResponseSchema.parse(data);
+      return z.array(itemSchema).parse(apiResponse.data);
+    }
+
+    // 2. Nếu là mảng trực tiếp
+    if (Array.isArray(data)) {
+      return z.array(itemSchema).parse(data);
+    }
+
+    throw new Error('Response is neither a wrapped API response nor a direct array');
+  });
+
+  if (error) {
+    const message = error instanceof z.ZodError
+      ? `Invalid list format${context ? ` for ${context}` : ''}: ${error.issues[0]?.message}`
+      : `Failed to parse list response${context ? ` for ${context}` : ''}`;
+
+    logger.error(message, { context, data, error });
+    throw new ValidationError(message, {});
+  }
+
+  return result as z.infer<T>[];
 }
 
 /**
@@ -160,7 +192,7 @@ export function adaptResponseWithMapper<TOut>(
     return mapper(apiResponse.data);
   });
 
-  if (error !== null) {
+  if (error) {
     const message = error instanceof z.ZodError
       ? `Invalid response structure${context ? ` for ${context}` : ''}`
       : error instanceof Error
@@ -193,7 +225,7 @@ export function safeAdapt<T extends ZodSchema>(
 ): z.infer<T> | null {
   const [result, error] = safeSync(() => adaptResponse(data, schema, context));
 
-  if (error !== null) {
+  if (error) {
     logger.warn(`Failed to adapt response${context ? ` for ${context}` : ''}`);
     return null;
   }
@@ -206,7 +238,7 @@ export function safeAdapt<T extends ZodSchema>(
  */
 export function isSuccessResponse(data: unknown): boolean {
   const [response, error] = safeSync(() => ApiResponseSchema.parse(data));
-  if (error !== null) return false;
+  if (error) return false;
   return response!.status >= 200 && response!.status < 300;
 }
 
@@ -216,6 +248,6 @@ export function isSuccessResponse(data: unknown): boolean {
  */
 export function unwrapResponse(data: unknown): unknown {
   const [response, error] = safeSync(() => ApiResponseSchema.parse(data));
-  if (error !== null) return null;
+  if (error) return null;
   return response!.data;
 }

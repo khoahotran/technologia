@@ -9,6 +9,8 @@
  * - Tự động xác thực dữ liệu Response
  */
 
+import { z } from "zod";
+
 import {
     CartItem,
     CartMap,
@@ -17,37 +19,16 @@ import {
     CalculatePricePayload
 } from "@/domain/cart/entities/cart.entity";
 import { ICartRepository } from "@/domain/cart/repositories/cart.repository.interface";
-import { fetchWithToken } from "@/infrastructure/http";
+import { fetchWithToken, adaptResponse } from "@/infrastructure/http";
 import { createScopedLogger } from "@/lib/logger";
 import { safeSync } from "@/shared/utils/result";
 import {
     CartResponseSchema,
     CartItemActionResponseSchema,
     AddToCartResponseSchema,
-    CartTotalPriceResponseSchema,
-    CartItemDetailResponseSchema,
 } from "@/shared/validators/api-schemas";
 
 const logger = createScopedLogger('CartRepository');
-
-/** Giỏ hàng rỗng - trả về khi API lỗi hoặc chưa có dữ liệu */
-const EMPTY_CART: CartMap = { cartItems: [] };
-
-/**
- * Trích xuất dữ liệu CartMap từ response API đơn (không phân trang)
- * @param response Response thô từ API
- * @returns CartMap hoặc giỏ hàng rỗng nếu parse thất bại
- */
-function extractCartData(response: unknown): CartMap {
-    const [validated, error] = safeSync(() => CartResponseSchema.parse(response));
-
-    if (error !== null) {
-        logger.error('Failed to parse cart response', error);
-        return EMPTY_CART;
-    }
-
-    return validated!.data.map || EMPTY_CART;
-}
 
 // ===========================================
 // Cart Repository Implementation
@@ -74,8 +55,8 @@ export const CartRepository: ICartRepository = {
             }
         });
 
-        // Trích xuất và bóc tách dữ liệu từ cấu trúc Response API
-        return extractCartData(response);
+        const result = adaptResponse(response, CartResponseSchema.shape.data, 'cart');
+        return result.map;
     },
 
     /**
@@ -91,7 +72,7 @@ export const CartRepository: ICartRepository = {
         });
 
         // Xác thực kết quả thao tác từ Server
-        AddToCartResponseSchema.parse(response);
+        safeSync(() => AddToCartResponseSchema.parse(response));
     },
 
     /**
@@ -106,8 +87,7 @@ export const CartRepository: ICartRepository = {
             { method: 'PATCH' }
         );
 
-        const validated = CartItemActionResponseSchema.parse(response);
-        return validated.data;
+        return adaptResponse(response, CartItemActionResponseSchema.shape.data, 'cart-item-increase');
     },
 
     /**
@@ -122,8 +102,7 @@ export const CartRepository: ICartRepository = {
             { method: 'PATCH' }
         );
 
-        const validated = CartItemActionResponseSchema.parse(response);
-        return validated.data;
+        return adaptResponse(response, CartItemActionResponseSchema.shape.data, 'cart-item-decrease');
     },
 
     /**
@@ -135,7 +114,7 @@ export const CartRepository: ICartRepository = {
 
         await fetchWithToken(
             `/cart-items/delete/${cartItemId}`,
-            { method: 'PATCH' }
+            { method: 'DELETE' }
         );
     },
 
@@ -151,9 +130,7 @@ export const CartRepository: ICartRepository = {
             { method: 'GET' }
         );
 
-        const validated = CartItemDetailResponseSchema.parse(response);
-        // Xác thực sâu vào Model của Item để đảm bảo tính đúng đắn dữ liệu
-        return CartItemSchema.parse(validated.data);
+        return adaptResponse(response, CartItemSchema, `cart-item-${cartItemId}`);
     },
 
     /**
@@ -169,8 +146,7 @@ export const CartRepository: ICartRepository = {
             body: payload,
         });
 
-        const validated = CartTotalPriceResponseSchema.parse(response);
-        return validated.data;
+        return adaptResponse(response, z.number(), 'cart-price');
     },
 
     async updateQuantity(cartItemId: string, quantity: number): Promise<void> {

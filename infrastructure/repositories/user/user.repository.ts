@@ -12,10 +12,9 @@
 
 import { UserProfileDto, UpdateProfileDto, ChangePasswordDto, UserProfileSchema } from "@/domain/user/dto/profile.dto";
 import { IUserRepository } from "@/domain/user/repositories/user.repository.interface";
-import { fetchWithToken } from "@/infrastructure/http";
+import { fetchWithToken, adaptResponse } from "@/infrastructure/http";
 import { createScopedLogger } from "@/lib/logger";
 import {
-    UserProfileResponseSchema,
     ChangeAvatarResponseSchema,
 } from "@/shared/validators/api-schemas";
 
@@ -27,15 +26,6 @@ const BASE_URL = "/users";
 // Helper Functions
 // ===========================================
 
-/**
- * Trích xuất và xác thực dữ liệu UserProfile từ response API
- * @param response Response thô từ API
- * @returns UserProfileDto đã được xác thực kiểu với Zod
- */
-function extractUserProfile(response: unknown): UserProfileDto {
-    const validated = UserProfileResponseSchema.parse(response);
-    return UserProfileSchema.parse(validated.data);
-}
 
 // ===========================================
 // User Repository Implementation
@@ -60,8 +50,7 @@ export const UserRepository: IUserRepository = {
             { method: 'GET' }
         );
 
-        // Trích xuất và xác thực dữ liệu hồ sơ từ API response
-        return extractUserProfile(response);
+        return adaptResponse(response, UserProfileSchema, 'user-profile-me');
     },
 
     /**
@@ -80,7 +69,7 @@ export const UserRepository: IUserRepository = {
             }
         );
 
-        return extractUserProfile(response);
+        return adaptResponse(response, UserProfileSchema, 'user-profile-update');
     },
 
     /**
@@ -104,15 +93,11 @@ export const UserRepository: IUserRepository = {
             {
                 method: 'PUT',
                 body: formData,
-                headers: {
-                    // Header tùy chỉnh để backend nhận diện request upload (nếu cần)
-                    'X-File-Upload': 'true',
-                },
             }
         );
 
-        const validated = ChangeAvatarResponseSchema.parse(response);
-        return validated.data;
+        const data = adaptResponse(response, ChangeAvatarResponseSchema.shape.data, 'change-avatar');
+        return data;
     },
 
     /**

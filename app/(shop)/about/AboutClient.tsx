@@ -10,50 +10,52 @@ import { ValueCard } from "@/components/features/about/ValueCard"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { useLanguage } from "@/shared/providers/language.provider";
 
 export default function AboutClient() {
+    const { t } = useLanguage();
     const stats = [
-        { value: "10000+", label: "Sản phẩm được ra mắt thành công", icon: Award },
-        { value: "50+", label: "Thương hiệu đối tác", icon: Users },
-        { value: "98%", label: "Khách hàng hài lòng", icon: Heart },
-        { value: "20+", label: "Năm kinh nghiệm", icon: TrendingUp },
+        { value: "10000+", label: t('about_stats_products', {}, "Products launched successfully"), icon: Award },
+        { value: "50+", label: t('about_stats_partners', {}, "Partner brands"), icon: Users },
+        { value: "98%", label: t('about_stats_satisfaction', {}, "Satisfied customers"), icon: Heart },
+        { value: "20+", label: t('about_stats_experience', {}, "Years of experience"), icon: TrendingUp },
     ]
 
     const values = [
         {
-            title: "Mission",
-            description: "Chúng tôi cam kết mang đến những sản phẩm công nghệ chất lượng cao với giá cả hợp lý, giúp mọi người tiếp cận công nghệ hiện đại.",
+            title: t('about_mission_title', {}, "Mission"),
+            description: t('about_mission_desc', {}, "We are committed to providing high-quality technology products at reasonable prices, helping everyone access modern technology."),
         },
         {
-            title: "Vision",
-            description: "Trở thành nhà phân phối công nghệ hàng đầu Việt Nam, được khách hàng tin tưởng và lựa chọn.",
+            title: t('about_vision_title', {}, "Vision"),
+            description: t('about_vision_desc', {}, "To become the leading technology distributor in Vietnam, trusted and chosen by customers."),
         },
         {
-            title: "Values",
-            description: "Chúng tôi đặt khách hàng lên hàng đầu, cam kết chất lượng sản phẩm và dịch vụ tốt nhất.",
+            title: t('about_values_main_title', {}, "Values"),
+            description: t('about_values_desc', {}, "We put customers first, committed to the best product quality and service."),
         },
     ]
 
     const team = [
         {
             name: "Nguyễn Văn A",
-            role: "CEO & Founder",
-            description: "Tôi muốn Macbook đi đây giúp mọi người có được những sản phẩm công nghệ tốt nhất với giá tốt nhất.",
+            role: t('about_role_ceo', {}, "CEO & Founder"),
+            description: t('about_team_desc', {}, "I want TechStore to help everyone get the best technology products at the best prices."),
         },
         {
             name: "Trần Thị B",
-            role: "CTO",
-            description: "Tôi muốn Macbook đi đây giúp mọi người có được những sản phẩm công nghệ tốt nhất với giá tốt nhất.",
+            role: t('about_role_cto', {}, "CTO"),
+            description: t('about_team_desc', {}, "I want TechStore to help everyone get the best technology products at the best prices."),
         },
         {
             name: "Lê Văn C",
-            role: "Marketing Director",
-            description: "Tôi muốn Macbook đi đây giúp mọi người có được những sản phẩm công nghệ tốt nhất với giá tốt nhất.",
+            role: t('about_role_marketing', {}, "Marketing Director"),
+            description: t('about_team_desc', {}, "I want TechStore to help everyone get the best technology products at the best prices."),
         },
         {
             name: "Phạm Thị D",
-            role: "Sales Manager",
-            description: "Tôi muốn Macbook đi đây giúp mọi người có được những sản phẩm công nghệ tốt nhất với giá tốt nhất.",
+            role: t('about_role_sales', {}, "Sales Manager"),
+            description: t('about_team_desc', {}, "I want TechStore to help everyone get the best technology products at the best prices."),
         },
     ]
 
@@ -79,17 +81,17 @@ export default function AboutClient() {
                             <div className="absolute inset-16 bg-white rounded-3xl transform rotate-45"></div>
                         </div>
                         <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-                            Chào mừng đến với Technologia
+                            {t('about_hero_title', {}, "Welcome to Technologia")}
                         </h1>
                         <p className="text-xl text-white/90 mb-8">
-                            Đối tác tin cậy của bạn trong việc cung cấp các sản phẩm công nghệ hàng đầu
+                            {t('about_hero_subtitle', {}, "Your trusted partner in providing top technology products")}
                         </p>
                         <div className="flex gap-4 justify-center">
                             <Button className="bg-white text-[#3E93B3] hover:bg-gray-100 font-semibold px-8">
-                                About us
+                                {t('footer_about_us', {}, "About Us")}
                             </Button>
                             <Button variant="outline" className="border-white text-white  bg-[#3E93B3] hover:bg-white/10 font-semibold px-8">
-                                Contact Now
+                                {t('footer_contact_us', {}, "Contact Now")}
                             </Button>
                         </div>
                     </div>
@@ -116,7 +118,7 @@ export default function AboutClient() {
                 {/* Stats Section */}
                 <section>
                     <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-                        Thành tựu của chúng tôi
+                        {t('about_stats_title', {}, "Our Achievements")}
                     </h2>
                     <HorizontalScroll>
                         {stats.map((stat, index) => (
@@ -133,7 +135,7 @@ export default function AboutClient() {
                 {/* Values Section */}
                 <section>
                     <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-                        Giá trị cốt lõi
+                        {t('about_values_title', {}, "Core Values")}
                     </h2>
                     <div className="grid md:grid-cols-3 gap-6">
                         {values.map((value, index) => (
@@ -145,7 +147,7 @@ export default function AboutClient() {
                 {/* Partners Section */}
                 <section>
                     <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-                        Đối tác của chúng tôi
+                        {t('about_partners_title', {}, "Our Partners")}
                     </h2>
                     <HorizontalScroll>
                         {partners.map((partner, index) => (
@@ -157,7 +159,7 @@ export default function AboutClient() {
                 {/* Team Section */}
                 <section>
                     <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-                        Đội ngũ của chúng tôi
+                        {t('about_team_title', {}, "Our Team")}
                     </h2>
                     <HorizontalScroll>
                         {team.map((member, index) => (
@@ -174,9 +176,9 @@ export default function AboutClient() {
                 {/* Contact Form Section */}
                 <section className="max-w-4xl mx-auto">
                     <h2 className="text-3xl font-bold text-gray-900 mb-2 text-center">
-                        Contact us whenever you want
+                        {t('about_contact_title', {}, "Contact us whenever you want")}
                     </h2>
-                    <p className="text-gray-600 mb-8 text-center">Title</p>
+                    <p className="text-gray-600 mb-8 text-center">{t('about_contact_subtitle', {}, "We're here to help you")}</p>
 
                     <div className="grid md:grid-cols-2 gap-8">
                         {/* Contact Info */}
@@ -189,36 +191,36 @@ export default function AboutClient() {
                             </div>
                             <div className="bg-[#D3E4F4] rounded-2xl p-8 h-64"></div>
                             <p className="text-sm text-gray-600">
-                                <strong>Hotline:</strong> (+84) 123456789
+                                <strong>{t('about_hotline', {}, "Hotline")}:</strong> (+84) 123456789
                             </p>
                         </div>
 
                         {/* Contact Form */}
                         <form className="space-y-4">
                             <Input
-                                placeholder="Name*"
+                                placeholder={t('about_name_placeholder', {}, "Name*")}
                                 className="bg-white border-gray-200"
                             />
                             <Input
                                 type="email"
-                                placeholder="Email*"
+                                placeholder={t('about_email_placeholder', {}, "Email*")}
                                 className="bg-white border-gray-200"
                             />
                             <Input
                                 type="tel"
-                                placeholder="Phone number"
+                                placeholder={t('about_phone_placeholder', {}, "Phone number")}
                                 className="bg-white border-gray-200"
                             />
                             <Input
-                                placeholder="Company*"
+                                placeholder={t('about_company_placeholder', {}, "Company*")}
                                 className="bg-white border-gray-200"
                             />
                             <Textarea
-                                placeholder="Message"
+                                placeholder={t('about_message_placeholder', {}, "Message")}
                                 className="bg-white border-gray-200 min-h-[120px]"
                             />
                             <Button className="w-full bg-[#8AB0C3] hover:bg-[#7A9EB0] text-white font-semibold h-12">
-                                Send
+                                {t('about_send_btn', {}, "Send")}
                             </Button>
                         </form>
                     </div>

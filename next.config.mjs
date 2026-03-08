@@ -3,9 +3,13 @@ import process from "node:process";
 /** @type {import('next').NextConfig} */
 
 // Service URLs (can be overridden via environment variables)
-const USER_SERVICE_URL = process.env.NEXT_PUBLIC_USER_SERVICE_URL || "http://localhost:8081";
-const PRODUCT_SERVICE_URL = process.env.NEXT_PUBLIC_PRODUCT_SERVICE_URL || "http://localhost:8082";
-const CART_SERVICE_URL = process.env.NEXT_PUBLIC_CART_SERVICE_URL || "http://localhost:8083";
+const USER_SERVICE_URL =
+  process.env.NEXT_PUBLIC_USER_SERVICE_URL || "http://localhost:8081";
+const PRODUCT_SERVICE_URL =
+  process.env.NEXT_PUBLIC_PRODUCT_SERVICE_URL || "http://localhost:8082";
+const CART_SERVICE_URL =
+  process.env.NEXT_PUBLIC_CART_SERVICE_URL || "http://localhost:8083";
+  
 
 const nextConfig = {
   images: {

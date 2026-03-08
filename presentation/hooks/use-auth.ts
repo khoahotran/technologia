@@ -7,6 +7,14 @@ import { AuthContext } from "@/shared/providers/auth.provider";
 
 export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth bắt buộc phải nằm bên trong phạm vi của AuthProvider");
+  if (!context) {
+    return {
+      user: null,
+      token: null,
+      login: () => {},
+      logout: () => {},
+      isAuthenticated: false,
+    };
+  }
   return context;
 }

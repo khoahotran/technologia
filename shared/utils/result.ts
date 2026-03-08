@@ -225,7 +225,7 @@ export function fromApiError(error: unknown): Err {
     }
     if (
         typeof error === "object" &&
-        error !== null &&
+        error &&
         "message" in error
     ) {
         const msg = (error as Record<string, unknown>)["message"];

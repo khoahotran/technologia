@@ -16,6 +16,7 @@ import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/presentation/hooks/use-auth"
+import { useLanguage } from "@/shared/providers/language.provider";
 
 interface HeaderProps {
   /** 
@@ -34,6 +35,7 @@ interface HeaderProps {
  * - Đã đăng nhập: Hiển thị Username và Menu thả xuống (Dropdown) chứa thông tin cá nhân và Logout.
  */
 function AccountButton() {
+  const { t } = useLanguage();
   const { token, user, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -42,7 +44,7 @@ function AccountButton() {
       <Link href="/login">
         <Button variant="ghost" className="rounded-full h-10 w-10 p-0 md:w-auto md:px-4 md:bg-gray-50 md:hover:bg-gray-100 gap-2">
           <User className="h-5 w-5" />
-          <span className="hidden md:inline">Tài khoản</span>
+          <span className="hidden md:inline">{t('header_account', {}, "Account")}</span>
         </Button>
       </Link>
     );
@@ -56,7 +58,7 @@ function AccountButton() {
         onClick={() => setIsOpen(!isOpen)}
       >
         <User className="h-5 w-5" />
-        <span className="hidden md:inline">{user?.username || "Tài khoản"}</span>
+        <span className="hidden md:inline">{user?.username || t('header_account', {}, "Account")}</span>
       </Button>
 
       {/* Dropdown Menu khi người dùng nhấn vào nút Account */}
@@ -68,10 +70,10 @@ function AccountButton() {
           <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50 animate-in fade-in zoom-in-95 duration-200">
             <div className="px-4 py-2 border-b border-gray-50">
               <p className="text-sm font-semibold text-gray-900 truncate">
-                {user?.username || "Người dùng"}
+                {user?.username || t('header_user', {}, "User")}
               </p>
               <p className="text-xs text-gray-500 truncate">
-                {user?.email || "Thành viên"}
+                {user?.email || "Member"}
               </p>
             </div>
 
@@ -82,7 +84,7 @@ function AccountButton() {
               }}
               className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
             >
-              <span className="font-medium">Đăng xuất</span>
+              <span className="font-medium">{t('header_logout', {}, "Logout")}</span>
             </button>
           </div>
         </>
@@ -98,6 +100,7 @@ function AccountButton() {
  * Kết quả tìm kiếm sẽ được đẩy lên URL query parameter (?name=...) của trang /products.
  */
 function SearchBox() {
+  const { t } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [term, setTerm] = useState(searchParams.get("name") || "");
@@ -128,7 +131,7 @@ function SearchBox() {
     <div className="relative group">
       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-primary transition-colors" />
       <Input
-        placeholder="Tìm kiếm sản phẩm, thương hiệu..."
+        placeholder={t('header_search_placeholder', {}, "Search for products, brands...")}
         className="w-full pl-10 bg-gray-50 border-gray-200 focus-visible:bg-white focus-visible:ring-primary rounded-full h-11 transition-all"
         value={term}
         onChange={(e) => setTerm(e.target.value)}
@@ -138,7 +141,7 @@ function SearchBox() {
         className="absolute right-1 top-1 rounded-full h-9 px-4"
         onClick={handleSearch}
       >
-        Tìm kiếm
+        {t('header_search_btn', {}, "Search")}
       </Button>
     </div>
   );
@@ -148,6 +151,7 @@ function SearchBox() {
  * Thành phần chính Header
  */
 export default function Header({ variant = "default" }: HeaderProps) {
+  const { t, locale, setLocale } = useLanguage();
   return (
     <header className="w-full flex flex-col bg-white sticky top-0 z-40 shadow-sm">
       {/* 1. Thanh Top Bar (Thông tin phụ) - Chỉ hiện ở variant default */}
@@ -166,9 +170,12 @@ export default function Header({ variant = "default" }: HeaderProps) {
             </div>
 
             <div className="flex items-center gap-4">
-              <Link href="/about" className="hover:underline">Về chúng tôi</Link>
-              <div className="flex items-center gap-1 cursor-pointer hover:opacity-80">
-                <span className="font-medium">VI</span>
+              <Link href="/about" className="hover:underline">{t('header_about_us', {}, "About Us")}</Link>
+              <div
+                className="flex items-center gap-1 cursor-pointer hover:opacity-80"
+                onClick={() => setLocale(locale === 'vi' ? 'en' : 'vi')}
+              >
+                <span className="font-medium uppercase">{locale}</span>
                 <ChevronDown className="h-3 w-3" />
               </div>
             </div>

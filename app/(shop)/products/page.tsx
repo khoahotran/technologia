@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import ProductListView from "./product-list.view";
+import { ProductListView } from "./ProductListView";
 
 export const metadata: Metadata = {
     title: "Premium Products | My Store",

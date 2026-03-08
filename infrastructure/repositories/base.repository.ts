@@ -5,10 +5,13 @@
  * Giảm thiểu code lặp bằng Factory Pattern + Zod Validation.
  */
 
-import { z, ZodSchema } from "zod";
+import { ZodSchema } from "zod";
 
-import { httpClient } from "@/infrastructure/http/client";
-import type { PaginatedResponse } from "@/shared/types";
+import { fetchWithToken, adaptPaginatedResponse, adaptResponse, adaptListResponse } from "@/infrastructure/http";
+import { createScopedLogger } from "@/lib/logger";
+import type { DomainPaginatedResponse } from "@/shared/types";
+
+const logger = createScopedLogger('BaseRepository');
 
 // ===========================================
 // Types
@@ -53,50 +56,6 @@ export interface BaseRepositoryConfig<T> {
 }
 
 // ===========================================
-// Response Schemas Factory
-// ===========================================
-
-/**
- * Tạo schema xác thực cho Response có phân trang từ Backend
- * @param entitySchema Zod Schema của thực thể bên trong
- */
-export function createPaginatedResponseSchema<T>(entitySchema: ZodSchema<T>) {
-    return z.object({
-        status: z.number(),
-        page_number: z.number(),
-        page_size: z.number(),
-        count_items: z.number(),
-        count_pages: z.number(),
-        data: z.array(entitySchema),
-        message: z.string(),
-    });
-}
-
-/**
- * Tạo schema xác thực cho Response chứa một thực thể đơn lẻ
- * @param entitySchema Zod Schema của thực thể bên trong
- */
-export function createEntityResponseSchema<T>(entitySchema: ZodSchema<T>) {
-    return z.object({
-        status: z.number().optional(),
-        data: entitySchema,
-        message: z.string().optional(),
-    });
-}
-
-/**
- * Tạo schema xác thực cho Response chứa một mảng thực thể (không phân trang)
- * @param entitySchema Zod Schema của thực thể bên trong
- */
-export function createArrayResponseSchema<T>(entitySchema: ZodSchema<T>) {
-    return z.object({
-        status: z.number().optional(),
-        data: z.array(entitySchema),
-        message: z.string().optional(),
-    });
-}
-
-// ===========================================
 // Base Repository Factory
 // ===========================================
 
@@ -112,10 +71,6 @@ export function createArrayResponseSchema<T>(entitySchema: ZodSchema<T>) {
 export function createBaseRepository<T>(config: BaseRepositoryConfig<T>) {
     const { basePath, entitySchema } = config;
 
-    // Tự động tạo các schema xác thực cho Response (Đã bọc trong metadata của API)
-    const pagedSchema = createPaginatedResponseSchema(entitySchema);
-    const singleSchema = createEntityResponseSchema(entitySchema);
-
     /**
      * Tầng triển khai thực tế của các hàm CRUD
      */
@@ -125,14 +80,8 @@ export function createBaseRepository<T>(config: BaseRepositoryConfig<T>) {
          * Thường dùng cho các danh mục nhỏ (Brands, Categories, v.v.)
          */
         async getAll(): Promise<T[]> {
-            const { data } = await httpClient.get(basePath);
-
-            // Xử lý linh hoạt: Chấp nhận cả mảng trực tiếp hoặc mảng được bọc trong object 'data'
-            if (Array.isArray(data)) {
-                return z.array(entitySchema).parse(data);
-            }
-            const parsed = createArrayResponseSchema(entitySchema).parse(data);
-            return parsed.data;
+            const response = await fetchWithToken<T[]>(basePath, { method: 'GET' });
+            return adaptListResponse(response, entitySchema, `${basePath}-all`);
         },
 
         /**
@@ -140,10 +89,8 @@ export function createBaseRepository<T>(config: BaseRepositoryConfig<T>) {
          * @param id Mã định danh duy nhất của thực thể cần lấy
          */
         async getById(id: string | number): Promise<T> {
-            const { data } = await httpClient.get(`${basePath}/${id}`);
-            // Xác thực dữ liệu trả về và bóc tách ra khỏi lớp vỏ Response
-            const parsed = singleSchema.parse(data);
-            return parsed.data;
+            const response = await fetchWithToken<T>(`${basePath}/${id}`, { method: 'GET' });
+            return adaptResponse(response, entitySchema, `${basePath}-detail`);
         },
 
         /**
@@ -152,17 +99,17 @@ export function createBaseRepository<T>(config: BaseRepositoryConfig<T>) {
          */
         async getPaged(
             params: PagingParams = {}
-        ): Promise<PaginatedResponse<T>> {
+        ): Promise<DomainPaginatedResponse<T>> {
             // Chuẩn hóa các tham số (page, size, sortBy...)
             const { page, size, sortBy, sortDirection } = normalizePagingParams(params);
 
-            const { data } = await httpClient.get(`${basePath}/paged`, {
-                params: { page, size, sortBy, sortDirection },
+            const response = await fetchWithToken<T>(`${basePath}/paged`, {
+                method: 'GET',
+                query: { page: String(page), size: String(size), sortBy, sortDirection },
             });
 
-            // Xác thực cấu trúc phân trang phức tạp từ Backend
-            const parsed = pagedSchema.parse(data);
-            return parsed;
+            // Sử dụng ResponseAdapter để chuẩn hóa dữ liệu từ snake_case sang camelCase
+            return adaptPaginatedResponse(response, entitySchema, basePath);
         },
 
         /**
@@ -170,9 +117,8 @@ export function createBaseRepository<T>(config: BaseRepositoryConfig<T>) {
          * @param payload Dữ liệu cần tạo mới
          */
         async create(payload: Partial<T>): Promise<T> {
-            const { data } = await httpClient.post(basePath, payload);
-            const parsed = singleSchema.parse(data);
-            return parsed.data;
+            const response = await fetchWithToken<T>(basePath, { method: 'POST', body: payload });
+            return adaptResponse(response, entitySchema, `${basePath}-create`);
         },
 
         /**
@@ -181,9 +127,8 @@ export function createBaseRepository<T>(config: BaseRepositoryConfig<T>) {
          * @param payload Dữ liệu cần cập nhật
          */
         async update(id: string | number, payload: Partial<T>): Promise<T> {
-            const { data } = await httpClient.put(`${basePath}/${id}`, payload);
-            const parsed = singleSchema.parse(data);
-            return parsed.data;
+            const response = await fetchWithToken<T>(`${basePath}/${id}`, { method: 'PUT', body: payload });
+            return adaptResponse(response, entitySchema, `${basePath}-update`);
         },
 
         /**
@@ -191,7 +136,7 @@ export function createBaseRepository<T>(config: BaseRepositoryConfig<T>) {
          * @param id Mã định danh của thực thể cần xóa
          */
         async delete(id: string | number): Promise<void> {
-            await httpClient.delete(`${basePath}/${id}`);
+            await fetchWithToken(`${basePath}/${id}`, { method: 'DELETE' });
         },
 
         /** Trả về đường dẫn gốc của resource (Hữu ích cho các query tùy chỉnh bên ngoài) */

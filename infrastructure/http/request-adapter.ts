@@ -147,7 +147,7 @@ export function adaptRequest(
     return adapted;
   });
 
-  if (error !== null) {
+  if (error) {
     logger.error('Failed to adapt request', { data, options, error });
     throw error;
   }
@@ -176,8 +176,8 @@ export function adaptSearchParams(params: Record<string, unknown>): Record<strin
     fieldMap: {
       'page': 'page',
       'size': 'size',
-      'sortBy': 'sort_by',
-      'sortDirection': 'sort_direction',
+      'sortBy': 'sortBy',
+      'sortDirection': 'sortDirection',
       'keyword': 'keyword',
     },
   }) as Record<string, unknown>;

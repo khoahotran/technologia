@@ -17,6 +17,7 @@ import "../public/globals.css";
  * thông tin OpenGraph để chia sẻ trên mạng xã hội.
  */
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env['NEXT_PUBLIC_SITE_URL']!),
   title: "TechStore - Cửa hàng điện thoại và phụ kiện",
   description: "Cửa hàng bán lẻ điện thoại, phụ kiện thông minh chính hãng",
   generator: "Next.js",
@@ -71,12 +72,19 @@ export default function RootLayout({
                 }}
               />
               <RepositoryProvider>
-                <GoogleOAuthProvider clientId={process.env["NEXT_PUBLIC_GOOGLE_CLIENT_ID"] || ""}>
+                {process.env["NEXT_PUBLIC_GOOGLE_CLIENT_ID"] ? (
+                  <GoogleOAuthProvider clientId={process.env["NEXT_PUBLIC_GOOGLE_CLIENT_ID"]}>
+                    <AuthProvider>
+                      {children}
+                    </AuthProvider>
+                  </GoogleOAuthProvider>
+                ) : (
                   <AuthProvider>
                     {children}
                   </AuthProvider>
-                </GoogleOAuthProvider>
+                )}
               </RepositoryProvider>
+
             </QueryProvider>
           </Suspense>
           {/* </ThemeProvider> */}

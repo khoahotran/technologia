@@ -21,6 +21,18 @@ export interface PaginatedResponse<T> {
     message: string;
 }
 
+/**
+ * Domain-friendly paginated response (camelCase)
+ * Standardized across the application layer.
+ */
+export interface DomainPaginatedResponse<T> {
+    items: T[];
+    pageNumber: number;
+    pageSize: number;
+    totalItems: number;
+    totalPages: number;
+}
+
 // Cấu trúc lỗi chuẩn trả về từ API
 export interface ApiError {
     status: number;

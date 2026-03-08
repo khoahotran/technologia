@@ -17,8 +17,13 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/ui/product-card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { isAppError, type AppError } from "@/domain/errors";
+import { isAppError } from "@/domain/errors";
+import { getErrorMessageForUI } from "@/infrastructure/http";
 import { useAddToCartMutation, useProductDetail, useProductList } from "@/presentation/hooks";
+
+import { useLanguage } from "@/shared/providers/language.provider";
+import { HTTP_STATUS } from '@/shared/constants';
+import type { ApiError } from '@/shared/types';
 import { formatCurrency, formatNumber } from "@/shared/utils/format";
 import { safe } from "@/shared/utils/result";
 
@@ -28,7 +33,7 @@ interface ProductDetailClientProps {
 }
 
 /** Các tab chuyển đổi hiển thị thông tin sản phẩm */
-type TabKey = "chi-tiet" | "thong-so" | "danh-gia";
+type TabKey = "details" | "specs" | "reviews";
 
 /**
  * Giao diện Chi tiết Sản phẩm (Product Detail Client)
@@ -37,10 +42,12 @@ type TabKey = "chi-tiet" | "thong-so" | "danh-gia";
  * thông số kỹ thuật, mô tả và cho phép người dùng thêm sản phẩm vào giỏ hàng.
  */
 export default function ProductDetailClient({ id }: ProductDetailClientProps) {
+    const { t, locale } = useLanguage();
+    const currentLocale = locale === 'vi' ? 'vi-VN' : 'en-US';
     const router = useRouter();
     const [quantity, setQuantity] = useState(1);
     const [selectedImage, setSelectedImage] = useState<{ productId: string; image: string } | null>(null);
-    const [activeTab, setActiveTab] = useState<TabKey>("chi-tiet");
+    const [activeTab, setActiveTab] = useState<TabKey>("details");
     const [showFullDesc, setShowFullDesc] = useState(false);
 
     const { product, isLoading, error } = useProductDetail(id);
@@ -66,16 +73,16 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
 
         return (
             <div className="container mx-auto px-4 py-16 text-center">
-                <h2 className="text-2xl font-bold text-gray-900">Không tải được sản phẩm</h2>
+                <h2 className="text-2xl font-bold text-gray-900">{t('failed_to_load_product', {}, "Failed to load product")}</h2>
                 <p className="text-gray-600 mt-2">
-                    {error instanceof Error ? error.message : "Vui lòng thử lại sau."}
+                    {error instanceof Error ? error.message : t('try_again_later', {}, "Please try again later.")}
                 </p>
                 <Button
                     onClick={() => router.back()}
                     className="mt-4"
                     variant="outline"
                 >
-                    Quay lại
+                    {t('go_back', {}, "Go back")}
                 </Button>
             </div>
         );
@@ -99,16 +106,16 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
     const viewedCount = 10600;
 
     const productProperties = [
-        { label: "Thương hiệu", value: product.brandName || "Khác" },
-        { label: "SKU", value: product.productId.slice(0, 8).toUpperCase() },
-        { label: "Danh mục", value: product.category || "Sản phẩm" },
-        { label: "Tồn kho", value: formatNumber(product.totalStock || 0) },
+        { label: t('brand', {}, "Brand"), value: product.brandName || t('others', {}, "Others") },
+        { label: t('sku', {}, "SKU"), value: product.productId.slice(0, 8).toUpperCase() },
+        { label: t('category', {}, "Category"), value: product.category || t('category', {}, "Category") },
+        { label: t('stock', {}, "Stock"), value: formatNumber(product.totalStock || 0, currentLocale) },
     ];
 
     const handleAddToCart = async () => {
         const variantId = product.variants?.[0]?.variantId;
         if (!variantId) {
-            toast.error("Sản phẩm chưa có biến thể");
+            toast.error(t('no_variants', {}, "No variants available"));
             return;
         }
 
@@ -123,44 +130,49 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                 variantId,
             }));
 
-            if (err !== null) {
-                let message = "Không thể thêm vào giỏ hàng.";
-                const appError = err as AppError;
+            if (err) {
+                const appError = err as ApiError;
+                console.error('[Add To Cart Error Detail]', appError);
 
-                // Xử lý lỗi đặc thù: Chưa đăng nhập
+                // Xử lý lỗi đặc thù: Chưa đăng nhập (401)
+                // @ts-ignore
                 if (appError?.statusCode === 401) {
-                    toast.error("Vui lòng đăng nhập để thực hiện tính năng này.");
+                    toast.error(t('login_required_action', {}, "Please login to perform this action."));
                     router.push("/login");
                     return;
                 }
 
-                // Trích xuất message từ chi tiết lỗi backend nếu có
-                if (appError?.details && typeof appError.details === 'object' && 'data' in (appError.details as object)) {
-                    const data = (appError.details as { data?: { message?: string } }).data;
-                    if (data?.message) message = data.message;
-                } else if (appError?.message) {
-                    message = appError.message;
+                // Xử lý lỗi đặc thù: Không có quyền (403)
+                // @ts-ignore
+                if (appError?.statusCode === 403) {
+                    // Nếu đã đăng nhập mà vẫn 403, có thể là lỗi phân quyền backend
+                    toast.error(t('permission_denied_cart', {}, "You don't have permission to add items to cart. Please check your account."));
+                    return;
                 }
 
+                // Trích xuất message thân thiện cho UI cho các lỗi khác
+                const message = getErrorMessageForUI(appError);
                 toast.error(message);
                 return; // Stop on first error
+
             }
+
 
             successCount += 1;
         }
 
         if (successCount > 0) {
-            toast.success(`Đã thêm ${successCount} sản phẩm vào giỏ hàng`);
+            toast.success(t('added_n_to_cart', { count: successCount }, `Added ${successCount} products to cart`));
         }
     };
 
     const tabs: { key: TabKey; label: string }[] = [
-        { key: "chi-tiet", label: "Chi tiết" },
-        { key: "thong-so", label: "Thông số" },
-        { key: "danh-gia", label: "Đánh giá" },
+        { key: "details", label: t('tab_details', {}, "Details") },
+        { key: "specs", label: t('tab_specs', {}, "Specs") },
+        { key: "reviews", label: t('tab_reviews', {}, "Reviews") },
     ];
 
-    const descriptionText = product.description || "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.";
+    const descriptionText = product.description || t('description_fallback', {}, "Product description will be updated soon.");
 
     return (
         <div className="min-h-screen bg-[#EEF5FB]">
@@ -171,14 +183,14 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                         onClick={() => router.push("/")}
                         className="hover:text-blue-600 transition-colors"
                     >
-                        Home
+                        {t('home', {}, "Home")}
                     </button>
                     <ChevronRight className="w-3.5 h-3.5" />
                     <button
                         onClick={() => router.push(`/products?search=${product.category || ""}`)}
-                        className="hover:text-blue-600 transition-colors"
+                        className="hover:text-blue-600 transition-colors text-blue-600"
                     >
-                        {product.category || "Sản phẩm"}
+                        {product.category || t('category', {}, "Category")}
                     </button>
                     <ChevronRight className="w-3.5 h-3.5" />
                     <span className="text-gray-900 font-medium truncate max-w-[200px]">
@@ -242,7 +254,7 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                             {/* SKU + Stars + Review count */}
                             <div className="flex items-center gap-3 text-sm flex-wrap">
                                 <span className="text-gray-500">
-                                    SKU {product.productId.slice(0, 7).toUpperCase()}
+                                    {t('sku', {}, "SKU")} {product.productId.slice(0, 7).toUpperCase()}
                                 </span>
                                 <div className="flex items-center gap-1 text-yellow-400">
                                     {[...Array(5)].map((_, i) => (
@@ -262,20 +274,20 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                             <div className="flex items-start justify-between">
                                 <div>
                                     <div className="text-2xl lg:text-3xl font-bold text-gray-900">
-                                        {formatCurrency(displayPrice)}
+                                        {formatCurrency(displayPrice, 'VND', currentLocale)}
                                     </div>
                                     <div className="text-sm text-gray-400 line-through mt-0.5">
-                                        {formatCurrency(originalPrice)}
+                                        {formatCurrency(originalPrice, 'VND', currentLocale)}
                                     </div>
                                 </div>
                                 <div className="flex flex-col gap-1 text-sm text-gray-500">
                                     <div className="flex items-center gap-1.5">
                                         <PackageCheck className="w-4 h-4 text-blue-400 shrink-0" />
-                                        <span>{formatNumber(soldCount)} Sold</span>
+                                        <span>{formatNumber(soldCount, currentLocale)} {t('sold', {}, "Sold")}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
                                         <Eye className="w-4 h-4 text-blue-400 shrink-0" />
-                                        <span>{formatNumber(viewedCount)} Viewed</span>
+                                        <span>{formatNumber(viewedCount, currentLocale)} {t('viewed', {}, "Viewed")}</span>
                                     </div>
                                 </div>
                             </div>
@@ -298,7 +310,7 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                                         <button
                                             onClick={() => setQuantity(Math.max(1, quantity - 1))}
                                             className="px-3 py-2.5 text-blue-600 hover:bg-blue-100 transition-colors"
-                                            aria-label="Giảm số lượng"
+                                            aria-label={t('show_less', {}, "Show less")}
                                         >
                                             <Minus className="w-4 h-4" />
                                         </button>
@@ -308,7 +320,7 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                                         <button
                                             onClick={() => setQuantity(quantity + 1)}
                                             className="px-3 py-2.5 text-blue-600 hover:bg-blue-100 transition-colors"
-                                            aria-label="Tăng số lượng"
+                                            aria-label={t('view_more', {}, "View more")}
                                         >
                                             <Plus className="w-4 h-4" />
                                         </button>
@@ -318,8 +330,8 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                                         onClick={handleAddToCart}
                                         disabled={addToCartMutation.isPending}
                                         className="flex items-center justify-center w-10 h-10 rounded-xl border border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors disabled:opacity-50"
-                                        aria-label="Thêm vào giỏ hàng"
-                                        title="Thêm vào giỏ hàng"
+                                        aria-label={t('add_to_cart_aria', { title: product.name })}
+                                        title={t('add_to_cart_aria', { title: product.name })}
                                     >
                                         <ShoppingCartIcon className="w-5 h-5" />
                                     </button>
@@ -331,7 +343,7 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                                     disabled={addToCartMutation.isPending}
                                     className="rounded-full bg-blue-500 hover:bg-blue-600 text-white px-8 py-2.5 text-sm font-medium shadow-sm transition-colors disabled:opacity-50 flex items-center gap-2"
                                 >
-                                    Buy now
+                                    {t('buy_now', {}, "Buy now")}
                                     <ChevronRight className="w-4 h-4" />
                                 </Button>
                             </div>
@@ -360,7 +372,7 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
 
                         {/* Tab Content */}
                         <div className="flex-1 p-6 lg:p-8 min-h-[200px]">
-                            {activeTab === "chi-tiet" && (
+                            {activeTab === "details" && (
                                 <div>
                                     <p className="text-sm text-gray-600 leading-relaxed text-center">
                                         {showFullDesc
@@ -372,13 +384,13 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                                             onClick={() => setShowFullDesc(!showFullDesc)}
                                             className="text-blue-500 text-sm font-medium hover:underline"
                                         >
-                                            {showFullDesc ? "Thu gọn" : "View more"}
+                                            {showFullDesc ? t('show_less', {}, "Show less") : t('view_more', {}, "View more")}
                                         </button>
                                     </div>
                                 </div>
                             )}
 
-                            {activeTab === "thong-so" && (
+                            {activeTab === "specs" && (
                                 <div className="space-y-2 text-sm">
                                     {product.specsText ? (
                                         <div
@@ -388,30 +400,30 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                                     ) : (
                                         <>
                                             <div className="flex justify-between border-b py-2">
-                                                <span className="text-gray-500">Thương hiệu</span>
+                                                <span className="text-gray-500">{t('brand', {}, "Brand")}</span>
                                                 <span className="font-medium">{product.brandName || "—"}</span>
                                             </div>
                                             <div className="flex justify-between border-b py-2">
-                                                <span className="text-gray-500">SKU</span>
+                                                <span className="text-gray-500">{t('sku', {}, "SKU")}</span>
                                                 <span className="font-medium">{product.productId}</span>
                                             </div>
                                             <div className="flex justify-between border-b py-2">
-                                                <span className="text-gray-500">Danh mục</span>
+                                                <span className="text-gray-500">{t('category', {}, "Category")}</span>
                                                 <span className="font-medium">{product.category || "—"}</span>
                                             </div>
                                             <div className="flex justify-between py-2">
-                                                <span className="text-gray-500">Tồn kho</span>
-                                                <span className="font-medium">{formatNumber(product.totalStock || 0)}</span>
+                                                <span className="text-gray-500">{t('stock', {}, "Stock")}</span>
+                                                <span className="font-medium">{formatNumber(product.totalStock || 0, currentLocale)}</span>
                                             </div>
                                         </>
                                     )}
                                 </div>
                             )}
 
-                            {activeTab === "danh-gia" && (
+                            {activeTab === "reviews" && (
                                 <div className="flex flex-col items-center justify-center py-10 text-gray-400">
                                     <Star className="w-10 h-10 mb-2 text-gray-200" />
-                                    <p className="text-sm">Chưa có đánh giá nào. Hãy là người đầu tiên!</p>
+                                    <p className="text-sm">{t('no_reviews', {}, "No reviews yet. Be the first!")}</p>
                                 </div>
                             )}
                         </div>
@@ -420,23 +432,23 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
 
                 {/* ===== Related Products ===== */}
                 <div className="mt-6">
-                    <h2 className="text-xl font-bold text-gray-900 mb-4">Related products</h2>
+                    <h2 className="text-xl font-bold text-gray-900 mb-4">{t('related_products', {}, "Related products")}</h2>
                     <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                         {relatedProducts?.filter((r) => r.productId !== product.productId).slice(0, 4).map((related) => (
                             <ProductCard
                                 key={related.productId}
                                 id={related.productId}
                                 title={related.name}
-                                price={formatCurrency(Number(related.displayPrice) || 0)}
+                                price={formatCurrency(Number(related.displayPrice) || 0, 'VND', currentLocale)}
                                 rating={related.averageRating || 0}
                                 image={related.variants?.[0]?.images?.[0] || "/placeholder.png"}
-                                badge={(related.totalStock || 0) < 10 ? "Low Stock" : undefined}
+                                badge={(related.totalStock || 0) < 10 ? t('low_stock', {}, "Low Stock") : undefined}
                                 className="hover:shadow-lg transition-shadow"
                             />
                         ))}
                         {!relatedProducts?.length && (
                             <div className="col-span-full text-center py-12 text-gray-400">
-                                Không có sản phẩm liên quan.
+                                {t('no_related_products', {}, "No related products.")}
                             </div>
                         )}
                     </div>

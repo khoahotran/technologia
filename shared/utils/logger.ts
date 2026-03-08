@@ -241,7 +241,7 @@ class Logger {
             const actions = this.getQueuedActions();
             if (actions.length > 0) {
                 const [, error] = await safe(flushFn(actions));
-                if (error !== null) {
+                if (error) {
                     this.error("Failed to flush action queue", error);
                 } else {
                     this.clearActionQueue();

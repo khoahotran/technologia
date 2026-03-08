@@ -22,7 +22,7 @@ export function FilterBar() {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const { locales } = useLanguage()
+  const { t } = useLanguage()
 
   /** 
    * Hàm cập nhật URL params 
@@ -61,30 +61,17 @@ export function FilterBar() {
     router.push(`${pathname}${query}`)
   }
 
-  /**
-   * Hàm hỗ trợ lấy chuỗi dịch (i18n) với biến thay thế động
-   */
-  const t = (key: string, replacements?: Record<string, string | number>) => {
-    let text = (locales as Record<string, string>)?.[key] || key
-    if (replacements) {
-      Object.entries(replacements).forEach(([k, v]) => {
-        text = text.replace(`{${k}}`, String(v))
-      })
-    }
-    return text
-  }
-
   return (
     <div className="flex flex-wrap items-center gap-4 bg-blue-50/30 p-4 rounded-xl">
       {/* Bộ lọc Giá Tối thiểu */}
       <div className="flex flex-col gap-1.5">
-        <span className="text-xs font-medium text-gray-500">{t('filter_min_price', { defaultValue: "Giá thấp nhất" })}</span>
+        <span className="text-xs font-medium text-gray-500">{t('filter_min_price', {}, "Giá thấp nhất")}</span>
         <Select
           defaultValue={searchParams.get("minPrice") || "0"}
           onValueChange={(val) => updateFilter("minPrice", val)}
         >
           <SelectTrigger className="w-[140px] bg-blue-100/50 border-none h-9 rounded-lg">
-            <SelectValue placeholder={t('select_price', { defaultValue: "Chọn giá" })} />
+            <SelectValue placeholder={t('select_price', {}, "Chọn giá")} />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="0">0 VND</SelectItem>
@@ -93,20 +80,20 @@ export function FilterBar() {
             <SelectItem value="5000000">5.000.000 VND</SelectItem>
             <SelectItem value="10000000">10.000.000 VND</SelectItem>
             <SelectItem value="20000000">20.000.000 VND</SelectItem>
-            <SelectItem value="50000000">50.000.000 VND</SelectItem>
+            <SelectItem value="50000000">5.000.000 VND</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       {/* Bộ lọc Giá Tối đa */}
       <div className="flex flex-col gap-1.5">
-        <span className="text-xs font-medium text-gray-500">{t('filter_max_price', { defaultValue: "Giá cao nhất" })}</span>
+        <span className="text-xs font-medium text-gray-500">{t('filter_max_price', {}, "Giá cao nhất")}</span>
         <Select
           defaultValue={searchParams.get("maxPrice") || ""}
           onValueChange={(val) => updateFilter("maxPrice", val)}
         >
           <SelectTrigger className="w-[140px] bg-blue-100/50 border-none h-9 rounded-lg">
-            <SelectValue placeholder={t('select_price', { defaultValue: "Chọn giá" })} />
+            <SelectValue placeholder={t('select_price', {}, "Chọn giá")} />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="1000000">1.000.000 VND</SelectItem>
@@ -114,7 +101,7 @@ export function FilterBar() {
             <SelectItem value="5000000">5.000.000 VND</SelectItem>
             <SelectItem value="10000000">10.000.000 VND</SelectItem>
             <SelectItem value="20000000">20.000.000 VND</SelectItem>
-            <SelectItem value="50000000">50.000.000 VND</SelectItem>
+            <SelectItem value="50000000">5.000.000 VND</SelectItem>
             <SelectItem value="100000000">100.000.000 VND</SelectItem>
           </SelectContent>
         </Select>
@@ -122,7 +109,7 @@ export function FilterBar() {
 
       {/* Sắp xếp danh sách */}
       <div className="flex flex-col gap-1.5 ml-auto">
-        <span className="text-xs font-medium text-gray-500">{t('filter_order', { defaultValue: "Sắp xếp theo" })}</span>
+        <span className="text-xs font-medium text-gray-500">{t('filter_order', {}, "Sắp xếp theo")}</span>
         <Select
           defaultValue={searchParams.get("sort") || "price_asc"}
           onValueChange={(val) => updateFilter("sort", val)}
@@ -134,9 +121,9 @@ export function FilterBar() {
             </div>
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="price_asc">{t('price_asc', { defaultValue: "Giá tăng dần" })}</SelectItem>
-            <SelectItem value="price_desc">{t('price_desc', { defaultValue: "Giá giảm dần" })}</SelectItem>
-            <SelectItem value="newest">{t('newest', { defaultValue: "Mới nhất" })}</SelectItem>
+            <SelectItem value="price_asc">{t('price_asc', {}, "Giá tăng dần")}</SelectItem>
+            <SelectItem value="price_desc">{t('price_desc', {}, "Giá giảm dần")}</SelectItem>
+            <SelectItem value="newest">{t('newest', {}, "Mới nhất")}</SelectItem>
           </SelectContent>
         </Select>
       </div>

@@ -1,24 +1,11 @@
 import { CategoryEntity } from "../entities/category.entity";
 
+import type { DomainPaginatedResponse } from "@/shared/types";
+
 /**
  * Cấu trúc phản hồi phân trang chuẩn cho danh sách Danh mục.
  */
-export interface CategoryPagingResponse {
-    /** Mã trạng thái HTTP hoặc mã nội bộ từ backend */
-    status: number;
-    /** Số thứ tự trang hiện tại */
-    page_number: number;
-    /** Số lượng phần tử tối đa trên mỗi trang */
-    page_size: number;
-    /** Tổng số lượng danh mục khớp với bộ lọc trong cơ sở dữ liệu */
-    count_items: number;
-    /** Tổng số lượng trang khả dụng dựa trên page_size */
-    count_pages: number;
-    /** Danh sách thực thể Danh mục cho trang hiện tại */
-    data: CategoryEntity[];
-    /** Thông báo từ hệ thống */
-    message: string;
-}
+export type CategoryPagingResponse = DomainPaginatedResponse<CategoryEntity>;
 
 /**
  * Giao diện Repository (Contract) cho việc quản lý dữ liệu Danh mục.

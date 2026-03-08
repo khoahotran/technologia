@@ -120,7 +120,7 @@ export function getCheckoutAddresses(): CheckoutAddress[] {
     // Go-style handling for JSON parsing
     const [parsed, error] = safeSync(() => JSON.parse(raw) as CheckoutAddress[]);
 
-    if (error !== null) {
+    if (error) {
         return DEFAULT_ADDRESSES;
     }
 
@@ -201,7 +201,7 @@ export function getCheckoutOrders(): CheckoutOrder[] {
 
     const [parsed, error] = safeSync(() => JSON.parse(raw) as CheckoutOrder[]);
 
-    if (error !== null) {
+    if (error) {
         return [];
     }
 

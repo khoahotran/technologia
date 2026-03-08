@@ -13,6 +13,7 @@ import {
     getCheckoutAddresses,
     setDefaultCheckoutAddress,
 } from "@/lib/checkout-flow";
+import { useLanguage } from "@/shared/providers/language.provider";
 
 /**
  * Chuyển đổi đối tượng địa chỉ thành chuỗi văn bản thân thiện với con người.
@@ -34,6 +35,7 @@ function toReadableAddress(address: CheckoutAddress) {
  * - Điều hướng tới trang tạo địa chỉ mới.
  */
 export default function AddressBookClient() {
+    const { t } = useLanguage();
     const router = useRouter();
     const [addresses, setAddresses] = useState<CheckoutAddress[]>(() => getCheckoutAddresses());
 
@@ -42,7 +44,7 @@ export default function AddressBookClient() {
             <div className="container mx-auto px-4 py-8">
                 <div className="max-w-3xl mx-auto space-y-6">
                     <div className="flex items-center justify-between">
-                        <h1 className="text-2xl font-bold text-gray-900">Address Book</h1>
+                        <h1 className="text-2xl font-bold text-gray-900">{t('address_book_title', {}, "Address Book")}</h1>
                         <Info className="h-5 w-5 text-[#3E93B3]" />
                     </div>
 
@@ -58,7 +60,7 @@ export default function AddressBookClient() {
                                 onSetDefault={() => {
                                     const next = setDefaultCheckoutAddress(address.id);
                                     setAddresses(next);
-                                    toast.success("Default address updated");
+                                    toast.success(t('default_address_updated', {}, "Default address updated"));
                                 }}
                             />
                         ))}
@@ -66,7 +68,7 @@ export default function AddressBookClient() {
 
                     <Link href="/address-book/new">
                         <Button className="w-full bg-[#C3BFCE] hover:bg-[#B3AFBE] text-white font-medium h-12">
-                            Create new address
+                            {t('create_new_address_btn', {}, "Create new address")}
                         </Button>
                     </Link>
                 </div>

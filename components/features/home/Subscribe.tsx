@@ -11,6 +11,7 @@ import { Mail } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
+import { useLanguage } from "@/shared/providers/language.provider";
 
 interface SubscribeProps {
   /** Biến thể giao diện (default: vuông góc, rounded: bo tròn mạnh) */
@@ -20,6 +21,7 @@ interface SubscribeProps {
 }
 
 export function Subscribe({ variant = "default", className }: SubscribeProps) {
+  const { t } = useLanguage();
   return (
     <section className={cn("container mx-auto px-4 py-12", className)}>
       <div
@@ -33,10 +35,9 @@ export function Subscribe({ variant = "default", className }: SubscribeProps) {
             <Mail className="h-8 w-8 text-white" />
           </div>
           <div className="space-y-2">
-            <h3 className="text-xl font-bold text-white">Đăng ký nhận Bản tin</h3>
+            <h3 className="text-xl font-bold text-white">{t('subscribe_newsletter', {}, "Subscribe to Newsletter")}</h3>
             <p className="text-blue-50/90 text-sm leading-relaxed">
-              Tham gia cộng đồng yêu công nghệ của chúng tôi để không bỏ lỡ các đợt
-              ra mắt sản phẩm mới, nhận thông tin chuyên sâu và khuyến mãi hàng tuần.
+              {t('subscribe_description', {}, "Join our tech community to not miss new product launches, get specialized information and weekly promotions.")}
             </p>
           </div>
         </div>
@@ -45,13 +46,13 @@ export function Subscribe({ variant = "default", className }: SubscribeProps) {
           <div className="relative flex items-center">
             <Input
               type="email"
-              placeholder="Nhập email của bạn tại đây"
+              placeholder={t('enter_email', {}, "Enter your email here")}
               className="h-14 w-full rounded-xl bg-white pl-6 pr-32 text-base border-none shadow-sm placeholder:text-gray-400 focus-visible:ring-0"
             />
             <Button
               className="absolute right-1.5 top-1.5 h-11 rounded-lg bg-[#5B6C8F] px-6 font-semibold text-white hover:bg-[#4A5975]"
             >
-              ĐĂNG KÝ
+              {t('subscribe_btn', {}, "SUBSCRIBE")}
             </Button>
           </div>
         </div>

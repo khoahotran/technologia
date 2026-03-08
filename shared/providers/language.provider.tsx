@@ -21,11 +21,18 @@ type LanguageContextType = {
   locales: Language;
   /** Hàm dùng để đổi ngôn ngữ của toàn ứng dụng */
   setLocale: (locale: string) => void;
+  /** Hàm dịch thuật hỗ trợ biến động */
+  t: (key: string, replacements?: Record<string, string | number>, defaultValue?: string) => string;
 };
 
-const LanguageContext = createContext<LanguageContextType | undefined>(
-  undefined
-);
+const defaultContextValue: LanguageContextType = {
+  locale: "en",
+  locales: { locale: "en" },
+  setLocale: () => {},
+  t: (key: string, _replacements?: Record<string, string | number>, defaultValue?: string) => defaultValue || key,
+};
+
+const LanguageContext = createContext<LanguageContextType>(defaultContextValue);
 
 export const LanguageProvider = ({
   children,
@@ -45,8 +52,22 @@ export const LanguageProvider = ({
     setLocaleState(newLocale);
   };
 
+  /**
+   * Hàm hỗ trợ lấy chuỗi dịch (i18n) với biến thay thế động
+   */
+  const t = (key: string, replacements?: Record<string, string | number>, defaultValue?: string) => {
+    let text = (locales as Record<string, string>)?.[key] || defaultValue || key;
+
+    if (replacements && typeof text === 'string') {
+      Object.entries(replacements).forEach(([k, v]) => {
+        text = text.replace(`{${k}}`, String(v));
+      });
+    }
+    return text;
+  };
+
   return (
-    <LanguageContext.Provider value={{ locale, locales, setLocale: handleSetLocale }}>
+    <LanguageContext.Provider value={{ locale, locales, setLocale: handleSetLocale, t }}>
       {/* 
         Để tránh lỗi flash content (hiển thị chuỗi chưa dịch), ta render một
         FullLoading screen cho đến khi file JSON locales được tải xong. 
@@ -59,11 +80,10 @@ export const LanguageProvider = ({
 /**
  * Hook tiện ích giúp Component lấy các thông tin nội dung đã được Localize (i18n).
  */
+let isServer = typeof window === "undefined";
+
 export const useLanguage = () => {
-  const context = useContext(LanguageContext);
-  if (!context)
-    throw new Error("useLanguage phải được sử dụng bên trong một LanguageProvider");
-  return context;
+  return useContext(LanguageContext);
 };
 
 /** Dữ liệu khởi tạo ngôn ngữ lúc mount (trước khi useEffect chạy) */

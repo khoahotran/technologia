@@ -109,8 +109,9 @@ export const HTTP_STATUS = {
 // ===========================================
 
 export const REQUEST_CONFIG = {
-    /** Thời gian chờ mặc định tính bằng mili-giây (10s) */
-    TIMEOUT: 10000,
+    /** Thời gian chờ mặc định tính bằng mili-giây (30s) */
+    TIMEOUT: 30000,
+
 
     /** Số lượng phần tử mặc định trên mỗi trang (Paginated requests) */
     DEFAULT_PAGE_SIZE: 10,

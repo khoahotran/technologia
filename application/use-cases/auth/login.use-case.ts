@@ -31,7 +31,7 @@ export async function loginUseCase(credentials: LoginDto): Promise<LoginResult> 
     // 1. Gọi API login qua repo (Go-style handling)
     const [response, error] = await safe(AuthRepository.login(credentials));
 
-    if (error !== null) {
+    if (error) {
         return { ok: false, error: getErrorMessage(error) };
     }
 

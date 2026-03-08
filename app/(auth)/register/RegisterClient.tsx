@@ -9,6 +9,7 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { AuthRepository } from "@/infrastructure/repositories/auth/auth.repository"
+import { useLanguage } from "@/shared/providers/language.provider";
 import { safe } from "@/shared/utils/result"
 
 /**
@@ -18,6 +19,7 @@ import { safe } from "@/shared/utils/result"
  * Xử lý xác thực đầu vào, so khớp mật khẩu và gọi API đăng ký.
  */
 export default function RegisterClient() {
+    const { t } = useLanguage()
     const router = useRouter()
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState("")
@@ -41,7 +43,7 @@ export default function RegisterClient() {
         setLoading(true)
 
         if (formData.password !== formData.confirmPassword) {
-            setError("Passwords do not match")
+            setError(t('register_err_password_match', {}, "Passwords do not match"))
             setLoading(false)
             return
         }
@@ -56,14 +58,14 @@ export default function RegisterClient() {
             // role is removed from DTO as it's optional/handled by backend or we update DTO
         }));
 
-        if (err !== null) {
+        if (err) {
             console.error(err)
             const errorObj = err as { response?: { data?: { message?: string } } };
-            const errorMessage = errorObj.response?.data?.message || "Registration failed";
+            const errorMessage = errorObj.response?.data?.message || t('register_err_failed', {}, "Registration failed");
             setError(errorMessage)
             toast.error(errorMessage);
         } else {
-            toast.success("Registration successful! Redirecting to login...", {
+            toast.success(t('register_success', {}, "Registration successful! Redirecting to login..."), {
                 duration: 2000,
             })
 
@@ -79,7 +81,7 @@ export default function RegisterClient() {
     return (
         <div className="min-h-screen grid md:grid-cols-2">
             {/* Left Panel - Welcome */}
-            <div className="bg-[#3E93B3] text-white flex flex-col justify-center items-center p-12 relative overflow-hidden">
+            <div className="bg-primary text-white flex flex-col justify-center items-center p-12 relative overflow-hidden">
                 {/* Decorative waves */}
                 <div className="absolute bottom-0 left-0 right-0">
                     <svg viewBox="0 0 1200 400" className="w-full">
@@ -99,11 +101,11 @@ export default function RegisterClient() {
                 </div>
 
                 <div className="relative z-10 text-center space-y-6 max-w-md">
-                    <h1 className="text-5xl font-bold" style={{ fontFamily: 'cursive' }}>
-                        Welcome
+                    <h1 className="text-5xl font-extrabold tracking-tight">
+                        {t('register_welcome_title', {}, "Welcome")}
                     </h1>
                     <p className="text-xl leading-relaxed">
-                        Sign up now to explore the latest smartphones and offers!
+                        {t('register_welcome_desc', {}, "Sign up now to explore the latest smartphones and offers!")}
                     </p>
 
                     {/* Social Media Icons */}
@@ -128,7 +130,7 @@ export default function RegisterClient() {
             <div className="bg-white flex items-center justify-center p-8">
                 <div className="w-full max-w-md space-y-8">
                     <div className="text-center">
-                        <h2 className="text-3xl font-bold text-gray-800">CREATE ACCOUNT</h2>
+                        <h2 className="text-3xl font-bold text-gray-800">{t('register_create_account', {}, "CREATE ACCOUNT")}</h2>
                     </div>
 
                     <form className="space-y-4" onSubmit={handleSubmit}>
@@ -137,8 +139,8 @@ export default function RegisterClient() {
                         <Input
                             name="username"
                             type="text"
-                            placeholder="Username*"
-                            className="h-12 bg-[#F9F8FE] border-gray-200"
+                            placeholder={t('register_username_placeholder', {}, "Username*")}
+                            className="h-12 bg-background border-gray-200"
                             value={formData.username}
                             onChange={handleChange}
                             required
@@ -147,8 +149,8 @@ export default function RegisterClient() {
                         <Input
                             name="password"
                             type="password"
-                            placeholder="Password*"
-                            className="h-12 bg-[#F9F8FE] border-gray-200"
+                            placeholder={t('register_password_placeholder', {}, "Password*")}
+                            className="h-12 bg-background border-gray-200"
                             value={formData.password}
                             onChange={handleChange}
                             required
@@ -157,8 +159,8 @@ export default function RegisterClient() {
                         <Input
                             name="confirmPassword"
                             type="password"
-                            placeholder="Confirm Password*"
-                            className="h-12 bg-[#F9F8FE] border-gray-200"
+                            placeholder={t('register_confirm_password_placeholder', {}, "Confirm Password*")}
+                            className="h-12 bg-background border-gray-200"
                             value={formData.confirmPassword}
                             onChange={handleChange}
                             required
@@ -167,8 +169,8 @@ export default function RegisterClient() {
                         <Input
                             name="email"
                             type="email"
-                            placeholder="Email*"
-                            className="h-12 bg-[#F9F8FE] border-gray-200"
+                            placeholder={t('register_email_placeholder', {}, "Email*")}
+                            className="h-12 bg-background border-gray-200"
                             value={formData.email}
                             onChange={handleChange}
                             required
@@ -177,8 +179,8 @@ export default function RegisterClient() {
                         <Input
                             name="phoneNumber"
                             type="tel"
-                            placeholder="Phone Number"
-                            className="h-12 bg-[#F9F8FE] border-gray-200"
+                            placeholder={t('register_phone_placeholder', {}, "Phone Number")}
+                            className="h-12 bg-background border-gray-200"
                             value={formData.phoneNumber}
                             onChange={handleChange}
                         />
@@ -187,16 +189,16 @@ export default function RegisterClient() {
                             <Input
                                 name="firstName"
                                 type="text"
-                                placeholder="First Name"
-                                className="h-12 bg-[#F9F8FE] border-gray-200"
+                                placeholder={t('register_first_name_placeholder', {}, "First Name")}
+                                className="h-12 bg-background border-gray-200"
                                 value={formData.firstName}
                                 onChange={handleChange}
                             />
                             <Input
                                 name="lastName"
                                 type="text"
-                                placeholder="Last Name"
-                                className="h-12 bg-[#F9F8FE] border-gray-200"
+                                placeholder={t('register_last_name_placeholder', {}, "Last Name")}
+                                className="h-12 bg-background border-gray-200"
                                 value={formData.lastName}
                                 onChange={handleChange}
                             />
@@ -204,21 +206,21 @@ export default function RegisterClient() {
 
                         <Button
                             disabled={loading}
-                            className="w-full h-12 bg-[#8AB0C3] hover:bg-[#7A9EB0] text-white font-semibold text-base"
+                            className="w-full h-12 bg-secondary hover:bg-secondary/90 text-white font-semibold text-base"
                         >
-                            {loading ? "Signing up..." : "Sign Up"}
+                            {loading ? t('register_signing_up', {}, "Signing up...") : t('register_sign_up', {}, "Sign Up")}
                         </Button>
 
                         <div className="text-center text-sm text-gray-600">
-                            Already have account?{" "}
-                            <Link href="/login" className="text-[#3E93B3] hover:underline font-medium">
-                                Sign In
+                            {t('register_already_account', {}, "Already have account?")}{" "}
+                            <Link href="/login" className="text-primary hover:underline font-medium">
+                                {t('login_sign_in', {}, "Sign In")}
                             </Link>
                         </div>
 
                         <div className="text-center text-sm text-gray-600">
                             <Link href="/" className="text-gray-400 hover:text-gray-600">
-                                Home &rarr;
+                                {t('register_home_link', {}, "Home")} &rarr;
                             </Link>
                         </div>
                     </form>

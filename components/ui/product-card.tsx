@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { StarRating } from "@/components/ui/star-rating";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/shared/providers/language.provider";
 
 // ===========================================
 // Types
@@ -65,6 +66,7 @@ export function ProductCard({
   onAddToCart,
   ...props
 }: ProductCardProps) {
+  const { t } = useLanguage();
   const router = useRouter();
 
   /** Chuyển hướng sang trang chi tiết khi nhấn nút hoặc nhấn vào thẻ */
@@ -116,7 +118,7 @@ export function ProductCard({
           onClick={onSelect}
         >
           {isSelected && <Check className="h-3.5 w-3.5" />}
-          <span className="sr-only">Chọn {title}</span>
+          <span className="sr-only">{t('select_product', { title })}</span>
         </button>
       )}
 
@@ -178,7 +180,7 @@ export function ProductCard({
                       variant="outline"
                       className="h-9 w-9 rounded-full border-primary/30 text-primary hover:bg-primary/10"
                       onClick={handleAddToCart}
-                      aria-label={`Thêm ${title} vào giỏ hàng`}
+                      aria-label={t('add_to_cart_aria', { title })}
                     >
                       <ShoppingCart className="h-4 w-4" />
                     </Button>
@@ -188,7 +190,7 @@ export function ProductCard({
                     className="bg-primary hover:bg-primary/90 text-white shadow-none rounded-full px-6 h-9 font-medium"
                     onClick={handleDetailsClick}
                   >
-                    Chi tiết
+                    {t('details', {}, "Details")}
                   </Button>
                 </div>
               )}

@@ -1,1 +1,1466 @@
-{"info":{"_postman_id":"6dcd9bc6-108a-4fac-81fc-84c122c1c357","name":"cart-service","schema":"https://schema.getpostman.com/json/collection/v2.1.0/collection.json","_exporter_id":"39122289","_collection_link":"https://go.postman.co/collection/34391158-6dcd9bc6-108a-4fac-81fc-84c122c1c357?source=collection_link"},"item":[{"name":"Add Product To Cart API","item":[{"name":"Add to Cart","request":{"auth":{"type":"bearer","bearer":[{"key":"token","value":"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuIiwiaWF0IjoxNzcxOTYyNDQwLCJleHAiOjE3NzE5NjMzNDAsInVzZXJJZCI6ImM3YzUzMjNmLTQ0NjgtNGYzZC05OTZiLTkwYzQ0OWNiZTFiYiIsInJvbGUiOiJDVVNUT01FUiJ9.uUaFXW7YAvrHzJ3XKki9V0OEiafqkDh-LBxpQkZKVSk","type":"string"}]},"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\r\n    \"productId\":\"1de877f6-6a70-4400-b305-c1a595da48c6\",\r\n    \"variantId\":\"VAR-0180-01\"\r\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"http://localhost:8083/api/carts/add-to-cart","protocol":"http","host":["localhost"],"port":"8083","path":["api","carts","add-to-cart"],"query":[{"key":"productId","value":"b6601489-0fc5-4d70-8299-48749998800f","type":"text","disabled":true},{"key":"variantId","value":"VAR-0197-01","type":"text","disabled":true}]}},"response":[{"name":"success","originalRequest":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\r\n    \"productId\":\"c25cfec4-7e1e-40b9-9a36-9c639a918512\",\r\n    \"variantId\":\"VAR-0197-01\"\r\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"http://localhost:8083/api/carts/add-to-cart","protocol":"http","host":["localhost"],"port":"8083","path":["api","carts","add-to-cart"],"query":[{"key":"productId","value":"b6601489-0fc5-4d70-8299-48749998800f","type":"text","disabled":true},{"key":"variantId","value":"VAR-0197-01","type":"text","disabled":true}]}},"status":"OK","code":200,"_postman_previewlanguage":null,"header":[{"key":"Vary","value":"Origin"},{"key":"Vary","value":"Access-Control-Request-Method"},{"key":"Vary","value":"Access-Control-Request-Headers"},{"key":"X-Content-Type-Options","value":"nosniff"},{"key":"X-XSS-Protection","value":"0"},{"key":"Cache-Control","value":"no-cache, no-store, max-age=0, must-revalidate"},{"key":"Pragma","value":"no-cache"},{"key":"Expires","value":"0"},{"key":"Content-Type","value":"application/json"},{"key":"Transfer-Encoding","value":"chunked"},{"key":"Date","value":"Tue, 24 Feb 2026 19:20:47 GMT"},{"key":"Keep-Alive","value":"timeout=60"},{"key":"Connection","value":"keep-alive"}],"cookie":[],"body":"{\n    \"status\": 200,\n    \"data\": {\n        \"productId\": \"c25cfec4-7e1e-40b9-9a36-9c639a918512\",\n        \"variantId\": \"VAR-0197-01\",\n        \"quantityInCart\": 1,\n        \"quantityInStock\": 36\n    },\n    \"message\": \"Add product to cart successfully!\"\n}"},{"name":"success","originalRequest":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\r\n    \"productId\":\"1de877f6-6a70-4400-b305-c1a595da48c6\",\r\n    \"variantId\":\"VAR-0180-01\"\r\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"http://localhost:8083/api/carts/add-to-cart","protocol":"http","host":["localhost"],"port":"8083","path":["api","carts","add-to-cart"],"query":[{"key":"productId","value":"b6601489-0fc5-4d70-8299-48749998800f","type":"text","disabled":true},{"key":"variantId","value":"VAR-0197-01","type":"text","disabled":true}]}},"status":"OK","code":200,"_postman_previewlanguage":null,"header":[{"key":"Vary","value":"Origin"},{"key":"Vary","value":"Access-Control-Request-Method"},{"key":"Vary","value":"Access-Control-Request-Headers"},{"key":"X-Content-Type-Options","value":"nosniff"},{"key":"X-XSS-Protection","value":"0"},{"key":"Cache-Control","value":"no-cache, no-store, max-age=0, must-revalidate"},{"key":"Pragma","value":"no-cache"},{"key":"Expires","value":"0"},{"key":"Content-Type","value":"application/json"},{"key":"Transfer-Encoding","value":"chunked"},{"key":"Date","value":"Tue, 24 Feb 2026 19:49:14 GMT"},{"key":"Keep-Alive","value":"timeout=60"},{"key":"Connection","value":"keep-alive"}],"cookie":[],"body":"{\n    \"status\": 200,\n    \"data\": {\n        \"cartItemId\": \"5e1742d0-3b3f-4d6e-8753-c0306d2e1526\",\n        \"productId\": \"1de877f6-6a70-4400-b305-c1a595da48c6\",\n        \"variantId\": \"VAR-0180-01\",\n        \"quantityInCart\": 1,\n        \"quantityInStock\": 8\n    },\n    \"message\": \"Add product to cart successfully!\"\n}"},{"name":"greater than in stock (Same to increase)","originalRequest":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\r\n    \"productId\":\"1de877f6-6a70-4400-b305-c1a595da48c6\",\r\n    \"variantId\":\"VAR-0180-01\"\r\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"http://localhost:8083/api/carts/add-to-cart","protocol":"http","host":["localhost"],"port":"8083","path":["api","carts","add-to-cart"],"query":[{"key":"productId","value":"b6601489-0fc5-4d70-8299-48749998800f","type":"text","disabled":true},{"key":"variantId","value":"VAR-0197-01","type":"text","disabled":true}]}},"status":"Bad Request","code":400,"_postman_previewlanguage":null,"header":[{"key":"Vary","value":"Origin"},{"key":"Vary","value":"Access-Control-Request-Method"},{"key":"Vary","value":"Access-Control-Request-Headers"},{"key":"X-Content-Type-Options","value":"nosniff"},{"key":"X-XSS-Protection","value":"0"},{"key":"Cache-Control","value":"no-cache, no-store, max-age=0, must-revalidate"},{"key":"Pragma","value":"no-cache"},{"key":"Expires","value":"0"},{"key":"Content-Type","value":"application/json"},{"key":"Transfer-Encoding","value":"chunked"},{"key":"Date","value":"Tue, 24 Feb 2026 19:53:01 GMT"},{"key":"Connection","value":"close"}],"cookie":[],"body":"{\n    \"status\": 400,\n    \"data\": null,\n    \"message\": \"Quantity in cart can not greater than quantity in stock!\"\n}"}]}]},{"name":"Change quantity of cart item","item":[{"name":"Increase","request":{"auth":{"type":"bearer","bearer":[{"key":"token","value":"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuIiwiaWF0IjoxNzcxOTYyNDQwLCJleHAiOjE3NzE5NjMzNDAsInVzZXJJZCI6ImM3YzUzMjNmLTQ0NjgtNGYzZC05OTZiLTkwYzQ0OWNiZTFiYiIsInJvbGUiOiJDVVNUT01FUiJ9.uUaFXW7YAvrHzJ3XKki9V0OEiafqkDh-LBxpQkZKVSk","type":"string"}]},"method":"PATCH","header":[{"key":"Content-Type","value":"application/json"}],"url":{"raw":"http://localhost:8083/api/cart-items/increase/3dcd30f7-1f4c-4afa-9ad8-48252793810e","protocol":"http","host":["localhost"],"port":"8083","path":["api","cart-items","increase","3dcd30f7-1f4c-4afa-9ad8-48252793810e"],"query":[{"key":"productId","value":"b6601489-0fc5-4d70-8299-48749998800f","type":"text","disabled":true},{"key":"variantId","value":"VAR-0197-01","type":"text","disabled":true}]}},"response":[{"name":"success","originalRequest":{"method":"PATCH","header":[{"key":"Content-Type","value":"application/json"}],"url":{"raw":"http://localhost:8083/api/cart-items/increase/3dcd30f7-1f4c-4afa-9ad8-48252793810e","protocol":"http","host":["localhost"],"port":"8083","path":["api","cart-items","increase","3dcd30f7-1f4c-4afa-9ad8-48252793810e"],"query":[{"key":"productId","value":"b6601489-0fc5-4d70-8299-48749998800f","type":"text","disabled":true},{"key":"variantId","value":"VAR-0197-01","type":"text","disabled":true}]}},"status":"OK","code":200,"_postman_previewlanguage":null,"header":[{"key":"Vary","value":"Origin"},{"key":"Vary","value":"Access-Control-Request-Method"},{"key":"Vary","value":"Access-Control-Request-Headers"},{"key":"X-Content-Type-Options","value":"nosniff"},{"key":"X-XSS-Protection","value":"0"},{"key":"Cache-Control","value":"no-cache, no-store, max-age=0, must-revalidate"},{"key":"Pragma","value":"no-cache"},{"key":"Expires","value":"0"},{"key":"Content-Type","value":"application/json"},{"key":"Transfer-Encoding","value":"chunked"},{"key":"Date","value":"Tue, 24 Feb 2026 19:51:08 GMT"},{"key":"Keep-Alive","value":"timeout=60"},{"key":"Connection","value":"keep-alive"}],"cookie":[],"body":"{\n    \"status\": 200,\n    \"data\": {\n        \"cartItemId\": \"3dcd30f7-1f4c-4afa-9ad8-48252793810e\",\n        \"quantityInCart\": 3,\n        \"quantityInStock\": 42\n    },\n    \"message\": \"increase cart item with id 3dcd30f7-1f4c-4afa-9ad8-48252793810e\"\n}"}]},{"name":"decrease","request":{"auth":{"type":"bearer","bearer":[{"key":"token","value":"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWUiLCJpYXQiOjE3NzE5NjMzOTcsImV4cCI6MTc3MTk2NDI5NywidXNlcklkIjoiZDg4OWFkMmYtYTBmZS00YmM3LWE0YzYtYWJiYTc1OThiZDZlIiwicm9sZSI6IkNVU1RPTUVSIn0._udP23NNbLZmYy19BYYwQ8ijaOlH3zo5oZZlWoBCUAo","type":"string"}]},"method":"PATCH","header":[{"key":"Content-Type","value":"application/json"}],"url":{"raw":"http://localhost:8083/api/cart-items/decrease/8216af47-db5c-44d4-bf11-19c05d51d68b","protocol":"http","host":["localhost"],"port":"8083","path":["api","cart-items","decrease","8216af47-db5c-44d4-bf11-19c05d51d68b"],"query":[{"key":"productId","value":"b6601489-0fc5-4d70-8299-48749998800f","type":"text","disabled":true},{"key":"variantId","value":"VAR-0197-01","type":"text","disabled":true}]}},"response":[{"name":"success (fixed missing cart item id fault)","originalRequest":{"method":"PATCH","header":[{"key":"Content-Type","value":"application/json"}],"url":{"raw":"http://localhost:8083/api/cart-items/decrease/8216af47-db5c-44d4-bf11-19c05d51d68b","protocol":"http","host":["localhost"],"port":"8083","path":["api","cart-items","decrease","8216af47-db5c-44d4-bf11-19c05d51d68b"],"query":[{"key":"productId","value":"b6601489-0fc5-4d70-8299-48749998800f","type":"text","disabled":true},{"key":"variantId","value":"VAR-0197-01","type":"text","disabled":true}]}},"status":"OK","code":200,"_postman_previewlanguage":null,"header":[{"key":"Vary","value":"Origin"},{"key":"Vary","value":"Access-Control-Request-Method"},{"key":"Vary","value":"Access-Control-Request-Headers"},{"key":"X-Content-Type-Options","value":"nosniff"},{"key":"X-XSS-Protection","value":"0"},{"key":"Cache-Control","value":"no-cache, no-store, max-age=0, must-revalidate"},{"key":"Pragma","value":"no-cache"},{"key":"Expires","value":"0"},{"key":"Content-Type","value":"application/json"},{"key":"Transfer-Encoding","value":"chunked"},{"key":"Date","value":"Tue, 24 Feb 2026 20:04:38 GMT"},{"key":"Keep-Alive","value":"timeout=60"},{"key":"Connection","value":"keep-alive"}],"cookie":[],"body":"{\n    \"status\": 200,\n    \"data\": {\n        \"cartItemId\": null,\n        \"quantityInCart\": 1,\n        \"quantityInStock\": 8\n    },\n    \"message\": \"descrease cart item with id 8216af47-db5c-44d4-bf11-19c05d51d68b\"\n}"}]},{"name":"delete","request":{"auth":{"type":"bearer","bearer":[{"key":"token","value":"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWUiLCJpYXQiOjE3NzE5NjMzOTcsImV4cCI6MTc3MTk2NDI5NywidXNlcklkIjoiZDg4OWFkMmYtYTBmZS00YmM3LWE0YzYtYWJiYTc1OThiZDZlIiwicm9sZSI6IkNVU1RPTUVSIn0._udP23NNbLZmYy19BYYwQ8ijaOlH3zo5oZZlWoBCUAo","type":"string"}]},"method":"DELETE","header":[{"key":"Content-Type","value":"application/json"}],"url":{"raw":"http://localhost:8083/api/cart-items/delete/8216af47-db5c-44d4-bf11-19c05d51d68b","protocol":"http","host":["localhost"],"port":"8083","path":["api","cart-items","delete","8216af47-db5c-44d4-bf11-19c05d51d68b"],"query":[{"key":"productId","value":"b6601489-0fc5-4d70-8299-48749998800f","type":"text","disabled":true},{"key":"variantId","value":"VAR-0197-01","type":"text","disabled":true}]}},"response":[{"name":"success","originalRequest":{"method":"DELETE","header":[{"key":"Content-Type","value":"application/json"}],"url":{"raw":"http://localhost:8083/api/cart-items/delete/8216af47-db5c-44d4-bf11-19c05d51d68b","protocol":"http","host":["localhost"],"port":"8083","path":["api","cart-items","delete","8216af47-db5c-44d4-bf11-19c05d51d68b"],"query":[{"key":"productId","value":"b6601489-0fc5-4d70-8299-48749998800f","type":"text","disabled":true},{"key":"variantId","value":"VAR-0197-01","type":"text","disabled":true}]}},"status":"OK","code":200,"_postman_previewlanguage":null,"header":[{"key":"Vary","value":"Origin"},{"key":"Vary","value":"Access-Control-Request-Method"},{"key":"Vary","value":"Access-Control-Request-Headers"},{"key":"X-Content-Type-Options","value":"nosniff"},{"key":"X-XSS-Protection","value":"0"},{"key":"Cache-Control","value":"no-cache, no-store, max-age=0, must-revalidate"},{"key":"Pragma","value":"no-cache"},{"key":"Expires","value":"0"},{"key":"Content-Type","value":"application/json"},{"key":"Transfer-Encoding","value":"chunked"},{"key":"Date","value":"Tue, 24 Feb 2026 20:08:29 GMT"},{"key":"Keep-Alive","value":"timeout=60"},{"key":"Connection","value":"keep-alive"}],"cookie":[],"body":"{\n    \"status\": 200,\n    \"data\": null,\n    \"message\": \"delete cart item with id 8216af47-db5c-44d4-bf11-19c05d51d68b\"\n}"}]}]},{"name":"Get Cart Detail","item":[{"name":"Get Cart Detail of a user","request":{"auth":{"type":"bearer","bearer":[{"key":"token","value":"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuIiwiaWF0IjoxNzcyMDA2NDQ4LCJleHAiOjE3NzIwMDczNDgsInVzZXJJZCI6IjBmM2RjZTAwLTI3MjQtNGY5Yy1hN2UzLTU2NDQ2YjJhM2Y2NCIsInJvbGUiOiJDVVNUT01FUiJ9.9U0lOWO5A5UnL44Ll_RNapcPkEFXAjQzlS1Qlq814iQ","type":"string"}]},"method":"GET","header":[{"key":"Content-Type","value":"application/json"}],"url":{"raw":"http://localhost:8083/api/carts","protocol":"http","host":["localhost"],"port":"8083","path":["api","carts"],"query":[{"key":"productId","value":"b6601489-0fc5-4d70-8299-48749998800f","type":"text","disabled":true},{"key":"variantId","value":"VAR-0197-01","type":"text","disabled":true}]}},"response":[{"name":"success","originalRequest":{"method":"GET","header":[{"key":"Content-Type","value":"application/json"}],"url":{"raw":"http://localhost:8083/api/carts","protocol":"http","host":["localhost"],"port":"8083","path":["api","carts"],"query":[{"key":"productId","value":"b6601489-0fc5-4d70-8299-48749998800f","type":"text","disabled":true},{"key":"variantId","value":"VAR-0197-01","type":"text","disabled":true}]}},"status":"OK","code":200,"_postman_previewlanguage":null,"header":[{"key":"Vary","value":"Origin"},{"key":"Vary","value":"Access-Control-Request-Method"},{"key":"Vary","value":"Access-Control-Request-Headers"},{"key":"X-Content-Type-Options","value":"nosniff"},{"key":"X-XSS-Protection","value":"0"},{"key":"Cache-Control","value":"no-cache, no-store, max-age=0, must-revalidate"},{"key":"Pragma","value":"no-cache"},{"key":"Expires","value":"0"},{"key":"Content-Type","value":"application/json"},{"key":"Transfer-Encoding","value":"chunked"},{"key":"Date","value":"Wed, 25 Feb 2026 08:01:27 GMT"},{"key":"Keep-Alive","value":"timeout=60"},{"key":"Connection","value":"keep-alive"}],"cookie":[],"body":"{\n    \"status\": 200,\n    \"data\": {\n        \"map\": {\n            \"cartId\": \"516f94cb-94f1-4f36-957f-4c06de07f680\",\n            \"customerId\": \"0f3dce00-2724-4f9c-a7e3-56446b2a3f64\",\n            \"updatedAt\": \"2026-02-25 08:00:42\",\n            \"cartItems\": [\n                {\n                    \"cartItemId\": \"5e18369e-60de-4a28-adbd-80199f292c06\",\n                    \"productId\": \"99dee145-d5f6-4eea-a4c3-7f5da82e23b8\",\n                    \"variantId\": \"VAR-0197-01\",\n                    \"addAt\": \"2026-02-25 08:01:03\",\n                    \"updateAt\": \"2026-02-25 08:01:03\",\n                    \"currentQuantity\": 1,\n                    \"name\": \"DYAZO USB 3.0 Type C Female to USB A Male Connector/Converter/Adapter Compatible for Samsung Galaxy Note s 20 10 Plus Ultra,Google Pixel 4 5 3 2 & Other Type-c Devices\",\n                    \"color\": \"Standard\",\n                    \"price\": 41700,\n                    \"priceAfterDiscount\": 39615,\n                    \"inStock\": 36,\n                    \"mainImage\": \"https://m.media-amazon.com/images/I/4111qlSCaKL._SY300_SX300_QL70_ML2_.jpg\"\n                }\n            ],\n            \"totalItems\": 1,\n            \"pageSize\": 1,\n            \"currentPage\": 0\n        },\n        \"empty\": false\n    },\n    \"message\": \"Cart retrieved successfully\"\n}"}]},{"name":"Get cart item by item id","request":{"auth":{"type":"bearer","bearer":[{"key":"token","value":"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuIiwiaWF0IjoxNzcyMDA2NDQ4LCJleHAiOjE3NzIwMDczNDgsInVzZXJJZCI6IjBmM2RjZTAwLTI3MjQtNGY5Yy1hN2UzLTU2NDQ2YjJhM2Y2NCIsInJvbGUiOiJDVVNUT01FUiJ9.9U0lOWO5A5UnL44Ll_RNapcPkEFXAjQzlS1Qlq814iQ","type":"string"}]},"method":"GET","header":[{"key":"Content-Type","value":"application/json"}],"url":{"raw":"http://localhost:8083/api/carts/item/5e18369e-60de-4a28-adbd-80199f292c06","protocol":"http","host":["localhost"],"port":"8083","path":["api","carts","item","5e18369e-60de-4a28-adbd-80199f292c06"],"query":[{"key":"productId","value":"b6601489-0fc5-4d70-8299-48749998800f","type":"text","disabled":true},{"key":"variantId","value":"VAR-0197-01","type":"text","disabled":true}]}},"response":[{"name":"success","originalRequest":{"method":"GET","header":[{"key":"Content-Type","value":"application/json"}],"url":{"raw":"http://localhost:8083/api/carts/item/5e18369e-60de-4a28-adbd-80199f292c06","protocol":"http","host":["localhost"],"port":"8083","path":["api","carts","item","5e18369e-60de-4a28-adbd-80199f292c06"],"query":[{"key":"productId","value":"b6601489-0fc5-4d70-8299-48749998800f","type":"text","disabled":true},{"key":"variantId","value":"VAR-0197-01","type":"text","disabled":true}]}},"status":"OK","code":200,"_postman_previewlanguage":null,"header":[{"key":"Vary","value":"Origin"},{"key":"Vary","value":"Access-Control-Request-Method"},{"key":"Vary","value":"Access-Control-Request-Headers"},{"key":"X-Content-Type-Options","value":"nosniff"},{"key":"X-XSS-Protection","value":"0"},{"key":"Cache-Control","value":"no-cache, no-store, max-age=0, must-revalidate"},{"key":"Pragma","value":"no-cache"},{"key":"Expires","value":"0"},{"key":"Content-Type","value":"application/json"},{"key":"Transfer-Encoding","value":"chunked"},{"key":"Date","value":"Wed, 25 Feb 2026 08:01:34 GMT"},{"key":"Keep-Alive","value":"timeout=60"},{"key":"Connection","value":"keep-alive"}],"cookie":[],"body":"{\n    \"status\": 200,\n    \"data\": {\n        \"cartItemId\": \"5e18369e-60de-4a28-adbd-80199f292c06\",\n        \"productId\": \"99dee145-d5f6-4eea-a4c3-7f5da82e23b8\",\n        \"variantId\": \"VAR-0197-01\",\n        \"addAt\": \"2026-02-25 08:01:03\",\n        \"updateAt\": \"2026-02-25 08:01:03\",\n        \"currentQuantity\": 1,\n        \"name\": \"DYAZO USB 3.0 Type C Female to USB A Male Connector/Converter/Adapter Compatible for Samsung Galaxy Note s 20 10 Plus Ultra,Google Pixel 4 5 3 2 & Other Type-c Devices\",\n        \"color\": \"Standard\",\n        \"price\": 41700,\n        \"priceAfterDiscount\": 39615,\n        \"inStock\": 36,\n        \"mainImage\": \"https://m.media-amazon.com/images/I/4111qlSCaKL._SY300_SX300_QL70_ML2_.jpg\"\n    },\n    \"message\": \"Cart item retrieved successfully\"\n}"}]},{"name":"Get Cart With Paging Cart Item","request":{"auth":{"type":"bearer","bearer":[{"key":"token","value":"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwN2syMiIsImlhdCI6MTc3MjAwOTYzMiwiZXhwIjoxNzcyMDEwNTMyLCJ1c2VySWQiOiI1MjlmZThlYi1iODE0LTQ2NTctYWZlOS02Y2U2ZWJhOWQ5MTUiLCJyb2xlIjoiQ1VTVE9NRVIifQ.1f_I6TfHCkfkLVD58572LuB_DBJcdnMz0OnCIBh8Fpk","type":"string"}]},"method":"GET","header":[],"url":{"raw":"http://localhost:8083/api/carts/with-items-paging?size=1","protocol":"http","host":["localhost"],"port":"8083","path":["api","carts","with-items-paging"],"query":[{"key":"page","value":null,"type":"text","disabled":true},{"key":"size","value":"1"},{"key":"sortDir","value":null,"type":"text","disabled":true},{"key":"sortBy","value":null,"type":"text","disabled":true}]}},"response":[{"name":"success","originalRequest":{"method":"GET","header":[],"url":{"raw":"http://localhost:8083/api/carts/with-items-paging?size=1","protocol":"http","host":["localhost"],"port":"8083","path":["api","carts","with-items-paging"],"query":[{"key":"page","value":null,"type":"text","disabled":true},{"key":"size","value":"1"},{"key":"sortDir","value":null,"type":"text","disabled":true},{"key":"sortBy","value":null,"type":"text","disabled":true}]}},"status":"OK","code":200,"_postman_previewlanguage":null,"header":[{"key":"Vary","value":"Origin"},{"key":"Vary","value":"Access-Control-Request-Method"},{"key":"Vary","value":"Access-Control-Request-Headers"},{"key":"X-Content-Type-Options","value":"nosniff"},{"key":"X-XSS-Protection","value":"0"},{"key":"Cache-Control","value":"no-cache, no-store, max-age=0, must-revalidate"},{"key":"Pragma","value":"no-cache"},{"key":"Expires","value":"0"},{"key":"Content-Type","value":"application/json"},{"key":"Transfer-Encoding","value":"chunked"},{"key":"Date","value":"Wed, 25 Feb 2026 08:57:21 GMT"},{"key":"Keep-Alive","value":"timeout=60"},{"key":"Connection","value":"keep-alive"}],"cookie":[],"body":"{\n    \"status\": 200,\n    \"data\": {\n        \"map\": {\n            \"cartId\": \"bf491440-b6db-4abf-8b0f-8b68aec33891\",\n            \"customerId\": \"529fe8eb-b814-4657-afe9-6ce6eba9d915\",\n            \"updatedAt\": \"2026-02-25 08:53:44\",\n            \"cartItems\": [\n                {\n                    \"cartItemId\": \"754f4bb9-42a1-4180-8428-590befbd4699\",\n                    \"productId\": \"2f0438bc-b828-4fa8-98f0-7bd8d95ab839\",\n                    \"variantId\": \"VAR-0183-01\",\n                    \"addAt\": \"2026-02-25 08:55:44\",\n                    \"updateAt\": \"2026-02-25 08:55:44\",\n                    \"currentQuantity\": 1,\n                    \"name\": \"boAt Type C A325 Tangle-free, Sturdy Type C Cable with 3A Rapid Charging & 480mbps Data Transmission(Black)\",\n                    \"color\": \"Standard\",\n                    \"price\": 59700,\n                    \"priceAfterDiscount\": 56715,\n                    \"inStock\": 24,\n                    \"mainImage\": \"https://m.media-amazon.com/images/W/WEBP_402378-T1/images/I/41xwPQLxTML._SX300_SY300_QL70_FMwebp_.jpg\"\n                }\n            ],\n            \"totalItems\": 2,\n            \"pageSize\": 1,\n            \"currentPage\": 0\n        },\n        \"empty\": false\n    },\n    \"message\": \"Cart with items retrieved successfully\"\n}"}]}]},{"name":"Get Price","item":[{"name":"Get Price","request":{"auth":{"type":"bearer","bearer":[{"key":"token","value":"eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwN2syMiIsImlhdCI6MTc3MjAzNjQyOSwiZXhwIjoxNzcyMDM3MzI5LCJ1c2VySWQiOiI2MGE3NWQ0ZC03ZDc5LTQzZjktYjZlYy0xZTUxMmViZDMxZDQiLCJyb2xlIjoiQ1VTVE9NRVIifQ.oDTqXNBBGrH4S5i0hIATdNjpuIsX9yWx3Rf6DuapOxU","type":"string"}]},"method":"POST","header":[],"body":{"mode":"raw","raw":"{\r\n    \"includeDiscount\": true,\r\n    \"userDiscountId\":\"FREESHIP15-US-001\",\r\n    \"cartItemIds\": [\"3bfa654b-6fb8-41be-bd1b-4e632d2c7e07\"]\r\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"http://localhost:8083/api/carts/price","protocol":"http","host":["localhost"],"port":"8083","path":["api","carts","price"]}},"response":[{"name":"success","originalRequest":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\r\n    \"includeDiscount\": false,\r\n    \"cartItemIds\": [\r\n        \"0ca73ba6-b575-4128-a3ce-abb038e2940c\"\r\n    ]\r\n}","options":{"raw":{"language":"json"}}},"url":{"raw":"http://localhost:8083/api/carts/price","protocol":"http","host":["localhost"],"port":"8083","path":["api","carts","price"],"query":[{"key":"productId","value":"b6601489-0fc5-4d70-8299-48749998800f","type":"text","disabled":true},{"key":"variantId","value":"VAR-0197-01","type":"text","disabled":true}]}},"status":"OK","code":200,"_postman_previewlanguage":null,"header":[{"key":"Vary","value":"Origin"},{"key":"Vary","value":"Access-Control-Request-Method"},{"key":"Vary","value":"Access-Control-Request-Headers"},{"key":"X-Content-Type-Options","value":"nosniff"},{"key":"X-XSS-Protection","value":"0"},{"key":"Cache-Control","value":"no-cache, no-store, max-age=0, must-revalidate"},{"key":"Pragma","value":"no-cache"},{"key":"Expires","value":"0"},{"key":"Content-Type","value":"application/json"},{"key":"Transfer-Encoding","value":"chunked"},{"key":"Date","value":"Wed, 25 Feb 2026 10:17:37 GMT"},{"key":"Keep-Alive","value":"timeout=60"},{"key":"Connection","value":"keep-alive"}],"cookie":[],"body":"{\n    \"status\": 200,\n    \"data\": 79230,\n    \"message\": \"Total price calculated successfully\"\n}"}]}]}]}
+{
+  "info": {
+    "_postman_id": "6dcd9bc6-108a-4fac-81fc-84c122c1c357",
+    "name": "cart-service",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "34391158",
+    "_collection_link": "https://go.postman.co/collection/34391158-6dcd9bc6-108a-4fac-81fc-84c122c1c357?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Add Product To Cart API",
+      "item": [
+        {
+          "name": "Add to Cart",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuIiwiaWF0IjoxNzcxOTYyNDQwLCJleHAiOjE3NzE5NjMzNDAsInVzZXJJZCI6ImM3YzUzMjNmLTQ0NjgtNGYzZC05OTZiLTkwYzQ0OWNiZTFiYiIsInJvbGUiOiJDVVNUT01FUiJ9.uUaFXW7YAvrHzJ3XKki9V0OEiafqkDh-LBxpQkZKVSk",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"productId\":\"4c21e04e-274e-4ec0-9255-edb8026f53ea\",\r\n    \"variantId\":\"VAR-0197-01\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8083/api/carts/add-to-cart",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8083",
+              "path": [
+                "api",
+                "carts",
+                "add-to-cart"
+              ],
+              "query": [
+                {
+                  "key": "productId",
+                  "value": "b6601489-0fc5-4d70-8299-48749998800f",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "variantId",
+                  "value": "VAR-0197-01",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"productId\":\"c25cfec4-7e1e-40b9-9a36-9c639a918512\",\r\n    \"variantId\":\"VAR-0197-01\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8083/api/carts/add-to-cart",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8083",
+                  "path": [
+                    "api",
+                    "carts",
+                    "add-to-cart"
+                  ],
+                  "query": [
+                    {
+                      "key": "productId",
+                      "value": "b6601489-0fc5-4d70-8299-48749998800f",
+                      "type": "text",
+                      "disabled": true
+                    },
+                    {
+                      "key": "variantId",
+                      "value": "VAR-0197-01",
+                      "type": "text",
+                      "disabled": true
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Tue, 24 Feb 2026 19:20:47 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": 200,\n    \"data\": {\n        \"productId\": \"c25cfec4-7e1e-40b9-9a36-9c639a918512\",\n        \"variantId\": \"VAR-0197-01\",\n        \"quantityInCart\": 1,\n        \"quantityInStock\": 36\n    },\n    \"message\": \"Add product to cart successfully!\"\n}"
+            },
+            {
+              "name": "success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"productId\":\"1de877f6-6a70-4400-b305-c1a595da48c6\",\r\n    \"variantId\":\"VAR-0180-01\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8083/api/carts/add-to-cart",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8083",
+                  "path": [
+                    "api",
+                    "carts",
+                    "add-to-cart"
+                  ],
+                  "query": [
+                    {
+                      "key": "productId",
+                      "value": "b6601489-0fc5-4d70-8299-48749998800f",
+                      "type": "text",
+                      "disabled": true
+                    },
+                    {
+                      "key": "variantId",
+                      "value": "VAR-0197-01",
+                      "type": "text",
+                      "disabled": true
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Tue, 24 Feb 2026 19:49:14 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": 200,\n    \"data\": {\n        \"cartItemId\": \"5e1742d0-3b3f-4d6e-8753-c0306d2e1526\",\n        \"productId\": \"1de877f6-6a70-4400-b305-c1a595da48c6\",\n        \"variantId\": \"VAR-0180-01\",\n        \"quantityInCart\": 1,\n        \"quantityInStock\": 8\n    },\n    \"message\": \"Add product to cart successfully!\"\n}"
+            },
+            {
+              "name": "greater than in stock (Same to increase)",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"productId\":\"1de877f6-6a70-4400-b305-c1a595da48c6\",\r\n    \"variantId\":\"VAR-0180-01\"\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8083/api/carts/add-to-cart",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8083",
+                  "path": [
+                    "api",
+                    "carts",
+                    "add-to-cart"
+                  ],
+                  "query": [
+                    {
+                      "key": "productId",
+                      "value": "b6601489-0fc5-4d70-8299-48749998800f",
+                      "type": "text",
+                      "disabled": true
+                    },
+                    {
+                      "key": "variantId",
+                      "value": "VAR-0197-01",
+                      "type": "text",
+                      "disabled": true
+                    }
+                  ]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Tue, 24 Feb 2026 19:53:01 GMT"
+                },
+                {
+                  "key": "Connection",
+                  "value": "close"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": 400,\n    \"data\": null,\n    \"message\": \"Quantity in cart can not greater than quantity in stock!\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Change quantity of cart item",
+      "item": [
+        {
+          "name": "Increase",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuIiwiaWF0IjoxNzcxOTYyNDQwLCJleHAiOjE3NzE5NjMzNDAsInVzZXJJZCI6ImM3YzUzMjNmLTQ0NjgtNGYzZC05OTZiLTkwYzQ0OWNiZTFiYiIsInJvbGUiOiJDVVNUT01FUiJ9.uUaFXW7YAvrHzJ3XKki9V0OEiafqkDh-LBxpQkZKVSk",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8083/api/cart-items/increase/3dcd30f7-1f4c-4afa-9ad8-48252793810e",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8083",
+              "path": [
+                "api",
+                "cart-items",
+                "increase",
+                "3dcd30f7-1f4c-4afa-9ad8-48252793810e"
+              ],
+              "query": [
+                {
+                  "key": "productId",
+                  "value": "b6601489-0fc5-4d70-8299-48749998800f",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "variantId",
+                  "value": "VAR-0197-01",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "success",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "http://localhost:8083/api/cart-items/increase/3dcd30f7-1f4c-4afa-9ad8-48252793810e",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8083",
+                  "path": [
+                    "api",
+                    "cart-items",
+                    "increase",
+                    "3dcd30f7-1f4c-4afa-9ad8-48252793810e"
+                  ],
+                  "query": [
+                    {
+                      "key": "productId",
+                      "value": "b6601489-0fc5-4d70-8299-48749998800f",
+                      "type": "text",
+                      "disabled": true
+                    },
+                    {
+                      "key": "variantId",
+                      "value": "VAR-0197-01",
+                      "type": "text",
+                      "disabled": true
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Tue, 24 Feb 2026 19:51:08 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": 200,\n    \"data\": {\n        \"cartItemId\": \"3dcd30f7-1f4c-4afa-9ad8-48252793810e\",\n        \"quantityInCart\": 3,\n        \"quantityInStock\": 42\n    },\n    \"message\": \"increase cart item with id 3dcd30f7-1f4c-4afa-9ad8-48252793810e\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "decrease",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWUiLCJpYXQiOjE3NzE5NjMzOTcsImV4cCI6MTc3MTk2NDI5NywidXNlcklkIjoiZDg4OWFkMmYtYTBmZS00YmM3LWE0YzYtYWJiYTc1OThiZDZlIiwicm9sZSI6IkNVU1RPTUVSIn0._udP23NNbLZmYy19BYYwQ8ijaOlH3zo5oZZlWoBCUAo",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8083/api/cart-items/decrease/8216af47-db5c-44d4-bf11-19c05d51d68b",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8083",
+              "path": [
+                "api",
+                "cart-items",
+                "decrease",
+                "8216af47-db5c-44d4-bf11-19c05d51d68b"
+              ],
+              "query": [
+                {
+                  "key": "productId",
+                  "value": "b6601489-0fc5-4d70-8299-48749998800f",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "variantId",
+                  "value": "VAR-0197-01",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "success (fixed missing cart item id fault)",
+              "originalRequest": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "http://localhost:8083/api/cart-items/decrease/8216af47-db5c-44d4-bf11-19c05d51d68b",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8083",
+                  "path": [
+                    "api",
+                    "cart-items",
+                    "decrease",
+                    "8216af47-db5c-44d4-bf11-19c05d51d68b"
+                  ],
+                  "query": [
+                    {
+                      "key": "productId",
+                      "value": "b6601489-0fc5-4d70-8299-48749998800f",
+                      "type": "text",
+                      "disabled": true
+                    },
+                    {
+                      "key": "variantId",
+                      "value": "VAR-0197-01",
+                      "type": "text",
+                      "disabled": true
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Tue, 24 Feb 2026 20:04:38 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": 200,\n    \"data\": {\n        \"cartItemId\": null,\n        \"quantityInCart\": 1,\n        \"quantityInStock\": 8\n    },\n    \"message\": \"descrease cart item with id 8216af47-db5c-44d4-bf11-19c05d51d68b\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "delete",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWUiLCJpYXQiOjE3NzE5NjMzOTcsImV4cCI6MTc3MTk2NDI5NywidXNlcklkIjoiZDg4OWFkMmYtYTBmZS00YmM3LWE0YzYtYWJiYTc1OThiZDZlIiwicm9sZSI6IkNVU1RPTUVSIn0._udP23NNbLZmYy19BYYwQ8ijaOlH3zo5oZZlWoBCUAo",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8083/api/cart-items/delete/8216af47-db5c-44d4-bf11-19c05d51d68b",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8083",
+              "path": [
+                "api",
+                "cart-items",
+                "delete",
+                "8216af47-db5c-44d4-bf11-19c05d51d68b"
+              ],
+              "query": [
+                {
+                  "key": "productId",
+                  "value": "b6601489-0fc5-4d70-8299-48749998800f",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "variantId",
+                  "value": "VAR-0197-01",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "success",
+              "originalRequest": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "http://localhost:8083/api/cart-items/delete/8216af47-db5c-44d4-bf11-19c05d51d68b",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8083",
+                  "path": [
+                    "api",
+                    "cart-items",
+                    "delete",
+                    "8216af47-db5c-44d4-bf11-19c05d51d68b"
+                  ],
+                  "query": [
+                    {
+                      "key": "productId",
+                      "value": "b6601489-0fc5-4d70-8299-48749998800f",
+                      "type": "text",
+                      "disabled": true
+                    },
+                    {
+                      "key": "variantId",
+                      "value": "VAR-0197-01",
+                      "type": "text",
+                      "disabled": true
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Tue, 24 Feb 2026 20:08:29 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": 200,\n    \"data\": null,\n    \"message\": \"delete cart item with id 8216af47-db5c-44d4-bf11-19c05d51d68b\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Get Cart Detail",
+      "item": [
+        {
+          "name": "Get Cart Detail of a user",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuIiwiaWF0IjoxNzcyMDA2NDQ4LCJleHAiOjE3NzIwMDczNDgsInVzZXJJZCI6IjBmM2RjZTAwLTI3MjQtNGY5Yy1hN2UzLTU2NDQ2YjJhM2Y2NCIsInJvbGUiOiJDVVNUT01FUiJ9.9U0lOWO5A5UnL44Ll_RNapcPkEFXAjQzlS1Qlq814iQ",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8083/api/carts",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8083",
+              "path": [
+                "api",
+                "carts"
+              ],
+              "query": [
+                {
+                  "key": "productId",
+                  "value": "b6601489-0fc5-4d70-8299-48749998800f",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "variantId",
+                  "value": "VAR-0197-01",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "http://localhost:8083/api/carts",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8083",
+                  "path": [
+                    "api",
+                    "carts"
+                  ],
+                  "query": [
+                    {
+                      "key": "productId",
+                      "value": "b6601489-0fc5-4d70-8299-48749998800f",
+                      "type": "text",
+                      "disabled": true
+                    },
+                    {
+                      "key": "variantId",
+                      "value": "VAR-0197-01",
+                      "type": "text",
+                      "disabled": true
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Wed, 25 Feb 2026 08:01:27 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": 200,\n    \"data\": {\n        \"map\": {\n            \"cartId\": \"516f94cb-94f1-4f36-957f-4c06de07f680\",\n            \"customerId\": \"0f3dce00-2724-4f9c-a7e3-56446b2a3f64\",\n            \"updatedAt\": \"2026-02-25 08:00:42\",\n            \"cartItems\": [\n                {\n                    \"cartItemId\": \"5e18369e-60de-4a28-adbd-80199f292c06\",\n                    \"productId\": \"99dee145-d5f6-4eea-a4c3-7f5da82e23b8\",\n                    \"variantId\": \"VAR-0197-01\",\n                    \"addAt\": \"2026-02-25 08:01:03\",\n                    \"updateAt\": \"2026-02-25 08:01:03\",\n                    \"currentQuantity\": 1,\n                    \"name\": \"DYAZO USB 3.0 Type C Female to USB A Male Connector/Converter/Adapter Compatible for Samsung Galaxy Note s 20 10 Plus Ultra,Google Pixel 4 5 3 2 & Other Type-c Devices\",\n                    \"color\": \"Standard\",\n                    \"price\": 41700,\n                    \"priceAfterDiscount\": 39615,\n                    \"inStock\": 36,\n                    \"mainImage\": \"https://m.media-amazon.com/images/I/4111qlSCaKL._SY300_SX300_QL70_ML2_.jpg\"\n                }\n            ],\n            \"totalItems\": 1,\n            \"pageSize\": 1,\n            \"currentPage\": 0\n        },\n        \"empty\": false\n    },\n    \"message\": \"Cart retrieved successfully\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get cart item by item id",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuIiwiaWF0IjoxNzcyMDA2NDQ4LCJleHAiOjE3NzIwMDczNDgsInVzZXJJZCI6IjBmM2RjZTAwLTI3MjQtNGY5Yy1hN2UzLTU2NDQ2YjJhM2Y2NCIsInJvbGUiOiJDVVNUT01FUiJ9.9U0lOWO5A5UnL44Ll_RNapcPkEFXAjQzlS1Qlq814iQ",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:8083/api/carts/item/5e18369e-60de-4a28-adbd-80199f292c06",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8083",
+              "path": [
+                "api",
+                "carts",
+                "item",
+                "5e18369e-60de-4a28-adbd-80199f292c06"
+              ],
+              "query": [
+                {
+                  "key": "productId",
+                  "value": "b6601489-0fc5-4d70-8299-48749998800f",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "variantId",
+                  "value": "VAR-0197-01",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "http://localhost:8083/api/carts/item/5e18369e-60de-4a28-adbd-80199f292c06",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8083",
+                  "path": [
+                    "api",
+                    "carts",
+                    "item",
+                    "5e18369e-60de-4a28-adbd-80199f292c06"
+                  ],
+                  "query": [
+                    {
+                      "key": "productId",
+                      "value": "b6601489-0fc5-4d70-8299-48749998800f",
+                      "type": "text",
+                      "disabled": true
+                    },
+                    {
+                      "key": "variantId",
+                      "value": "VAR-0197-01",
+                      "type": "text",
+                      "disabled": true
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Wed, 25 Feb 2026 08:01:34 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": 200,\n    \"data\": {\n        \"cartItemId\": \"5e18369e-60de-4a28-adbd-80199f292c06\",\n        \"productId\": \"99dee145-d5f6-4eea-a4c3-7f5da82e23b8\",\n        \"variantId\": \"VAR-0197-01\",\n        \"addAt\": \"2026-02-25 08:01:03\",\n        \"updateAt\": \"2026-02-25 08:01:03\",\n        \"currentQuantity\": 1,\n        \"name\": \"DYAZO USB 3.0 Type C Female to USB A Male Connector/Converter/Adapter Compatible for Samsung Galaxy Note s 20 10 Plus Ultra,Google Pixel 4 5 3 2 & Other Type-c Devices\",\n        \"color\": \"Standard\",\n        \"price\": 41700,\n        \"priceAfterDiscount\": 39615,\n        \"inStock\": 36,\n        \"mainImage\": \"https://m.media-amazon.com/images/I/4111qlSCaKL._SY300_SX300_QL70_ML2_.jpg\"\n    },\n    \"message\": \"Cart item retrieved successfully\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Cart With Paging Cart Item",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwN2syMiIsImlhdCI6MTc3MjAwOTYzMiwiZXhwIjoxNzcyMDEwNTMyLCJ1c2VySWQiOiI1MjlmZThlYi1iODE0LTQ2NTctYWZlOS02Y2U2ZWJhOWQ5MTUiLCJyb2xlIjoiQ1VTVE9NRVIifQ.1f_I6TfHCkfkLVD58572LuB_DBJcdnMz0OnCIBh8Fpk",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8083/api/carts/with-items-paging?size=1",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8083",
+              "path": [
+                "api",
+                "carts",
+                "with-items-paging"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": null,
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "size",
+                  "value": "1"
+                },
+                {
+                  "key": "sortDir",
+                  "value": null,
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "sortBy",
+                  "value": null,
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "success",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "http://localhost:8083/api/carts/with-items-paging?size=1",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8083",
+                  "path": [
+                    "api",
+                    "carts",
+                    "with-items-paging"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": null,
+                      "type": "text",
+                      "disabled": true
+                    },
+                    {
+                      "key": "size",
+                      "value": "1"
+                    },
+                    {
+                      "key": "sortDir",
+                      "value": null,
+                      "type": "text",
+                      "disabled": true
+                    },
+                    {
+                      "key": "sortBy",
+                      "value": null,
+                      "type": "text",
+                      "disabled": true
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Wed, 25 Feb 2026 08:57:21 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": 200,\n    \"data\": {\n        \"map\": {\n            \"cartId\": \"bf491440-b6db-4abf-8b0f-8b68aec33891\",\n            \"customerId\": \"529fe8eb-b814-4657-afe9-6ce6eba9d915\",\n            \"updatedAt\": \"2026-02-25 08:53:44\",\n            \"cartItems\": [\n                {\n                    \"cartItemId\": \"754f4bb9-42a1-4180-8428-590befbd4699\",\n                    \"productId\": \"2f0438bc-b828-4fa8-98f0-7bd8d95ab839\",\n                    \"variantId\": \"VAR-0183-01\",\n                    \"addAt\": \"2026-02-25 08:55:44\",\n                    \"updateAt\": \"2026-02-25 08:55:44\",\n                    \"currentQuantity\": 1,\n                    \"name\": \"boAt Type C A325 Tangle-free, Sturdy Type C Cable with 3A Rapid Charging & 480mbps Data Transmission(Black)\",\n                    \"color\": \"Standard\",\n                    \"price\": 59700,\n                    \"priceAfterDiscount\": 56715,\n                    \"inStock\": 24,\n                    \"mainImage\": \"https://m.media-amazon.com/images/W/WEBP_402378-T1/images/I/41xwPQLxTML._SX300_SY300_QL70_FMwebp_.jpg\"\n                }\n            ],\n            \"totalItems\": 2,\n            \"pageSize\": 1,\n            \"currentPage\": 0\n        },\n        \"empty\": false\n    },\n    \"message\": \"Cart with items retrieved successfully\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Get Price",
+      "item": [
+        {
+          "name": "Get Price",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJjaGkubmd1eWVuMjQwN2syMiIsImlhdCI6MTc3MjAzNjQyOSwiZXhwIjoxNzcyMDM3MzI5LCJ1c2VySWQiOiI2MGE3NWQ0ZC03ZDc5LTQzZjktYjZlYy0xZTUxMmViZDMxZDQiLCJyb2xlIjoiQ1VTVE9NRVIifQ.oDTqXNBBGrH4S5i0hIATdNjpuIsX9yWx3Rf6DuapOxU",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"includeDiscount\": true,\r\n    \"userDiscountId\":\"FREESHIP15-US-001\",\r\n    \"cartItemIds\": [\"3bfa654b-6fb8-41be-bd1b-4e632d2c7e07\"]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8083/api/carts/price",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8083",
+              "path": [
+                "api",
+                "carts",
+                "price"
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\r\n    \"includeDiscount\": false,\r\n    \"cartItemIds\": [\r\n        \"0ca73ba6-b575-4128-a3ce-abb038e2940c\"\r\n    ]\r\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "http://localhost:8083/api/carts/price",
+                  "protocol": "http",
+                  "host": [
+                    "localhost"
+                  ],
+                  "port": "8083",
+                  "path": [
+                    "api",
+                    "carts",
+                    "price"
+                  ],
+                  "query": [
+                    {
+                      "key": "productId",
+                      "value": "b6601489-0fc5-4d70-8299-48749998800f",
+                      "type": "text",
+                      "disabled": true
+                    },
+                    {
+                      "key": "variantId",
+                      "value": "VAR-0197-01",
+                      "type": "text",
+                      "disabled": true
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": null,
+              "header": [
+                {
+                  "key": "Vary",
+                  "value": "Origin"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Method"
+                },
+                {
+                  "key": "Vary",
+                  "value": "Access-Control-Request-Headers"
+                },
+                {
+                  "key": "X-Content-Type-Options",
+                  "value": "nosniff"
+                },
+                {
+                  "key": "X-XSS-Protection",
+                  "value": "0"
+                },
+                {
+                  "key": "Cache-Control",
+                  "value": "no-cache, no-store, max-age=0, must-revalidate"
+                },
+                {
+                  "key": "Pragma",
+                  "value": "no-cache"
+                },
+                {
+                  "key": "Expires",
+                  "value": "0"
+                },
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                },
+                {
+                  "key": "Transfer-Encoding",
+                  "value": "chunked"
+                },
+                {
+                  "key": "Date",
+                  "value": "Wed, 25 Feb 2026 10:17:37 GMT"
+                },
+                {
+                  "key": "Keep-Alive",
+                  "value": "timeout=60"
+                },
+                {
+                  "key": "Connection",
+                  "value": "keep-alive"
+                }
+              ],
+              "cookie": [],
+              "body": "{\n    \"status\": 200,\n    \"data\": 79230,\n    \"message\": \"Total price calculated successfully\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

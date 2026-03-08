@@ -188,8 +188,8 @@ export const RegisterResponseSchema = z.object({
     username: z.string(),
     phoneNumber: z.string().nullable().optional(),
     email: z.string(),
-    firstName: z.string().optional(),
-    lastName: z.string().optional(),
+    firstName: z.string().nullable().optional(),
+    lastName: z.string().nullable().optional(),
     role: z.string(),
     status: z.string(),
     createdAt: z.string(),
@@ -200,14 +200,20 @@ export const RegisterResponseSchema = z.object({
 });
 
 export const LoginResponseSchema = z.object({
-  status: z.number(),
+  status: z.number().optional(), // Match non-standard backend
   message: z.string(),
   data: z.object({
-    accessToken: z.string(),
+    accessToken: z.string().optional(),
+    token: z.string().optional(), // Matches Google Login response in Postman
     refreshToken: z.string(),
     userId: z.union([z.string(), z.number()]),
-  }),
+  }).transform(val => ({
+    accessToken: val.accessToken || val.token || '',
+    refreshToken: val.refreshToken,
+    userId: val.userId,
+  })),
 });
+
 
 export type LoginResponse = z.infer<typeof LoginResponseSchema>['data'];
 
@@ -241,8 +247,8 @@ export const RefreshTokenResponseSchema = LoginResponseSchema;
 export const UserProfileSchema = z.object({
   userId: z.union([z.string(), z.number()]),
   username: z.string(),
-  firstName: z.string(),
-  lastName: z.string(),
+  firstName: z.string().nullable().optional(),
+  lastName: z.string().nullable().optional(),
   email: z.string(),
   phoneNumber: z.string().nullable().optional(),
   imageUrl: z.string().nullable().optional(),
@@ -319,7 +325,7 @@ export const AddToCartResponseSchema = z.object({
   status: z.number(),
   message: z.string(),
   data: z.object({
-    cartItemId: z.string(),
+    cartItemId: z.string().optional(),
     productId: z.string(),
     variantId: z.string(),
     quantityInCart: z.number().int().min(1),
@@ -333,7 +339,7 @@ export const CartItemActionResponseSchema = z.object({
   status: z.number(),
   message: z.string(),
   data: z.object({
-    cartItemId: z.string(),
+    cartItemId: z.string().nullable(),
     quantityInCart: z.number().int().min(1),
     quantityInStock: z.number().int().min(0),
   }),
