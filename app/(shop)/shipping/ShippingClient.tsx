@@ -3,7 +3,7 @@
 import { ArrowLeft, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { PaymentMethodList } from "@/components/features/checkout/PaymentMethodList";
@@ -19,31 +19,16 @@ import {
     type CheckoutOrderItem,
 } from "@/lib/checkout-flow";
 import {
-    useCartPriceMutation,
+    useCartPriceQueryState,
     useCartQuery,
     useRemoveCartItemMutation,
 } from "@/presentation/hooks";
 import { useLanguage } from "@/shared/providers/language.provider";
 
-/**
- * Hàm hỗ trợ định dạng địa chỉ thành chuỗi dễ đọc.
- * 
- * @param address - Thông tin địa chỉ giao hàng
- * @returns Chuỗi địa chỉ đã được kết hợp
- */
 function getAddressDisplay(address: CheckoutAddress) {
     return `${address.line}, ${address.ward}, ${address.city}, ${address.province}`;
 }
 
-/**
- * Giao diện Thanh toán & Vận chuyển (Shipping & Checkout Client)
- * 
- * Hiển thị màn hình cho phép người dùng:
- * - Chọn địa chỉ giao hàng.
- * - Xem lại danh sách sản phẩm chuẩn bị thanh toán.
- * - Chọn phương thức thanh toán.
- * - Thực hiện đặt hàng và điều hướng tới trang kết quả.
- */
 export default function ShippingClient() {
     const { t, locale } = useLanguage();
     const currentLocale = locale === 'vi' ? 'vi-VN' : 'en-US';
@@ -56,7 +41,6 @@ export default function ShippingClient() {
     const [addresses] = useState<CheckoutAddress[]>(() => getCheckoutAddresses());
     const { data: cart, isLoading, isError, error: cartError, refetch } = useCartQuery();
     const removeMutation = useRemoveCartItemMutation();
-    const { mutate: calculatePrice, data: calculatedPrice } = useCartPriceMutation();
 
     const selectedIds = useMemo(
         () => (selectedQuery ? selectedQuery.split(",").filter(Boolean) : []),
@@ -71,6 +55,11 @@ export default function ShippingClient() {
                 : allCartItems,
         [allCartItems, selectedIds]
     );
+    const selectedCartItemIds = useMemo(
+        () => selectedCartItems.map((item) => item.cartItemId),
+        [selectedCartItems]
+    );
+    const priceQuery = useCartPriceQueryState(selectedCartItemIds);
 
     const activeAddress = useMemo(() => {
         if (addressId) {
@@ -90,16 +79,7 @@ export default function ShippingClient() {
         [selectedCartItems]
     );
 
-    useEffect(() => {
-        const cartItemIds = selectedCartItems.map((item) => item.cartItemId);
-        if (cartItemIds.length === 0) return;
-        calculatePrice({
-            includeDiscount: false,
-            cartItemIds,
-        });
-    }, [selectedCartItems, calculatePrice]);
-
-    const subtotal = calculatedPrice ?? localSubtotal;
+    const subtotal = priceQuery.data ?? localSubtotal;
     const shipping = 0;
     const total = subtotal + shipping;
 
@@ -164,7 +144,6 @@ export default function ShippingClient() {
     }
 
     if (isError) {
-        // if the cart query threw a 404, the user probably has no cart, redirect to cart page
         if (
             isAppError(cartError) &&
             cartError.statusCode === 404
@@ -307,6 +286,7 @@ export default function ShippingClient() {
                             <Button
                                 type="button"
                                 onClick={handlePlaceOrder}
+                                disabled={priceQuery.isFetching || removeMutation.isPending}
                                 className="w-64 h-12 bg-[#8AB0C3] hover:bg-[#7A9EB0] text-white font-semibold text-base"
                             >
                                 {t('place_order', {}, "Place order")}

@@ -308,7 +308,7 @@ export function ProductListView() {
                                             { productId: product.productId, variantId },
                                             {
                                                 onSuccess: () => toast.success(t('added_to_cart', {}, "Added to cart")),
-                                                onError: (err: any) => {
+                                                onError: (err: { statusCode?: number }) => {
                                                     if (err?.statusCode === 401 || err?.statusCode === 403) {
                                                         toast.error(t('login_required_action', {}, "Please login to perform this action."));
                                                     } else {
@@ -370,3 +370,4 @@ export function ProductListView() {
         </div>
     );
 }
+

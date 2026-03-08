@@ -1,20 +1,13 @@
-/**
- * Phục vụ như một hook truy xuất tắt (Shortcut hook) để tương tác dễ dàng với Context của Auth
- */
-import { useContext } from "react";
-
-import { AuthContext } from "@/shared/providers/auth.provider";
+import { useAuthSession } from "@/src/presentation/hooks/use-auth-session";
 
 export function useAuth() {
-  const context = useContext(AuthContext);
-  if (!context) {
-    return {
-      user: null,
-      token: null,
-      login: () => {},
-      logout: () => {},
-      isAuthenticated: false,
-    };
-  }
-  return context;
+  const auth = useAuthSession();
+
+  return {
+    user: auth.user,
+    token: auth.session?.accessToken ?? null,
+    login: () => {},
+    logout: () => {},
+    isAuthenticated: auth.isAuthenticated,
+  };
 }

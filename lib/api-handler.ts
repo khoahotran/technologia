@@ -126,7 +126,7 @@ export function createApiHandler(config: ApiHandlerConfig) {
                             console.warn(`[PROXY DEBUG] Added header X-User-Id: ${userId}`);
                         }
                     }
-                } catch (e) {
+                } catch {
                     // Ignore parsing errors for non-JWT tokens
                 }
             }
@@ -266,3 +266,4 @@ export function createResourceHandlers(
         }),
     };
 }
+

@@ -20,9 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { isAppError } from "@/domain/errors";
 import { getErrorMessageForUI } from "@/infrastructure/http";
 import { useAddToCartMutation, useProductDetail, useProductList } from "@/presentation/hooks";
-
 import { useLanguage } from "@/shared/providers/language.provider";
-import { HTTP_STATUS } from '@/shared/constants';
 import type { ApiError } from '@/shared/types';
 import { formatCurrency, formatNumber } from "@/shared/utils/format";
 import { safe } from "@/shared/utils/result";
@@ -135,7 +133,7 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                 console.error('[Add To Cart Error Detail]', appError);
 
                 // Xử lý lỗi đặc thù: Chưa đăng nhập (401)
-                // @ts-ignore
+                // @ts-expect-error statusCode comes from mapped API errors
                 if (appError?.statusCode === 401) {
                     toast.error(t('login_required_action', {}, "Please login to perform this action."));
                     router.push("/login");
@@ -143,7 +141,7 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                 }
 
                 // Xử lý lỗi đặc thù: Không có quyền (403)
-                // @ts-ignore
+                // @ts-expect-error statusCode comes from mapped API errors
                 if (appError?.statusCode === 403) {
                     // Nếu đã đăng nhập mà vẫn 403, có thể là lỗi phân quyền backend
                     toast.error(t('permission_denied_cart', {}, "You don't have permission to add items to cart. Please check your account."));
@@ -492,3 +490,4 @@ function ProductDetailSkeleton() {
         </div>
     );
 }
+

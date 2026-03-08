@@ -1,7 +1,7 @@
 "use client";
 
 import { Ticket } from "lucide-react";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { CartItem } from "@/components/features/cart/CartItem";
@@ -9,7 +9,7 @@ import { CartSummary } from "@/components/features/cart/CartSummary";
 import { Subscribe } from "@/components/features/home/Subscribe";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-    useCartPriceMutation,
+    useCartPriceQueryState,
     useCartQuery,
     useDecreaseCartItemMutation,
     useIncreaseCartItemMutation,
@@ -17,22 +17,12 @@ import {
 } from "@/presentation/hooks";
 import { useLanguage } from "@/shared/providers/language.provider";
 
-/**
- * Giao diện Giỏ hàng (Cart Client View)
- * 
- * Quản lý trạng thái hiển thị của giỏ hàng bao gồm:
- * - Load dữ liệu giỏ hàng từ backend qua custom hooks `useCartQuery`.
- * - Xử lý thao tác tăng/giảm số lượng, xóa sản phẩm.
- * - Chọn các mục cụ thể để tính tổng tiền (Tính năng mua một phần giỏ hàng).
- * - Chuyển tiếp sang trang Shipping/Checkout.
- */
 export default function CartClient() {
     const { t } = useLanguage();
     const { data: cart, isLoading, isError, refetch } = useCartQuery();
     const increaseMutation = useIncreaseCartItemMutation();
     const decreaseMutation = useDecreaseCartItemMutation();
     const removeMutation = useRemoveCartItemMutation();
-    const { mutate: calculatePrice, data: calculatedPrice } = useCartPriceMutation();
 
     const items = useMemo(() => cart?.cartItems ?? [], [cart]);
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -40,6 +30,7 @@ export default function CartClient() {
     const effectiveSelectedIds = hasUserSelection
         ? selectedIds
         : items.map((item) => item.cartItemId);
+    const priceQuery = useCartPriceQueryState(effectiveSelectedIds);
 
     const toggleItem = (id: string) => {
         setHasUserSelection(true);
@@ -55,14 +46,6 @@ export default function CartClient() {
 
     const allSelected = items.length > 0 && effectiveSelectedIds.length === items.length;
 
-    useEffect(() => {
-        if (effectiveSelectedIds.length === 0) return;
-        calculatePrice({
-            includeDiscount: false,
-            cartItemIds: effectiveSelectedIds,
-        });
-    }, [effectiveSelectedIds, calculatePrice]);
-
     const localComputedTotal = useMemo(
         () =>
             items
@@ -75,7 +58,7 @@ export default function CartClient() {
         [items, effectiveSelectedIds]
     );
 
-    const total = effectiveSelectedIds.length === 0 ? 0 : calculatedPrice ?? localComputedTotal;
+    const total = effectiveSelectedIds.length === 0 ? 0 : priceQuery.data ?? localComputedTotal;
 
     if (isLoading) {
         return (
@@ -172,7 +155,7 @@ export default function CartClient() {
                         <CartSummary
                             total={total}
                             itemCount={effectiveSelectedIds.length}
-                            disableCheckout={effectiveSelectedIds.length === 0}
+                            disableCheckout={effectiveSelectedIds.length === 0 || priceQuery.isFetching}
                             checkoutHref={`/shipping?items=${effectiveSelectedIds.join(",")}`}
                         />
                     </div>

@@ -80,7 +80,6 @@ export const LanguageProvider = ({
 /**
  * Hook tiện ích giúp Component lấy các thông tin nội dung đã được Localize (i18n).
  */
-let isServer = typeof window === "undefined";
 
 export const useLanguage = () => {
   return useContext(LanguageContext);
@@ -90,3 +89,4 @@ export const useLanguage = () => {
 const initialLocales: Language = {
   locale: "en",
 };
+

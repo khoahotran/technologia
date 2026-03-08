@@ -16,19 +16,16 @@
  */
 export const SERVICE_URLS = {
     /** Dịch vụ Sản phẩm (quản lý products, brands, categories) */
-    PRODUCT_SERVICE: process.env['NEXT_PUBLIC_PRODUCT_SERVICE_URL'] || 'http://localhost:8082',
+    PRODUCT_SERVICE: process.env['NEXT_PUBLIC_API_GATEWAY_URL'] || 'http://localhost:8080',
 
     /** Dịch vụ Người dùng (quản lý auth, users, profiles) */
-    USER_SERVICE: process.env['NEXT_PUBLIC_USER_SERVICE_URL'] || 'http://localhost:8081',
+    USER_SERVICE: process.env['NEXT_PUBLIC_API_GATEWAY_URL'] || 'http://localhost:8080',
 
     /** Dịch vụ Thanh toán (quản lý orders, payments) */
-    PAYMENT_SERVICE: process.env['NEXT_PUBLIC_PAYMENT_SERVICE_URL'] || 'http://localhost:8083',
+    PAYMENT_SERVICE: process.env['NEXT_PUBLIC_API_GATEWAY_URL'] || 'http://localhost:8080',
 
     /** Dịch vụ Giỏ hàng (quản lý shopping cart) */
-    CART_SERVICE:
-        process.env['NEXT_PUBLIC_CART_SERVICE_URL'] ||
-        process.env['NEXT_PUBLIC_PAYMENT_SERVICE_URL'] ||
-        'http://localhost:8083',
+    CART_SERVICE: process.env['NEXT_PUBLIC_API_GATEWAY_URL'] || 'http://localhost:8080',
 
     /** Internal Next.js API (proxy dùng nội bộ frontend) */
     INTERNAL_API: process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:3000/api',

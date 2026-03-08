@@ -8,10 +8,8 @@
 import { ZodSchema } from "zod";
 
 import { fetchWithToken, adaptPaginatedResponse, adaptResponse, adaptListResponse } from "@/infrastructure/http";
-import { createScopedLogger } from "@/lib/logger";
 import type { DomainPaginatedResponse } from "@/shared/types";
 
-const logger = createScopedLogger('BaseRepository');
 
 // ===========================================
 // Types
@@ -157,3 +155,4 @@ export function createBaseRepository<T>(config: BaseRepositoryConfig<T>) {
 
 /** Kiểu dữ liệu TypeScript suy diễn từ createBaseRepository */
 export type BaseRepository<T> = ReturnType<typeof createBaseRepository<T>>;
+
