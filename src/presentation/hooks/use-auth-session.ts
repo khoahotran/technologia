@@ -2,7 +2,7 @@
 
 import { useMutation } from "@tanstack/react-query";
 
-import type { GoogleLoginDto, LoginDto } from "@/domain/user/dto/auth.dto";
+import type { GoogleLoginInput, LoginInput } from "@/src/domain/models/auth.model";
 import { googleLoginUseCase } from "@/src/application/use-cases/google-login.use-case";
 import { loginUseCase } from "@/src/application/use-cases/login.use-case";
 import { logoutUseCase } from "@/src/application/use-cases/logout.use-case";
@@ -22,13 +22,13 @@ export function useAuthSession() {
 
 export function useLoginMutation() {
   return useMutation({
-    mutationFn: (credentials: LoginDto) => loginUseCase(credentials),
+    mutationFn: (credentials: LoginInput) => loginUseCase(credentials),
   });
 }
 
 export function useGoogleLoginMutation() {
   return useMutation({
-    mutationFn: (payload: GoogleLoginDto) => googleLoginUseCase(payload),
+    mutationFn: (payload: GoogleLoginInput) => googleLoginUseCase(payload),
   });
 }
 

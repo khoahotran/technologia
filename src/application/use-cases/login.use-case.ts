@@ -1,14 +1,14 @@
-import type { LoginDto } from "@/domain/user/dto/auth.dto";
-import { AuthRepository } from "@/infrastructure/repositories/auth/auth.repository";
-import { UserRepository } from "@/infrastructure/repositories/user/user.repository";
+import type { LoginInput } from "@/src/domain/models/auth.model";
+import { authGatewayRepository } from "@/src/infrastructure/repositories/auth.gateway.repository";
+import { userGatewayRepository } from "@/src/infrastructure/repositories/user.gateway.repository";
 import { authSessionService } from "@/src/application/services/auth-session.service";
 
-export async function loginUseCase(credentials: LoginDto) {
-  const auth = await AuthRepository.login(credentials);
-  const profile = await UserRepository.getMe();
+export async function loginUseCase(credentials: LoginInput) {
+  const auth = await authGatewayRepository.loginLocal(credentials);
+  const profile = await userGatewayRepository.getMe();
 
   authSessionService.save({
-    accessToken: auth.token,
+    accessToken: auth.accessToken,
     refreshToken: auth.refreshToken,
     user: {
       userId: String(profile.userId),
@@ -18,5 +18,9 @@ export async function loginUseCase(credentials: LoginDto) {
     },
   });
 
-  return auth;
+  return {
+    token: auth.accessToken,
+    refreshToken: auth.refreshToken,
+    userId: auth.userId,
+  };
 }

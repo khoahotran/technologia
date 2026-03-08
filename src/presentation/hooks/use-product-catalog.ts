@@ -7,7 +7,7 @@ import type { ProductSearchParams } from "@/domain/product/repositories/product.
 import { ProductRepository } from "@/infrastructure/repositories/product/product.repository";
 import { REQUEST_CONFIG } from "@/shared/constants";
 import { QUERY_CONFIG } from "@/shared/constants/query.constants";
-import { queryKeys } from "@/src/shared/constants/query-keys";
+import { productKeys } from "@/src/shared/constants/query-keys";
 
 export interface ProductListParams extends Partial<ProductSearchParams> {
   search?: string;
@@ -34,7 +34,7 @@ export function useProductListQuery(params: ProductListParams = {}) {
   const searchParams = useMemo(() => normalizeProductParams(params), [params]);
 
   const query = useQuery({
-    queryKey: queryKeys.products.list(searchParams as Record<string, unknown>),
+    queryKey: productKeys.list(searchParams as Record<string, unknown>),
     queryFn: () => ProductRepository.searchAndFilter(searchParams),
     placeholderData: keepPreviousData,
     ...QUERY_CONFIG.STANDARD,
@@ -47,7 +47,7 @@ export function useProductListQuery(params: ProductListParams = {}) {
     if (query.data && currentPage < totalPages - 1) {
       const nextParams = { ...searchParams, page: currentPage + 1 };
       void queryClient.prefetchQuery({
-        queryKey: queryKeys.products.list(nextParams as Record<string, unknown>),
+        queryKey: productKeys.list(nextParams as Record<string, unknown>),
         queryFn: () => ProductRepository.searchAndFilter(nextParams),
         staleTime: QUERY_CONFIG.STANDARD.staleTime,
       });
@@ -59,7 +59,7 @@ export function useProductListQuery(params: ProductListParams = {}) {
 
 export function useProductDetailQuery(productId: string | number | undefined) {
   return useQuery({
-    queryKey: queryKeys.products.detail(productId ?? ""),
+    queryKey: productKeys.detail(productId ?? ""),
     queryFn: () => ProductRepository.getById(productId!),
     enabled: Boolean(productId),
     ...QUERY_CONFIG.STANDARD,

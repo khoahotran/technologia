@@ -124,7 +124,7 @@ export function ProductListView() {
     if (isError) {
         return (
             <div className="flex h-screen items-center justify-center text-destructive px-4 text-center">
-                Failed to load products. Ensure the Backend is running (Products: 8082).
+                Failed to load products. Ensure API Gateway is running at localhost:8080.
             </div>
         );
     }

@@ -17,3 +17,15 @@ export const queryKeys = {
       [...queryKeys.cart.all, "price", ...cartItemIds] as const,
   },
 } as const;
+
+export const productKeys = {
+  all: ["products"] as const,
+  list: (filters: Record<string, unknown>) => ["products", "list", filters] as const,
+  detail: (id: string | number) => ["products", "detail", id] as const,
+};
+
+export const cartKeys = {
+  all: ["cart"] as const,
+  detail: () => ["cart", "detail"] as const,
+  price: (cartItemIds: readonly string[]) => ["cart", "price", cartItemIds] as const,
+};
