@@ -1,0 +1,62 @@
+"use client"
+
+/**
+ * Thành phần Đăng ký nhận tin (Subscribe Component)
+ * 
+ * Hiển thị một khối kêu gọi hành động (Call to Action) để người dùng
+ * nhập email đăng ký nhận thông báo, khuyến mãi từ cửa hàng.
+ */
+import { Mail } from "lucide-react"
+
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { useLanguage } from "@/providers/language.provider";
+import { cn } from "@/utils/cn"
+
+interface SubscribeProps {
+  /** Biến thể giao diện (default: vuông góc, rounded: bo tròn mạnh) */
+  variant?: "default" | "rounded"
+  /** Class CSS tùy chỉnh bổ sung */
+  className?: string
+}
+
+export function Subscribe({ variant = "default", className }: SubscribeProps) {
+  const { t } = useLanguage();
+  return (
+    <section className={cn("container mx-auto px-4 py-12", className)}>
+      <div
+        className={cn(
+          "flex flex-col lg:flex-row items-center justify-between gap-8 bg-[#8AB0C3] p-8 md:p-12",
+          variant === "rounded" ? "rounded-[32px]" : "rounded-none"
+        )}
+      >
+        <div className="flex items-start gap-6 max-w-xl">
+          <div className="bg-white/20 p-3 rounded-xl shrink-0">
+            <Mail className="h-8 w-8 text-white" />
+          </div>
+          <div className="space-y-2">
+            <h3 className="text-xl font-bold text-white">{t('subscribe_newsletter', {}, "Subscribe to Newsletter")}</h3>
+            <p className="text-blue-50/90 text-sm leading-relaxed">
+              {t('subscribe_description', {}, "Join our tech community to not miss new product launches, get specialized information and weekly promotions.")}
+            </p>
+          </div>
+        </div>
+
+        <div className="w-full max-w-md">
+          <div className="relative flex items-center">
+            <Input
+              type="email"
+              placeholder={t('enter_email', {}, "Enter your email here")}
+              className="h-14 w-full rounded-xl bg-white pl-6 pr-32 text-base border-none shadow-sm placeholder:text-gray-400 focus-visible:ring-0"
+            />
+            <Button
+              className="absolute right-1.5 top-1.5 h-11 rounded-lg bg-[#5B6C8F] px-6 font-semibold text-white hover:bg-[#4A5975]"
+            >
+              {t('subscribe_btn', {}, "SUBSCRIBE")}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
