@@ -31,6 +31,7 @@ features/auth/
 ## What Was Refactored
 
 1. `src/api/client.ts`
+
 - Base URL fixed to API Gateway (`NEXT_PUBLIC_API_GATEWAY_URL`, default `http://localhost:8080`).
 - Request interceptor injects JWT from Zustand auth store.
 - Response interceptor handles:
@@ -40,26 +41,31 @@ features/auth/
 - FormData-safe request handling for avatar upload.
 
 2. Auth feature (`src/features/auth/*`)
+
 - Uses direct gateway endpoints only (`/api/auth/*`).
 - Fixed endpoint typo: `forget-password` (backend source of truth).
 - Added critical Zod validation for login/refresh wrappers.
 - Logout mutation now gracefully handles missing refresh token.
 
 3. Query integration
+
 - Added centralized query client factory: `src/app/query-client.ts`.
 - Query provider uses shared config.
 - Query keys use simple factory helpers in `src/constants/query-keys.ts`.
 
 4. Cart feature (`src/features/cart/hooks.ts`)
+
 - Kept logic in one hook file.
 - Added readable optimistic updates (+ rollback) for add/increase/decrease/remove.
 
 5. DTO compatibility fixes
+
 - Register payload uses backend field names: `firstName`, `lastName`.
 
 ## Backend Source-of-Truth Mapping
 
 All refactored feature APIs call Gateway endpoints only:
+
 - Auth: `/api/auth/*`
 - User: `/api/users/*`
 - Product: `/api/products/*`, `/api/brands/*`, `/api/categories/*`
@@ -81,3 +87,9 @@ No direct calls to `8081/8082/8083` in active feature code paths.
   - strict Clean Architecture layers
   - repository factories/adapters for every endpoint
   - deep dependency injection patterns
+
+## Final Status (2026-03-09)
+
+The pragmatic refactor is complete. Legacy proxy layers and redundant utilities have been removed.
+
+**For full architectural details, see [ARCHITECTURE.md](./ARCHITECTURE.md).**

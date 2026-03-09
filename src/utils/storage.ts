@@ -1,60 +1,35 @@
 import { STORAGE_KEYS } from "@/constants";
 import { safeSync } from "@/utils/result";
 
-export type StorageType = "local" | "session" | "memory";
-
-export interface StorageOptions {
-  type?: StorageType;
-}
-
-const memoryStorage = new Map<string, string>();
+export type StorageType = "local" | "session";
 
 function isClient(): boolean {
   return typeof window !== "undefined";
 }
 
 class StorageService {
-  private defaultType: StorageType;
+  private type: StorageType;
 
-  constructor(defaultType: StorageType = "local") {
-    this.defaultType = defaultType;
+  constructor(type: StorageType = "local") {
+    this.type = type;
   }
 
-  private getStorage(type: StorageType): Storage | null {
+  private getStorage(): Storage | null {
     if (!isClient()) return null;
-    if (type === "local") return window.localStorage;
-    if (type === "session") return window.sessionStorage;
-    return null;
+    return this.type === "local" ? window.localStorage : window.sessionStorage;
   }
 
-  set<T>(key: string, value: T, options: StorageOptions = {}): void {
-    const type = options.type ?? this.defaultType;
-    const serialized = typeof value === "string" ? value : JSON.stringify(value);
-
-    if (type === "memory" || !isClient()) {
-      memoryStorage.set(key, serialized);
-      return;
-    }
-
-    const storage = this.getStorage(type);
+  set<T>(key: string, value: T): void {
+    const storage = this.getStorage();
     if (!storage) return;
 
-    const [, error] = safeSync(() => storage.setItem(key, serialized));
-    if (error) {
-      memoryStorage.set(key, serialized);
-    }
+    const serialized = typeof value === "string" ? value : JSON.stringify(value);
+    safeSync(() => storage.setItem(key, serialized));
   }
 
-  get<T>(key: string, options: StorageOptions = {}): T | null {
-    const type = options.type ?? this.defaultType;
-    let value: string | null = null;
-
-    if (type === "memory" || !isClient()) {
-      value = memoryStorage.get(key) ?? null;
-    } else {
-      const storage = this.getStorage(type);
-      value = storage?.getItem(key) ?? null;
-    }
+  get<T>(key: string): T | null {
+    const storage = this.getStorage();
+    const value = storage?.getItem(key) ?? null;
 
     if (value === null) return null;
 
@@ -72,35 +47,16 @@ class StorageService {
     return value as unknown as T;
   }
 
-  remove(key: string, options: StorageOptions = {}): void {
-    const type = options.type ?? this.defaultType;
-
-    if (type === "memory" || !isClient()) {
-      memoryStorage.delete(key);
-      return;
-    }
-
-    const storage = this.getStorage(type);
-    storage?.removeItem(key);
+  remove(key: string): void {
+    this.getStorage()?.removeItem(key);
   }
 
-  has(key: string, options: StorageOptions = {}): boolean {
-    return this.get(key, options) !== null;
-  }
-
-  clear(type?: StorageType): void {
-    const target = type ?? this.defaultType;
-    if (target === "memory") {
-      memoryStorage.clear();
-      return;
-    }
-    if (!isClient()) return;
-    this.getStorage(target)?.clear();
+  clear(): void {
+    this.getStorage()?.clear();
   }
 }
 
 export const storage = new StorageService("local");
-export const sessionStorage = new StorageService("session");
 
 export const authStorage = {
   getAccessToken(): string | null {
@@ -127,3 +83,4 @@ export const authStorage = {
 };
 
 export { StorageService };
+
