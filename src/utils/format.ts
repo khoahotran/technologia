@@ -41,3 +41,27 @@ export function formatNumber(
     return new Intl.NumberFormat(locale).format(numericValue);
 }
 
+// ===========================================
+// Định dạng Ngày tháng (Date Formatting)
+// ===========================================
+
+export function formatDate(
+    date: string | Date | undefined | null,
+    locale: string = APP_CONFIG.DEFAULT_LOCALE
+): string {
+    if (!date) {
+        return '';
+    }
+
+    const parsedDate = typeof date === 'string' ? new Date(date) : date;
+
+    if (isNaN(parsedDate.getTime())) {
+        return '';
+    }
+
+    return new Intl.DateTimeFormat(locale, {
+        day: 'numeric',
+        month: 'numeric',
+        year: 'numeric',
+    }).format(parsedDate);
+}

@@ -1,4 +1,3 @@
-import { safeSync } from "./result";
 
 export type LogLevel = "debug" | "info" | "warn" | "error";
 
@@ -74,4 +73,3 @@ class Logger {
 }
 
 export const logger = new Logger();
-

@@ -89,4 +89,3 @@ export const useLanguage = () => {
 const initialLocales: Language = {
   locale: "en",
 };
-

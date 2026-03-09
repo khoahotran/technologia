@@ -47,4 +47,3 @@ export async function getBrands(): Promise<Brand[]> {
 export async function getCategories(): Promise<Category[]> {
     return get<Category[]>('/api/categories');
 }
-

@@ -31,4 +31,3 @@ export function safeSync<T, E = unknown>(
         return [null, error as unknown as E];
     }
 }
-
