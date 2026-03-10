@@ -32,6 +32,7 @@ export function useCart() {
       if (context?.previousCart) {
         queryClient.setQueryData(cartQueryKey, context.previousCart);
       }
+      toast.error((_error as Error).message || "An error occurred");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: cartQueryKey });
@@ -60,6 +61,7 @@ export function useCart() {
       if (context?.previousCart) {
         queryClient.setQueryData(cartQueryKey, context.previousCart);
       }
+      toast.error((_error as Error).message || "An error occurred");
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: cartQueryKey }),
   });
@@ -85,6 +87,7 @@ export function useCart() {
       if (context?.previousCart) {
         queryClient.setQueryData(cartQueryKey, context.previousCart);
       }
+      toast.error((_error as Error).message || "An error occurred");
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: cartQueryKey }),
   });
@@ -108,6 +111,7 @@ export function useCart() {
       if (context?.previousCart) {
         queryClient.setQueryData(cartQueryKey, context.previousCart);
       }
+      toast.error((_error as Error).message || "An error occurred");
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: cartQueryKey });

@@ -20,8 +20,11 @@ export class AppError extends Error {
   }
 }
 
+const isServer = typeof window === "undefined";
+const baseURL = isServer ? env.apiGatewayUrl : "";
+
 const api = axios.create({
-  baseURL: env.apiGatewayUrl,
+  baseURL,
   timeout: 30000,
   headers: {
     "Content-Type": "application/json",
@@ -30,7 +33,7 @@ const api = axios.create({
 });
 
 const refreshApi = axios.create({
-  baseURL: env.apiGatewayUrl,
+  baseURL,
   timeout: 30000,
   headers: {
     "Content-Type": "application/json",

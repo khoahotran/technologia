@@ -4,8 +4,12 @@ import { del, get, patch, post } from "@/api/client";
 import type { ApiResponse } from "@/types";
 
 export async function getCart(): Promise<Cart> {
-  const response = await get<ApiResponse<Cart>>("/api/carts");
-  return response.data ?? { cartItems: [] };
+  const response = await get<ApiResponse<{
+    empty: boolean;
+    map: Cart
+  }>>("/api/carts");
+  const cartData = response.data.map;
+  return { ...cartData, cartItems: cartData?.cartItems ?? [] };
 }
 
 export async function addToCart(payload: AddToCartPayload): Promise<void> {
