@@ -33,9 +33,8 @@ export default function ProfilePage() {
 
     // Forms
     const [updateForm, setUpdateForm] = useState<UpdateProfile>({
-        firstname: "",
-        lastname: "",
-        displayName: "",
+        firstName: "",
+        lastName: "",
         phoneNumber: ""
     });
 
@@ -56,9 +55,8 @@ export default function ProfilePage() {
         if (profile) {
             // eslint-disable-next-line react-hooks/set-state-in-effect
             setUpdateForm({
-                firstname: profile.firstName || "",
-                lastname: profile.lastName || "",
-                displayName: profile.displayName || "",
+                firstName: profile.firstName || "",
+                lastName: profile.lastName || "",
                 phoneNumber: profile.phoneNumber || ""
             });
         }
@@ -93,7 +91,8 @@ export default function ProfilePage() {
         try {
             await changePassword({
                 oldPassword: passwordForm.oldPassword,
-                newPassword: passwordForm.newPassword
+                newPassword: passwordForm.newPassword,
+                confirmPassword: passwordForm.confirmPassword
             });
             setPasswordForm({ oldPassword: "", newPassword: "", confirmPassword: "" });
         } catch {
@@ -149,25 +148,17 @@ export default function ProfilePage() {
                                             <div className="space-y-2">
                                                 <Label>{t('first_name', {}, "First Name")}</Label>
                                                 <Input
-                                                    value={updateForm.firstname}
-                                                    onChange={(e) => setUpdateForm({ ...updateForm, firstname: e.target.value })}
+                                                    value={updateForm.firstName}
+                                                    onChange={(e) => setUpdateForm({ ...updateForm, firstName: e.target.value })}
                                                 />
                                             </div>
                                             <div className="space-y-2">
                                                 <Label>{t('last_name', {}, "Last Name")}</Label>
                                                 <Input
-                                                    value={updateForm.lastname}
-                                                    onChange={(e) => setUpdateForm({ ...updateForm, lastname: e.target.value })}
+                                                    value={updateForm.lastName}
+                                                    onChange={(e) => setUpdateForm({ ...updateForm, lastName: e.target.value })}
                                                 />
                                             </div>
-                                        </div>
-
-                                        <div className="space-y-2">
-                                            <Label>{t('display_name', {}, "Display Name")}</Label>
-                                            <Input
-                                                value={updateForm.displayName}
-                                                onChange={(e) => setUpdateForm({ ...updateForm, displayName: e.target.value })}
-                                            />
                                         </div>
 
                                         <div className="space-y-2">

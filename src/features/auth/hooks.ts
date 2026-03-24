@@ -6,10 +6,7 @@ import { googleLogin, login, logout } from "./api";
 import { useAuthStore } from "./store";
 import type { AuthSession } from "./types";
 
-function getErrorMessage(error: unknown) {
-  if (error instanceof Error) return error.message;
-  return "Request failed";
-}
+import { toErrorMessage } from "@/utils/error-message";
 
 export function useLogin() {
   const setSession = useAuthStore((state) => state.setSession);
@@ -23,7 +20,7 @@ export function useLogin() {
       router.push("/");
     },
     onError: (error: unknown) => {
-      toast.error(getErrorMessage(error));
+      toast.error(toErrorMessage(error));
     },
   });
 }
@@ -40,7 +37,7 @@ export function useGoogleLogin() {
       router.push("/");
     },
     onError: (error: unknown) => {
-      toast.error(getErrorMessage(error));
+      toast.error(toErrorMessage(error));
     },
   });
 }

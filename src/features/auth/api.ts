@@ -1,9 +1,15 @@
 import {
+  ForgotPasswordRequestSchema,
   LoginResponseSchema,
+  RegisterLocalRequestSchema,
   RefreshTokenResponseSchema,
+  ResetPasswordRequestSchema,
   type AuthSession,
+  type ForgotPasswordRequest,
   type GoogleLoginRequest,
   type LoginRequest,
+  type RegisterLocalRequest,
+  type ResetPasswordRequest,
 } from "./types";
 
 import { post } from "@/api/client";
@@ -43,23 +49,21 @@ export async function login(credentials: LoginRequest): Promise<AuthSession> {
 export async function register(data: {
   username: string;
   password: string;
-  phoneNumber?: string;
+  phoneNumber: string;
   email: string;
-  firstName?: string;
-  lastName?: string;
+  firstName: string;
+  lastName: string;
 }) {
-  return post("/api/auth/register/local", data);
+  const payload: RegisterLocalRequest = RegisterLocalRequestSchema.parse(data);
+  return post("/api/auth/register/local", payload);
 }
 
-export async function forgotPassword(data: { email: string }): Promise<void> {
-  await post("/api/auth/forget-password", data);
+export async function forgotPassword(data: ForgotPasswordRequest): Promise<void> {
+  await post("/api/auth/forget-password", ForgotPasswordRequestSchema.parse(data));
 }
 
-export async function resetPassword(data: {
-  resetToken: string;
-  newPassword: string;
-}): Promise<void> {
-  await post("/api/auth/reset-password", data);
+export async function resetPassword(data: ResetPasswordRequest): Promise<void> {
+  await post("/api/auth/reset-password", ResetPasswordRequestSchema.parse(data));
 }
 
 export async function logout(refreshToken: string): Promise<void> {
@@ -73,7 +77,7 @@ export async function refreshAccessToken(
   const parsed = RefreshTokenResponseSchema.parse(response);
 
   return {
-    accessToken: parsed.data.accessToken ?? parsed.data.token ?? "",
-    refreshToken: parsed.data.refreshToken ?? refreshToken,
+    accessToken: parsed.data.accessToken,
+    refreshToken: parsed.data.refreshToken,
   };
 }

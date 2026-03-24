@@ -1,130 +1,212 @@
-"use client"
+"use client";
 
-import { ArrowLeft, Star } from "lucide-react"
-import Link from "next/link"
-import { useState } from "react"
-import { toast } from "sonner"
+import { ArrowLeft, Star } from "lucide-react";
+import Link from "next/link";
+import { useMemo } from "react";
+import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { useOrder } from "@/features/checkout/hooks"
-import { useLanguage } from "@/providers/language.provider"
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { useOrder, useSubmitOrderFeedback } from "@/features/orders/hooks";
+import { canGiveFeedback, formatOrderStatusLabel } from "@/features/orders/presentation";
+import { useLanguage } from "@/providers/language.provider";
+import { useOrderFlowStore } from "@/store/order-flow.store";
+import { toErrorMessage } from "@/utils/error-message";
+
+type FeedbackItem = {
+    key: string;
+    label: string;
+    payload: Record<string, unknown>;
+};
+
+function toFeedbackItem(item: unknown, index: number): FeedbackItem {
+    const fallbackKey = `item-${index + 1}`;
+    const fallbackLabel = `Product ${index + 1}`;
+
+    if (typeof item !== "object" || item === null) {
+        return {
+            key: fallbackKey,
+            label: fallbackLabel,
+            payload: { itemIndex: index + 1 },
+        };
+    }
+
+    const itemRecord = item as Record<string, unknown>;
+    const productId = typeof itemRecord["productId"] === "string" ? itemRecord["productId"] : null;
+    const variantId = typeof itemRecord["variantId"] === "string" ? itemRecord["variantId"] : null;
+    const name =
+        typeof itemRecord["name"] === "string"
+            ? itemRecord["name"]
+            : typeof itemRecord["productName"] === "string"
+                ? itemRecord["productName"]
+                : productId ?? fallbackLabel;
+
+    return {
+        key: `${productId ?? fallbackKey}-${variantId ?? "default"}`,
+        label: name,
+        payload: {
+            productId,
+            variantId,
+            itemIndex: index + 1,
+        },
+    };
+}
 
 export default function GiveFeedbackClient({ id }: { id: string }) {
-  const { t } = useLanguage()
-  const [rating, setRating] = useState(4)
-  const [comment, setComment] = useState("")
+    const { t } = useLanguage();
+    const { data: order, isLoading, isError, error } = useOrder(id);
+    const submitFeedback = useSubmitOrderFeedback();
+    const feedbackDrafts = useOrderFlowStore((state) => state.feedbackDrafts);
+    const setFeedbackDraft = useOrderFlowStore((state) => state.setFeedbackDraft);
+    const clearFeedbackDrafts = useOrderFlowStore((state) => state.clearFeedbackDrafts);
 
-  const { data: order, isLoading, isError } = useOrder(id);
+    const feedbackItems = useMemo(() => {
+        if (!order) return [];
+        return order.items.map((item, index) => toFeedbackItem(item, index));
+    }, [order]);
 
-  if (isLoading) {
-    return <div className="flex justify-center p-8">{t('loading', {}, "Loading...")}</div>;
-  }
+    if (isLoading) {
+        return <div className="flex justify-center p-8">{t("loading", {}, "Loading...")}</div>;
+    }
 
-  if (isError || !order) {
-    return (
-      <div className="container mx-auto px-4 py-16 text-center">
-        <h2 className="text-2xl font-bold text-gray-900">{t('order_not_found', {}, "Order not found")}</h2>
-        <Link href="/orders" className="inline-block mt-4 text-[#3E93B3] font-medium">{t('back_to_orders', {}, "Back to list of orders")}</Link>
-      </div>
-    );
-  }
-
-  const handleAddFeedback = () => {
-    toast.info(t('feature_coming_soon', {}, "Feature coming soon via API"));
-  };
-
-  return (
-    <div className="min-h-screen bg-[#F9F8FE]">
-      <div className="bg-white py-4 border-b border-gray-100">
-        <div className="container mx-auto px-4">
-          <ul className="flex items-center justify-between text-sm font-medium text-gray-600">
-            <li>{t('all_categories', {}, "All categories")}</li>
-            <li>{t('cat_smartphone', {}, "Smartphone")}</li>
-            <li>{t('cat_laptop', {}, "Laptop")}</li>
-            <li>{t('cat_gaming', {}, "Gaming Equipment")}</li>
-            <li>{t('cat_headphone', {}, "Headphone")}</li>
-            <li>{t('cat_speaker', {}, "Speaker")}</li>
-            <li>{t('cat_others', {}, "Others")}</li>
-          </ul>
-        </div>
-      </div>
-
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto space-y-6">
-          <Link
-            href={`/orders/${id}`}
-            className="inline-flex items-center gap-2 text-gray-700 hover:text-gray-900"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            <span className="font-medium">{t('back_to_tracking', {}, "Back to tracking order")}</span>
-          </Link>
-
-          <h1 className="text-2xl font-bold text-gray-900 text-center">{t('give_feedback_title', {}, "Give Feedback")}</h1>
-
-          <div className="bg-white p-8 rounded-xl border border-gray-100">
-            <div className="grid md:grid-cols-2 gap-8">
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-bold text-gray-900 mb-2">{t('order_id_label', {}, "Order ID")}</h3>
-                  <p className="text-lg font-medium text-gray-700">{order.id}</p>
-                </div>
-
-                <div className="space-y-2">
-                  {order.items.map((item, index) => (
-                    <div key={index} className="flex gap-2 text-sm text-gray-600">
-                      <span>{item.quantity}x</span>
-                      <span>{item.name}</span>
-                    </div>
-                  ))}
-                  <p className="text-sm text-[#3E93B3] cursor-pointer hover:underline">
-                    {order.status}
-                  </p>
-                </div>
-
-                <Button
-                  onClick={handleAddFeedback}
-                  className="w-full bg-[#8AB0C3] hover:bg-[#7A9EB0] text-white h-12"
-                >
-                  {t('add_feedback_btn', {}, "Add feedback")}
-                </Button>
-              </div>
-
-              <div className="space-y-6">
-                <div>
-                  <h3 className="font-bold text-gray-900 mb-3">{t('rating_label', {}, "Rating")}</h3>
-                  <div className="flex gap-2">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <button
-                        key={star}
-                        onClick={() => setRating(star)}
-                        className="transition-colors"
-                      >
-                        <Star
-                          className={`h-8 w-8 ${star <= rating
-                            ? "fill-[#3E93B3] text-[#3E93B3]"
-                            : "fill-none text-gray-300"
-                            }`}
-                        />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="font-bold text-gray-900 mb-3">{t('comment_label', {}, "Comment")}</h3>
-                  <Textarea
-                    value={comment}
-                    onChange={(e) => setComment(e.target.value)}
-                    className="min-h-[200px] bg-[#F9F8FE] border-gray-200"
-                    placeholder={t('share_experience_placeholder', {}, "Share your experience with this order...")}
-                  />
-                </div>
-              </div>
+    if (isError || !order) {
+        return (
+            <div className="container mx-auto px-4 py-16 text-center">
+                <h2 className="text-2xl font-bold text-gray-900">{t("order_not_found", {}, "Order not found")}</h2>
+                <p className="text-sm text-gray-600 mt-2">
+                    {toErrorMessage(error, t("order_not_found", {}, "Order not found"))}
+                </p>
+                <Link href="/orders" className="inline-block mt-4 text-[#3E93B3] font-medium">
+                    {t("back_to_orders", {}, "Back to list of orders")}
+                </Link>
             </div>
-          </div>
+        );
+    }
+
+    const disabled = !canGiveFeedback(order) || submitFeedback.isPending;
+
+    const handleSubmit = () => {
+        if (!canGiveFeedback(order)) {
+            toast.error(t("feedback_unavailable", {}, "Feedback is only available for delivered orders."));
+            return;
+        }
+
+        const payloadItems = feedbackItems.map((item) => {
+            const draft = feedbackDrafts[item.key] ?? { rating: 5, comment: "" };
+            return {
+                ...item.payload,
+                rating: draft.rating,
+                comment: draft.comment.trim(),
+            };
+        });
+
+        const hasEmptyComment = payloadItems.some((item) => item.comment.length === 0);
+        if (hasEmptyComment) {
+            toast.error(t("feedback_comment_required", {}, "Please add comment for all products."));
+            return;
+        }
+
+        submitFeedback.mutate(
+            {
+                orderId: order.orderId,
+                items: payloadItems,
+            },
+            {
+                onSuccess: () => {
+                    clearFeedbackDrafts();
+                },
+            }
+        );
+    };
+
+    return (
+        <div className="min-h-screen bg-[#F4F1F3]">
+            <div className="container mx-auto px-4 py-8 space-y-6">
+                <Link href={`/orders/${id}`} className="inline-flex items-center gap-2 text-[#1E1E1E] hover:text-[#0D6E97]">
+                    <ArrowLeft className="h-4 w-4" />
+                    <span className="font-semibold">{t("back_to_tracking", {}, "Back to tracking order")}</span>
+                </Link>
+
+                <h1 className="text-5xl font-bold text-[#1E1E1E] text-center">{t("give_feedback_title", {}, "Give Feedback")}</h1>
+
+                <div className="bg-white rounded-xl border border-[#D3E4F4] p-8">
+                    <div className="space-y-2 mb-8">
+                        <h3 className="text-xl font-semibold text-[#1E1E1E]">{t("order_id_label", {}, "Order ID")}</h3>
+                        <p className="text-3xl font-bold text-[#1E1E1E]">#{order.orderId}</p>
+                        <p className="text-lg font-semibold text-[#0D6E97]">[{formatOrderStatusLabel(order.deliveryStatus)}]</p>
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-8 border-t border-[#D3E4F4] pt-8">
+                        {feedbackItems.map((item) => {
+                            const draft = feedbackDrafts[item.key] ?? { rating: 5, comment: "" };
+
+                            return (
+                                <div key={item.key} className="space-y-4">
+                                    <h4 className="text-2xl font-semibold text-[#1E1E1E]">{item.label}</h4>
+                                    <div>
+                                        <p className="text-lg font-semibold text-[#1E1E1E] mb-2">{t("rating_label", {}, "Rating")}</p>
+                                        <div className="flex gap-2">
+                                            {[1, 2, 3, 4, 5].map((star) => (
+                                                <button
+                                                    key={`${item.key}-${star}`}
+                                                    type="button"
+                                                    className="transition-colors"
+                                                    onClick={() =>
+                                                        setFeedbackDraft(item.key, {
+                                                            ...draft,
+                                                            rating: star,
+                                                        })
+                                                    }
+                                                    disabled={disabled}
+                                                >
+                                                    <Star
+                                                        className={`h-8 w-8 ${
+                                                            star <= draft.rating
+                                                                ? "fill-[#3E93B3] text-[#3E93B3]"
+                                                                : "fill-transparent text-[#D3D9E0]"
+                                                        }`}
+                                                    />
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <p className="text-lg font-semibold text-[#1E1E1E] mb-2">{t("comment_label", {}, "Comment")}</p>
+                                        <Textarea
+                                            value={draft.comment}
+                                            onChange={(event) =>
+                                                setFeedbackDraft(item.key, {
+                                                    ...draft,
+                                                    comment: event.target.value,
+                                                })
+                                            }
+                                            className="min-h-[170px] bg-[#F9F8FE] border-[#8AB0C3]"
+                                            placeholder={t(
+                                                "share_experience_placeholder",
+                                                {},
+                                                "Share your experience with this order..."
+                                            )}
+                                            disabled={disabled}
+                                        />
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    <div className="flex justify-center mt-8">
+                        <Button
+                            type="button"
+                            onClick={handleSubmit}
+                            disabled={disabled}
+                            className="w-72 h-12 bg-[#8AB0C3] hover:bg-[#769BAD] text-white font-semibold disabled:bg-[#BFC7CF]"
+                        >
+                            {t("add_feedback_btn", {}, "Add feedback")}
+                        </Button>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
-  )
+    );
 }

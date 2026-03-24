@@ -56,8 +56,31 @@ export const LoginResponseSchema = BaseResponseSchema(
 
 export const RefreshTokenResponseSchema = BaseResponseSchema(
     z.object({
-        accessToken: z.string().optional(),
-        token: z.string().optional(),
-        refreshToken: z.string().optional(),
+        accessToken: z.string(),
+        refreshToken: z.string(),
     })
 );
+
+export const RegisterLocalRequestSchema = z.object({
+    username: z.string().min(1),
+    password: z.string().min(1),
+    email: z.string().email(),
+    firstName: z.string().min(1),
+    lastName: z.string().min(1),
+    phoneNumber: z.string().min(1),
+});
+
+export type RegisterLocalRequest = z.infer<typeof RegisterLocalRequestSchema>;
+
+export const ForgotPasswordRequestSchema = z.object({
+    email: z.string().email(),
+});
+
+export type ForgotPasswordRequest = z.infer<typeof ForgotPasswordRequestSchema>;
+
+export const ResetPasswordRequestSchema = z.object({
+    resetToken: z.string().min(1),
+    newPassword: z.string().min(1),
+});
+
+export type ResetPasswordRequest = z.infer<typeof ResetPasswordRequestSchema>;

@@ -3,7 +3,7 @@
 import { ArrowLeft, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { AppError } from "@/api/client";
@@ -13,9 +13,17 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useCart } from "@/features/cart/hooks";
-import { useAddresses, usePlaceOrder } from "@/features/checkout/hooks";
+import { useAddresses, useDefaultPaymentAccounts } from "@/features/checkout/hooks";
 import type { Address } from "@/features/checkout/types";
+import {
+    useCheckoutPreview,
+    useConfirmCheckout,
+    useRecalculateCheckout,
+    useShippingFee,
+} from "@/features/orders/hooks";
 import { useLanguage } from "@/providers/language.provider";
+import { useOrderFlowStore } from "@/store/order-flow.store";
+import { toErrorMessage } from "@/utils/error-message";
 
 function getAddressDisplay(address: Address) {
     return `${address.no} ${address.street}, ${address.ward}, ${address.city}, ${address.province}`;
@@ -29,15 +37,35 @@ export default function ShippingClient() {
     const selectedQuery = searchParams.get("items");
     const addressId = searchParams.get("addressId");
 
-    const [paymentMethod, setPaymentMethod] = useState<"bank" | "wallet" | "cod">("bank");
+    const [paymentMethod, setPaymentMethod] = useState<"COD" | "BANK_ACCOUNT" | "E_WALLET">("COD");
+    const [paymentAccountId, setPaymentAccountId] = useState("");
     const { data: addresses = [] } = useAddresses();
+    const { data: paymentAccounts = [] } = useDefaultPaymentAccounts();
     const { cart, isLoading, isError, error: cartError, refetch } = useCart();
-    const placeOrderMutation = usePlaceOrder();
+    const checkoutPreview = useCheckoutPreview();
+    const recalculateCheckout = useRecalculateCheckout();
+    const confirmCheckout = useConfirmCheckout();
+    const checkoutSessionId = useOrderFlowStore((state) => state.checkoutSessionId);
+    const storedSelectedCartItemIds = useOrderFlowStore((state) => state.selectedCartItemIds);
+    const setCheckoutSessionId = useOrderFlowStore((state) => state.setCheckoutSessionId);
+    const setSelectedCartItemIds = useOrderFlowStore((state) => state.setSelectedCartItemIds);
+    const setSelectedAddressId = useOrderFlowStore((state) => state.setSelectedAddressId);
+    const clearCheckoutFlow = useOrderFlowStore((state) => state.clearCheckoutFlow);
 
     const selectedIds = useMemo(
         () => (selectedQuery ? selectedQuery.split(",").filter(Boolean) : []),
         [selectedQuery]
     );
+
+    useEffect(() => {
+        const hasDifferentSelection =
+            storedSelectedCartItemIds.length !== selectedIds.length ||
+            storedSelectedCartItemIds.some((id, index) => id !== selectedIds[index]);
+
+        if (hasDifferentSelection) {
+            setCheckoutSessionId(null);
+        }
+    }, [selectedIds, setCheckoutSessionId, storedSelectedCartItemIds]);
 
     const allCartItems = useMemo(() => cart?.cartItems ?? [], [cart]);
     const selectedCartItems = useMemo(
@@ -67,17 +95,51 @@ export default function ShippingClient() {
     );
 
     const subtotal = localSubtotal;
-    const shipping = 0;
+    const { data: shippingFeeData } = useShippingFee(activeAddress?.province, subtotal, selectedCartItems.length > 0);
+    const shipping = shippingFeeData ? shippingFeeData.shippingFee - shippingFeeData.shippingFeeDiscount : 0;
     const total = subtotal + shipping;
 
-    const bankAccounts = [
-        { id: "1", type: "bank" as const, name: "Vietcombank", accountName: "SHOP ACCOUNT", accountNumber: "1234567890", isDefault: true },
-        { id: "2", type: "bank" as const, name: "Techcombank", accountName: "SHOP ACCOUNT", accountNumber: "9876543210" },
-    ];
-    const walletAccounts = [
-        { id: "1", type: "wallet" as const, name: "MoMo", accountName: "SHOP WALLET", accountNumber: "0900000000", isDefault: true },
-        { id: "2", type: "wallet" as const, name: "ZaloPay", accountName: "SHOP WALLET", accountNumber: "0911111111" },
-    ];
+    const bankAccounts = useMemo(
+        () =>
+            paymentAccounts
+                .filter((account) => account.type === "BANK_ACCOUNT")
+                .map((account) => ({
+                    id: account.paymentAccountId,
+                    type: "bank" as const,
+                    name: account.bankName,
+                    accountName: account.holderName,
+                    accountNumber: account.accountNumber,
+                    isDefault: account.isDefault,
+                })),
+        [paymentAccounts]
+    );
+
+    const walletAccounts = useMemo(
+        () =>
+            paymentAccounts
+                .filter((account) => account.type === "WALLET")
+                .map((account) => ({
+                    id: account.paymentAccountId,
+                    type: "wallet" as const,
+                    name: account.bankName,
+                    accountName: account.holderName,
+                    accountNumber: account.accountNumber,
+                    isDefault: account.isDefault,
+                })),
+        [paymentAccounts]
+    );
+
+    const unsupportedPaymentAccountTypes = useMemo(
+        () =>
+            Array.from(
+                new Set(
+                    paymentAccounts
+                        .map((account) => account.type)
+                        .filter((type) => type !== "BANK_ACCOUNT" && type !== "WALLET")
+                )
+            ),
+        [paymentAccounts]
+    );
 
     const handlePlaceOrder = async () => {
         if (!activeAddress) {
@@ -88,27 +150,39 @@ export default function ShippingClient() {
             toast.error(t('no_items_selected', {}, "No cart items selected"));
             return;
         }
+        if (paymentMethod !== "COD" && !paymentAccountId) {
+            toast.error(t('select_payment_account_first', {}, "Please select a payment account first"));
+            return;
+        }
 
-        const orderItems = selectedCartItems.map((item) => ({
-            cartItemId: item.cartItemId,
-            productId: item.productId,
-            variantId: item.variantId || "",
-            name: item.name,
-            image: item.mainImage || "/placeholder.png",
-            quantity: item.currentQuantity,
-            unitPrice: item.priceAfterDiscount ?? item.price ?? 0,
-        }));
+        setSelectedCartItemIds(selectedCartItems.map((item) => item.cartItemId));
+        setSelectedAddressId(activeAddress.addressId);
 
-        placeOrderMutation.mutate({
-            paymentMethod,
-            shippingAddressId: activeAddress.addressId,
-            items: orderItems,
-            total,
-        }, {
-            onSuccess: () => {
-                router.push("/orders");
+        try {
+            const preview = checkoutSessionId
+                ? await recalculateCheckout.mutateAsync({
+                      checkoutSessionId,
+                      addressId: activeAddress.addressId,
+                  })
+                : await checkoutPreview.mutateAsync({
+                      cartItemIds: selectedCartItems.map((item) => item.cartItemId),
+                  });
+
+            if (!checkoutSessionId) {
+                setCheckoutSessionId(preview.checkoutSessionId);
             }
-        });
+
+            const confirmed = await confirmCheckout.mutateAsync({
+                checkoutSessionId: checkoutSessionId ?? preview.checkoutSessionId,
+                paymentMethod,
+                paymentAccountId: paymentMethod === "COD" ? undefined : paymentAccountId,
+            });
+
+            clearCheckoutFlow();
+            router.push(`/orders/${confirmed.orderId}`);
+        } catch (error) {
+            toast.error(toErrorMessage(error, "Unable to place order"));
+        }
     };
 
     if (isLoading) {
@@ -159,8 +233,32 @@ export default function ShippingClient() {
 
                 <div className="grid lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-1 space-y-6">
-                        <PaymentMethodList type="bank" methods={bankAccounts} />
-                        <PaymentMethodList type="wallet" methods={walletAccounts} />
+                        <PaymentMethodList
+                            type="bank"
+                            methods={bankAccounts}
+                            onUse={(id) => {
+                                setPaymentMethod("BANK_ACCOUNT");
+                                setPaymentAccountId(id);
+                            }}
+                        />
+                        <PaymentMethodList
+                            type="wallet"
+                            methods={walletAccounts}
+                            onUse={(id) => {
+                                setPaymentMethod("E_WALLET");
+                                setPaymentAccountId(id);
+                            }}
+                        />
+                        {unsupportedPaymentAccountTypes.length > 0 && (
+                            <div className="bg-white p-4 rounded-xl border border-gray-100 text-sm text-gray-600">
+                                {t(
+                                    'unknown_payment_account_types',
+                                    {},
+                                    'UNKNOWN payment account type(s):'
+                                )}{" "}
+                                {unsupportedPaymentAccountTypes.join(", ")}
+                            </div>
+                        )}
                     </div>
 
                     <div className="lg:col-span-2 space-y-6">
@@ -215,7 +313,9 @@ export default function ShippingClient() {
                                 </div>
                                 <div className="flex justify-between text-sm">
                                     <span className="text-gray-600">{t('shipping', {}, "Shipping")}</span>
-                                    <span className="font-medium text-green-500">{t('free_shipping', {}, "Free Shipping")}</span>
+                                    <span className="font-medium text-gray-900">
+                                        {t('price_vnd', { price: new Intl.NumberFormat(currentLocale).format(shipping) }, `${new Intl.NumberFormat(currentLocale).format(shipping)} VND`)}
+                                    </span>
                                 </div>
                                 <div className="flex justify-between text-base font-bold pt-2 border-t border-gray-100">
                                     <span className="text-gray-900">{t('order_total', {}, "Order total")}</span>
@@ -229,9 +329,25 @@ export default function ShippingClient() {
                         <div className="bg-white p-6 rounded-xl border border-gray-100">
                             <h2 className="font-bold text-gray-900 mb-4">{t('payment', {}, "Payment")}</h2>
 
-                            <RadioGroup value={paymentMethod} onValueChange={(v) => setPaymentMethod(v as "bank" | "wallet" | "cod")} className="space-y-4">
+                            <RadioGroup
+                                value={paymentMethod}
+                                onValueChange={(value) => {
+                                    const nextValue = value as "BANK_ACCOUNT" | "E_WALLET" | "COD";
+                                    setPaymentMethod(nextValue);
+                                    if (nextValue === "COD") {
+                                        setPaymentAccountId("");
+                                        return;
+                                    }
+                                    if (nextValue === "BANK_ACCOUNT") {
+                                        setPaymentAccountId(bankAccounts[0]?.id ?? "");
+                                        return;
+                                    }
+                                    setPaymentAccountId(walletAccounts[0]?.id ?? "");
+                                }}
+                                className="space-y-4"
+                            >
                                 <div className="flex items-start space-x-3">
-                                    <RadioGroupItem value="bank" id="bank" className="mt-1" />
+                                    <RadioGroupItem value="BANK_ACCOUNT" id="bank" className="mt-1" />
                                     <div className="flex-1">
                                         <Label htmlFor="bank" className="font-medium text-gray-900 cursor-pointer">
                                             {t('direct_bank_transfer', {}, "Direct bank transfer")}
@@ -239,7 +355,7 @@ export default function ShippingClient() {
                                     </div>
                                 </div>
                                 <div className="flex items-start space-x-3">
-                                    <RadioGroupItem value="wallet" id="wallet" className="mt-1" />
+                                    <RadioGroupItem value="E_WALLET" id="wallet" className="mt-1" />
                                     <div className="flex-1">
                                         <Label htmlFor="wallet" className="font-medium text-gray-900 cursor-pointer">
                                             {t('e_wallet', {}, "E-wallet")}
@@ -247,10 +363,10 @@ export default function ShippingClient() {
                                     </div>
                                 </div>
                                 <div className="flex items-start space-x-3">
-                                    <RadioGroupItem value="cod" id="cod" className="mt-1" />
+                                    <RadioGroupItem value="COD" id="cod" className="mt-1" />
                                     <div className="flex-1">
                                         <Label htmlFor="cod" className="font-medium text-gray-900 cursor-pointer flex items-center gap-2">
-                                            <Checkbox checked={paymentMethod === "cod"} className="pointer-events-none" />
+                                            <Checkbox checked={paymentMethod === "COD"} className="pointer-events-none" />
                                             {t('cash_on_delivery', {}, "Cash on delivery")}
                                         </Label>
                                     </div>
@@ -262,6 +378,7 @@ export default function ShippingClient() {
                             <Button
                                 type="button"
                                 onClick={handlePlaceOrder}
+                                disabled={checkoutPreview.isPending || recalculateCheckout.isPending || confirmCheckout.isPending}
                                 className="w-64 h-12 bg-[#8AB0C3] hover:bg-[#7A9EB0] text-white font-semibold text-base"
                             >
                                 {t('place_order', {}, "Place order")}

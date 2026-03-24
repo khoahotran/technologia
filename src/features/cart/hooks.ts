@@ -5,6 +5,7 @@ import { addToCart, decreaseQuantity, getCart, increaseQuantity, removeFromCart 
 import type { AddToCartPayload, Cart } from "./types";
 
 import { cartKeys } from "@/constants/query-keys";
+import { toErrorMessage } from "@/utils/error-message";
 
 export function useCart() {
   const queryClient = useQueryClient();
@@ -32,7 +33,7 @@ export function useCart() {
       if (context?.previousCart) {
         queryClient.setQueryData(cartQueryKey, context.previousCart);
       }
-      toast.error((_error as Error).message || "An error occurred");
+      toast.error(toErrorMessage(_error, "An error occurred"));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: cartQueryKey });
@@ -61,7 +62,7 @@ export function useCart() {
       if (context?.previousCart) {
         queryClient.setQueryData(cartQueryKey, context.previousCart);
       }
-      toast.error((_error as Error).message || "An error occurred");
+      toast.error(toErrorMessage(_error, "An error occurred"));
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: cartQueryKey }),
   });
@@ -87,7 +88,7 @@ export function useCart() {
       if (context?.previousCart) {
         queryClient.setQueryData(cartQueryKey, context.previousCart);
       }
-      toast.error((_error as Error).message || "An error occurred");
+      toast.error(toErrorMessage(_error, "An error occurred"));
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: cartQueryKey }),
   });
@@ -111,7 +112,7 @@ export function useCart() {
       if (context?.previousCart) {
         queryClient.setQueryData(cartQueryKey, context.previousCart);
       }
-      toast.error((_error as Error).message || "An error occurred");
+      toast.error(toErrorMessage(_error, "An error occurred"));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: cartQueryKey });

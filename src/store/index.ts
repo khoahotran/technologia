@@ -22,3 +22,5 @@ export {
 export type { WishlistStore } from './wishlist.store';
 
 export { useUiStore } from './ui.store';
+
+export { useOrderFlowStore } from './order-flow.store';

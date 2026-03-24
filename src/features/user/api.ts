@@ -1,20 +1,28 @@
-import type { ChangePassword, UpdateProfile, UserProfile } from "./types";
+import {
+    ChangePasswordSchema,
+    UpdateProfileSchema,
+    UserProfileSchema,
+    type ChangePassword,
+    type UpdateProfile,
+    type UserProfile,
+} from "./types";
 
 import { get, put } from "@/api/client";
 import type { ApiResponse } from "@/types";
 
 export async function getProfile(): Promise<UserProfile> {
     const response = await get<ApiResponse<UserProfile>>('/api/users/profile/me');
-    return response.data;
+    return UserProfileSchema.parse(response.data);
 }
 
 export async function updateProfile(data: UpdateProfile): Promise<UserProfile> {
-    const response = await put<ApiResponse<UserProfile>>('/api/users/profile/me', data);
-    return response.data;
+    const payload = UpdateProfileSchema.parse(data);
+    const response = await put<ApiResponse<UserProfile>>('/api/users/profile/me', payload);
+    return UserProfileSchema.parse(response.data);
 }
 
 export async function changePassword(data: ChangePassword): Promise<void> {
-    await put('/api/users/change-password/me', data);
+    await put('/api/users/change-password/me', ChangePasswordSchema.parse(data));
 }
 
 export async function uploadAvatar(file: File): Promise<{ avatarUrl: string }> {

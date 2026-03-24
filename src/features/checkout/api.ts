@@ -1,4 +1,5 @@
-import type { Address, CreateAddress, Order } from './types';
+import type { Address, CreateAddress, PaymentAccountResponse } from './types';
+import { PaymentAccountResponseSchema } from './types';
 
 import { get, post, del } from '@/api/client';
 import type { ApiResponse } from '@/types/api.types';
@@ -25,20 +26,7 @@ export async function deleteAddress(id: string): Promise<void> {
     await del(`/api/addresses/${id}`);
 }
 
-/**
- * Order API
- */
-export async function placeOrder(orderData: Record<string, unknown>): Promise<Order> {
-    const response = await post<ApiResponse<Order>>('/api/orders', orderData);
-    return response.data;
-}
-
-export async function getOrders(): Promise<Order[]> {
-    const response = await get<ApiResponse<Order[]>>('/api/orders/paged');
-    return response.data || [];
-}
-
-export async function getOrderById(id: string): Promise<Order> {
-    const response = await get<ApiResponse<Order>>(`/api/orders/${id}`);
-    return response.data;
+export async function getDefaultPaymentAccounts(): Promise<PaymentAccountResponse[]> {
+    const response = await get<PaymentAccountResponse[]>('/api/payment-accounts/default');
+    return response.map((item) => PaymentAccountResponseSchema.parse(item));
 }

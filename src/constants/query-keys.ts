@@ -23,6 +23,9 @@ export const userKeys = {
 export const checkoutKeys = {
     all: ['checkout'] as const,
     addresses: () => ['checkout', 'addresses'] as const,
-    orders: () => ['checkout', 'orders'] as const,
+    orders: (params?: { page?: number | undefined; size?: number | undefined; status?: string | undefined }) => {
+        if (params) return ['checkout', 'orders', params] as const;
+        return ['checkout', 'orders'] as const;
+    },
     order: (id: string) => ['checkout', 'orders', id] as const,
 };

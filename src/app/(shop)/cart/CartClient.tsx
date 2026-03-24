@@ -1,7 +1,7 @@
 "use client";
 
 import { Ticket } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { CartItem } from "@/components/features/cart/CartItem";
@@ -10,6 +10,7 @@ import { Subscribe } from "@/components/features/home/Subscribe";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useCart } from "@/features/cart/hooks";
 import { useLanguage } from "@/providers/language.provider";
+import { useOrderFlowStore } from "@/store/order-flow.store";
 
 export default function CartClient() {
     const { t } = useLanguage();
@@ -18,6 +19,7 @@ export default function CartClient() {
     const items = useMemo(() => cart?.cartItems ?? [], [cart]);
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
     const [hasUserSelection, setHasUserSelection] = useState(false);
+    const setSelectedCartItemIds = useOrderFlowStore((state) => state.setSelectedCartItemIds);
     const effectiveSelectedIds = hasUserSelection
         ? selectedIds
         : items.map((item) => item.cartItemId);
@@ -48,6 +50,10 @@ export default function CartClient() {
     };
 
     const allSelected = items.length > 0 && effectiveSelectedIds.length === items.length;
+
+    useEffect(() => {
+        setSelectedCartItemIds(effectiveSelectedIds);
+    }, [effectiveSelectedIds, setSelectedCartItemIds]);
 
     if (isLoading) {
         return (

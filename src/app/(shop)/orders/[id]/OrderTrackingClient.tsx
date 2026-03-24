@@ -1,254 +1,180 @@
-"use client"
+"use client";
 
-import { ArrowLeft, Trash2, CheckCircle2, Circle } from "lucide-react"
-import Link from "next/link"
-import { useState, useMemo } from "react"
+import { ArrowLeft, Circle, Trash2 } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useMemo } from "react";
+import { toast } from "sonner";
 
-import { OrderCard } from "@/components/features/orders/OrderCard"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { useOrder, useOrders } from "@/features/checkout/hooks"
-import type { Address } from "@/features/checkout/types"
-import { useLanguage } from "@/providers/language.provider"
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useOrder } from "@/features/orders/hooks";
+import { canGiveFeedback, formatCurrencyVnd, formatOrderStatusLabel, formatPaymentMethodLabel } from "@/features/orders/presentation";
+import { useLanguage } from "@/providers/language.provider";
+import { useOrderFlowStore } from "@/store/order-flow.store";
+import { toErrorMessage } from "@/utils/error-message";
 
-function toReadableAddress(address: Address | undefined) {
-    if (!address) return "";
-    return `${address.no} ${address.street}, ${address.ward}, ${address.city}, ${address.province}`;
+const timelineOrder = ["PENDING", "SHIPPING", "DELIVERED"] as const;
+
+function toDisplayItemName(item: unknown, index: number) {
+    if (typeof item !== "object" || item === null) return `Item ${index + 1}`;
+    if ("name" in item && typeof item.name === "string") return item.name;
+    if ("productName" in item && typeof item.productName === "string") return item.productName;
+    if ("productId" in item && typeof item.productId === "string") return item.productId;
+    return `Item ${index + 1}`;
+}
+
+function toDisplayItemQuantity(item: unknown) {
+    if (typeof item === "object" && item !== null && "quantity" in item && typeof item.quantity === "number") {
+        return item.quantity;
+    }
+    return 1;
 }
 
 export default function OrderTrackingClient({ id }: { id: string }) {
-    const { t, locale } = useLanguage()
-    const currentLocale = locale === 'vi' ? 'vi-VN' : 'en-US';
-    const [searchOrderId, setSearchOrderId] = useState("")
+    const { t, locale } = useLanguage();
+    const currentLocale = locale === "vi" ? "vi-VN" : "en-US";
+    const router = useRouter();
+    const { data: order, isLoading, isError, error } = useOrder(id);
+    const trackOrderInput = useOrderFlowStore((state) => state.trackOrderInput);
+    const setTrackOrderInput = useOrderFlowStore((state) => state.setTrackOrderInput);
 
-    const { data: order, isLoading: isLoadingOrder, isError: isErrorOrder } = useOrder(id);
-    const { data: allOrders = [] } = useOrders();
+    const timeline = useMemo(() => {
+        if (!order) return [];
+        const currentIndex = timelineOrder.indexOf(
+            order.deliveryStatus === "CANCELLED" ? "PENDING" : (order.deliveryStatus as (typeof timelineOrder)[number])
+        );
+        return timelineOrder.map((status, index) => ({
+            status,
+            completed: currentIndex >= index,
+            happenedAt: index === 0 ? order.orderDate : order.updatedAt,
+        }));
+    }, [order]);
 
-    const deliveredOrders = useMemo(() => {
-        return allOrders
-            .filter(o => o.status === 'delivered')
-            .map(o => ({
-                orderId: o.id,
-                items: o.items.map(item => ({ quantity: item.quantity, name: item.name }))
-            }));
-    }, [allOrders]);
-
-    if (isLoadingOrder) {
-        return <div className="flex justify-center p-8">{t('loading', {}, "Loading...")}</div>;
+    if (isLoading) {
+        return <div className="flex justify-center p-8">{t("loading", {}, "Loading...")}</div>;
     }
 
-    if (isErrorOrder || !order) {
+    if (isError || !order) {
         return (
             <div className="container mx-auto px-4 py-16 text-center">
-                <h2 className="text-2xl font-bold text-gray-900">{t('order_not_found', {}, "Order not found")}</h2>
-                <p className="text-gray-600 mt-2">{t('order_not_found_desc', {}, "We couldn't find the order you're looking for.")}</p>
-                <Link href="/orders" className="inline-block mt-4 text-[#3E93B3] font-medium">{t('back_to_orders', {}, "Back to list of orders")}</Link>
+                <h2 className="text-2xl font-bold text-gray-900">{t("order_not_found", {}, "Order not found")}</h2>
+                <p className="text-gray-600 mt-2">
+                    {toErrorMessage(error, t("order_not_found_desc", {}, "We couldn't find the order you're looking for."))}
+                </p>
+                <Link href="/orders" className="inline-block mt-4 text-[#3E93B3] font-medium">
+                    {t("back_to_orders", {}, "Back to list of orders")}
+                </Link>
             </div>
         );
     }
 
-    // Mock timeline as backend might not provide full history yet
-    const timeline = [
-        { status: t('status_order_created', {}, "Order created"), date: order.createdAt, completed: true },
-        { status: t('status_payment_success', {}, "Payment success"), date: order.createdAt, completed: order.status !== 'created' },
-        { status: t('status_on_shipping', {}, "On shipping"), date: order.createdAt, completed: ['shipping', 'delivered'].includes(order.status) },
-        { status: t('status_order_delivered', {}, "Order delivered"), date: order.createdAt, completed: order.status === 'delivered' },
-    ];
-
     return (
-        <div className="min-h-screen bg-[#F9F8FE]">
-            <div className="container mx-auto px-4 py-8">
-                <div className="grid lg:grid-cols-4 gap-8">
-                    {/* Left Sidebar */}
-                    <div className="lg:col-span-1 space-y-6">
-                        {/* Status Notes */}
-                        <div className="bg-white p-6 rounded-xl border border-gray-100 space-y-4">
-                            <h3 className="font-bold text-gray-900">{t('tracking_note_title', {}, "Note for tracking order")}</h3>
-                            <div className="space-y-3 text-sm">
-                                <div>
-                                    <p className="font-medium text-gray-900">{t('status_order_created', {}, "Status: Order created")}</p>
-                                    <Button variant="secondary" className="w-full mt-2 bg-[#8AB0C3] hover:bg-[#7A9EB0] text-white">
-                                        {t('cancel_order', {}, "Cancel Order")}
-                                    </Button>
-                                </div>
-                                <div>
-                                    <p className="font-medium text-gray-900">{t('status_payment_success', {}, "Status: Payment success [Done]")}</p>
-                                </div>
-                                <div>
-                                    <p className="font-medium text-gray-900">{t('status_on_shipping', {}, "Status: On shipping")}</p>
-                                    <Button variant="secondary" className="w-full mt-2 bg-[#8AB0C3] hover:bg-[#7A9EB0] text-white">
-                                        {t('order_received_btn', {}, "Order received")}
-                                    </Button>
-                                </div>
-                                <div>
-                                    <p className="font-medium text-gray-900">{t('status_order_delivered', {}, "Status: Order delivered")}</p>
-                                    <Button variant="secondary" className="w-full mt-2 bg-[#8AB0C3] hover:bg-[#7A9EB0] text-white">
-                                        {t('give_feedback_btn', {}, "Give feedback")}
-                                    </Button>
-                                </div>
-                                <div>
-                                    <p className="font-medium text-gray-900">{t('after_giving_feedback', {}, "After giving feedback")}</p>
-                                    <Button variant="secondary" className="w-full mt-2 bg-[#C3BFCE] hover:bg-[#B3AFBE] text-white">
-                                        {t('see_feedback_btn', {}, "See feedback")}
-                                    </Button>
-                                </div>
-                            </div>
-                        </div>
+        <div className="min-h-screen bg-[#F4F1F3]">
+            <div className="container mx-auto px-4 py-8 space-y-6">
+                <Link href="/orders" className="inline-flex items-center gap-2 text-[#1E1E1E] hover:text-[#0D6E97]">
+                    <ArrowLeft className="h-4 w-4" />
+                    <span className="font-semibold">{t("back_to_orders", {}, "Back to list of orders")}</span>
+                </Link>
 
-                        {/* Delivered Orders */}
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                                <h3 className="font-bold text-gray-900">{t('delivered_orders_title', {}, "Delivered Orders")}</h3>
-                                <div className="bg-[#3E93B3] text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                                    {deliveredOrders.length}
-                                </div>
-                            </div>
-                            <div className="space-y-3">
-                                {deliveredOrders.map((order, index) => (
-                                    <OrderCard
-                                        key={index}
-                                        orderId={order.orderId}
-                                        items={order.items}
-                                        status="delivered"
-                                    />
-                                ))}
-                            </div>
+                <section className="bg-[#C3A57D] rounded-xl p-8 text-center">
+                    <h1 className="text-4xl font-bold text-white">{t("track_your_order_title", {}, "Track Your Order")}</h1>
+                    <div className="max-w-3xl mx-auto mt-6 bg-[#F8F8FC] border border-[#8AB0C3] rounded-xl p-6 grid md:grid-cols-[1fr_auto] gap-4">
+                        <div className="relative">
+                            <Input
+                                placeholder={t("order_id_placeholder", {}, "Order ID")}
+                                value={trackOrderInput}
+                                onChange={(event) => setTrackOrderInput(event.target.value)}
+                                className="h-12 bg-white border-[#8AB0C3] pr-10"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setTrackOrderInput("")}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </button>
                         </div>
+                        <Button
+                            type="button"
+                            className="h-12 px-8 bg-[#8AB0C3] hover:bg-[#769BAD] text-white font-semibold"
+                            onClick={() => {
+                                if (!trackOrderInput.trim()) {
+                                    toast.error(t("order_id_required", {}, "Please enter order id"));
+                                    return;
+                                }
+                                router.push(`/orders/${trackOrderInput.trim()}`);
+                            }}
+                        >
+                            {t("track_order_btn", {}, "Track order")}
+                        </Button>
                     </div>
+                </section>
 
-                    {/* Main Content */}
-                    <div className="lg:col-span-3 space-y-6">
-                        {/* Back to list */}
-                        <Link href="/orders" className="inline-flex items-center gap-2 text-gray-700 hover:text-gray-900">
-                            <ArrowLeft className="h-4 w-4" />
-                            <span className="font-medium">{t('back_to_orders', {}, "Back to list of orders")}</span>
-                        </Link>
-
-                        {/* Track Order Section */}
-                        <div className="bg-[#D4A574] p-8 rounded-xl text-center space-y-4">
-                            <h1 className="text-2xl font-bold text-white">{t('track_your_order_title', {}, "Track Your Order")}</h1>
-                            <p className="text-white/90">{t('track_order_desc', {}, "Stay updated on your delivery status")}</p>
-
-                            <div className="max-w-md mx-auto flex gap-2">
-                                <div className="relative flex-1">
-                                    <Input
-                                        placeholder={t('order_id_placeholder', {}, "Order ID")}
-                                        value={searchOrderId}
-                                        onChange={(e) => setSearchOrderId(e.target.value)}
-                                        className="bg-white h-12"
-                                    />
-                                    <button
-                                        onClick={() => setSearchOrderId("")}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2"
-                                    >
-                                        <Trash2 className="h-4 w-4 text-gray-400" />
-                                    </button>
-                                </div>
-                                <Button className="bg-[#8AB0C3] hover:bg-[#7A9EB0] text-white h-12 px-6">
-                                    {t('track_order_btn', {}, "Track order")}
-                                </Button>
-                            </div>
-                        </div>
-
-                        {/* Order Details */}
-                        <div className="bg-white p-6 rounded-xl border border-gray-100 space-y-6">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <h2 className="font-bold text-gray-900">{t('order_id_label', {}, "Order ID")}</h2>
-                                    <p className="text-lg font-medium text-gray-700">{order.id}</p>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-sm text-gray-500">{order.status}</p>
-                                    <p className="text-sm font-medium text-gray-900">{order.createdAt}</p>
-                                </div>
-                            </div>
-
-                            {/* Timeline */}
-                            <div className="space-y-4">
-                                {timeline.map((item, index) => (
-                                    <div key={index} className="flex gap-4">
-                                        <div className="flex flex-col items-center">
-                                            {item.completed ? (
-                                                <CheckCircle2 className="h-5 w-5 text-[#3E93B3]" />
-                                            ) : (
-                                                <Circle className="h-5 w-5 text-gray-300" />
-                                            )}
-                                            {index < timeline.length - 1 && (
-                                                <div className="w-0.5 h-12 bg-gray-200 my-1" />
-                                            )}
-                                        </div>
-                                        <div className="flex-1 pb-4">
-                                            <p className="font-medium text-gray-900">{item.status}</p>
-                                            <p className="text-sm text-gray-500">{item.date}</p>
-                                            {item.status === t('status_on_shipping', {}, "On shipping") && (
-                                                <p className="text-sm text-gray-600 mt-1" dangerouslySetInnerHTML={{ __html: t('timeline_desc_shipping', {}, "Your order has been picked up by the carrier.<br />Your order is currently at [location].") }} />
-                                            )}
-                                            {item.status === t('status_payment_success', {}, "Payment success") && (
-                                                <p className="text-sm text-gray-600 mt-1">
-                                                    {t('timeline_desc_paid', {}, "Your order has been successfully paid using [payment method].")}
-                                                </p>
-                                            )}
-                                            {item.status === t('status_order_created', {}, "Order created") && (
-                                                <p className="text-sm text-gray-600 mt-1">
-                                                    {t('timeline_desc_created', {}, "Your order has been created and is waiting for confirmation.")}
-                                                </p>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            {/* Order Items */}
-                            <div className="border-t border-gray-100 pt-4 space-y-2">
+                <section className="bg-white rounded-xl border border-[#D3E4F4] p-8">
+                    <div className="grid xl:grid-cols-2 gap-8">
+                        <div className="space-y-5">
+                            <h2 className="text-lg font-semibold text-[#1E1E1E]">#{order.orderId}</h2>
+                            <div className="space-y-3 border-y border-[#D3E4F4] py-4">
                                 {order.items.map((item, index) => (
-                                    <div key={index} className="flex justify-between text-sm">
-                                        <span className="text-gray-600">{item.quantity}x</span>
-                                        <span className="flex-1 ml-4 text-gray-900">{item.name}</span>
-                                        <span className="font-medium text-[#3E93B3]">
-                                            {t('price_vnd', { price: new Intl.NumberFormat(currentLocale).format(item.unitPrice) }, `${new Intl.NumberFormat(currentLocale).format(item.unitPrice)} VND`)}
-                                        </span>
+                                    <div key={`${order.orderId}-${index}`} className="flex justify-between gap-4 text-sm">
+                                        <span className="text-[#556070]">{toDisplayItemQuantity(item)}x</span>
+                                        <span className="flex-1 text-[#1E1E1E]">{toDisplayItemName(item, index)}</span>
                                     </div>
                                 ))}
-                                <div className="text-sm text-[#3E93B3] cursor-pointer hover:underline">
-                                    {order.status}
+                                <div className="flex justify-between text-lg font-semibold pt-2">
+                                    <span className="text-[#1E1E1E]">{t("order_total", {}, "Order total")}</span>
+                                    <span className="text-[#0D6E97]">{formatCurrencyVnd(order.totalAmount, currentLocale)}</span>
                                 </div>
                             </div>
 
-                            {/* Give Feedback Button */}
-                            <Link href={`/orders/${id}/feedback`}>
-                                <Button className="w-full bg-[#8AB0C3] hover:bg-[#7A9EB0] text-white h-12">
-                                    {t('give_feedback_btn', {}, "Give feedback")}
+                            <p className="text-[#0D6E97] text-lg font-semibold">[{formatOrderStatusLabel(order.deliveryStatus)}]</p>
+
+                            <Link href={`/orders/${order.orderId}/feedback`}>
+                                <Button
+                                    type="button"
+                                    disabled={!canGiveFeedback(order)}
+                                    className="bg-[#8AB0C3] hover:bg-[#769BAD] text-white disabled:opacity-60 disabled:bg-[#BFC7CF]"
+                                >
+                                    {t("give_feedback_btn", {}, "Give feedback")}
                                 </Button>
                             </Link>
                         </div>
 
-                        {/* Shipping Address */}
-                        <div className="bg-white p-6 rounded-xl border border-gray-100">
-                            <h3 className="font-bold text-gray-900 mb-4">{t('shipping_address_title', {}, "Shipping Address")}</h3>
-                            <div className="space-y-2 text-sm">
-                                <p className="font-medium text-gray-900">{order.shippingAddress.receiverName}</p>
-                                <p className="text-gray-600">{toReadableAddress(order.shippingAddress)}</p>
-                                <p className="text-gray-600">{order.shippingAddress.receiverPhoneNumber}</p>
-                            </div>
-                        </div>
-
-                        {/* Payment Info */}
-                        <div className="bg-white p-6 rounded-xl border border-gray-100">
-                            <div className="flex justify-between items-start mb-4">
-                                <h3 className="font-bold text-gray-900">{t('payment_info_title', {}, "Payment Info")}</h3>
-                            </div>
-                            <div className="space-y-2 text-sm">
-                                <p className="text-gray-600">{t('payment_method_label', {}, "Payment Method")}</p>
-                                <p className="font-medium text-gray-900">
-                                    {order.paymentMethod === 'bank' && t('direct_bank_transfer', {}, "Direct bank transfer")}
-                                    {order.paymentMethod === 'wallet' && t('e_wallet', {}, "E-wallet")}
-                                    {order.paymentMethod === 'cod' && t('cash_on_delivery', {}, "Cash on delivery")}
-                                </p>
-                            </div>
+                        <div className="space-y-4">
+                            {timeline.map((item, index) => (
+                                <div key={`${item.status}-${index}`} className="grid grid-cols-[20px_1fr_auto] gap-4">
+                                    <div className="flex flex-col items-center">
+                                        <Circle
+                                            className={`h-5 w-5 ${
+                                                item.completed ? "fill-[#8AB0C3] text-[#8AB0C3]" : "fill-transparent text-[#D1D7DF]"
+                                            }`}
+                                        />
+                                        {index < timeline.length - 1 && <div className="w-0.5 h-full min-h-8 bg-[#C8D5E0]" />}
+                                    </div>
+                                    <div className="font-semibold text-[#1E1E1E]">{formatOrderStatusLabel(item.status)}</div>
+                                    <p className="text-sm text-[#556070]">{new Date(item.happenedAt).toLocaleString(currentLocale)}</p>
+                                </div>
+                            ))}
                         </div>
                     </div>
-                </div>
+                </section>
+
+                <section className="grid lg:grid-cols-2 gap-6">
+                    <div className="bg-white rounded-xl border border-[#D3E4F4] p-6">
+                        <h3 className="text-2xl font-semibold text-[#1E1E1E] mb-4">
+                            {t("shipping_address_title", {}, "Shipping Address")}
+                        </h3>
+                        <p className="text-[#1E1E1E]">{`Address ID: ${order.addressId}`}</p>
+                    </div>
+
+                    <div className="bg-white rounded-xl border border-[#D3E4F4] p-6">
+                        <h3 className="text-2xl font-semibold text-[#1E1E1E] mb-4">{t("payment_info_title", {}, "Payment Info")}</h3>
+                        <p className="text-[#1E1E1E] font-semibold mt-1">{formatPaymentMethodLabel(order.paymentMethod)}</p>
+                        <p className="text-sm text-[#556070] mt-2">{`Payment account ID: ${order.paymentAccountId}`}</p>
+                    </div>
+                </section>
             </div>
         </div>
-    )
+    );
 }

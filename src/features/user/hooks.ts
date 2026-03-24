@@ -3,6 +3,8 @@ import { toast } from 'sonner';
 
 import { getProfile, updateProfile, changePassword, uploadAvatar } from './api';
 
+import { toErrorMessage } from '@/utils/error-message';
+
 const USER_KEY = ['user', 'profile'] as const;
 
 export function useProfile() {
@@ -20,8 +22,7 @@ export function useProfile() {
             toast.success('Profile updated successfully');
         },
         onError: (error: unknown) => {
-            const message = error instanceof Error ? error.message : 'Failed to update profile';
-            toast.error(message);
+            toast.error(toErrorMessage(error, 'Failed to update profile'));
         },
     });
 
@@ -31,8 +32,7 @@ export function useProfile() {
             toast.success('Password changed successfully');
         },
         onError: (error: unknown) => {
-            const message = error instanceof Error ? error.message : 'Failed to change password';
-            toast.error(message);
+            toast.error(toErrorMessage(error, 'Failed to change password'));
         },
     });
 
@@ -43,8 +43,7 @@ export function useProfile() {
             toast.success('Avatar updated successfully');
         },
         onError: (error: unknown) => {
-            const message = error instanceof Error ? error.message : 'Failed to update avatar';
-            toast.error(message);
+            toast.error(toErrorMessage(error, 'Failed to update avatar'));
         },
     });
 
