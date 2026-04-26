@@ -55,3 +55,14 @@ Các API trả về danh sách có phân trang sẽ theo định dạng `Paginat
 
 ---
 *Tài liệu được biên soạn bởi Antigravity Technical Documentation Agent.*
+
+---
+
+## Recent Contract Fixes
+
+- paymentMethod in checkout confirm is E_WALLET | BANK_ACCOUNT | COD.
+- auth register endpoint is POST /api/auth/register/local.
+- reset password request field is esetToken.
+- delivery log query endpoint is GET /api/delivery-logs/order/{orderId} with fields deliveryLogId, orderId, status, message, createdAt.
+- admin order list endpoint is GET /api/orders/admin with optional status and pagination params.
+

@@ -31,25 +31,29 @@ function toOrderCardItems(order: { items: unknown[] }) {
 
 export default function OrdersClient() {
     const { t } = useLanguage();
+    const awaitingPaymentQuery = useOrders({ page: 0, size: 20, status: "AWAITING_PAYMENT" });
     const awaitingQuery = useOrders({ page: 0, size: 20, status: "AWAITING_CONFIRM" });
     const pendingQuery = useOrders({ page: 0, size: 20, status: "PENDING" });
-    const shippingQuery = useOrders({ page: 0, size: 20, status: "SHIPPING" });
+    const shippingQuery = useOrders({ page: 0, size: 20, status: "ON_SHIPPING" });
     const deliveredQuery = useOrders({ page: 0, size: 20, status: "DELIVERED" });
-    const canceledQuery = useOrders({ page: 0, size: 20, status: "CANCELLED" });
+    const canceledQuery = useOrders({ page: 0, size: 20, status: "CANCELED" });
 
     const isLoading =
+        awaitingPaymentQuery.isLoading ||
         awaitingQuery.isLoading ||
         pendingQuery.isLoading ||
         shippingQuery.isLoading ||
         deliveredQuery.isLoading ||
         canceledQuery.isLoading;
     const isError =
+        awaitingPaymentQuery.isError ||
         awaitingQuery.isError ||
         pendingQuery.isError ||
         shippingQuery.isError ||
         deliveredQuery.isError ||
         canceledQuery.isError;
     const error =
+        awaitingPaymentQuery.error ||
         awaitingQuery.error ||
         pendingQuery.error ||
         shippingQuery.error ||
@@ -60,31 +64,35 @@ export default function OrdersClient() {
         () => [...(awaitingQuery.data?.items ?? []), ...(pendingQuery.data?.items ?? [])],
         [awaitingQuery.data?.items, pendingQuery.data?.items]
     );
+    const awaitingPaymentSource = useMemo(
+        () => awaitingPaymentQuery.data?.items ?? [],
+        [awaitingPaymentQuery.data?.items]
+    );
     const shippingSource = useMemo(() => shippingQuery.data?.items ?? [], [shippingQuery.data?.items]);
     const deliveredSource = useMemo(() => deliveredQuery.data?.items ?? [], [deliveredQuery.data?.items]);
     const canceledSource = useMemo(() => canceledQuery.data?.items ?? [], [canceledQuery.data?.items]);
 
     const orders = useMemo(
-        () => [...createdSource, ...shippingSource, ...deliveredSource, ...canceledSource],
-        [createdSource, shippingSource, deliveredSource, canceledSource]
+        () => [...awaitingPaymentSource, ...createdSource, ...shippingSource, ...deliveredSource, ...canceledSource],
+        [awaitingPaymentSource, createdSource, shippingSource, deliveredSource, canceledSource]
     );
 
     const createdOrders = useMemo(
         () =>
-            createdSource
+            [...awaitingPaymentSource, ...createdSource]
                 .filter((order) => isCreatedOrder(order.deliveryStatus))
                 .map((order) => ({
                     orderId: order.orderId,
                     items: toOrderCardItems(order),
                     status: order.deliveryStatus,
                 })),
-        [createdSource]
+        [awaitingPaymentSource, createdSource]
     );
 
     const shippingOrders = useMemo(
         () =>
             shippingSource
-                .filter((order) => order.deliveryStatus === "SHIPPING")
+                .filter((order) => order.deliveryStatus === "ON_SHIPPING")
                 .map((order) => ({
                     orderId: order.orderId,
                     items: toOrderCardItems(order),
@@ -108,7 +116,7 @@ export default function OrdersClient() {
     const canceledOrders = useMemo(
         () =>
             canceledSource
-                .filter((order) => order.deliveryStatus === "CANCELLED")
+                .filter((order) => order.deliveryStatus === "CANCELED")
                 .map((order) => ({
                     orderId: order.orderId,
                     items: toOrderCardItems(order),

@@ -160,3 +160,13 @@
     display: none;
   }
 }
+
+/* 
+ * 1. Global Interaction Fixes
+ * Đảm bảo các thành phần tương tác luôn hiển thị con trỏ chuột pointer.
+ */
+button, 
+[role="button"],
+.cursor-pointer {
+  cursor: pointer !important;
+}

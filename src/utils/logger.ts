@@ -32,8 +32,8 @@ class Logger {
         const prefix = `[${timestamp}] [${level.toUpperCase()}]`;
 
         const logFn = {
-            debug: console.debug,
-            info: console.info,
+            debug: console.warn,
+            info: console.warn,
             warn: console.warn,
             error: console.error,
         }[level];

@@ -39,7 +39,7 @@ export function PaymentMethodCard({
 }: PaymentMethodCardProps) {
   const { t } = useLanguage()
   return (
-    <div className="bg-white p-6 rounded-xl border border-gray-100 space-y-4">
+    <div className="bg-card p-5 sm:p-6 rounded-lg border border-border space-y-4">
       {/* Tên Phương thức và Biểu tượng */}
       <div className="flex justify-between items-start">
         <div className="flex items-center gap-2">
@@ -48,35 +48,35 @@ export function PaymentMethodCard({
           ) : (
             <Wallet className="h-5 w-5 text-gray-700" />
           )}
-          <span className="font-bold text-gray-900">{name}</span>
+          <span className="font-bold text-foreground">{name}</span>
         </div>
         {/* Nhãn Mặc định */}
         {isDefault && (
-          <span className="text-sm font-medium text-gray-500">{t('default', {}, "Default")}</span>
+          <span className="text-sm font-medium text-muted-foreground">{t('default', {}, "Default")}</span>
         )}
       </div>
 
       {/* Thông tin tài khoản */}
       <div className="space-y-1 pl-7">
-        <p className="text-sm text-gray-500 uppercase">{accountName}</p>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-muted-foreground uppercase">{accountName}</p>
+        <p className="text-sm text-muted-foreground">
           {type === "bank" ? t('bank_account_label', {}, "Bank account") : t('wallet_number_label', {}, "Digital wallet number")}
         </p>
-        <p className="font-medium text-gray-900">{accountNumber}</p>
+        <p className="font-medium text-foreground">{accountNumber}</p>
       </div>
 
       {/* Các nút thao tác */}
       <div className="flex gap-4 pt-2 pl-7">
         <Button
           variant="secondary"
-          className="flex-1 bg-[#D3E4F4] hover:bg-[#C1D8EB] text-gray-700 font-medium text-xs"
+          className="flex-1 min-h-10 bg-accent hover:bg-accent/90 text-accent-foreground font-medium text-xs"
           onClick={onUse}
         >
           {type === "bank" ? t('use_account_btn', {}, "Use account") : t('use_wallet_btn', {}, "Use this wallet")}
         </Button>
         <Button
           variant="secondary"
-          className="flex-1 bg-[#D3E4F4] hover:bg-[#C1D8EB] text-gray-700 font-medium text-xs"
+          className="flex-1 min-h-10 bg-accent hover:bg-accent/90 text-accent-foreground font-medium text-xs"
           onClick={onSetDefault}
         >
           {t('set_as_default', {}, "Set as default")}

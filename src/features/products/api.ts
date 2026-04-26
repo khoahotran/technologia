@@ -1,21 +1,24 @@
-﻿import type {
-    Product,
-    ProductListResponse,
+import type {
+    ApplyProductsToDiscountRequest,
     Brand,
     Category,
-    ProductSearchParams
-} from './types';
+    CreateBrandRequest,
+    CreateCategoryRequest,
+    CreateProductRequest,
+    CreateProductVariantRequest,
+    Product,
+    ProductListResponse,
+    ProductSearchParams,
+    UpdateProductRequest,
+    UpdateProductVariantRequest,
+} from "./types";
 
-import { get } from '@/api/client';
-import type { ApiResponse, PaginatedResponse } from '@/types/api.types';
+import { del, get, patch, post, put } from "@/api/client";
+import type { ApiResponse, PaginatedResponse } from "@/types/api.types";
 
-/**
- * Fetch products with pagination and filters
- */
 export async function getProducts(params: ProductSearchParams = {}): Promise<ProductListResponse> {
-    const response = await get<PaginatedResponse<Product>>('/api/products/search-filter', { params });
+    const response = await get<PaginatedResponse<Product>>("/api/products/search-filter", { params });
 
-    // Transform backend PaginationBaseResponse to our ProductListResponse
     return {
         items: response.data || [],
         pageNumber: response.page_number ?? 0,
@@ -25,25 +28,106 @@ export async function getProducts(params: ProductSearchParams = {}): Promise<Pro
     };
 }
 
-/**
- * Fetch a single product by ID
- */
 export async function getProductById(id: string | number): Promise<Product> {
-    // Returns BaseResponse<ProductResponse>
     const response = await get<ApiResponse<Product>>(`/api/products/${id}`);
     return response.data;
 }
 
-/**
- * Fetch all brands (Direct Array)
- */
 export async function getBrands(): Promise<Brand[]> {
-    return get<Brand[]>('/api/brands');
+    return get<Brand[]>("/api/brands");
 }
 
-/**
- * Fetch all categories (Direct Array)
- */
 export async function getCategories(): Promise<Category[]> {
-    return get<Category[]>('/api/categories');
+    return get<Category[]>("/api/categories");
+}
+
+export async function createBrandAdmin(payload: CreateBrandRequest): Promise<Brand> {
+    const response = await post<ApiResponse<Brand>>("/api/brands/admin", payload);
+    return response.data;
+}
+
+export async function updateBrandAdmin(
+    brandId: number | string,
+    payload: CreateBrandRequest
+): Promise<Brand> {
+    const response = await patch<ApiResponse<Brand>>(`/api/brands/admin/${brandId}`, payload);
+    return response.data;
+}
+
+export async function deleteBrandAdmin(brandId: number | string): Promise<void> {
+    await del<ApiResponse<null>>(`/api/brands/admin/${brandId}`);
+}
+
+export async function createCategoryAdmin(payload: CreateCategoryRequest): Promise<Category> {
+    const response = await post<ApiResponse<Category>>("/api/categories/admin", payload);
+    return response.data;
+}
+
+export async function updateCategoryAdmin(
+    categoryId: number | string,
+    payload: CreateCategoryRequest
+): Promise<Category> {
+    const response = await patch<ApiResponse<Category>>(`/api/categories/admin/${categoryId}`, payload);
+    return response.data;
+}
+
+export async function deleteCategoryAdmin(categoryId: number | string): Promise<void> {
+    await del<ApiResponse<null>>(`/api/categories/admin/${categoryId}`);
+}
+
+export async function createProductAdmin(payload: CreateProductRequest): Promise<Product> {
+    const response = await post<ApiResponse<Product>>("/api/products/admin", payload);
+    return response.data;
+}
+
+export async function addProductVariantAdmin(
+    productId: string,
+    payload: CreateProductVariantRequest
+): Promise<Product> {
+    const response = await post<ApiResponse<Product>>(`/api/products/admin/${productId}/variant`, payload);
+    return response.data;
+}
+
+export async function addVariantImageAdmin(
+    productId: string,
+    variantId: string,
+    image: File
+): Promise<void> {
+    const formData = new FormData();
+    formData.append("image", image);
+    await post<ApiResponse<unknown>>(`/api/products/admin/${productId}/variant/${variantId}/image`, formData);
+}
+
+export async function updateProductAdmin(
+    productId: string,
+    payload: UpdateProductRequest
+): Promise<Product> {
+    const response = await put<ApiResponse<Product>>(`/api/products/admin/${productId}`, payload);
+    return response.data;
+}
+
+export async function updateProductVariantAdmin(
+    productId: string,
+    variantId: string,
+    payload: UpdateProductVariantRequest
+): Promise<void> {
+    await put<ApiResponse<unknown>>(`/api/products/admin/${productId}/variant/${variantId}`, payload);
+}
+
+export async function deleteProductAdmin(productId: string): Promise<void> {
+    await del<ApiResponse<null>>(`/api/products/admin/${productId}`);
+}
+
+export async function deleteProductVariantAdmin(
+    productId: string,
+    variantId: string
+): Promise<void> {
+    await del<ApiResponse<null>>(`/api/products/admin/${productId}/variant/${variantId}`);
+}
+
+export async function applyProductsToDiscountAdmin(
+    discountId: string,
+    payload: ApplyProductsToDiscountRequest
+): Promise<void> {
+    await put<ApiResponse<unknown>>(`/api/discounts/admin/${discountId}/apply-products`, payload);
 }

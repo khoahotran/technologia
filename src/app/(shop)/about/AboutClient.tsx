@@ -1,6 +1,6 @@
 "use client"
 
-import { Users, TrendingUp, Heart, Award, Facebook, Linkedin, Youtube, Phone } from "lucide-react"
+import { Award, Facebook, Heart, Linkedin, Phone, TrendingUp, Users, Youtube } from "lucide-react"
 
 import { HorizontalScroll } from "@/components/features/about/HorizontalScroll"
 import { PartnerLogo } from "@/components/features/about/PartnerLogo"
@@ -10,7 +10,7 @@ import { ValueCard } from "@/components/features/about/ValueCard"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { useLanguage } from "@/providers/language.provider";
+import { useLanguage } from "@/providers/language.provider"
 
 export default function AboutClient() {
     const { t } = useLanguage();
@@ -40,22 +40,22 @@ export default function AboutClient() {
         {
             name: "Nguyễn Văn A",
             role: t('about_role_ceo', {}, "CEO & Founder"),
-            description: t('about_team_desc', {}, "I want TechStore to help everyone get the best technology products at the best prices."),
+            description: t('about_team_desc', {}, "I want Technologia to help everyone get the best technology products at the best prices."),
         },
         {
             name: "Trần Thị B",
             role: t('about_role_cto', {}, "CTO"),
-            description: t('about_team_desc', {}, "I want TechStore to help everyone get the best technology products at the best prices."),
+            description: t('about_team_desc', {}, "I want Technologia to help everyone get the best technology products at the best prices."),
         },
         {
             name: "Lê Văn C",
             role: t('about_role_marketing', {}, "Marketing Director"),
-            description: t('about_team_desc', {}, "I want TechStore to help everyone get the best technology products at the best prices."),
+            description: t('about_team_desc', {}, "I want Technologia to help everyone get the best technology products at the best prices."),
         },
         {
             name: "Phạm Thị D",
             role: t('about_role_sales', {}, "Sales Manager"),
-            description: t('about_team_desc', {}, "I want TechStore to help everyone get the best technology products at the best prices."),
+            description: t('about_team_desc', {}, "I want Technologia to help everyone get the best technology products at the best prices."),
         },
     ]
 
@@ -97,22 +97,6 @@ export default function AboutClient() {
                     </div>
                 </div>
             </section>
-
-            {/* Navigation Tabs */}
-            {/* <section className="bg-white border-b border-gray-200">
-                <div className="container mx-auto px-4">
-                    <div className="flex gap-8 overflow-x-auto scrollbar-hide">
-                        {["Giới thiệu", "Sản phẩm", "Đối tác", "Marketing"].map((tab) => (
-                            <button
-                                key={tab}
-                                className="py-4 px-2 text-gray-600 hover:text-[#3E93B3] whitespace-nowrap border-b-2 border-transparent hover:border-[#3E93B3] transition-colors"
-                            >
-                                {tab}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            </section> */}
 
             <div className="container mx-auto px-4 py-12 space-y-16">
                 {/* Stats Section */}

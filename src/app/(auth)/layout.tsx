@@ -24,7 +24,7 @@ export default function AuthLayout({
                 {children}
             </main>
             <footer className="py-6 text-center text-sm text-gray-500">
-                &copy; {new Date().getFullYear()} TechStore. All rights reserved.
+                &copy; {new Date().getFullYear()} Technologia. All rights reserved.
             </footer>
         </div>
     );

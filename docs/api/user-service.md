@@ -7,7 +7,7 @@ The User Service manages user profiles, authentication, addresses, and payment a
 All private endpoints require a Bearer Token in the `Authorization` header.
 
 ### Register Customer
-`POST /api/auth/register`
+`POST /api/auth/register/local`
 
 Creates a new customer account.
 
@@ -98,7 +98,7 @@ Sends a password reset link to the user's email.
 Resets the password using a token.
 
 **Request Body:** `ResetPasswordRequest`
-- `token` (String): The reset token.
+- `resetToken` (String): The reset token.
 - `newPassword` (String): The new password.
 
 **Response:** `BaseResponse<Void>`

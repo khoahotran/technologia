@@ -1,9 +1,11 @@
 import {
     ChangePasswordSchema,
     UpdateProfileSchema,
+    UpdateProfileApiRequestSchema,
     UserProfileSchema,
     type ChangePassword,
     type UpdateProfile,
+    type UpdateProfileApiRequest,
     type UserProfile,
 } from "./types";
 
@@ -17,17 +19,28 @@ export async function getProfile(): Promise<UserProfile> {
 
 export async function updateProfile(data: UpdateProfile): Promise<UserProfile> {
     const payload = UpdateProfileSchema.parse(data);
-    const response = await put<ApiResponse<UserProfile>>('/api/users/profile/me', payload);
+    const requestBody: UpdateProfileApiRequest = UpdateProfileApiRequestSchema.parse({
+        firstname: payload.firstName,
+        lastname: payload.lastName,
+        email: payload.email,
+        displayName: payload.displayName,
+        phoneNumber: payload.phoneNumber,
+    });
+    const response = await put<ApiResponse<UserProfile>>('/api/users/profile/me', requestBody);
     return UserProfileSchema.parse(response.data);
 }
 
 export async function changePassword(data: ChangePassword): Promise<void> {
-    await put('/api/users/change-password/me', ChangePasswordSchema.parse(data));
+    const payload = ChangePasswordSchema.parse(data);
+    await put('/api/users/change-password/me', {
+        oldPassword: payload.oldPassword,
+        newPassword: payload.newPassword,
+    });
 }
 
-export async function uploadAvatar(file: File): Promise<{ avatarUrl: string }> {
+export async function uploadAvatar(file: File): Promise<UserProfile> {
     const formData = new FormData();
     formData.append('avatar', file); // Field name should be 'avatar' as per docs
-    const response = await put<ApiResponse<{ avatarUrl: string }>>('/api/users/change-avatar/me', formData);
-    return response.data;
+    const response = await put<ApiResponse<UserProfile>>('/api/users/change-avatar/me', formData);
+    return UserProfileSchema.parse(response.data);
 }

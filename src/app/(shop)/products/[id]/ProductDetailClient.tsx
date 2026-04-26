@@ -60,8 +60,8 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
         }
         return (
             <div className="container mx-auto px-4 py-16 text-center">
-                <h2 className="text-2xl font-bold text-gray-900">{t('failed_to_load_product', {}, "Failed to load product")}</h2>
-                <p className="text-gray-600 mt-2">{(error as AppError)?.message || t('try_again_later', {}, "Please try again later.")}</p>
+                <h2 className="text-2xl font-bold text-foreground">{t('failed_to_load_product', {}, "Failed to load product")}</h2>
+                <p className="text-muted-foreground mt-2">{(error as AppError)?.message || t('try_again_later', {}, "Please try again later.")}</p>
                 <Button onClick={() => router.back()} className="mt-4" variant="outline">{t('go_back', {}, "Go back")}</Button>
             </div>
         );
@@ -102,26 +102,26 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
     const descriptionText = product.description || t('description_fallback', {}, "Product description will be updated soon.");
 
     return (
-        <div className="min-h-screen bg-[#EEF5FB]">
+        <div className="min-h-screen bg-background">
             {/* Breadcrumb */}
             <div className="container mx-auto px-4 py-3 text-sm">
-                <div className="flex items-center gap-1 text-gray-500">
-                    <button onClick={() => router.push("/")} className="hover:text-blue-600 transition-colors">{t('home', {}, "Home")}</button>
+                <div className="flex items-center gap-1 text-muted-foreground">
+                    <button onClick={() => router.push("/")} className="transition-colors hover:text-primary">{t('home', {}, "Home")}</button>
                     <ChevronRight className="w-3.5 h-3.5" />
-                    <button onClick={() => router.push(`/products?category=${product.category || ""}`)} className="hover:text-blue-600 transition-colors text-blue-600">
+                    <button onClick={() => router.push(`/products?category=${product.category || ""}`)} className="text-primary transition-colors hover:text-primary/80">
                         {product.category || t('category', {}, "Category")}
                     </button>
                     <ChevronRight className="w-3.5 h-3.5" />
-                    <span className="text-gray-900 font-medium truncate max-w-[200px]">{product.name}</span>
+                    <span className="font-medium text-foreground truncate max-w-[200px]">{product.name}</span>
                 </div>
             </div>
 
             {/* Product Card */}
             <div className="container mx-auto px-4 pb-6">
-                <div className="bg-white rounded-2xl p-6 lg:p-8 shadow-sm">
+                <div className="bg-card rounded-2xl p-4 sm:p-6 lg:p-8 shadow-sm">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
                         <div className="space-y-3">
-                            <div className="relative aspect-[4/3] bg-[#D9E6F2] rounded-xl overflow-hidden">
+                            <div className="relative aspect-[4/3] bg-accent rounded-xl overflow-hidden">
                                 <Image src={currentImage} alt={product.name} fill className="object-contain p-6" priority unoptimized />
                             </div>
                             <div className="grid grid-cols-4 gap-2">
@@ -129,7 +129,7 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                                     <button
                                         key={idx}
                                         onClick={() => setSelectedImage({ productId: id, image: img })}
-                                        className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${currentImage === img ? "border-[#3B82F6]" : "border-transparent bg-[#D9E6F2] hover:border-blue-300"}`}
+                                        className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-all ${currentImage === img ? "border-primary" : "border-transparent bg-accent hover:border-primary/40"}`}
                                     >
                                         <Image src={img} alt={`Thumbnail ${idx + 1}`} fill className="object-contain p-1.5" />
                                     </button>
@@ -138,38 +138,38 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                         </div>
 
                         <div className="space-y-4">
-                            <h1 className="text-xl lg:text-2xl font-semibold text-gray-900 leading-snug">{product.name}</h1>
+                            <h1 className="text-xl lg:text-2xl font-semibold text-foreground leading-snug">{product.name}</h1>
                             <div className="flex items-center gap-3 text-sm flex-wrap">
-                                <span className="text-gray-500">{t('sku', {}, "SKU")} {product.productId.slice(0, 7).toUpperCase()}</span>
+                                <span className="text-muted-foreground">{t('sku', {}, "SKU")} {product.productId.slice(0, 7).toUpperCase()}</span>
                                 <div className="flex items-center gap-1 text-yellow-400">
                                     {[...Array(5)].map((_, i) => (
                                         <Star key={i} className={`w-4 h-4 ${i < Math.round(product.averageRating || 4) ? "fill-current" : "text-gray-300"}`} />
                                     ))}
                                 </div>
-                                <span className="text-gray-500">({ratingCount})</span>
+                                <span className="text-muted-foreground">({ratingCount})</span>
                             </div>
 
                             <div className="flex items-start justify-between">
                                 <div>
-                                    <div className="text-2xl lg:text-3xl font-bold text-gray-900">{formatCurrency(displayPrice, 'VND', currentLocale)}</div>
-                                    <div className="text-sm text-gray-400 line-through mt-0.5">{formatCurrency(originalPrice, 'VND', currentLocale)}</div>
+                                    <div className="text-2xl lg:text-3xl font-bold text-foreground">{formatCurrency(displayPrice, 'VND', currentLocale)}</div>
+                                    <div className="text-sm text-muted-foreground line-through mt-0.5">{formatCurrency(originalPrice, 'VND', currentLocale)}</div>
                                 </div>
-                                <div className="flex flex-col gap-1 text-sm text-gray-500">
-                                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 rounded-full">
-                                        <PackageCheck className="w-4 h-4 text-blue-600" />
-                                        <span className="text-sm font-medium text-gray-700">{product.brandName || product.brand || t('official_store', {}, "Official Store")}</span>
+                                <div className="flex flex-col gap-1 text-sm text-muted-foreground">
+                                    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted rounded-full">
+                                        <PackageCheck className="w-4 h-4 text-primary" />
+                                        <span className="text-sm font-medium text-foreground">{product.brandName || product.brand || t('official_store', {}, "Official Store")}</span>
                                     </div>
                                     <div className="flex items-center gap-1.5">
-                                        <Eye className="w-4 h-4 text-blue-400 shrink-0" />
+                                        <Eye className="w-4 h-4 text-primary/70 shrink-0" />
                                         <span>{formatNumber(viewedCount, currentLocale)} {t('viewed', {}, "Viewed")}</span>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="space-y-1.5 text-sm text-gray-600">
+                            <div className="space-y-1.5 text-sm text-muted-foreground">
                                 {productProperties.map((prop) => (
                                     <div key={prop.label} className="flex items-center gap-2">
-                                        <span className="text-gray-700 font-medium">{prop.label}:</span>
+                                        <span className="text-foreground font-medium">{prop.label}:</span>
                                         <span>{prop.value}</span>
                                     </div>
                                 ))}
@@ -177,15 +177,15 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
 
                             <div className="space-y-3 pt-1">
                                 <div className="flex items-center gap-3">
-                                    <div className="flex items-center rounded-xl bg-blue-50 border border-blue-200 overflow-hidden">
-                                        <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="px-3 py-2.5 text-blue-600 hover:bg-blue-100 transition-colors"><Minus className="w-4 h-4" /></button>
-                                        <span className="w-10 text-center font-semibold text-gray-800 text-sm">{quantity}</span>
-                                        <button onClick={() => setQuantity(quantity + 1)} className="px-3 py-2.5 text-blue-600 hover:bg-blue-100 transition-colors"><Plus className="w-4 h-4" /></button>
+                                    <div className="flex items-center rounded-xl bg-accent/40 border border-border overflow-hidden">
+                                        <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="min-h-11 px-3 py-2.5 text-primary hover:bg-accent transition-colors"><Minus className="w-4 h-4" /></button>
+                                        <span className="w-10 text-center font-semibold text-foreground text-sm">{quantity}</span>
+                                        <button onClick={() => setQuantity(quantity + 1)} className="min-h-11 px-3 py-2.5 text-primary hover:bg-accent transition-colors"><Plus className="w-4 h-4" /></button>
                                     </div>
                                     <button
                                         onClick={handleAddToCart}
                                         disabled={isAdding}
-                                        className="flex items-center justify-center w-10 h-10 rounded-xl border border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors disabled:opacity-50"
+                                        className="flex items-center justify-center w-11 h-11 rounded-xl border border-border bg-accent/40 text-primary hover:bg-accent transition-colors disabled:opacity-50"
                                     >
                                         <ShoppingCartIcon className="w-5 h-5" />
                                     </button>
@@ -193,7 +193,7 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                                 <Button
                                     onClick={handleAddToCart}
                                     disabled={isAdding}
-                                    className="rounded-full bg-blue-500 hover:bg-blue-600 text-white px-8 py-2.5 text-sm font-medium shadow-sm transition-colors disabled:opacity-50 flex items-center gap-2 w-full sm:w-auto"
+                                    className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-2.5 text-sm font-medium shadow-sm transition-colors disabled:opacity-50 flex items-center gap-2 w-full sm:w-auto min-h-11"
                                 >
                                     {t('buy_now', {}, "Buy now")} <ChevronRight className="w-4 h-4" />
                                 </Button>
@@ -203,14 +203,18 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                 </div>
 
                 {/* Tabs */}
-                <div className="bg-white rounded-2xl mt-4 shadow-sm overflow-hidden min-h-[300px]">
+                <div className="bg-card rounded-2xl mt-4 shadow-sm overflow-hidden min-h-[300px]">
                     <div className="flex flex-col lg:flex-row h-full">
-                        <div className="w-full lg:w-36 lg:border-r border-b lg:border-b-0 border-gray-100 flex lg:flex-col overflow-x-auto">
+                        <div className="w-full lg:w-36 lg:border-r border-b lg:border-b-0 border-border flex lg:flex-col overflow-x-auto">
                             {tabs.map((tab) => (
                                 <button
                                     key={tab.key}
                                     onClick={() => setActiveTab(tab.key)}
-                                    className={`text-left px-4 py-4 text-sm font-medium transition-colors border-l-2 flex-1 lg:flex-none ${activeTab === tab.key ? "border-blue-500 text-blue-600 bg-blue-50" : "border-transparent text-gray-600 hover:text-blue-500 hover:bg-gray-50"}`}
+                                    className={`text-left px-4 py-4 text-sm font-medium transition-colors border-l-2 flex-1 lg:flex-none ${
+                                        activeTab === tab.key
+                                            ? "border-primary text-primary bg-accent"
+                                            : "border-transparent text-muted-foreground hover:text-primary hover:bg-muted/50"
+                                    }`}
                                 >
                                     {tab.label}
                                 </button>
@@ -219,21 +223,21 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                         <div className="flex-1 p-6 lg:p-8">
                             {activeTab === "details" && (
                                 <div className="space-y-4">
-                                    <p className="text-sm text-gray-600 leading-relaxed">
+                                    <p className="text-sm text-muted-foreground leading-relaxed">
                                         {showFullDesc ? descriptionText : `${descriptionText.slice(0, 500)}...`}
                                     </p>
                                     {descriptionText.length > 500 && (
-                                        <button onClick={() => setShowFullDesc(!showFullDesc)} className="text-blue-500 text-sm font-medium hover:underline">
+                                        <button onClick={() => setShowFullDesc(!showFullDesc)} className="text-primary text-sm font-medium hover:underline">
                                             {showFullDesc ? t('show_less', {}, "Show less") : t('view_more', {}, "View more")}
                                         </button>
                                     )}
                                 </div>
                             )}
                             {activeTab === "specs" && (
-                                <div className="text-sm text-gray-600" dangerouslySetInnerHTML={{ __html: product.specsText || t('no_specs', {}, "No specifications available.") }} />
+                                <div className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: product.specsText || t('no_specs', {}, "No specifications available.") }} />
                             )}
                             {activeTab === "reviews" && (
-                                <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+                                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
                                     <Star className="w-10 h-10 mb-2 opacity-20" />
                                     <p>{t('no_reviews', {}, "No reviews yet.")}</p>
                                 </div>
@@ -244,7 +248,7 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
 
                 {/* Related Products */}
                 <div className="mt-8">
-                    <h2 className="text-xl font-bold text-gray-900 mb-4">{t('related_products', {}, "Related products")}</h2>
+                    <h2 className="text-xl font-bold text-foreground mb-4">{t('related_products', {}, "Related products")}</h2>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {relatedProducts.filter((p: Product) => p.productId !== id).map((p: Product) => (
                             <ProductCard
@@ -266,10 +270,10 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
 
 function ProductDetailSkeleton() {
     return (
-        <div className="min-h-screen bg-[#EEF5FB] animate-pulse">
+        <div className="min-h-screen bg-background animate-pulse">
             <div className="container mx-auto px-4 py-8 space-y-8">
                 <Skeleton className="h-4 w-48" />
-                <div className="bg-white rounded-2xl p-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="bg-card rounded-2xl p-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <Skeleton className="aspect-[4/3] rounded-xl" />
                     <div className="space-y-4">
                         <Skeleton className="h-8 w-3/4" />

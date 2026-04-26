@@ -23,7 +23,13 @@ export const userKeys = {
 export const checkoutKeys = {
     all: ['checkout'] as const,
     addresses: () => ['checkout', 'addresses'] as const,
-    orders: (params?: { page?: number | undefined; size?: number | undefined; status?: string | undefined }) => {
+    orders: (params?: {
+        page?: number | undefined;
+        size?: number | undefined;
+        status?: string | undefined;
+        sortBy?: string | undefined;
+        sortDirection?: "ASC" | "DESC" | undefined;
+    }) => {
         if (params) return ['checkout', 'orders', params] as const;
         return ['checkout', 'orders'] as const;
     },

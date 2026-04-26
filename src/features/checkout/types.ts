@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const AddressSchema = z.object({
     addressId: z.string(),
+    customerId: z.string().optional(),
     province: z.string(),
     city: z.string(),
     ward: z.string(),
@@ -10,6 +11,7 @@ export const AddressSchema = z.object({
     isDefault: z.boolean(),
     receiverName: z.string(),
     receiverPhoneNumber: z.string(),
+    updatedAt: z.string().optional(),
 });
 
 export type Address = z.infer<typeof AddressSchema>;
@@ -24,8 +26,8 @@ export const PaymentAccountResponseSchema = z.object({
     holderName: z.string(),
     bankName: z.string(),
     isDefault: z.boolean(),
-    type: z.string(),
-    status: z.string(),
+    type: z.enum(["BANK_ACCOUNT", "E_WALLET", "OTHER"]),
+    status: z.enum(["ACTIVE", "INACTIVE", "SUSPENDED", "DELETED"]),
     updatedAt: z.string(),
 });
 

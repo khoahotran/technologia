@@ -107,10 +107,21 @@ Calculates the total price for selected cart items, optionally applying a discou
 
 **Request Body:** `CountPriceRequest`
 - `includeDiscount` (boolean)
-- `userDiscountId` (UUID)
+- `userDiscountId` (UUID) - ID of the discount/voucher to apply.
 - `cartItemIds` (List<UUID>)
 
-**Response:** `BaseResponse<BigDecimal>`
+**Response:** `BaseResponse<CountPriceResponse>`
+- `CountPriceResponse`:
+    - `totalPrice` (BigDecimal) - Final total price after discount.
+    - `totalDiscount` (BigDecimal) - Total discount amount.
+    - `priceResponse` (List<PriceResponse>): Detailed price breakdown for each item.
+        - `productId` (UUID)
+        - `variantId` (String)
+        - `price` (BigDecimal) - Original price.
+        - `quantity` (Integer)
+        - `canUseDiscount` (Boolean) - Whether discount is applied to this item.
+        - `discountValue` (BigDecimal) - Discount amount for this item.
+        - `finalPrice` (BigDecimal) - Final price for this item.
 
 ---
 

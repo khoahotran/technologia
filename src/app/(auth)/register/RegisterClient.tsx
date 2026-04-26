@@ -108,16 +108,16 @@ export default function RegisterClient() {
 
                     {/* Social Media Icons */}
                     <div className="flex justify-center gap-6 pt-8">
-                        <a href="#" className="bg-[#1877F2] p-3 rounded-lg hover:opacity-80 transition-opacity">
+                        <a href="#" aria-label="Facebook" className="bg-[#1877F2] p-3 rounded-lg hover:opacity-80 transition-opacity">
                             <Facebook className="h-6 w-6" fill="white" />
                         </a>
-                        <a href="#" className="bg-[#FF0000] p-3 rounded-lg hover:opacity-80 transition-opacity">
+                        <a href="#" aria-label="Youtube" className="bg-[#FF0000] p-3 rounded-lg hover:opacity-80 transition-opacity">
                             <Youtube className="h-6 w-6" fill="white" />
                         </a>
-                        <a href="#" className="bg-gradient-to-br from-[#833AB4] via-[#FD1D1D] to-[#F77737] p-3 rounded-lg hover:opacity-80 transition-opacity">
+                        <a href="#" aria-label="Instagram" className="bg-gradient-to-br from-[#833AB4] via-[#FD1D1D] to-[#F77737] p-3 rounded-lg hover:opacity-80 transition-opacity">
                             <Instagram className="h-6 w-6" fill="white" />
                         </a>
-                        <a href="#" className="bg-[#0A66C2] p-3 rounded-lg hover:opacity-80 transition-opacity">
+                        <a href="#" aria-label="Linkedin" className="bg-[#0A66C2] p-3 rounded-lg hover:opacity-80 transition-opacity">
                             <Linkedin className="h-6 w-6" fill="white" />
                         </a>
                     </div>

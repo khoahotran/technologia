@@ -25,6 +25,8 @@ function getStatusColor(status: DeliveryStatus) {
 }
 
 export function OrderCard({ orderId, items, status, className }: OrderCardProps) {
+    const { t } = useLanguage();
+
     return (
         <div className={cn("bg-white rounded-lg border border-[#D3E4F4] overflow-hidden", className)}>
             <Link
@@ -35,7 +37,7 @@ export function OrderCard({ orderId, items, status, className }: OrderCardProps)
                 )}
             >
                 <span>#{orderId}</span>
-                <span className="text-xs text-white">View detail</span>
+                <span className="text-xs text-white">{t("view_detail", {}, "View detail")}</span>
             </Link>
 
             <div className="p-4 space-y-2 min-h-[92px]">

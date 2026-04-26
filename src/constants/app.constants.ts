@@ -92,12 +92,12 @@ export type ProductStatus = (typeof PRODUCT_STATUS)[keyof typeof PRODUCT_STATUS]
 // ===========================================
 
 export const ORDER_STATUS = {
+    AWAITING_PAYMENT: 'AWAITING_PAYMENT', // Chờ thanh toán
+    AWAITING_CONFIRM: 'AWAITING_CONFIRM', // Chờ xác nhận
     PENDING: 'PENDING', // Chờ xử lý
-    CONFIRMED: 'CONFIRMED', // Đã xác nhận
-    PROCESSING: 'PROCESSING', // Đang chuẩn bị hàng
-    SHIPPED: 'SHIPPED', // Đang giao
+    ON_SHIPPING: 'ON_SHIPPING', // Đang giao
     DELIVERED: 'DELIVERED', // Đã giao thành công
-    CANCELLED: 'CANCELLED', // Bị hủy
+    CANCELED: 'CANCELED', // Bị hủy
 } as const;
 
 export type OrderStatus = (typeof ORDER_STATUS)[keyof typeof ORDER_STATUS];

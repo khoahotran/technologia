@@ -1,6 +1,6 @@
 "use client";
 
-import { GoogleOAuthProvider } from "@react-oauth/google";
+
 import React from "react";
 import { Toaster } from "sonner";
 
@@ -15,12 +15,10 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
         <QueryProvider>
             <LanguageProvider>
                 <ThemeProvider>
-                    <GoogleOAuthProvider clientId={process.env["NEXT_PUBLIC_GOOGLE_CLIENT_ID"] ?? ""}>
-                        <AuthProvider>
-                            {children}
-                            <Toaster position="top-right" richColors />
-                        </AuthProvider>
-                    </GoogleOAuthProvider>
+                    <AuthProvider>
+                        {children}
+                        <Toaster position="top-right" richColors />
+                    </AuthProvider>
                 </ThemeProvider>
             </LanguageProvider>
         </QueryProvider>

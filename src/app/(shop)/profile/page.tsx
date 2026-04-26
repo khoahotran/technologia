@@ -65,7 +65,11 @@ export default function ProfilePage() {
     const handleUpdateProfile = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            await updateProfile(updateForm);
+            await updateProfile({
+                ...updateForm,
+                email: profile?.email,
+                displayName: profile?.displayName ?? profile?.username,
+            });
         } catch {
             // Error managed by hook toast
         }

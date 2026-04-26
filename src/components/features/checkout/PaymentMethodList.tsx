@@ -73,7 +73,7 @@ export function PaymentMethodList({
 
       {/* Nút thêm mới */}
       <Button
-        className="w-full bg-[#C3BFCE] hover:bg-[#B3AFBE] text-white font-medium"
+        className="w-full min-h-11 bg-secondary hover:bg-secondary/90 text-secondary-foreground font-medium"
         onClick={onAddNew}
       >
         {buttonText}

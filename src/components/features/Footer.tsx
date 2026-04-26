@@ -28,16 +28,16 @@ export default function Footer() {
                 {t('footer_stay_connected', {}, "Stay connected with our tech community")}
               </p>
               <div className="flex space-x-3">
-                <Button variant="secondary" size="icon" className="rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100">
+                <Button aria-label="Facebook" variant="secondary" size="icon" className="rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100">
                   <Facebook className="h-5 w-5" />
                 </Button>
-                <Button variant="secondary" size="icon" className="rounded-lg bg-red-50 text-red-600 hover:bg-red-100">
+                <Button aria-label="YouTube" variant="secondary" size="icon" className="rounded-lg bg-red-50 text-red-600 hover:bg-red-100">
                   <Youtube className="h-5 w-5" />
                 </Button>
-                <Button variant="secondary" size="icon" className="rounded-lg bg-pink-50 text-pink-600 hover:bg-pink-100">
+                <Button aria-label="Instagram" variant="secondary" size="icon" className="rounded-lg bg-pink-50 text-pink-600 hover:bg-pink-100">
                   <Instagram className="h-5 w-5" />
                 </Button>
-                <Button variant="secondary" size="icon" className="rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100">
+                <Button aria-label="LinkedIn" variant="secondary" size="icon" className="rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100">
                   <Linkedin className="h-5 w-5" />
                 </Button>
               </div>

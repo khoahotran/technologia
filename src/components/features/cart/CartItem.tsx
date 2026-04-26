@@ -55,14 +55,14 @@ export function CartItem({
   const displayProductCode = productCode || t('product_code', {}, "PRODUCT CODE")
 
   return (
-    <div className="flex items-start gap-4 bg-white p-4 rounded-xl border border-gray-100">
+    <div className="flex items-start gap-3 sm:gap-4 bg-card p-4 rounded-lg border border-border">
       {/* Nút Checkbox chọn thanh toán */}
       <div className="pt-8">
         <Checkbox checked={isSelected || false} onCheckedChange={onToggle} />
       </div>
 
       {/* Hình ảnh sản phẩm */}
-      <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg bg-gray-100">
+      <div className="relative h-20 w-20 sm:h-24 sm:w-24 shrink-0 overflow-hidden rounded-lg bg-muted">
         <Image
           src={image}
           alt={title}
@@ -72,21 +72,21 @@ export function CartItem({
       </div>
 
       {/* Thông tin sản phẩm */}
-      <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-12 gap-4">
+      <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-12 gap-3 sm:gap-4">
         <div className="md:col-span-6 space-y-1">
           <div className="flex justify-between items-start">
-            <h3 className="font-bold text-gray-900 truncate pr-4">{title}</h3>
-            <span className="text-xs text-gray-400 whitespace-nowrap">{displayProductCode}</span>
+            <h3 className="font-bold text-foreground truncate pr-4">{title}</h3>
+            <span className="text-xs text-muted-foreground whitespace-nowrap">{displayProductCode}</span>
           </div>
           {/* Giá tiền */}
-          <p className="text-lg font-medium text-[#3E93B3]">
+          <p className="text-lg font-medium text-primary">
             {t('price_vnd', { price: new Intl.NumberFormat(currentLocale).format(price) }, `${new Intl.NumberFormat(currentLocale).format(price)} ₫`)}
           </p>
           {/* Ô nhập ghi chú (hiện tại tính năng này chưa hoàn thiện hoàn toàn trên Global State) */}
           <div className="pt-2">
             <Input
               placeholder={t('add_note', {}, "+ Add note")}
-              className="h-8 text-xs border-none bg-transparent p-0 placeholder:text-gray-400 focus-visible:ring-0 pl-2"
+              className="h-8 text-xs border-none bg-transparent p-0 placeholder:text-muted-foreground focus-visible:ring-0 pl-2"
             />
           </div>
         </div>
@@ -100,7 +100,7 @@ export function CartItem({
           <Button
             variant="ghost"
             size="icon"
-            className="text-gray-400 hover:text-red-500 hover:bg-red-50"
+            className="h-11 w-11 text-muted-foreground hover:text-red-500 hover:bg-red-50"
             onClick={onRemove}
             aria-label={t('remove_from_cart', {}, "Remove from cart")}
           >

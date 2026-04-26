@@ -1,5 +1,5 @@
 import type { Address, CreateAddress, PaymentAccountResponse } from './types';
-import { PaymentAccountResponseSchema } from './types';
+import { AddressSchema, PaymentAccountResponseSchema } from './types';
 
 import { get, post, del } from '@/api/client';
 import type { ApiResponse } from '@/types/api.types';
@@ -8,18 +8,18 @@ import type { ApiResponse } from '@/types/api.types';
  * Address API
  */
 export async function getAddresses(): Promise<Address[]> {
-    const response = await get<ApiResponse<Address[]>>('/api/addresses');
-    return response.data || [];
+    const response = await get<Address[]>('/api/addresses');
+    return response.map((item) => AddressSchema.parse(item));
 }
 
 export async function getAddressById(id: string): Promise<Address> {
     const response = await get<ApiResponse<Address>>(`/api/addresses/${id}`);
-    return response.data;
+    return AddressSchema.parse(response.data);
 }
 
 export async function createAddress(data: CreateAddress): Promise<Address> {
     const response = await post<ApiResponse<Address>>('/api/addresses', data);
-    return response.data;
+    return AddressSchema.parse(response.data);
 }
 
 export async function deleteAddress(id: string): Promise<void> {

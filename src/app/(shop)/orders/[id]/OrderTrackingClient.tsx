@@ -8,13 +8,14 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useOrder } from "@/features/orders/hooks";
+import { useDeliveryLogs, useOrder } from "@/features/orders/hooks";
 import { canGiveFeedback, formatCurrencyVnd, formatOrderStatusLabel, formatPaymentMethodLabel } from "@/features/orders/presentation";
+import { DeliveryStatusSchema } from "@/features/orders/types";
 import { useLanguage } from "@/providers/language.provider";
 import { useOrderFlowStore } from "@/store/order-flow.store";
 import { toErrorMessage } from "@/utils/error-message";
 
-const timelineOrder = ["PENDING", "SHIPPING", "DELIVERED"] as const;
+const timelineOrder = ["PENDING", "ON_SHIPPING", "DELIVERED"] as const;
 
 function toDisplayItemName(item: unknown, index: number) {
     if (typeof item !== "object" || item === null) return `Item ${index + 1}`;
@@ -31,25 +32,56 @@ function toDisplayItemQuantity(item: unknown) {
     return 1;
 }
 
+function formatTimelineStatusLabel(status: string, t: ReturnType<typeof useLanguage>["t"]) {
+    const parsedStatus = DeliveryStatusSchema.safeParse(status);
+    if (parsedStatus.success) {
+        return formatOrderStatusLabel(parsedStatus.data, t);
+    }
+    return status;
+}
+
 export default function OrderTrackingClient({ id }: { id: string }) {
     const { t, locale } = useLanguage();
     const currentLocale = locale === "vi" ? "vi-VN" : "en-US";
     const router = useRouter();
     const { data: order, isLoading, isError, error } = useOrder(id);
+    const deliveryLogsQuery = useDeliveryLogs(id, Boolean(id));
     const trackOrderInput = useOrderFlowStore((state) => state.trackOrderInput);
     const setTrackOrderInput = useOrderFlowStore((state) => state.setTrackOrderInput);
 
-    const timeline = useMemo(() => {
+    const fallbackTimeline = useMemo(() => {
         if (!order) return [];
+        const normalizedStatus =
+            order.deliveryStatus === "CANCELED" ||
+            order.deliveryStatus === "AWAITING_PAYMENT" ||
+            order.deliveryStatus === "AWAITING_CONFIRM"
+                ? "PENDING"
+                : order.deliveryStatus;
         const currentIndex = timelineOrder.indexOf(
-            order.deliveryStatus === "CANCELLED" ? "PENDING" : (order.deliveryStatus as (typeof timelineOrder)[number])
+            normalizedStatus as (typeof timelineOrder)[number]
         );
         return timelineOrder.map((status, index) => ({
             status,
             completed: currentIndex >= index,
             happenedAt: index === 0 ? order.orderDate : order.updatedAt,
+            message: "",
         }));
     }, [order]);
+
+    const timeline = useMemo(() => {
+        if (deliveryLogsQuery.data && deliveryLogsQuery.data.length > 0) {
+            return [...deliveryLogsQuery.data]
+                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                .map((item) => ({
+                    status: item.status,
+                    completed: true,
+                    happenedAt: item.createdAt,
+                    message: item.message,
+                }));
+        }
+
+        return fallbackTimeline;
+    }, [deliveryLogsQuery.data, fallbackTimeline]);
 
     if (isLoading) {
         return <div className="flex justify-center p-8">{t("loading", {}, "Loading...")}</div>;
@@ -128,7 +160,7 @@ export default function OrderTrackingClient({ id }: { id: string }) {
                                 </div>
                             </div>
 
-                            <p className="text-[#0D6E97] text-lg font-semibold">[{formatOrderStatusLabel(order.deliveryStatus)}]</p>
+                            <p className="text-[#0D6E97] text-lg font-semibold">[{formatOrderStatusLabel(order.deliveryStatus, t)}]</p>
 
                             <Link href={`/orders/${order.orderId}/feedback`}>
                                 <Button
@@ -152,10 +184,20 @@ export default function OrderTrackingClient({ id }: { id: string }) {
                                         />
                                         {index < timeline.length - 1 && <div className="w-0.5 h-full min-h-8 bg-[#C8D5E0]" />}
                                     </div>
-                                    <div className="font-semibold text-[#1E1E1E]">{formatOrderStatusLabel(item.status)}</div>
+                                    <div>
+                                        <p className="font-semibold text-[#1E1E1E]">
+                                            {formatTimelineStatusLabel(item.status, t)}
+                                        </p>
+                                        {item.message ? <p className="text-sm text-[#556070] mt-1">{item.message}</p> : null}
+                                    </div>
                                     <p className="text-sm text-[#556070]">{new Date(item.happenedAt).toLocaleString(currentLocale)}</p>
                                 </div>
                             ))}
+                            {deliveryLogsQuery.isError ? (
+                                <p className="text-sm text-[#9A6A23]">
+                                    {t("delivery_log_load_failed", {}, "Cannot load delivery logs, showing fallback timeline.")}
+                                </p>
+                            ) : null}
                         </div>
                     </div>
                 </section>
@@ -170,8 +212,8 @@ export default function OrderTrackingClient({ id }: { id: string }) {
 
                     <div className="bg-white rounded-xl border border-[#D3E4F4] p-6">
                         <h3 className="text-2xl font-semibold text-[#1E1E1E] mb-4">{t("payment_info_title", {}, "Payment Info")}</h3>
-                        <p className="text-[#1E1E1E] font-semibold mt-1">{formatPaymentMethodLabel(order.paymentMethod)}</p>
-                        <p className="text-sm text-[#556070] mt-2">{`Payment account ID: ${order.paymentAccountId}`}</p>
+                        <p className="text-[#1E1E1E] font-semibold mt-1">{formatPaymentMethodLabel(order.paymentMethod, t)}</p>
+                        <p className="text-sm text-[#556070] mt-2">{`Payment account ID: ${order.paymentAccountId ?? "-"}`}</p>
                     </div>
                 </section>
             </div>

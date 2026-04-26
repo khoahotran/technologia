@@ -1,15 +1,12 @@
 import type { AddToCartPayload, Cart, CartItemActionResponse } from "./types";
+import { CartSchema } from "./types";
 
 import { del, get, patch, post } from "@/api/client";
 import type { ApiResponse } from "@/types";
 
 export async function getCart(): Promise<Cart> {
-  const response = await get<ApiResponse<{
-    empty: boolean;
-    map: Cart
-  }>>("/api/carts");
-  const cartData = response.data.map;
-  return { ...cartData, cartItems: cartData?.cartItems ?? [] };
+  const response = await get<ApiResponse<Cart>>("/api/carts");
+  return CartSchema.parse(response.data);
 }
 
 export async function addToCart(payload: AddToCartPayload): Promise<void> {

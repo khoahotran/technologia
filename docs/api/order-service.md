@@ -105,15 +105,79 @@ Finalizes the checkout and creates the order. This is an asynchronous operation.
 
 **Response:** `PaginationBaseResponse<List<OrderResponse>>`
 
-## Shipping (Order Service)
+## 3. Product Feedback (Order Service)
 
-### Get Shipping Fee
-`GET /api/shipping-fee`
+Người dùng có thể đánh giá và để lại bình luận cho từng sản phẩm đã mua sau khi đơn hàng hoàn tất.
 
-**QueryParams:**
-- `province` (String)
-- `subTotal` (BigDecimal)
+### Gửi Đánh giá (Give Feedback)
+- **Endpoint**: `POST /api/orders/feedback` (Protected)
+- **Request (`GiveFeedbackRequest`)**:
+  ```json
+  {
+    "orderItemId": "UUID",
+    "rating": 5, // 1 - 5
+    "comment": "Sản phẩm rất tốt"
+  }
+  ```
+- **Response**: `BaseResponse<FeedbackResponse>`
 
-**Response:** `ShippingFeeResponse`
-- `shippingFee` (BigDecimal)
-- `shippingFeeDiscount` (BigDecimal)
+### Truy vấn Đánh giá (Get Feedback)
+- **Lấy đánh giá theo Sản phẩm (Công khai)**:
+    - **Endpoint**: `GET /api/orders/feedback/product/{productId}`
+    - **Mô tả**: Lấy danh sách đánh giá của một sản phẩm (phân trang).
+    - **QueryParams**: `page`, `size`, `sortBy`, `sortDirection`.
+    - **Response**: `PaginationBaseResponse<List<OrderFeedbackResponse>>`
+- **Lấy đánh giá theo Đơn hàng (Cá nhân)**:
+    - **Endpoint**: `GET /api/orders/feedback/{orderId}` (Protected)
+    - **Mô tả**: Lấy danh sách đánh giá mà người dùng đã thực hiện cho một đơn hàng cụ thể.
+    - **Response**: `BaseResponse<List<OrderFeedbackResponse>>`
+
+### Cập nhật/Xóa Đánh giá
+- `PUT /api/orders/feedback/{orderItemId}`: Cập nhật nội dung đánh giá.
+- `DELETE /api/orders/feedback/{orderItemId}`: Xóa đánh giá.
+
+---
+
+## 4. Nhật ký Giao hàng (Delivery Logs)
+
+Theo dõi lịch sử vận chuyển và thay đổi trạng thái của đơn hàng.
+
+### Xem Nhật ký Giao hàng
+- **Endpoint**: `GET /api/delivery-logs/order/{orderId}` (Protected)
+- **Response**: `BaseResponse<List<DeliveryLogResponse>>`
+  - Mỗi log bao gồm: `deliveryLogId`, `orderId`, `status`, `message`, `createdAt`.
+
+---
+
+## 5. Quản trị Đơn hàng (Admin APIs)
+
+Các API dành riêng cho quản trị viên để điều phối đơn hàng và vận chuyển.
+
+### Cập nhật Trạng thái Đơn hàng (Admin)
+- **Endpoint**: `PATCH /api/orders/admin/{orderId}/status` (Protected)
+- **Request (`UpdateOrderStatusRequest`)**:
+  ```json
+  {
+    "newStatus": "PENDING | ON_SHIPPING | DELIVERED | CANCELED"
+  }
+  ```
+
+### Quản lý Nhật ký Giao hàng (Admin)
+- `POST /api/orders/admin/{orderId}/create-delivery-log`: Tạo bước giao hàng mới.
+- `PUT /api/orders/admin/{deliveryLogId}/update-delivery-log`: Sửa thông tin log.
+- `DELETE /api/orders/admin/{deliveryLogId}/delete-delivery-log`: Xóa log.
+
+### Truy vấn Đơn hàng (Admin)
+- `GET /api/orders/admin/{orderId}`: Xem chi tiết bất kỳ đơn hàng nào.
+- `GET /api/orders/admin`: Admin list with optional `status` and `BasePaginationRequest` (`page`, `size`, `sortBy`, `sortDirection`).
+
+---
+
+## 6. Topic Kafka & Trạng thái
+
+### DeliveryStatus (Trạng thái Đơn hàng)
+- `AWAITING_PAYMENT`, `AWAITING_CONFIRM`, `PENDING`, `ON_SHIPPING`, `DELIVERED`, `CANCELED`.
+
+### Kafka Events
+- `order.create.feedback`: Phát ra khi có đánh giá mới (Product Service sẽ lắng nghe để cập nhật rating sản phẩm).
+- `create.delivery.log`: Phát ra để cập nhật lịch sử vận chuyển.

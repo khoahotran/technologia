@@ -8,15 +8,22 @@
  * - Thanh Main Bar: Logo, Ô tìm kiếm và các hành động (Giỏ hàng, Tài khoản).
  * - Tích hợp logic Xác thực (Auth) để hiển thị trạng thái đăng nhập.
  */
-import { Phone, Mail, ChevronDown, Search, ShoppingCart, User, ShoppingBag } from "lucide-react"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Mail, Phone, Search, ShoppingBag, ShoppingCart, User } from "lucide-react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useState, Suspense } from "react"
+import { Suspense, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useAuth } from "@/features/auth/hooks"
-import { useLanguage } from "@/providers/language.provider";
+import { useLanguage } from "@/providers/language.provider"
 
 interface HeaderProps {
   /** 
@@ -41,8 +48,8 @@ function AccountButton() {
 
   if (!token) {
     return (
-      <Link href="/login">
-        <Button variant="ghost" className="rounded-full h-10 w-10 p-0 md:w-auto md:px-4 md:bg-gray-50 md:hover:bg-gray-100 gap-2">
+      <Link href="/login" aria-label={t('header_login_aria', {}, "Go to login page")}>
+        <Button variant="ghost" className="rounded-full h-10 w-10 p-0 md:w-auto md:px-4 md:bg-gray-50 md:hover:bg-gray-100 gap-2" aria-label={t('header_account_aria', {}, "User account menu")}>
           <User className="h-5 w-5" />
           <span className="hidden md:inline">{t('header_account', {}, "Account")}</span>
         </Button>
@@ -56,6 +63,7 @@ function AccountButton() {
         variant="ghost"
         className="rounded-full h-10 w-10 p-0 md:w-auto md:px-4 md:bg-gray-50 md:hover:bg-gray-100 gap-2"
         onClick={() => setIsOpen(!isOpen)}
+        aria-label={t('header_account_aria', {}, "User account menu")}
       >
         <User className="h-5 w-5" />
         <span className="hidden md:inline">{user?.username || t('header_account', {}, "Account")}</span>
@@ -140,6 +148,7 @@ function SearchBox() {
       <Button
         className="absolute right-1 top-1 rounded-full h-9 px-4"
         onClick={handleSearch}
+        aria-label={t('header_search_aria', {}, "Search")}
       >
         {t('header_search_btn', {}, "Search")}
       </Button>
@@ -153,31 +162,47 @@ function SearchBox() {
 export default function Header({ variant = "default" }: HeaderProps) {
   const { t, locale, setLocale } = useLanguage();
   return (
-    <header className="w-full flex flex-col bg-white sticky top-0 z-40 shadow-sm">
+    <header className="w-full flex flex-col bg-white sticky top-0 z-50 shadow-sm">
       {/* 1. Thanh Top Bar (Thông tin phụ) - Chỉ hiện ở variant default */}
       {variant === "default" && (
-        <div className="bg-primary text-primary-foreground py-2 text-xs md:text-sm transition-colors">
+        <div className="bg-primary text-slate-900 py-1 text-xs md:text-sm transition-colors font-medium">
           <div className="container mx-auto px-4 flex justify-between items-center">
-            <div className="flex items-center space-x-6">
-              <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
+              <a
+                href="tel:0123456789"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-black/5 transition-colors"
+                aria-label="Call support"
+              >
                 <Phone className="h-4 w-4" />
-                <span>(+84) 123 456 789</span>
-              </div>
-              <div className="hidden md:flex items-center gap-2">
+                <span>0123 456 789</span>
+              </a>
+              <a
+                href="mailto:support@technologia.vn"
+                className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-black/5 transition-colors"
+                aria-label="Email support"
+              >
                 <Mail className="h-4 w-4" />
-                <span>support@techstore.com</span>
-              </div>
+                <span>support@technologia.vn</span>
+              </a>
             </div>
 
-            <div className="flex items-center gap-4">
-              <Link href="/about" className="hover:underline">{t('header_about_us', {}, "About Us")}</Link>
-              <div
-                className="flex items-center gap-1 cursor-pointer hover:opacity-80"
-                onClick={() => setLocale(locale === 'vi' ? 'en' : 'vi')}
+            <div className="flex items-center gap-2">
+              <Link
+                href="/about"
+                className="px-3 py-1.5 rounded-lg hover:bg-black/5 transition-colors"
               >
-                <span className="font-medium uppercase">{locale}</span>
-                <ChevronDown className="h-3 w-3" />
-              </div>
+                {t('header_about_us', {}, "About Us")}
+              </Link>
+
+              <Select value={locale} onValueChange={(val) => setLocale(val as 'vi' | 'en')}>
+                <SelectTrigger className="h-8 border-none bg-transparent hover:bg-black/5 focus:ring-0 focus:ring-offset-0 px-2 gap-1 uppercase font-semibold">
+                  <SelectValue placeholder={locale.toUpperCase()} />
+                </SelectTrigger>
+                <SelectContent align="end">
+                  <SelectItem value="vi">VN</SelectItem>
+                  <SelectItem value="en">EN</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </div>
@@ -191,7 +216,7 @@ export default function Header({ variant = "default" }: HeaderProps) {
             <div className="bg-primary text-white p-2 rounded-lg group-hover:bg-primary/90 transition-colors">
               <ShoppingBag className="h-6 w-6" />
             </div>
-            <span className="text-xl font-bold text-gray-900 tracking-tight">TechStore</span>
+            <span className="text-xl font-bold text-gray-900 tracking-tight">Technologia</span>
           </Link>
 
           {variant === "default" && (
@@ -205,7 +230,7 @@ export default function Header({ variant = "default" }: HeaderProps) {
 
               {/* Vùng Hành động (Giỏ hàng & Tài khoản) */}
               <div className="flex items-center gap-6 w-auto md:w-1/6 justify-end">
-                <Link href="/cart" className="relative cursor-pointer group">
+                <Link href="/cart" className="relative cursor-pointer group" aria-label={t('header_cart_aria', {}, "Open shopping cart")}>
                   <ShoppingCart className="h-6 w-6 text-gray-700 group-hover:text-primary transition-colors" />
                 </Link>
 

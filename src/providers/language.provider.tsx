@@ -11,7 +11,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 
 import { FullLoading } from "@/components/shared/loading";
 import type { Language } from "@/locales/languages.interface";
-import { getLocale, loadLocale } from "@/locales/locale";
+import { initLocale, loadLocale, setLocale as setRuntimeLocale } from "@/locales/locale";
 
 /** Kiểu dữ liệu của Language Context */
 type LanguageContextType = {
@@ -39,17 +39,18 @@ export const LanguageProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [locale, setLocaleState] = useState(getLocale());
+  const [locale, setLocaleState] = useState(() => initLocale());
   const [locales, setLocales] = useState<Language>(initialLocales);
 
   // LƯU Ý: KHÔNG XÓA DEPENDENCY DƯỚI ĐÂY MẶC DÙ LINTER (BIOME) CÓ THỂ CẢNH BÁO
   // Việc chỉ phụ thuộc vào `locale` đảm bảo file JSON tương ứng được lazy load đúng lúc.
   useEffect(() => {
-    loadLocale().then((data) => setLocales(data));
+    loadLocale(locale).then((data) => setLocales(data));
   }, [locale]);
 
   const handleSetLocale = (newLocale: string) => {
-    setLocaleState(newLocale);
+    setRuntimeLocale(newLocale);
+    setLocaleState(newLocale === "vi" ? "vi" : "en");
   };
 
   /**

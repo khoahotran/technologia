@@ -19,7 +19,6 @@ import {
     useCheckoutPreview,
     useConfirmCheckout,
     useRecalculateCheckout,
-    useShippingFee,
 } from "@/features/orders/hooks";
 import { useLanguage } from "@/providers/language.provider";
 import { useOrderFlowStore } from "@/store/order-flow.store";
@@ -95,8 +94,9 @@ export default function ShippingClient() {
     );
 
     const subtotal = localSubtotal;
-    const { data: shippingFeeData } = useShippingFee(activeAddress?.province, subtotal, selectedCartItems.length > 0);
-    const shipping = shippingFeeData ? shippingFeeData.shippingFee - shippingFeeData.shippingFeeDiscount : 0;
+    // NOTE: Shipping fee endpoint is not documented in latest backend docs.
+    // We keep subtotal-only preview on this step and rely on checkout preview/recalculate on order submit.
+    const shipping = 0;
     const total = subtotal + shipping;
 
     const bankAccounts = useMemo(
@@ -117,7 +117,7 @@ export default function ShippingClient() {
     const walletAccounts = useMemo(
         () =>
             paymentAccounts
-                .filter((account) => account.type === "WALLET")
+                .filter((account) => account.type === "E_WALLET")
                 .map((account) => ({
                     id: account.paymentAccountId,
                     type: "wallet" as const,
@@ -135,7 +135,7 @@ export default function ShippingClient() {
                 new Set(
                     paymentAccounts
                         .map((account) => account.type)
-                        .filter((type) => type !== "BANK_ACCOUNT" && type !== "WALLET")
+                        .filter((type) => type !== "BANK_ACCOUNT" && type !== "E_WALLET")
                 )
             ),
         [paymentAccounts]
@@ -187,8 +187,8 @@ export default function ShippingClient() {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen bg-[#F9F8FE] flex items-center justify-center">
-                <p className="text-gray-500">{t('loading_checkout', {}, "Loading checkout...")}</p>
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <p className="text-muted-foreground">{t('loading_checkout', {}, "Loading checkout...")}</p>
             </div>
         );
     }
@@ -203,16 +203,16 @@ export default function ShippingClient() {
         }
 
         return (
-            <div className="min-h-screen bg-[#F9F8FE] flex items-center justify-center px-4">
-                <div className="bg-white p-6 rounded-xl border border-gray-100 text-center max-w-md">
+            <div className="min-h-screen bg-background flex items-center justify-center px-4">
+                <div className="bg-card p-6 rounded-lg border border-border text-center max-w-md">
                     <p className="text-red-500 font-medium">{t('cannot_load_checkout', {}, "Cannot load checkout data from backend.")}</p>
-                    <p className="text-sm text-gray-500 mt-2">
+                    <p className="text-sm text-muted-foreground mt-2">
                         {t('login_to_view_cart', {}, "Please login first or check cart service connection.")}
                     </p>
                     <button
                         type="button"
                         onClick={() => refetch()}
-                        className="mt-4 px-4 py-2 rounded-lg bg-[#8AB0C3] text-white"
+                        className="mt-4 min-h-11 px-4 py-2 rounded-lg bg-secondary text-secondary-foreground"
                     >
                         {t('retry', {}, "Retry")}
                     </button>
@@ -222,7 +222,7 @@ export default function ShippingClient() {
     }
 
     return (
-        <div className="min-h-screen bg-[#F9F8FE]">
+        <div className="min-h-screen bg-background">
             <div className="container mx-auto px-4 py-8">
                 <Link href="/cart" className="inline-flex items-center gap-2 text-gray-700 hover:text-gray-900 mb-6">
                     <ArrowLeft className="h-4 w-4" />
@@ -262,12 +262,12 @@ export default function ShippingClient() {
                     </div>
 
                     <div className="lg:col-span-2 space-y-6">
-                        <div className="bg-white p-6 rounded-xl border border-gray-100">
+                        <div className="bg-card p-5 sm:p-6 rounded-lg border border-border">
                             <div className="flex items-center justify-between mb-4">
                                 <h2 className="font-bold text-gray-900">{t('address', {}, "Address")}</h2>
                                 <Link
                                     href="/address-book"
-                                    className="text-sm text-gray-500 hover:text-gray-700 flex items-center gap-1"
+                                    className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1 min-h-10"
                                 >
                                     {t('choose_other_address', {}, "Choose other address")}
                                     <ChevronDown className="h-4 w-4" />
@@ -283,13 +283,13 @@ export default function ShippingClient() {
                                     <p className="font-medium text-gray-900">{getAddressDisplay(activeAddress)}</p>
                                 </div>
                             ) : (
-                                <div className="text-sm text-gray-500">
-                                    {t('no_address_found', {}, "No address found.")} <Link href="/address-book/new" className="text-[#3E93B3]">{t('create_one_now', {}, "Create one now")}</Link>.
+                                <div className="text-sm text-muted-foreground">
+                                    {t('no_address_found', {}, "No address found.")} <Link href="/address-book/new" className="text-primary">{t('create_one_now', {}, "Create one now")}</Link>.
                                 </div>
                             )}
                         </div>
 
-                        <div className="bg-white p-6 rounded-xl border border-gray-100">
+                        <div className="bg-card p-5 sm:p-6 rounded-lg border border-border">
                             <h2 className="font-bold text-gray-900 mb-4">{t('my_order', {}, "My order")}</h2>
 
                             <div className="space-y-3 mb-6">
@@ -304,7 +304,7 @@ export default function ShippingClient() {
                                 ))}
                             </div>
 
-                            <div className="border-t border-gray-100 pt-4 space-y-2">
+                            <div className="border-t border-border pt-4 space-y-2">
                                 <div className="flex justify-between text-sm">
                                     <span className="text-gray-600">{t('sub_total', {}, "Sub-total")}</span>
                                     <span className="font-medium text-gray-900">
@@ -317,7 +317,7 @@ export default function ShippingClient() {
                                         {t('price_vnd', { price: new Intl.NumberFormat(currentLocale).format(shipping) }, `${new Intl.NumberFormat(currentLocale).format(shipping)} VND`)}
                                     </span>
                                 </div>
-                                <div className="flex justify-between text-base font-bold pt-2 border-t border-gray-100">
+                                <div className="flex justify-between text-base font-bold pt-2 border-t border-border">
                                     <span className="text-gray-900">{t('order_total', {}, "Order total")}</span>
                                     <span className="text-[#3E93B3]">
                                         {t('price_vnd', { price: new Intl.NumberFormat(currentLocale).format(total) }, `${new Intl.NumberFormat(currentLocale).format(total)} VND`)}
@@ -326,7 +326,7 @@ export default function ShippingClient() {
                             </div>
                         </div>
 
-                        <div className="bg-white p-6 rounded-xl border border-gray-100">
+                        <div className="bg-card p-5 sm:p-6 rounded-lg border border-border">
                             <h2 className="font-bold text-gray-900 mb-4">{t('payment', {}, "Payment")}</h2>
 
                             <RadioGroup
@@ -365,7 +365,7 @@ export default function ShippingClient() {
                                 <div className="flex items-start space-x-3">
                                     <RadioGroupItem value="COD" id="cod" className="mt-1" />
                                     <div className="flex-1">
-                                        <Label htmlFor="cod" className="font-medium text-gray-900 cursor-pointer flex items-center gap-2">
+                                        <Label htmlFor="cod" className="font-medium text-gray-900 cursor-pointer flex items-center gap-2 min-h-10">
                                             <Checkbox checked={paymentMethod === "COD"} className="pointer-events-none" />
                                             {t('cash_on_delivery', {}, "Cash on delivery")}
                                         </Label>
@@ -379,7 +379,7 @@ export default function ShippingClient() {
                                 type="button"
                                 onClick={handlePlaceOrder}
                                 disabled={checkoutPreview.isPending || recalculateCheckout.isPending || confirmCheckout.isPending}
-                                className="w-64 h-12 bg-[#8AB0C3] hover:bg-[#7A9EB0] text-white font-semibold text-base"
+                                className="w-full sm:w-64 h-12 bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold text-base"
                             >
                                 {t('place_order', {}, "Place order")}
                             </Button>

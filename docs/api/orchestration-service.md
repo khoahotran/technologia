@@ -62,17 +62,56 @@ Bước cuối cùng để đặt hàng chính thức.
   ```
 - **Response**: Trả về `UUID` (orderId) vừa được tạo.
 
-## 2. Quy trình Saga (Order Placement Saga)
+## 2. Quy trình Saga (Order Orchestration)
 
-Hệ thống sử dụng Saga Orchestration để đảm bảo tính nhất quán dữ liệu.
+Hệ thống sử dụng mô hình **Saga Orchestrator** để điều phối các giao dịch phân tán.
 
-### Các bước trong Saga:
+### [NEW] Saga Hủy Đơn Hàng (Order Cancellation Saga)
+Phối hợp việc hủy đơn và giải phóng tồn kho.
+- **Endpoint**: `POST /api/sagas/cancel-order` (Protected)
+- **Request (`CancelOrderRequest`)**:
+  ```json
+  {
+    "orderId": "UUID",
+    "sagaId": "UUID"
+  }
+  ```
+- **Các bước thực hiện**:
+  1. `CANCEL_ORDER`: Cập nhật trạng thái đơn hàng thành `CANCELED`.
+  2. `RELEASE_PRODUCT`: Hoàn trả số lượng tồn kho cho các sản phẩm trong đơn.
 
-| Bước | Tên Step | Dịch vụ | Hành động | Trạng thái Order |
-| :--- | :--- | :--- | :--- | :--- |
-| 1 | **CREATE_ORDER** | Order Service | Tạo đơn hàng mới | `AWAITING_CONFIRM` |
-| 2 | **RESERVE_PRODUCT** | Product Service | Trừ tồn kho & Giữ hàng | `AWAITING_CONFIRM` |
-| 3 | **CLEAR_CART** | Cart Service | Xóa các item khỏi giỏ | `AWAITING_CONFIRM` |
+---
+
+### [NEW] Quy trình Thanh toán (Payment Saga)
+Quản lý luồng thanh toán và cập nhật trạng thái đơn hàng.
+- **Khởi tạo Thanh toán**: `POST /api/payments`
+- **Request (`CreatePaymentRequest`)**:
+  ```json
+  {
+    "orderId": "UUID",
+    "sagaId": "UUID"
+  }
+  ```
+- **Mô phỏng Thanh toán (Testing)**:
+  - `POST /api/payments/simulate`: Giả lập thanh toán thành công.
+  - `POST /api/payments/simulate/cancel`: Giả lập thanh toán thất bại.
+
+---
+
+### [NEW] Truy vấn Trạng thái Saga (Saga Monitoring)
+Theo dõi tiến độ của một quy trình Saga.
+
+#### Lấy thông tin Saga Instance
+- **Endpoint**: `GET /api/sagas/instance/{sagaId}`
+- **Response**: Chi tiết về `SagaStatus`, các bước đã thực hiện (`SagaStep`), và thời gian bắt đầu/kết thúc.
+
+#### Lấy thông tin Đơn hàng từ Saga
+- **Endpoint**: `GET /api/sagas/order/{sagaId}`
+- **Response**: Trả về thông tin `OrderResponse` gắn liền với Saga Instance đó.
+
+---
+
+## 3. Trạng thái & Topic Kafka
 
 ### Trạng thái Saga (`SagaStatus`):
 - `STARTED`: Bắt đầu tiến trình.
@@ -82,7 +121,87 @@ Hệ thống sử dụng Saga Orchestration để đảm bảo tính nhất quá
 - `FAILED`: Thất bại.
 - `ABORTED`: Đã hủy.
 
-## 3. Danh sách Topic Kafka:
-- `order.commands` / `order.events`
-- `product.commands` / `product.events`
-- `cart.commands` / `cart.events`
+### Danh sách Topic Kafka chính:
+- `order.commands` / `order.events`: Xử lý đơn hàng.
+- `product.commands` / `product.events`: Quản lý tồn kho/giữ hàng.
+- `cart.commands` / `cart.events`: Xử lý giỏ hàng.
+- `payment.commands` / `payment.events`: [NEW] Xử lý thanh toán.
+- `create.admin.action.logs`: [NEW] Gửi log cho Admin Service.
+
+---
+
+## 4. Analytical Reporting (Admin Only)
+
+These APIs aggregate data from multiple services to provide analytical insights.
+
+### Get Last 12 Months Revenue
+#### 1. Overview
+- Purpose: Fetch revenue data for each month over the past year.
+- Service: orchestration-service
+
+#### 2. Endpoint
+- `GET /api/orchestration/admin/report-details/monthly-revenue`
+
+#### 3. Request
+- Headers: `Authorization: Bearer <token>`
+
+#### 4. Response
+- Success: `BaseResponse<List<MonthlyRevenueResponse>>`
+```json
+{
+  "status": 200,
+  "message": "Get monthly revenue successfully",
+  "data": [
+    {
+      "month": "JANUARY",
+      "revenue": 50000.00
+    },
+    ...
+  ]
+}
+```
+
+#### 5. Business Logic Notes
+- Orchestrates a call to the Order Service to fetch revenue data aggregated by month.
+
+#### 6. Dependencies / Data Flow
+- Order Service (`GET /api/orders/reports/monthly-revenue`).
+
+---
+
+### Get Top Selling Products
+#### 1. Overview
+- Purpose: Fetch the top selling products across the system.
+- Service: orchestration-service
+
+#### 2. Endpoint
+- `GET /api/orchestration/admin/report-details/top-selling-products/{limit}`
+
+#### 3. Request
+- Headers: `Authorization: Bearer <token>`
+- Path Params: `limit` (int) - Number of top products to retrieve.
+
+#### 4. Response
+- Success: `BaseResponse<List<TopSellingProductResponse>>`
+```json
+{
+  "status": 200,
+  "message": "Get top selling products successfully",
+  "data": [
+    {
+      "productId": "uuid...",
+      "productName": "iPhone 15 Pro",
+      "totalSold": 150
+    },
+    ...
+  ]
+}
+```
+
+#### 5. Business Logic Notes
+- Fetches top selling data from Order Service.
+- For products with missing names, it performs a lookup in the Product Service.
+
+#### 6. Dependencies / Data Flow
+- Order Service (`GET /api/orders/reports/top-selling-products`).
+- Product Service (`GET /api/products/{productId}/name`).

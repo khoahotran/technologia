@@ -58,7 +58,7 @@ export default function CartClient() {
     if (isLoading) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center">
-                <p className="text-gray-500">{t('loading_cart', {}, "Loading cart...")}</p>
+                <p className="text-muted-foreground">{t('loading_cart', {}, "Loading cart...")}</p>
             </div>
         );
     }
@@ -66,15 +66,15 @@ export default function CartClient() {
     if (isError) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center px-4">
-                <div className="bg-white p-6 rounded-xl border border-gray-100 text-center max-w-md">
+                <div className="bg-card p-6 rounded-lg border border-border text-center max-w-md">
                     <p className="text-red-500 font-medium">{t('cannot_load_cart', {}, "Cannot load cart from backend.")}</p>
-                    <p className="text-sm text-gray-500 mt-2">
+                    <p className="text-sm text-muted-foreground mt-2">
                         {t('login_to_view_cart', {}, "Please login first or check cart service connection.")}
                     </p>
                     <button
                         type="button"
                         onClick={() => window.location.reload()}
-                        className="mt-4 px-4 py-2 rounded-lg bg-secondary text-white"
+                        className="mt-4 px-4 py-2 min-h-11 rounded-lg bg-secondary text-secondary-foreground"
                     >
                         {t('retry', {}, "Retry")}
                     </button>
@@ -86,19 +86,19 @@ export default function CartClient() {
     return (
         <div className="min-h-screen bg-background pb-20">
             <div className="container mx-auto px-4 py-8">
-                <div className="flex flex-col lg:flex-row gap-8">
+                <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
                     <div className="flex-1 space-y-6">
-                        <div className="bg-white p-4 rounded-xl border border-gray-100 flex items-center justify-between">
+                        <div className="bg-card p-4 rounded-lg border border-border flex items-center justify-between gap-2">
                             <div className="flex items-center gap-4">
                                 <Checkbox
                                     checked={allSelected}
                                     onCheckedChange={(checked) => toggleAll(Boolean(checked))}
                                 />
-                                <span className="font-medium text-gray-900">{t('select_all', {}, "Select All")}</span>
+                                <span className="font-medium text-foreground">{t('select_all', {}, "Select All")}</span>
                             </div>
                             <button
                                 type="button"
-                                className="text-red-500 hover:text-red-600 font-medium"
+                                className="min-h-11 px-2 text-red-500 hover:text-red-600 font-medium"
                                 onClick={() => {
                                     effectiveSelectedIds.forEach((id) => {
                                         remove(id);
@@ -134,7 +134,7 @@ export default function CartClient() {
                                 />
                             ))}
                             {items.length === 0 && (
-                                <div className="bg-white p-8 rounded-xl border border-gray-100 text-center text-gray-500">
+                                <div className="bg-card p-8 rounded-lg border border-border text-center text-muted-foreground">
                                     {t('cart_empty', {}, "Your cart is empty. Start adding products from the product list.")}
                                 </div>
                             )}
@@ -142,7 +142,7 @@ export default function CartClient() {
                     </div>
 
                     <div className="w-full lg:w-96 space-y-6">
-                        <div className="bg-accent p-4 rounded-xl flex items-center justify-center gap-2 text-gray-700 font-medium">
+                        <div className="bg-accent p-4 rounded-lg flex items-center justify-center gap-2 text-foreground font-medium">
                             <Ticket className="h-5 w-5" />
                             <span>{t('promo_mocked', {}, "Promo code support is mocked")}</span>
                         </div>

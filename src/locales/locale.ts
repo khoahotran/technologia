@@ -7,7 +7,10 @@
 
 import { safe } from "@/utils/result";
 
-let currentLocale = "en";
+const SUPPORTED_LOCALES = ["en", "vi"] as const;
+type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
+
+let currentLocale: SupportedLocale = "en";
 
 /**
  * Lấy ngôn ngữ đã được lưu trong LocalStorage
@@ -17,11 +20,16 @@ function getStoredLocale(): string {
     return localStorage.getItem("locale") || "en";
 }
 
+function isSupportedLocale(locale: string): locale is SupportedLocale {
+    return SUPPORTED_LOCALES.includes(locale as SupportedLocale);
+}
+
 /**
  * Khởi tạo ngôn ngữ ban đầu cho ứng dụng
  */
 export function initLocale(): string {
-    currentLocale = getStoredLocale();
+    const storedLocale = getStoredLocale();
+    currentLocale = isSupportedLocale(storedLocale) ? storedLocale : "en";
     return currentLocale;
 }
 
@@ -30,9 +38,9 @@ export function initLocale(): string {
  * @param locale - Mã ngôn ngữ mới (VD: 'vi', 'en')
  */
 export function setLocale(locale: string) {
-    currentLocale = locale;
+    currentLocale = isSupportedLocale(locale) ? locale : "en";
     if (typeof window !== "undefined") {
-        localStorage.setItem("locale", locale);
+        localStorage.setItem("locale", currentLocale);
     }
 }
 
@@ -48,7 +56,7 @@ export function getLocale() {
  * @param locale - Mã ngôn ngữ cần tải (tùy chọn)
  */
 export async function loadLocale(locale?: string) {
-    const target = locale || currentLocale;
+    const target = locale && isSupportedLocale(locale) ? locale : currentLocale;
     const [messages, error] = await safe(import(`@/locales/${target}.json`));
 
     if (error) {

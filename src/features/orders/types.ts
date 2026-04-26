@@ -2,8 +2,23 @@ import { z } from "zod";
 
 import { AddressSchema } from "@/features/checkout/types";
 
-export const DeliveryStatusSchema = z.string().min(1);
+export const DeliveryStatusSchema = z.enum([
+    "AWAITING_PAYMENT",
+    "AWAITING_CONFIRM",
+    "PENDING",
+    "ON_SHIPPING",
+    "DELIVERED",
+    "CANCELED",
+]);
 export type DeliveryStatus = z.infer<typeof DeliveryStatusSchema>;
+
+export const AdminUpdateOrderStatusSchema = z.enum([
+    "PENDING",
+    "ON_SHIPPING",
+    "DELIVERED",
+    "CANCELED",
+]);
+export type AdminUpdateOrderStatus = z.infer<typeof AdminUpdateOrderStatusSchema>;
 
 export const PaymentMethodSchema = z.enum(["E_WALLET", "BANK_ACCOUNT", "COD"]);
 export type PaymentMethod = z.infer<typeof PaymentMethodSchema>;
@@ -16,8 +31,8 @@ export const OrderSchema = z.object({
     orderDate: z.string(),
     totalAmount: z.number(),
     deliveryStatus: DeliveryStatusSchema,
-    paymentMethod: z.string(),
-    paymentAccountId: z.string(),
+    paymentMethod: PaymentMethodSchema,
+    paymentAccountId: z.string().nullable().optional(),
     addressId: z.string(),
     customerId: z.string(),
     updatedAt: z.string(),
@@ -31,7 +46,7 @@ export const OrderListParamsSchema = z.object({
     size: z.number().int().positive().default(20),
     status: DeliveryStatusSchema.optional(),
     sortBy: z.string().optional(),
-    sortDir: z.enum(["ASC", "DESC"]).optional(),
+    sortDirection: z.enum(["ASC", "DESC"]).optional(),
 });
 
 export type OrderListParams = z.infer<typeof OrderListParamsSchema>;
@@ -108,7 +123,43 @@ export type ShippingFeeResponse = z.infer<typeof ShippingFeeResponseSchema>;
 
 export const SubmitFeedbackRequestSchema = z.object({
     orderId: z.string(),
-    items: z.array(z.object({}).passthrough()).min(1),
+    items: z.array(z.object({
+        orderItemId: z.string(),
+        rating: z.number().int().min(1).max(5),
+        comment: z.string().min(1),
+    })).min(1),
 });
 
 export type SubmitFeedbackRequest = z.infer<typeof SubmitFeedbackRequestSchema>;
+
+export const DeliveryLogSchema = z.object({
+    deliveryLogId: z.string(),
+    orderId: z.string(),
+    status: z.string(),
+    message: z.string(),
+    createdAt: z.string(),
+});
+
+export type DeliveryLog = z.infer<typeof DeliveryLogSchema>;
+
+export const OrderFeedbackSchema = z.object({
+    orderItemId: z.string(),
+    productId: z.string(),
+    variantId: z.string(),
+    rating: z.number().int().min(1).max(5),
+    comment: z.string(),
+    createdAt: z.string(),
+    updatedAt: z.string(),
+});
+
+export type OrderFeedback = z.infer<typeof OrderFeedbackSchema>;
+
+export const ProductFeedbackParamsSchema = z.object({
+    productId: z.string(),
+    page: z.number().int().nonnegative().default(0),
+    size: z.number().int().positive().default(10),
+    sortBy: z.string().optional(),
+    sortDirection: z.enum(["ASC", "DESC"]).optional(),
+});
+
+export type ProductFeedbackParams = z.infer<typeof ProductFeedbackParamsSchema>;

@@ -16,7 +16,8 @@ import { toErrorMessage } from "@/utils/error-message";
 type FeedbackItem = {
     key: string;
     label: string;
-    payload: Record<string, unknown>;
+    quantity: number;
+    orderItemId: string | null;
 };
 
 function toFeedbackItem(item: unknown, index: number): FeedbackItem {
@@ -27,12 +28,14 @@ function toFeedbackItem(item: unknown, index: number): FeedbackItem {
         return {
             key: fallbackKey,
             label: fallbackLabel,
-            payload: { itemIndex: index + 1 },
+            quantity: 1,
+            orderItemId: null,
         };
     }
 
     const itemRecord = item as Record<string, unknown>;
     const productId = typeof itemRecord["productId"] === "string" ? itemRecord["productId"] : null;
+    const orderItemId = typeof itemRecord["orderItemId"] === "string" ? itemRecord["orderItemId"] : null;
     const variantId = typeof itemRecord["variantId"] === "string" ? itemRecord["variantId"] : null;
     const name =
         typeof itemRecord["name"] === "string"
@@ -40,15 +43,16 @@ function toFeedbackItem(item: unknown, index: number): FeedbackItem {
             : typeof itemRecord["productName"] === "string"
                 ? itemRecord["productName"]
                 : productId ?? fallbackLabel;
+    const quantity =
+        typeof itemRecord["quantity"] === "number" && itemRecord["quantity"] > 0
+            ? itemRecord["quantity"]
+            : 1;
 
     return {
         key: `${productId ?? fallbackKey}-${variantId ?? "default"}`,
         label: name,
-        payload: {
-            productId,
-            variantId,
-            itemIndex: index + 1,
-        },
+        quantity,
+        orderItemId,
     };
 }
 
@@ -94,11 +98,23 @@ export default function GiveFeedbackClient({ id }: { id: string }) {
         const payloadItems = feedbackItems.map((item) => {
             const draft = feedbackDrafts[item.key] ?? { rating: 5, comment: "" };
             return {
-                ...item.payload,
+                orderItemId: item.orderItemId,
                 rating: draft.rating,
                 comment: draft.comment.trim(),
             };
         });
+
+        const hasMissingOrderItemId = payloadItems.some((item) => !item.orderItemId);
+        if (hasMissingOrderItemId) {
+            toast.error(
+                t(
+                    "feedback_missing_order_item_id",
+                    {},
+                    "Cannot submit feedback because order item id is missing from backend response."
+                )
+            );
+            return;
+        }
 
         const hasEmptyComment = payloadItems.some((item) => item.comment.length === 0);
         if (hasEmptyComment) {
@@ -109,7 +125,11 @@ export default function GiveFeedbackClient({ id }: { id: string }) {
         submitFeedback.mutate(
             {
                 orderId: order.orderId,
-                items: payloadItems,
+                items: payloadItems.map((item) => ({
+                    orderItemId: item.orderItemId as string,
+                    rating: item.rating,
+                    comment: item.comment,
+                })),
             },
             {
                 onSuccess: () => {
@@ -133,7 +153,15 @@ export default function GiveFeedbackClient({ id }: { id: string }) {
                     <div className="space-y-2 mb-8">
                         <h3 className="text-xl font-semibold text-[#1E1E1E]">{t("order_id_label", {}, "Order ID")}</h3>
                         <p className="text-3xl font-bold text-[#1E1E1E]">#{order.orderId}</p>
-                        <p className="text-lg font-semibold text-[#0D6E97]">[{formatOrderStatusLabel(order.deliveryStatus)}]</p>
+                        <div className="space-y-1 py-2">
+                            {feedbackItems.map((item) => (
+                                <div key={`summary-${item.key}`} className="flex items-center gap-3 text-[#1E1E1E]">
+                                    <span className="w-10 text-right">{item.quantity}x</span>
+                                    <span>{item.label}</span>
+                                </div>
+                            ))}
+                        </div>
+                        <p className="text-lg font-semibold text-[#0D6E97]">[{formatOrderStatusLabel(order.deliveryStatus, t)}]</p>
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-8 border-t border-[#D3E4F4] pt-8">

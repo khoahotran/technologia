@@ -32,6 +32,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useCart } from "@/features/cart/hooks";
 import {
     useProducts,
@@ -119,16 +120,41 @@ export function ProductListView() {
 
     if (isLoading) {
         return (
-            <div className="flex h-screen items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <div className="min-h-screen bg-background py-8">
+                <div className="container mx-auto px-4 max-w-7xl">
+                    <div className="mb-6 flex items-center gap-2">
+                        <Skeleton className="h-5 w-16" />
+                        <Skeleton className="h-5 w-3" />
+                        <Skeleton className="h-5 w-28" />
+                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        <div className="lg:col-span-2 space-y-4">
+                            {[...Array(6)].map((_, index) => (
+                                <Skeleton key={`filter-${index}`} className="h-10 w-full rounded-xl" />
+                            ))}
+                        </div>
+                        <div className="lg:col-span-10 space-y-6">
+                            <Skeleton className="h-14 w-full rounded-xl" />
+                            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                                {[...Array(8)].map((_, index) => (
+                                    <Skeleton key={`product-${index}`} className="h-[320px] w-full rounded-3xl" />
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     }
 
     if (isError) {
         return (
-            <div className="flex h-screen items-center justify-center text-destructive px-4 text-center">
-                Failed to load products. Ensure API Gateway is running at localhost:8080.
+            <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center">
+                <Loader2 className="mb-3 h-7 w-7 text-destructive" />
+                <p className="text-destructive">{t("cannot_load_products", {}, "Cannot load products right now.")}</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                    {t("retry_later", {}, "Please retry in a moment.")}
+                </p>
             </div>
         );
     }
@@ -178,28 +204,44 @@ export function ProductListView() {
                         <div className="space-y-4">
                             <Button
                                 variant="ghost"
-                                className={`w-full justify-start gap-3 h-12 rounded-xl text-md font-semibold ${activeTab === 'all' ? 'bg-blue-100/50 text-blue-700' : 'bg-transparent text-gray-600'}`}
+                                className={`w-full justify-start gap-3 h-12 rounded-xl text-md font-semibold ${
+                                    activeTab === "all"
+                                        ? "bg-accent text-primary"
+                                        : "bg-transparent text-muted-foreground hover:text-foreground"
+                                }`}
                                 onClick={() => { setActiveTab('all'); setActiveCategory(undefined); setActiveBrand(undefined); }}
                             >
                                 <Tag className="w-5 h-5" /> {t('all_products', {}, "All Products")}
                             </Button>
                             <Button
                                 variant="ghost"
-                                className={`w-full justify-start gap-3 h-12 rounded-xl text-md font-semibold ${activeTab === 'hot' ? 'bg-blue-100/50 text-blue-700' : 'bg-transparent text-gray-600'}`}
+                                className={`w-full justify-start gap-3 h-12 rounded-xl text-md font-semibold ${
+                                    activeTab === "hot"
+                                        ? "bg-accent text-primary"
+                                        : "bg-transparent text-muted-foreground hover:text-foreground"
+                                }`}
                                 onClick={() => setActiveTab('hot')}
                             >
                                 <Flame className="w-5 h-5" /> {t('hot_sales', {}, "Hot sales")}
                             </Button>
                             <Button
                                 variant="ghost"
-                                className={`w-full justify-start gap-3 h-12 rounded-xl text-md font-semibold ${activeTab === 'best' ? 'bg-blue-100/50 text-blue-700' : 'bg-transparent text-gray-600'}`}
+                                className={`w-full justify-start gap-3 h-12 rounded-xl text-md font-semibold ${
+                                    activeTab === "best"
+                                        ? "bg-accent text-primary"
+                                        : "bg-transparent text-muted-foreground hover:text-foreground"
+                                }`}
                                 onClick={() => setActiveTab('best')}
                             >
                                 <Trophy className="w-5 h-5" /> {t('best_seller', {}, "Best Seller")}
                             </Button>
                             <Button
                                 variant="ghost"
-                                className={`w-full justify-start gap-3 h-12 rounded-xl text-md font-semibold ${activeTab === 'new' ? 'bg-blue-100/50 text-blue-700' : 'bg-transparent text-gray-600'}`}
+                                className={`w-full justify-start gap-3 h-12 rounded-xl text-md font-semibold ${
+                                    activeTab === "new"
+                                        ? "bg-accent text-primary"
+                                        : "bg-transparent text-muted-foreground hover:text-foreground"
+                                }`}
                                 onClick={() => setActiveTab('new')}
                             >
                                 <Music className="w-5 h-5" /> {t('new', {}, "New")}
@@ -208,15 +250,15 @@ export function ProductListView() {
 
                         {/* Categories List */}
                         <div className="space-y-4">
-                            <h3 className="font-bold text-lg text-gray-900 px-4">{t('categories', {}, "Categories")}</h3>
+                            <h3 className="font-bold text-lg text-foreground px-4">{t('categories', {}, "Categories")}</h3>
                             <div className="px-4 space-y-3">
                                 <Select
                                     value={activeCategory ? String(activeCategory) : "all"}
                                     onValueChange={(val) => setActiveCategory(val === "all" ? undefined : Number(val))}
                                 >
-                                    <SelectTrigger className="w-full h-10 px-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+                                    <SelectTrigger className="w-full h-10 px-4 bg-card border border-border rounded-lg shadow-sm">
                                         <div className="flex items-center gap-2">
-                                            <Smartphone className="w-4 h-4 text-gray-500" />
+                                            <Smartphone className="w-4 h-4 text-muted-foreground" />
                                             <SelectValue placeholder={t('all_categories', {}, "All Categories")} />
                                         </div>
                                     </SelectTrigger>
@@ -230,13 +272,17 @@ export function ProductListView() {
                                     </SelectContent>
                                 </Select>
 
-                                <div className="flex flex-col gap-2 pt-1 border-t border-gray-100">
-                                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider pl-1 py-1">{t('popular', {}, "Popular")}</p>
+                                <div className="flex flex-col gap-2 pt-1 border-t border-border">
+                                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider pl-1 py-1">{t('popular', {}, "Popular")}</p>
                                     {categories?.slice(0, 3).map((cat) => (
                                         <Button
                                             key={cat.categoryId}
                                             variant="ghost"
-                                            className={`w-full justify-start gap-3 h-9 px-3 rounded-lg text-sm ${activeCategory === cat.categoryId ? 'font-bold text-primary bg-blue-50' : 'text-gray-600'}`}
+                                            className={`w-full justify-start gap-3 h-9 px-3 rounded-lg text-sm ${
+                                                activeCategory === cat.categoryId
+                                                    ? "font-bold text-primary bg-accent"
+                                                    : "text-muted-foreground hover:text-foreground"
+                                            }`}
                                             onClick={() => setActiveCategory(cat.categoryId)}
                                         >
                                             <Smartphone className="w-4 h-4 opacity-70" /> {cat.name}
@@ -248,15 +294,15 @@ export function ProductListView() {
 
                         {/* Brands List */}
                         <div className="space-y-4">
-                            <h3 className="font-bold text-lg text-gray-900 px-4">{t('brands', {}, "Brands")}</h3>
+                            <h3 className="font-bold text-lg text-foreground px-4">{t('brands', {}, "Brands")}</h3>
                             <div className="px-4">
                                 <Select
                                     value={activeBrand ? String(activeBrand) : "all"}
                                     onValueChange={(val) => setActiveBrand(val === "all" ? undefined : Number(val))}
                                 >
-                                    <SelectTrigger className="w-full h-10 px-4 bg-white border border-gray-200 rounded-lg shadow-sm">
+                                    <SelectTrigger className="w-full h-10 px-4 bg-card border border-border rounded-lg shadow-sm">
                                         <div className="flex items-center gap-2">
-                                            <Tag className="w-4 h-4 text-gray-500" />
+                                            <Tag className="w-4 h-4 text-muted-foreground" />
                                             <SelectValue placeholder={t('all_brands', {}, "All Brands")} />
                                         </div>
                                     </SelectTrigger>
@@ -270,13 +316,17 @@ export function ProductListView() {
                                     </SelectContent>
                                 </Select>
 
-                                <div className="flex flex-col gap-2 pt-1 border-t border-gray-100">
-                                    <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider pl-1 py-1">{t('popular', {}, "Popular")}</p>
+                                <div className="flex flex-col gap-2 pt-1 border-t border-border">
+                                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider pl-1 py-1">{t('popular', {}, "Popular")}</p>
                                     {brands?.slice(0, 3).map((brand) => (
                                         <Button
                                             key={brand.brandId}
                                             variant="ghost"
-                                            className={`w-full justify-start gap-3 h-9 px-3 rounded-lg text-sm ${activeBrand === brand.brandId ? 'font-bold text-primary bg-blue-50' : 'text-gray-600'}`}
+                                            className={`w-full justify-start gap-3 h-9 px-3 rounded-lg text-sm ${
+                                                activeBrand === brand.brandId
+                                                    ? "font-bold text-primary bg-accent"
+                                                    : "text-muted-foreground hover:text-foreground"
+                                            }`}
                                             onClick={() => setActiveBrand(brand.brandId)}
                                         >
                                             <Tag className="w-4 h-4 opacity-70" /> {brand.name}
@@ -327,7 +377,7 @@ export function ProductListView() {
                                 />
                             ))}
                             {products?.length === 0 && (
-                                <div className="col-span-full text-center py-20 text-gray-500">
+                                <div className="col-span-full text-center py-20 text-muted-foreground">
                                     {t('no_products_found', {}, "No products found matching your criteria.")}
                                 </div>
                             )}

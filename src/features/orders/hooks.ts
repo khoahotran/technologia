@@ -3,20 +3,29 @@ import { toast } from "sonner";
 
 import {
     confirmCheckout,
+    getAdminOrders,
+    getAdminOrderById,
+    getDeliveryLogs,
     getOrderById,
+    getOrderFeedbacks,
     getOrders,
-    getShippingFee,
+    getProductFeedbacks,
     initCheckoutPreview,
     recalculateCheckout,
+    deleteOrderFeedback,
     submitOrderFeedback,
+    updateOrderFeedback,
     updateOrderStatus,
 } from "./api";
 import type {
     CheckoutPreviewRequest,
+    AdminUpdateOrderStatus,
     ConfirmCheckoutRequest,
-    DeliveryStatus,
+    DeliveryLog,
     Order,
+    OrderFeedback,
     OrderListParams,
+    ProductFeedbackParams,
     RecalculateCheckoutRequest,
     SubmitFeedbackRequest,
 } from "./types";
@@ -39,11 +48,42 @@ export function useOrder(id: string) {
     });
 }
 
-export function useShippingFee(province: string | undefined, subTotal: number, enabled: boolean) {
+export function useAdminOrders(params?: OrderListParams) {
     return useQuery({
-        queryKey: [...checkoutKeys.all, "shipping-fee", province, subTotal],
-        queryFn: () => getShippingFee(province ?? "", subTotal),
-        enabled: Boolean(province) && enabled,
+        queryKey: [...checkoutKeys.all, "admin-orders", params],
+        queryFn: () => getAdminOrders(params),
+    });
+}
+
+export function useAdminOrder(id: string, enabled = true) {
+    return useQuery({
+        queryKey: [...checkoutKeys.all, "admin-order", id],
+        queryFn: () => getAdminOrderById(id),
+        enabled: Boolean(id) && enabled,
+    });
+}
+
+export function useDeliveryLogs(orderId: string, enabled = true) {
+    return useQuery<DeliveryLog[]>({
+        queryKey: [...checkoutKeys.all, "delivery-logs", orderId],
+        queryFn: () => getDeliveryLogs(orderId),
+        enabled: Boolean(orderId) && enabled,
+    });
+}
+
+export function useOrderFeedbacks(orderId: string, enabled = true) {
+    return useQuery<OrderFeedback[]>({
+        queryKey: [...checkoutKeys.all, "order-feedbacks", orderId],
+        queryFn: () => getOrderFeedbacks(orderId),
+        enabled: Boolean(orderId) && enabled,
+    });
+}
+
+export function useProductFeedbacks(params: ProductFeedbackParams, enabled = true) {
+    return useQuery({
+        queryKey: [...checkoutKeys.all, "product-feedbacks", params],
+        queryFn: () => getProductFeedbacks(params),
+        enabled,
     });
 }
 
@@ -75,15 +115,30 @@ export function useUpdateOrderStatus() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: ({ orderId, deliveryStatus }: { orderId: string; deliveryStatus: DeliveryStatus }) =>
+        mutationFn: ({ orderId, deliveryStatus }: { orderId: string; deliveryStatus: AdminUpdateOrderStatus }) =>
             updateOrderStatus(orderId, deliveryStatus),
-        onSuccess: (updatedOrder: Order) => {
-            queryClient.setQueryData(checkoutKeys.order(updatedOrder.orderId), updatedOrder);
+        onSuccess: (_: void, variables) => {
+            queryClient.invalidateQueries({ queryKey: checkoutKeys.order(variables.orderId) });
+            queryClient.invalidateQueries({ queryKey: [...checkoutKeys.all, "admin-order", variables.orderId] });
             queryClient.invalidateQueries({ queryKey: checkoutKeys.orders() });
+            queryClient.invalidateQueries({ queryKey: [...checkoutKeys.all, "delivery-logs", variables.orderId] });
         },
         onError: (error) => {
             toast.error(toErrorMessage(error, "Unable to update order status"));
         },
+    });
+}
+
+export function useUpdateOrderFeedback() {
+    return useMutation({
+        mutationFn: ({ orderItemId, rating, comment }: { orderItemId: string; rating: number; comment: string }) =>
+            updateOrderFeedback(orderItemId, rating, comment),
+    });
+}
+
+export function useDeleteOrderFeedback() {
+    return useMutation({
+        mutationFn: (orderItemId: string) => deleteOrderFeedback(orderItemId),
     });
 }
 

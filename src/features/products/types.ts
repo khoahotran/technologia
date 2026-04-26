@@ -78,3 +78,53 @@ export interface ProductSearchParams {
     categoryId?: number | string;
     brandId?: number | string;
 }
+
+export type ProductStatus = "ACTIVE" | "INACTIVE";
+
+export interface CreateBrandRequest {
+    name: string;
+}
+
+export interface CreateCategoryRequest {
+    name: string;
+}
+
+export interface CreateProductVariantRequest {
+    variantCode: string;
+    price: number;
+    stock: number;
+    storage: string;
+    color: string;
+    images: string[];
+}
+
+export interface CreateProductRequest {
+    name: string;
+    description: string;
+    displayPrice: number;
+    brandId: number;
+    categoryId: number;
+    status: ProductStatus;
+    variants: CreateProductVariantRequest[];
+}
+
+export interface UpdateProductRequest {
+    name: string;
+    description: string;
+    displayPrice: number;
+    brandId: number;
+    categoryId: number;
+    status: ProductStatus;
+}
+
+export interface UpdateProductVariantRequest {
+    price: number;
+    stock: number;
+    storage: string;
+    color: string;
+    images: string[];
+}
+
+export interface ApplyProductsToDiscountRequest {
+    productIds: string[];
+}
