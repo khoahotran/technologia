@@ -138,6 +138,9 @@ api.interceptors.response.use(
       }
 
       clearAuthState();
+      if (isAuthRoute) {
+        throw new AppError(message, 401, code, data);
+      }
       throw new AppError("Session expired. Please login again.", 401, "UNAUTHORIZED", data);
     }
 

@@ -17,11 +17,8 @@ const Chatbot = dynamic(
 
 export default function Template({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-screen flex flex-col">
-      <Header variant="default" />
-      <main className="flex-1">{children}</main>
-      <Footer />
-      <Chatbot />
-    </div>
+    <>
+      {children}
+    </>
   );
 }

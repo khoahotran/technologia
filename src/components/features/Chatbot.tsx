@@ -40,12 +40,12 @@ export function Chatbot() {
                     key,
                     {},
                     key === "chatbot_q1"
-                        ? "Where is my order?"
+                        ? "Đơn hàng của tôi ở đâu?"
                         : key === "chatbot_q2"
-                            ? "What is the return policy?"
+                            ? "Chính sách đổi trả thế nào?"
                             : key === "chatbot_q3"
-                                ? "Is there free shipping?"
-                                : "How to contact support?"
+                                ? "Có được miễn phí ship không?"
+                                : "So sánh iPhone 15 và iPhone 16"
                 )
             ),
         [t]
@@ -58,7 +58,7 @@ export function Chatbot() {
                 response: t(
                     "chatbot_res_order",
                     {},
-                    "You can track your order in Orders. If you share the order ID, I can guide the next step."
+                    "Bạn có thể theo dõi đơn hàng tại mục 'Đơn hàng'. Nếu bạn cung cấp mã đơn, mình sẽ tra cứu nhanh giúp bạn."
                 ),
             },
             {
@@ -66,7 +66,7 @@ export function Chatbot() {
                 response: t(
                     "chatbot_res_return",
                     {},
-                    "We support returns within 30 days if the product is still in good condition."
+                    "Technologia hỗ trợ đổi trả trong vòng 30 ngày nếu sản phẩm còn nguyên tem mác và lỗi từ nhà sản xuất."
                 ),
             },
             {
@@ -74,7 +74,7 @@ export function Chatbot() {
                 response: t(
                     "chatbot_res_shipping",
                     {},
-                    "Free shipping for orders over 1,000,000 VND. Standard shipping fee is 30,000 VND."
+                    "Miễn phí vận chuyển cho đơn hàng từ 1.000.000 VNĐ. Phí ship tiêu chuẩn là 30.000 VNĐ."
                 ),
             },
             {
@@ -82,7 +82,15 @@ export function Chatbot() {
                 response: t(
                     "chatbot_res_contact",
                     {},
-                    "You can reach support via support@technologia.com or (+84) 123 456 789."
+                    "Bạn có thể liên hệ hỗ trợ qua email support@technologia.com hoặc hotline (+84) 123 456 789."
+                ),
+            },
+            {
+                keywords: ["so sánh", "iphone"],
+                response: t(
+                    "chatbot_res_compare",
+                    {},
+                    "Dưới đây là so sánh nhanh iPhone 15 và 16:\n- Chip: A16 vs A18 (mạnh hơn 30%).\n- Nút bấm: iPhone 16 có thêm nút Action và Camera Control.\n- Camera: iPhone 16 hỗ trợ quay Video không gian.\n\nBạn cần mình tư vấn thêm chi tiết nào không?"
                 ),
             },
             {
@@ -90,12 +98,12 @@ export function Chatbot() {
                 response: t(
                     "chatbot_res_greeting",
                     {},
-                    "Hello! I'm Lạc Lạc, your Technologia assistant. How can I help?"
+                    "Chào bạn! Mình là Lạc Lạc, trợ lý ảo của Technologia. Mình có thể giúp gì cho bạn?"
                 ),
             },
             {
                 keywords: ["tạm biệt", "bye"],
-                response: t("chatbot_res_goodbye", {}, "Goodbye! Have a nice day."),
+                response: t("chatbot_res_goodbye", {}, "Tạm biệt bạn! Chúc bạn một ngày tốt lành."),
             },
         ],
         [t]
@@ -185,7 +193,7 @@ export function Chatbot() {
                             <div className="flex items-center gap-2">
                                 <CardTitle className="text-base font-semibold">Lạc Lạc</CardTitle>
                                 <Badge className="bg-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/20">
-                                    {t("chatbot_online", {}, "Online")}
+                                    {t("chatbot_online", {}, "Trực tuyến")}
                                 </Badge>
                             </div>
                         </div>
@@ -195,7 +203,7 @@ export function Chatbot() {
                                 size="icon"
                                 className="h-7 w-7 text-primary-foreground hover:bg-primary/80"
                                 onClick={() => setIsMinimized(true)}
-                                aria-label={t("chatbot_minimize", {}, "Minimize chat")}
+                                aria-label={t("chatbot_minimize", {}, "Thu nhỏ chat")}
                             >
                                 <Minus className="h-4 w-4" />
                             </Button>
@@ -204,7 +212,7 @@ export function Chatbot() {
                                 size="icon"
                                 className="h-7 w-7 text-primary-foreground hover:bg-primary/80"
                                 onClick={() => setIsOpen(false)}
-                                aria-label={t("chatbot_close", {}, "Close chat")}
+                                aria-label={t("chatbot_close", {}, "Đóng chat")}
                             >
                                 <X className="h-4 w-4" />
                             </Button>
@@ -256,10 +264,10 @@ export function Chatbot() {
                         <Input
                             value={inputValue}
                             onChange={(event) => setInputValue(event.target.value)}
-                            placeholder={t("chatbot_placeholder", {}, "Type a message...")}
+                            placeholder={t("chatbot_placeholder", {}, "Nhập tin nhắn...")}
                             className="h-10 flex-1"
                         />
-                        <Button type="submit" size="icon" className="h-10 w-10" disabled={!inputValue.trim()} aria-label={t("chatbot_send", {}, "Send")}>
+                        <Button type="submit" size="icon" className="h-10 w-10" disabled={!inputValue.trim()} aria-label={t("chatbot_send", {}, "Gửi")}>
                             <Send className="h-4 w-4" />
                         </Button>
                     </form>
@@ -270,7 +278,7 @@ export function Chatbot() {
                 <Button
                     className="h-12 w-12 rounded-full bg-primary p-0 text-primary-foreground shadow-lg transition-all duration-300 hover:scale-105 pointer-events-auto"
                     onClick={() => setIsMinimized(false)}
-                    aria-label={t("chatbot_expand", {}, "Expand chat")}
+                    aria-label={t("chatbot_expand", {}, "Mở rộng chat")}
                 >
                     <MessageCircle className="h-5 w-5" />
                 </Button>
@@ -280,7 +288,7 @@ export function Chatbot() {
                 <Button
                     className="h-14 w-14 rounded-full bg-primary p-0 text-primary-foreground shadow-lg transition-transform hover:scale-105 hover:bg-primary/90 pointer-events-auto"
                     onClick={toggleChat}
-                    aria-label={t("chatbot_open", {}, "Open chat")}
+                    aria-label={t("chatbot_open", {}, "Mở chat")}
                 >
                     <MessageCircle className="h-6 w-6" />
                 </Button>

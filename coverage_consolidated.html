@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Code coverage report for All files</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type='text/css'>
+        /* base.css content */
+        body, html { margin:0; padding: 0; height: 100%; }
+        body { font-family: Helvetica Neue, Helvetica, Arial; font-size: 14px; color:#333; }
+        .small { font-size: 12px; }
+        *, *:after, *:before { box-sizing:border-box; }
+        h1 { font-size: 20px; margin: 0;}
+        h2 { font-size: 14px; }
+        pre { font: 12px/1.4 Consolas, "Liberation Mono", Menlo, Courier, monospace; margin: 0; padding: 0; tab-size: 2; }
+        a { color:#0074D9; text-decoration:none; }
+        a:hover { text-decoration:underline; }
+        .strong { font-weight: bold; }
+        .space-top1 { padding: 10px 0 0 0; }
+        .pad2y { padding: 20px 0; }
+        .pad1y { padding: 10px 0; }
+        .pad2x { padding: 0 20px; }
+        .pad2 { padding: 20px; }
+        .pad1 { padding: 10px; }
+        .space-left2 { padding-left:55px; }
+        .space-right2 { padding-right:20px; }
+        .center { text-align:center; }
+        .clearfix { display:block; }
+        .clearfix:after { content:''; display:block; height:0; clear:both; visibility:hidden; }
+        .fl { float: left; }
+        .quiet { color: rgba(0,0,0,0.5); }
+        .fraction { font-family: Consolas, 'Liberation Mono', Menlo, Courier, monospace; font-size: 10px; color: #555; background: #E8E8E8; padding: 4px 5px; border-radius: 3px; vertical-align: middle; }
+        .coverage-summary { border-collapse: collapse; width: 100%; }
+        .coverage-summary tr { border-bottom: 1px solid #bbb; }
+        .coverage-summary td, .coverage-summary th { padding: 10px; }
+        .coverage-summary th { text-align: left; font-weight: normal; white-space: nowrap; }
+        .coverage-summary td.pct, .coverage-summary td.abs { text-align: right; }
+        .coverage-summary td.pic { min-width: 120px !important; }
+        .status-line { height: 10px; }
+        .red.solid, .status-line.low, .low .cover-fill { background:#C21F39 }
+        .low .chart { border:1px solid #C21F39 }
+        .low, .cline-no { background:#FCE1E5 }
+        .high, .cline-yes { background:rgb(230,245,208) }
+        .status-line.high, .high .cover-fill { background:rgb(77,146,33) }
+        .high .chart { border:1px solid rgb(77,146,33) }
+        .status-line.medium, .medium .cover-fill { background: #f9cd0b; }
+        .medium .chart { border:1px solid #f9cd0b; }
+        .medium { background: #fff4c2; }
+        .cover-fill, .cover-empty { display:inline-block; height: 12px; }
+        .cover-empty { background: white; }
+        .wrapper { min-height: 100%; height: auto !important; height: 100%; margin: 0 auto -48px; }
+        .footer, .push { height: 48px; }
+        
+        /* prettify.css content */
+        .pln{color:#000}@media screen{.str{color:#080}.kwd{color:#008}.com{color:#800}.typ{color:#606}.lit{color:#066}.pun,.opn,.clo{color:#660}.tag{color:#008}.atn{color:#606}.atv{color:#080}.dec,.var{color:#606}.fun{color:red}}pre.prettyprint{padding:2px;border:1px solid #888}
+        
+        .coverage-summary .sorter {
+            background-image: url(sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+
+<body>
+    <div class='wrapper'>
+        <div class='pad1'>
+            <h1>All files</h1>
+            <div class='clearfix'>
+                <div class='fl pad1y space-right2'>
+                    <span class="strong">66.24% </span>
+                    <span class="quiet">Statements</span>
+                    <span class='fraction'>365/551</span>
+                </div>
+                <div class='fl pad1y space-right2'>
+                    <span class="strong">62.73% </span>
+                    <span class="quiet">Branches</span>
+                    <span class='fraction'>229/365</span>
+                </div>
+                <div class='fl pad1y space-right2'>
+                    <span class="strong">64.31% </span>
+                    <span class="quiet">Functions</span>
+                    <span class='fraction'>146/227</span>
+                </div>
+                <div class='fl pad1y space-right2'>
+                    <span class="strong">66.79% </span>
+                    <span class="quiet">Lines</span>
+                    <span class='fraction'>346/518</span>
+                </div>
+            </div>
+            <p class="quiet">
+                Press <em>n</em> or <em>j</em> to go to the next uncovered block, <em>b</em>, <em>p</em> or <em>k</em> for the previous block.
+            </p>
+        </div>
+        <div class='status-line medium'></div>
+        <div class="pad1">
+            <table class="coverage-summary">
+                <thead>
+                    <tr>
+                        <th class="file">File</th>
+                        <th class="pic"></th>
+                        <th class="pct">Statements</th>
+                        <th class="abs"></th>
+                        <th class="pct">Branches</th>
+                        <th class="abs"></th>
+                        <th class="pct">Functions</th>
+                        <th class="abs"></th>
+                        <th class="pct">Lines</th>
+                        <th class="abs"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="file low">api</td>
+                        <td class="pic low"><div class="chart"><div class="cover-fill" style="width: 26%"></div><div class="cover-empty" style="width: 74%"></div></div></td>
+                        <td class="pct low">26.82%</td>
+                        <td class="abs low">22/82</td>
+                        <td class="pct low">6%</td>
+                        <td class="abs low">3/50</td>
+                        <td class="pct low">6.25%</td>
+                        <td class="abs low">1/16</td>
+                        <td class="pct low">27.16%</td>
+                        <td class="abs low">22/81</td>
+                    </tr>
+                    <tr>
+                        <td class="file medium">components/features</td>
+                        <td class="pic medium"><div class="chart"><div class="cover-fill" style="width: 62%"></div><div class="cover-empty" style="width: 38%"></div></div></td>
+                        <td class="pct medium">62.96%</td>
+                        <td class="abs medium">34/54</td>
+                        <td class="pct medium">72%</td>
+                        <td class="abs medium">18/25</td>
+                        <td class="pct medium">54.16%</td>
+                        <td class="abs medium">13/24</td>
+                        <td class="pct medium">67.34%</td>
+                        <td class="abs medium">33/49</td>
+                    </tr>
+                    <tr>
+                        <td class="file high">components/features/cart</td>
+                        <td class="pic high"><div class="chart"><div class="cover-fill cover-full" style="width: 100%"></div><div class="cover-empty" style="width: 0%"></div></div></td>
+                        <td class="pct high">100%</td>
+                        <td class="abs high">7/7</td>
+                        <td class="pct medium">76.92%</td>
+                        <td class="abs medium">10/13</td>
+                        <td class="pct high">100%</td>
+                        <td class="abs high">2/2</td>
+                        <td class="pct high">100%</td>
+                        <td class="abs high">7/7</td>
+                    </tr>
+                    <tr>
+                        <td class="file high">components/features/checkout</td>
+                        <td class="pic high"><div class="chart"><div class="cover-fill" style="width: 90%"></div><div class="cover-empty" style="width: 10%"></div></div></td>
+                        <td class="pct high">90.9%</td>
+                        <td class="abs high">10/11</td>
+                        <td class="pct medium">78.57%</td>
+                        <td class="abs medium">11/14</td>
+                        <td class="pct high">83.33%</td>
+                        <td class="abs high">5/6</td>
+                        <td class="pct high">90.9%</td>
+                        <td class="abs high">10/11</td>
+                    </tr>
+                    <tr>
+                        <td class="file medium">components/shared</td>
+                        <td class="pic medium"><div class="chart"><div class="cover-fill" style="width: 50%"></div><div class="cover-empty" style="width: 50%"></div></div></td>
+                        <td class="pct medium">50%</td>
+                        <td class="abs medium">3/6</td>
+                        <td class="pct low">0%</td>
+                        <td class="abs low">0/4</td>
+                        <td class="pct low">0%</td>
+                        <td class="abs low">0/3</td>
+                        <td class="pct medium">50%</td>
+                        <td class="abs medium">3/6</td>
+                    </tr>
+                    <tr>
+                        <td class="file high">components/ui</td>
+                        <td class="pic high"><div class="chart"><div class="cover-fill" style="width: 92%"></div><div class="cover-empty" style="width: 8%"></div></div></td>
+                        <td class="pct high">92.24%</td>
+                        <td class="abs high">107/116</td>
+                        <td class="pct high">84.55%</td>
+                        <td class="abs high">104/123</td>
+                        <td class="pct high">88.88%</td>
+                        <td class="abs high">56/63</td>
+                        <td class="pct high">92.24%</td>
+                        <td class="abs high">107/116</td>
+                    </tr>
+                    <tr>
+                        <td class="file high">config</td>
+                        <td class="pic high"><div class="chart"><div class="cover-fill cover-full" style="width: 100%"></div><div class="cover-empty" style="width: 0%"></div></div></td>
+                        <td class="pct high">100%</td>
+                        <td class="abs high">1/1</td>
+                        <td class="pct high">100%</td>
+                        <td class="abs high">4/4</td>
+                        <td class="pct high">100%</td>
+                        <td class="abs high">0/0</td>
+                        <td class="pct high">100%</td>
+                        <td class="abs high">1/1</td>
+                    </tr>
+                    <tr>
+                        <td class="file medium">constants</td>
+                        <td class="pic medium"><div class="chart"><div class="cover-fill" style="width: 52%"></div><div class="cover-empty" style="width: 48%"></div></div></td>
+                        <td class="pct medium">52.38%</td>
+                        <td class="abs medium">11/21</td>
+                        <td class="pct low">25%</td>
+                        <td class="abs low">1/4</td>
+                        <td class="pct low">0%</td>
+                        <td class="abs low">0/8</td>
+                        <td class="pct medium">55%</td>
+                        <td class="abs medium">11/20</td>
+                    </tr>
+                    <tr>
+                        <td class="file medium">features/auth</td>
+                        <td class="pic medium"><div class="chart"><div class="cover-fill" style="width: 68%"></div><div class="cover-empty" style="width: 32%"></div></div></td>
+                        <td class="pct medium">68.57%</td>
+                        <td class="abs medium">24/35</td>
+                        <td class="pct high">100%</td>
+                        <td class="abs high">0/0</td>
+                        <td class="pct medium">66.66%</td>
+                        <td class="abs medium">10/15</td>
+                        <td class="pct medium">68.57%</td>
+                        <td class="abs medium">24/35</td>
+                    </tr>
+                    <tr>
+                        <td class="file high">features/checkout</td>
+                        <td class="pic high"><div class="chart"><div class="cover-fill cover-full" style="width: 100%"></div><div class="cover-empty" style="width: 0%"></div></div></td>
+                        <td class="pct high">100%</td>
+                        <td class="abs high">3/3</td>
+                        <td class="pct high">100%</td>
+                        <td class="abs high">0/0</td>
+                        <td class="pct high">100%</td>
+                        <td class="abs high">0/0</td>
+                        <td class="pct high">100%</td>
+                        <td class="abs high">3/3</td>
+                    </tr>
+                    <tr>
+                        <td class="file medium">features/orders</td>
+                        <td class="pic medium"><div class="chart"><div class="cover-fill" style="width: 54%"></div><div class="cover-empty" style="width: 46%"></div></div></td>
+                        <td class="pct medium">54.54%</td>
+                        <td class="abs medium">30/55</td>
+                        <td class="pct low">16.66%</td>
+                        <td class="abs low">2/12</td>
+                        <td class="pct low">40%</td>
+                        <td class="abs low">8/20</td>
+                        <td class="pct medium">52.94%</td>
+                        <td class="abs medium">27/51</td>
+                    </tr>
+                    <tr>
+                        <td class="file high">hooks</td>
+                        <td class="pic high"><div class="chart"><div class="cover-fill cover-full" style="width: 100%"></div><div class="cover-empty" style="width: 0%"></div></div></td>
+                        <td class="pct high">100%</td>
+                        <td class="abs high">28/28</td>
+                        <td class="pct high">100%</td>
+                        <td class="abs high">11/11</td>
+                        <td class="pct high">100%</td>
+                        <td class="abs high">17/17</td>
+                        <td class="pct high">100%</td>
+                        <td class="abs high">23/23</td>
+                    </tr>
+                    <tr>
+                        <td class="file low">locales</td>
+                        <td class="pic low"><div class="chart"><div class="cover-fill" style="width: 10%"></div><div class="cover-empty" style="width: 90%"></div></div></td>
+                        <td class="pct low">10%</td>
+                        <td class="abs low">2/20</td>
+                        <td class="pct low">0%</td>
+                        <td class="abs low">0/21</td>
+                        <td class="pct low">0%</td>
+                        <td class="abs low">0/6</td>
+                        <td class="pct low">10.52%</td>
+                        <td class="abs low">2/19</td>
+                    </tr>
+                    <tr>
+                        <td class="file low">providers</td>
+                        <td class="pic low"><div class="chart"><div class="cover-fill" style="width: 26%"></div><div class="cover-empty" style="width: 74%"></div></div></td>
+                        <td class="pct low">26.08%</td>
+                        <td class="abs low">6/23</td>
+                        <td class="pct low">0%</td>
+                        <td class="abs low">0/13</td>
+                        <td class="pct low">10%</td>
+                        <td class="abs low">1/10</td>
+                        <td class="pct low">28.57%</td>
+                        <td class="abs low">6/21</td>
+                    </tr>
+                    <tr>
+                        <td class="file high">store</td>
+                        <td class="pic high"><div class="chart"><div class="cover-fill" style="width: 92%"></div><div class="cover-empty" style="width: 8%"></div></div></td>
+                        <td class="pct high">92.85%</td>
+                        <td class="abs high">26/28</td>
+                        <td class="pct medium">77.77%</td>
+                        <td class="abs medium">7/9</td>
+                        <td class="pct high">86.66%</td>
+                        <td class="abs high">13/15</td>
+                        <td class="pct high">100%</td>
+                        <td class="abs high">22/22</td>
+                    </tr>
+                    <tr>
+                        <td class="file high">utils</td>
+                        <td class="pic high"><div class="chart"><div class="cover-fill" style="width: 83%"></div><div class="cover-empty" style="width: 17%"></div></div></td>
+                        <td class="pct high">83.6%</td>
+                        <td class="abs high">51/61</td>
+                        <td class="pct high">93.54%</td>
+                        <td class="abs high">58/62</td>
+                        <td class="pct high">90.9%</td>
+                        <td class="abs high">20/22</td>
+                        <td class="pct high">84.9%</td>
+                        <td class="abs high">45/53</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class='push'></div>
+    </div>
+    <div class='footer quiet pad2 space-top1 center small'>
+        Code coverage generated by istanbul at 2026-04-29T12:54:16.575Z
+    </div>
+</body>
+
+</html>
