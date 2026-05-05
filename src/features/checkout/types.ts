@@ -4,7 +4,7 @@ export const AddressSchema = z.object({
     addressId: z.string(),
     customerId: z.string().optional(),
     province: z.string(),
-    city: z.string(),
+    city: z.string().nullable().optional(),
     ward: z.string(),
     street: z.string(),
     no: z.string(),
