@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { COMMUNES, PROVINCES } from "@/constants/location";
 import { useCreateAddress } from "@/features/checkout/hooks";
 import { useLanguage } from "@/providers/language.provider";
 
@@ -53,13 +54,25 @@ export default function CreateAddressClient() {
     const router = useRouter();
     const [form, setForm] = useState<AddressFormState>(INITIAL_FORM);
     const createAddressMutation = useCreateAddress();
+    const [selectedProvinceId, setSelectedProvinceId] = useState("");
+
+    const handleProvinceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const pId = e.target.value;
+        const pName = PROVINCES.find(p => p.idProvince === pId)?.name || "";
+        
+        setSelectedProvinceId(pId);
+        setField("province", pName); 
+        setField("city", "");        
+    };
+
+    const filteredDistricts = COMMUNES.filter(c => c.idProvince === selectedProvinceId);
 
     const setField = <K extends keyof AddressFormState>(key: K, value: AddressFormState[K]) => {
         setForm((prev) => ({ ...prev, [key]: value }));
     };
 
     const handleSubmit = () => {
-        if (!form.firstName || !form.lastName || !form.phone || !form.province || !form.city || !form.ward || !form.street || !form.number) {
+        if (!form.firstName || !form.lastName || !form.phone || !form.province || !form.ward || !form.street || !form.number) {
             toast.error(t('fill_required_fields', {}, "Please fill all required fields"));
             return;
         }
@@ -113,18 +126,32 @@ export default function CreateAddressClient() {
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-gray-700">{t('province_label', {}, "Province *")}</label>
-                                <Input value={form.province} onChange={(e) => setField("province", e.target.value)} className="bg-[#F9F8FE] border-gray-200" />
+                                <select value={selectedProvinceId} onChange={handleProvinceChange} className="bg-[#F9F8FE] border border-gray-200 w-full h-10 rounded-md px-2">
+                                    <option value="">Chọn tỉnh/thành</option>
+                                    {PROVINCES.map((p) => (
+                                        <option key={p.idProvince} value={p.idProvince}>
+                                            {p.name}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700">{t('city_label_required', {}, "City *")}</label>
+                                <label className="text-sm font-medium text-gray-700">{t('city_label_optional', {}, "City (Old Address)")}</label>
                                 <Input value={form.city} onChange={(e) => setField("city", e.target.value)} className="bg-[#F9F8FE] border-gray-200" />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-gray-700">{t('ward_label_required', {}, "Ward *")}</label>
-                                <Input value={form.ward} onChange={(e) => setField("ward", e.target.value)} className="bg-[#F9F8FE] border-gray-200" />
+                            <label className="text-sm font-medium text-gray-700">{t('ward_label_required', {}, "Ward *")}</label>
+                            <select value={form.ward} onChange={(e) => setField("ward", e.target.value)} className="bg-[#F9F8FE] border border-gray-200 w-full h-10 rounded-md px-2" disabled={!selectedProvinceId}>
+                                <option value="">Chọn phường/xã</option>
+                                {filteredDistricts.map((d) => (
+                                    <option key={d.idCommune} value={d.name}>
+                                        {d.name}
+                                    </option>
+                                ))}
+                            </select>
                             </div>
                         </div>
 
