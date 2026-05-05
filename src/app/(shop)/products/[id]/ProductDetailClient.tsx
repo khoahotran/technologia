@@ -2,8 +2,6 @@
 
 import {
     Star,
-    Minus,
-    Plus,
     ShoppingCartIcon,
     Eye,
     PackageCheck,
@@ -19,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/ui/product-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCart } from "@/features/cart/hooks";
+import { useAuth } from "@/features/auth/hooks";
 import {
     useProductDetail,
     useProducts
@@ -36,8 +35,8 @@ type TabKey = "details" | "specs" | "reviews";
 export default function ProductDetailClient({ id }: ProductDetailClientProps) {
     const { t, locale } = useLanguage();
     const currentLocale = locale === 'vi' ? 'vi-VN' : 'en-US';
+    const { isAuthenticated } = useAuth();
     const router = useRouter();
-    const [quantity, setQuantity] = useState(1);
     const [selectedImage, setSelectedImage] = useState<{ productId: string; image: string } | null>(null);
     const [activeTab, setActiveTab] = useState<TabKey>("details");
     const [showFullDesc, setShowFullDesc] = useState(false);
@@ -82,14 +81,17 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
     ];
 
     const handleAddToCart = () => {
+        if (!product) return;
+        if (!isAuthenticated) {
+            router.push("/login");
+            return;
+        }
         const variantId = product.variants?.[0]?.variantId || "";
         if (!variantId) {
             toast.error(t('no_variants', {}, "No variants available"));
             return;
         }
 
-        // Note: For simplicity, we add once. 
-        // If the user wants multiple, we could loop or backend could support quantity.
         addToCart({ productId: product.productId, variantId });
     };
 
@@ -177,11 +179,6 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
 
                             <div className="space-y-3 pt-1">
                                 <div className="flex items-center gap-3">
-                                    <div className="flex items-center rounded-xl bg-accent/40 border border-border overflow-hidden">
-                                        <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="min-h-11 px-3 py-2.5 text-primary hover:bg-accent transition-colors"><Minus className="w-4 h-4" /></button>
-                                        <span className="w-10 text-center font-semibold text-foreground text-sm">{quantity}</span>
-                                        <button onClick={() => setQuantity(quantity + 1)} className="min-h-11 px-3 py-2.5 text-primary hover:bg-accent transition-colors"><Plus className="w-4 h-4" /></button>
-                                    </div>
                                     <button
                                         onClick={handleAddToCart}
                                         disabled={isAdding}

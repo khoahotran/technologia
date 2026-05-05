@@ -62,12 +62,12 @@ export const RefreshTokenResponseSchema = BaseResponseSchema(
 );
 
 export const RegisterLocalRequestSchema = z.object({
-    username: z.string().min(1),
-    password: z.string().min(1),
-    email: z.string().email(),
-    firstName: z.string().min(1),
-    lastName: z.string().min(1),
-    phoneNumber: z.string().min(1),
+    username: z.string().min(1, 'Username is required'),
+    password: z.string().min(8, 'Password must be at least 8 characters'),
+    email: z.string().email('Invalid email address'),
+    firstName: z.string().optional(),
+    lastName: z.string().optional(),
+    phoneNumber: z.string().min(1, 'Phone number is required'),
 });
 
 export type RegisterLocalRequest = z.infer<typeof RegisterLocalRequestSchema>;

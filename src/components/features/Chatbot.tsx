@@ -7,7 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { env } from "@/config/env";
 import { useLanguage } from "@/providers/language.provider";
+import { useAuthStore } from "@/store/auth.store";
 import { cn } from "@/utils/cn";
 
 type Sender = "user" | "bot";
@@ -28,9 +30,14 @@ const HARD_CODED_QUICK_PROMPTS = [
 
 export function Chatbot() {
     const { t } = useLanguage();
+    const { session } = useAuthStore();
+    const customerId = session?.user.userId;
+
     const [isOpen, setIsOpen] = useState(false);
     const [isMinimized, setIsMinimized] = useState(false);
     const [inputValue, setInputValue] = useState("");
+    const [isTyping, setIsTyping] = useState(false);
+    const [sessionId] = useState(() => crypto.randomUUID());
     const scrollRef = useRef<HTMLDivElement>(null);
 
     const quickPrompts = useMemo(
@@ -51,64 +58,6 @@ export function Chatbot() {
         [t]
     );
 
-    const autoResponseRules = useMemo(
-        () => [
-            {
-                keywords: ["đơn hàng", "order"],
-                response: t(
-                    "chatbot_res_order",
-                    {},
-                    "Bạn có thể theo dõi đơn hàng tại mục 'Đơn hàng'. Nếu bạn cung cấp mã đơn, mình sẽ tra cứu nhanh giúp bạn."
-                ),
-            },
-            {
-                keywords: ["đổi trả", "return"],
-                response: t(
-                    "chatbot_res_return",
-                    {},
-                    "Technologia hỗ trợ đổi trả trong vòng 30 ngày nếu sản phẩm còn nguyên tem mác và lỗi từ nhà sản xuất."
-                ),
-            },
-            {
-                keywords: ["vận chuyển", "shipping"],
-                response: t(
-                    "chatbot_res_shipping",
-                    {},
-                    "Miễn phí vận chuyển cho đơn hàng từ 1.000.000 VNĐ. Phí ship tiêu chuẩn là 30.000 VNĐ."
-                ),
-            },
-            {
-                keywords: ["liên hệ", "contact"],
-                response: t(
-                    "chatbot_res_contact",
-                    {},
-                    "Bạn có thể liên hệ hỗ trợ qua email support@technologia.com hoặc hotline (+84) 123 456 789."
-                ),
-            },
-            {
-                keywords: ["so sánh", "iphone"],
-                response: t(
-                    "chatbot_res_compare",
-                    {},
-                    "Dưới đây là so sánh nhanh iPhone 15 và 16:\n- Chip: A16 vs A18 (mạnh hơn 30%).\n- Nút bấm: iPhone 16 có thêm nút Action và Camera Control.\n- Camera: iPhone 16 hỗ trợ quay Video không gian.\n\nBạn cần mình tư vấn thêm chi tiết nào không?"
-                ),
-            },
-            {
-                keywords: ["xin chào", "hello", "hi"],
-                response: t(
-                    "chatbot_res_greeting",
-                    {},
-                    "Chào bạn! Mình là Lạc Lạc, trợ lý ảo của Technologia. Mình có thể giúp gì cho bạn?"
-                ),
-            },
-            {
-                keywords: ["tạm biệt", "bye"],
-                response: t("chatbot_res_goodbye", {}, "Tạm biệt bạn! Chúc bạn một ngày tốt lành."),
-            },
-        ],
-        [t]
-    );
-
     const initialMessages = useMemo<Message[]>(
         () => [
             {
@@ -116,7 +65,7 @@ export function Chatbot() {
                 text: t(
                     "chatbot_welcome",
                     {},
-                    "Xin chào! Mình là Lạc Lạc - trợ lý của Technologia. Bạn cần mình hỗ trợ gì hôm nay?"
+                    "Chào bạn! Mình là Lạc Lạc, trợ lý AI từ Technologia. Bạn cần mình tư vấn sản phẩm hay hỗ trợ đơn hàng gì không?"
                 ),
                 sender: "bot",
                 timestamp: new Date(),
@@ -139,12 +88,30 @@ export function Chatbot() {
         scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }, [messages, isOpen]);
 
-    const getAutoReply = (text: string) => {
-        const normalized = text.toLowerCase();
-        const matchedRule = autoResponseRules.find((rule) =>
-            rule.keywords.some((keyword) => normalized.includes(keyword))
-        );
-        return matchedRule?.response ?? t("chatbot_res_default", {}, "Mình chưa hiểu rõ. Bạn có thể diễn đạt lại giúp mình nhé.");
+    const callChatApi = async (message: string) => {
+        try {
+            const response = await fetch(`${env.aiAgentUrl}/api/agent/chat`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    session_id: sessionId,
+                    message: message,
+                    customer_id: customerId || null,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to fetch from AI service");
+            }
+
+            const data = await response.json();
+            return data.reply;
+        } catch (error) {
+            console.error("Chatbot API Error:", error);
+            return t("chatbot_error", {}, "Rất tiếc, mình đang gặp sự cố kết nối. Bạn vui lòng thử lại sau nhé!");
+        }
     };
 
     const appendMessage = (text: string, sender: Sender) => {
@@ -159,16 +126,17 @@ export function Chatbot() {
         ]);
     };
 
-    const handleSendMessage = (text: string) => {
+    const handleSendMessage = async (text: string) => {
         const trimmed = text.trim();
-        if (!trimmed) return;
+        if (!trimmed || isTyping) return;
 
         appendMessage(trimmed, "user");
         setInputValue("");
+        setIsTyping(true);
 
-        window.setTimeout(() => {
-            appendMessage(getAutoReply(trimmed), "bot");
-        }, 500);
+        const reply = await callChatApi(trimmed);
+        appendMessage(reply, "bot");
+        setIsTyping(false);
     };
 
     const toggleChat = () => {
@@ -180,7 +148,7 @@ export function Chatbot() {
         <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-[max(1rem,env(safe-area-inset-right))] z-50 flex flex-col items-end gap-2 pointer-events-none">
             <Card
                 className={cn(
-                    "w-[calc(100vw-1rem)] max-w-[420px] sm:w-[380px] border-primary/20 shadow-2xl transition-all duration-300",
+                    "w-[calc(100vw-1rem)] max-w-[420px] sm:w-[380px] border-primary/20 shadow-2xl transition-all duration-300 py-0",
                     showChatWindow
                         ? "pointer-events-auto translate-y-0 opacity-100"
                         : "pointer-events-none translate-y-4 opacity-0 invisible"
@@ -235,6 +203,17 @@ export function Chatbot() {
                                 <p>{message.text}</p>
                             </div>
                         ))}
+
+                        {isTyping && (
+                            <div className="mr-auto max-w-[88%] rounded-2xl rounded-bl-md border bg-card px-4 py-3 text-sm sm:max-w-[84%]">
+                                <div className="flex gap-1">
+                                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/60 [animation-delay:-0.3s]"></span>
+                                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/60 [animation-delay:-0.15s]"></span>
+                                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/60"></span>
+                                </div>
+                                <p className="mt-1 text-[10px] text-muted-foreground animate-pulse">Lạc Lạc đang suy nghĩ...</p>
+                            </div>
+                        )}
                     </div>
 
                     {messages.length <= 2 && (
@@ -264,10 +243,11 @@ export function Chatbot() {
                         <Input
                             value={inputValue}
                             onChange={(event) => setInputValue(event.target.value)}
-                            placeholder={t("chatbot_placeholder", {}, "Nhập tin nhắn...")}
+                            placeholder={isTyping ? t("chatbot_thinking", {}, "Lạc Lạc đang suy nghĩ...") : t("chatbot_placeholder", {}, "Nhập tin nhắn...")}
                             className="h-10 flex-1"
+                            disabled={isTyping}
                         />
-                        <Button type="submit" size="icon" className="h-10 w-10" disabled={!inputValue.trim()} aria-label={t("chatbot_send", {}, "Gửi")}>
+                        <Button type="submit" size="icon" className="h-10 w-10" disabled={!inputValue.trim() || isTyping} aria-label={t("chatbot_send", {}, "Gửi")}>
                             <Send className="h-4 w-4" />
                         </Button>
                     </form>

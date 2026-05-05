@@ -9,7 +9,7 @@
  */
 import { Loader2, Flame, Trophy, Music, Tag, Smartphone } from "lucide-react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 
@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCart } from "@/features/cart/hooks";
+import { useAuth } from "@/features/auth/hooks";
 import {
     useProducts,
     useBrands,
@@ -48,6 +49,8 @@ export function ProductListView() {
     const { t, locale } = useLanguage();
     const currentLocale = locale === 'vi' ? 'vi-VN' : 'en-US';
     const searchParams = useSearchParams();
+    const router = useRouter();
+    const { isAuthenticated } = useAuth();
     const [page, setPage] = useState(0); // 0-indexed
 
     const pageSize = 12;
@@ -64,22 +67,22 @@ export function ProductListView() {
     const maxStar = searchParams.get('maxStar') ? Number(searchParams.get('maxStar')) : undefined;
     const sortParam = searchParams.get('sort'); // price_asc, price_desc, newest
 
-    let sortBy = "createdAt";
+    let sortBy = "created_at";
     let sortDirection = "DESC";
 
     if (sortParam === 'price_asc') {
-        sortBy = "displayPrice";
+        sortBy = "display_price";
         sortDirection = "ASC";
     } else if (sortParam === 'price_desc') {
-        sortBy = "displayPrice";
+        sortBy = "display_price";
         sortDirection = "DESC";
     } else if (sortParam === 'newest') {
-        sortBy = "createdAt";
+        sortBy = "created_at";
         sortDirection = "DESC";
     }
 
     if (activeTab === 'new') {
-        sortBy = "createdAt";
+        sortBy = "created_at";
         sortDirection = "DESC";
     }
 
@@ -353,6 +356,10 @@ export function ProductListView() {
                                     {...(product.status === 'NEW' && { badge: t('new', {}, "New") })}
                                     className="w-full bg-white rounded-[1.5rem]"
                                     onAddToCart={() => {
+                                        if (!isAuthenticated) {
+                                            router.push("/login");
+                                            return;
+                                        }
                                         const variantId = product.variants?.[0]?.variantId;
                                         if (!variantId) {
                                             toast.error(t('no_variants', {}, "Product has no available variant"));
@@ -363,12 +370,7 @@ export function ProductListView() {
                                             {
                                                 onSuccess: () => toast.success(t('added_to_cart', {}, "Added to cart")),
                                                 onError: (err: unknown) => {
-                                                    const error = err as { statusCode?: number };
-                                                    if (error?.statusCode === 401 || error?.statusCode === 403) {
-                                                        toast.error(t('login_required_action', {}, "Please login to perform this action."));
-                                                    } else {
-                                                        toast.error(t('add_to_cart_failed', {}, "Failed to add to cart. Please try again."));
-                                                    }
+                                                    toast.error(t('add_to_cart_failed', {}, "Failed to add to cart. Please try again."));
                                                 }
                                             }
                                         );

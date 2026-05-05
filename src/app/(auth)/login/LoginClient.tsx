@@ -1,12 +1,13 @@
 "use client"
 
 import { GoogleLogin, type CredentialResponse, GoogleOAuthProvider } from "@react-oauth/google"
-import { Facebook, Youtube, Instagram, Linkedin } from "lucide-react"
+import { Facebook, Youtube, Instagram, Linkedin, Eye, EyeOff } from "lucide-react"
 import Link from "next/link"
 import { useMemo, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { CONTACT_INFO } from "@/constants/contact"
 import { useLogin, useGoogleLogin } from "@/features/auth/hooks"
 import { useLanguage } from "@/providers/language.provider";
 
@@ -19,6 +20,7 @@ export default function LoginClient() {
         password: ""
     })
     const [error, setError] = useState("")
+    const [showPassword, setShowPassword] = useState(false)
 
     const loading = loginMutation.isPending || googleLoginMutation.isPending
 
@@ -88,15 +90,25 @@ export default function LoginClient() {
                             />
 
                             <div className="space-y-2">
-                                <Input
-                                    name="password"
-                                    type="password"
-                                    placeholder={t('login_password_placeholder', {}, "Password")}
-                                    className="h-12 bg-background border-gray-200"
-                                    value={formData.password}
-                                    onChange={handleChange}
-                                    required
-                                />
+                                <div className="relative">
+                                    <Input
+                                        name="password"
+                                        type={showPassword ? "text" : "password"}
+                                        placeholder={t('login_password_placeholder', {}, "Password")}
+                                        className="h-12 bg-background border-gray-200 pr-12"
+                                        value={formData.password}
+                                        onChange={handleChange}
+                                        required
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                        aria-label={showPassword ? t('login_hide_password', {}, "Hide password") : t('login_show_password', {}, "Show password")}
+                                    >
+                                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                    </button>
+                                </div>
                                 <div className="text-right">
                                     <Link href="/forgot-password" className="text-sm text-secondary hover:underline">
                                         {t('login_forgot_password', {}, "Forgot Password?")}
@@ -178,16 +190,40 @@ export default function LoginClient() {
                         </p>
 
                         <div className="flex justify-center gap-6 pt-8">
-                            <a href="#" aria-label="Facebook" className="bg-[#1877F2] p-3 rounded-lg hover:opacity-80 transition-opacity">
+                            <a 
+                                href={CONTACT_INFO.socials.facebook} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                aria-label="Facebook" 
+                                className="bg-[#1877F2] p-3 rounded-lg hover:opacity-80 transition-opacity"
+                            >
                                 <Facebook className="h-6 w-6" fill="white" />
                             </a>
-                            <a href="#" aria-label="Youtube" className="bg-[#FF0000] p-3 rounded-lg hover:opacity-80 transition-opacity">
+                            <a 
+                                href={CONTACT_INFO.socials.youtube} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                aria-label="Youtube" 
+                                className="bg-[#FF0000] p-3 rounded-lg hover:opacity-80 transition-opacity"
+                            >
                                 <Youtube className="h-6 w-6" fill="white" />
                             </a>
-                            <a href="#" aria-label="Instagram" className="bg-gradient-to-br from-[#833AB4] via-[#FD1D1D] to-[#F77737] p-3 rounded-lg hover:opacity-80 transition-opacity">
+                            <a 
+                                href={CONTACT_INFO.socials.instagram} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                aria-label="Instagram" 
+                                className="bg-gradient-to-br from-[#833AB4] via-[#FD1D1D] to-[#F77737] p-3 rounded-lg hover:opacity-80 transition-opacity"
+                            >
                                 <Instagram className="h-6 w-6" fill="white" />
                             </a>
-                            <a href="#" aria-label="Linkedin" className="bg-[#0A66C2] p-3 rounded-lg hover:opacity-80 transition-opacity">
+                            <a 
+                                href={CONTACT_INFO.socials.linkedin} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                aria-label="Linkedin" 
+                                className="bg-[#0A66C2] p-3 rounded-lg hover:opacity-80 transition-opacity"
+                            >
                                 <Linkedin className="h-6 w-6" fill="white" />
                             </a>
                         </div>

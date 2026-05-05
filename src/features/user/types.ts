@@ -17,7 +17,7 @@ export type UserProfile = z.infer<typeof UserProfileSchema>;
 export const UpdateProfileSchema = z.object({
     firstName: z.string(),
     lastName: z.string(),
-    email: z.string().email().optional(),
+    email: z.email().optional(),
     displayName: z.string().optional(),
     phoneNumber: z.string(),
 });
@@ -27,7 +27,7 @@ export type UpdateProfile = z.infer<typeof UpdateProfileSchema>;
 export const UpdateProfileApiRequestSchema = z.object({
     firstname: z.string(),
     lastname: z.string(),
-    email: z.string().email().optional(),
+    email: z.email().optional(),
     displayName: z.string().optional(),
     phoneNumber: z.string(),
 });

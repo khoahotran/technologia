@@ -18,7 +18,7 @@ describe("auth api contract", () => {
 
         await register({
             username: "demo",
-            password: "123456",
+            password: "12345678",
             email: "demo@test.com",
             phoneNumber: "0123",
             firstName: "A",
@@ -27,7 +27,7 @@ describe("auth api contract", () => {
 
         expect(postMock).toHaveBeenCalledWith("/api/auth/register/local", {
             username: "demo",
-            password: "123456",
+            password: "12345678",
             email: "demo@test.com",
             phoneNumber: "0123",
             firstName: "A",

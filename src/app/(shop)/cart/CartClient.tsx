@@ -1,6 +1,6 @@
 "use client";
 
-import { Ticket } from "lucide-react";
+import { Ticket, Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -11,6 +11,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useCart } from "@/features/cart/hooks";
 import { useLanguage } from "@/providers/language.provider";
 import { useOrderFlowStore } from "@/store/order-flow.store";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { calculateCartPrice } from "@/features/cart/api";
+import { getDiscountByCode } from "@/features/discounts/api";
+import { DiscountResponse } from "@/features/discounts/types";
+import { CountPriceResponse } from "@/features/cart/types";
 
 export default function CartClient() {
     const { t } = useLanguage();
@@ -20,12 +26,45 @@ export default function CartClient() {
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
     const [hasUserSelection, setHasUserSelection] = useState(false);
     const setSelectedCartItemIds = useOrderFlowStore((state) => state.setSelectedCartItemIds);
-    const effectiveSelectedIds = hasUserSelection
-        ? selectedIds
-        : items.map((item) => item.cartItemId);
+    const effectiveSelectedIds = useMemo(() => 
+        hasUserSelection ? selectedIds : items.map((item) => item.cartItemId),
+        [hasUserSelection, selectedIds, items]
+    );
 
-    // Simple client-side total for now
-    const total = useMemo(
+    // Discount state
+    const [promoCode, setPromoCode] = useState("");
+    const [appliedDiscount, setAppliedDiscount] = useState<DiscountResponse | null>(null);
+    const [priceResult, setPriceResult] = useState<CountPriceResponse | null>(null);
+    const [isCalculating, setIsCalculating] = useState(false);
+
+    // Calculate real price whenever selection or discount changes
+    useEffect(() => {
+        if (effectiveSelectedIds.length === 0) {
+            setPriceResult(null);
+            return;
+        }
+
+        const fetchPrice = async () => {
+            setIsCalculating(true);
+            try {
+                const result = await calculateCartPrice({
+                    includeDiscount: !!appliedDiscount,
+                    userDiscountId: appliedDiscount?.discountId || null,
+                    cartItemIds: effectiveSelectedIds,
+                });
+                setPriceResult(result);
+            } catch (error) {
+                console.error("Failed to calculate price", error);
+                // Fallback to client-side total if API fails
+            } finally {
+                setIsCalculating(false);
+            }
+        };
+
+        fetchPrice();
+    }, [effectiveSelectedIds, appliedDiscount]);
+
+    const clientSideTotal = useMemo(
         () =>
             items
                 .filter((item) => effectiveSelectedIds.includes(item.cartItemId))
@@ -36,6 +75,29 @@ export default function CartClient() {
                 ),
         [items, effectiveSelectedIds]
     );
+
+    const displayTotal = priceResult?.totalPrice ?? clientSideTotal;
+    const displayDiscount = priceResult?.totalDiscount ?? 0;
+
+    const handleApplyPromo = async () => {
+        if (!promoCode.trim()) return;
+
+        setIsCalculating(true);
+        try {
+            const discount = await getDiscountByCode(promoCode.trim());
+            if (discount) {
+                setAppliedDiscount(discount);
+                toast.success(t('promo_applied', { code: promoCode }, `Promo code ${promoCode} applied!`));
+            } else {
+                toast.error(t('promo_invalid', {}, "Invalid promo code"));
+                setAppliedDiscount(null);
+            }
+        } catch (error) {
+            toast.error(t('promo_error', {}, "Failed to verify promo code"));
+        } finally {
+            setIsCalculating(false);
+        }
+    };
 
     const toggleItem = (id: string) => {
         setHasUserSelection(true);
@@ -142,16 +204,48 @@ export default function CartClient() {
                     </div>
 
                     <div className="w-full lg:w-96 space-y-6">
-                        <div className="bg-accent p-4 rounded-lg flex items-center justify-center gap-2 text-foreground font-medium">
-                            <Ticket className="h-5 w-5" />
-                            <span>{t('promo_mocked', {}, "Promo code support is mocked")}</span>
+                        <div className="bg-card p-4 rounded-lg border border-border space-y-4">
+                            <div className="flex items-center gap-2 text-foreground font-medium">
+                                <Ticket className="h-5 w-5 text-primary" />
+                                <span>{t('promo_code', {}, "Promo Code")}</span>
+                            </div>
+                            <div className="flex gap-2">
+                                <Input
+                                    placeholder={t('enter_code', {}, "Enter code")}
+                                    value={promoCode}
+                                    onChange={(e) => setPromoCode(e.target.value)}
+                                    className="min-h-11"
+                                />
+                                <Button
+                                    onClick={handleApplyPromo}
+                                    disabled={isCalculating || !promoCode.trim()}
+                                    className="min-h-11"
+                                >
+                                    {isCalculating ? <Loader2 className="h-4 w-4 animate-spin" /> : t('apply', {}, "Apply")}
+                                </Button>
+                            </div>
+                            {appliedDiscount && (
+                                <div className="text-sm text-green-600 bg-green-50 p-2 rounded flex justify-between items-center">
+                                    <span>{appliedDiscount.name} ({appliedDiscount.code})</span>
+                                    <button
+                                        onClick={() => {
+                                            setAppliedDiscount(null);
+                                            setPromoCode("");
+                                        }}
+                                        className="text-xs underline"
+                                    >
+                                        {t('remove', {}, "Remove")}
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
                         <CartSummary
-                            total={total}
+                            total={displayTotal}
+                            discountAmount={displayDiscount}
                             itemCount={effectiveSelectedIds.length}
-                            disableCheckout={effectiveSelectedIds.length === 0}
-                            checkoutHref={`/shipping?items=${effectiveSelectedIds.join(",")}`}
+                            disableCheckout={effectiveSelectedIds.length === 0 || isCalculating}
+                            checkoutHref={`/shipping?items=${effectiveSelectedIds.join(",")}${appliedDiscount ? `&discountId=${appliedDiscount.discountId}` : ""}`}
                         />
                     </div>
                 </div>

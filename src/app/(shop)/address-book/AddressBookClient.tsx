@@ -7,7 +7,7 @@ import { toast } from "sonner";
 
 import { AddressCard } from "@/components/features/checkout/AddressCard";
 import { Button } from "@/components/ui/button";
-import { useAddresses } from "@/features/checkout/hooks";
+import { useAddresses, useSetDefaultAddress } from "@/features/checkout/hooks";
 import type { Address } from "@/features/checkout/types";
 import { useLanguage } from "@/providers/language.provider";
 
@@ -28,6 +28,7 @@ export default function AddressBookClient() {
     const { t } = useLanguage();
     const router = useRouter();
     const { data: addresses = [], isLoading } = useAddresses();
+    const setDefaultMutation = useSetDefaultAddress();
 
     if (isLoading) {
         return <div className="flex justify-center p-8">{t('loading', {}, "Loading...")}</div>;
@@ -39,7 +40,7 @@ export default function AddressBookClient() {
                 <div className="max-w-3xl mx-auto space-y-6">
                     <div className="flex items-center justify-between">
                         <h1 className="text-2xl font-bold text-gray-900">{t('address_book_title', {}, "Address Book")}</h1>
-                        <Info className="h-5 w-5 text-[#3E93B3]" />
+                        <Info className="h-5 w-5 text-primary" />
                     </div>
 
                     <div className="space-y-4">
@@ -52,15 +53,15 @@ export default function AddressBookClient() {
                                 isDefault={address.isDefault}
                                 onUse={() => router.push(`/shipping?addressId=${address.addressId}`)}
                                 onSetDefault={() => {
-                                    // TBD: Implement set default via API
-                                    toast.info(t('feature_coming_soon', {}, "Feature coming soon via API"));
+                                    if (address.isDefault) return;
+                                    setDefaultMutation.mutate(address.addressId);
                                 }}
                             />
                         ))}
                     </div>
 
                     <Link href="/address-book/new">
-                        <Button className="w-full bg-[#C3BFCE] hover:bg-[#B3AFBE] text-white font-medium h-12">
+                        <Button className="w-full bg-primary hover:bg-hover text-white font-medium h-12">
                             {t('create_new_address_btn', {}, "Create new address")}
                         </Button>
                     </Link>
