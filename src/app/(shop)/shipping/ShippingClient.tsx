@@ -45,7 +45,6 @@ export default function ShippingClient() {
     const checkoutPreview = useCheckoutPreview();
     const recalculateCheckout = useRecalculateCheckout();
     const confirmCheckout = useConfirmCheckout();
-    const getOrderIdBySagaId = useGetOrderIdBySagaId();
     const checkoutSessionId = useOrderFlowStore((state) => state.checkoutSessionId);
     const storedSelectedCartItemIds = useOrderFlowStore((state) => state.selectedCartItemIds);
     const setCheckoutSessionId = useOrderFlowStore((state) => state.setCheckoutSessionId);
@@ -183,13 +182,8 @@ export default function ShippingClient() {
             });
 
             const sagaId = confirmed;
-            toast.info(t('processing_order', {}, "Đang xử lý đơn hàng, vui lòng đợi giây lát..."));
-
-            const realOrderId = await getOrderIdBySagaId(sagaId);
-
             clearCheckoutFlow();
-
-            router.push(`/orders/${realOrderId}`);
+            router.push(`/order-processing?sagaId=${sagaId}`);
 
         } catch (error) {
             setCheckoutSessionId(null);
