@@ -18,6 +18,7 @@ import type { Address } from "@/features/checkout/types";
 import {
     useCheckoutPreview,
     useConfirmCheckout,
+    useGetOrderIdBySagaId,
     useRecalculateCheckout,
 } from "@/features/orders/hooks";
 import { useLanguage } from "@/providers/language.provider";
@@ -44,6 +45,7 @@ export default function ShippingClient() {
     const checkoutPreview = useCheckoutPreview();
     const recalculateCheckout = useRecalculateCheckout();
     const confirmCheckout = useConfirmCheckout();
+    const getOrderIdBySagaId = useGetOrderIdBySagaId();
     const checkoutSessionId = useOrderFlowStore((state) => state.checkoutSessionId);
     const storedSelectedCartItemIds = useOrderFlowStore((state) => state.selectedCartItemIds);
     const setCheckoutSessionId = useOrderFlowStore((state) => state.setCheckoutSessionId);
@@ -159,28 +161,38 @@ export default function ShippingClient() {
         setSelectedAddressId(activeAddress.addressId);
 
         try {
-            const preview = checkoutSessionId
-                ? await recalculateCheckout.mutateAsync({
-                      checkoutSessionId,
-                      addressId: activeAddress.addressId,
-                  })
-                : await checkoutPreview.mutateAsync({
-                      cartItemIds: selectedCartItems.map((item) => item.cartItemId),
-                  });
+            let sessionId = checkoutSessionId;
 
-            if (!checkoutSessionId) {
-                setCheckoutSessionId(preview.checkoutSessionId);
+            if (!sessionId) {
+                const preview = await checkoutPreview.mutateAsync({
+                    cartItemIds: selectedCartItems.map((item) => item.cartItemId),
+                });
+                sessionId = preview.checkoutSessionId;
+                setCheckoutSessionId(sessionId);
             }
 
+            await recalculateCheckout.mutateAsync({
+                checkoutSessionId: sessionId,
+                addressId: activeAddress.addressId,
+            });
+
             const confirmed = await confirmCheckout.mutateAsync({
-                checkoutSessionId: checkoutSessionId ?? preview.checkoutSessionId,
+                checkoutSessionId: sessionId,
                 paymentMethod,
                 paymentAccountId: paymentMethod === "COD" ? undefined : paymentAccountId,
             });
 
+            const sagaId = confirmed;
+            toast.info(t('processing_order', {}, "Đang xử lý đơn hàng, vui lòng đợi giây lát..."));
+
+            const realOrderId = await getOrderIdBySagaId(sagaId);
+
             clearCheckoutFlow();
-            router.push(`/orders/${confirmed.orderId}`);
+
+            router.push(`/orders/${realOrderId}`);
+
         } catch (error) {
+            setCheckoutSessionId(null);
             toast.error(toErrorMessage(error, "Unable to place order"));
         }
     };

@@ -105,9 +105,14 @@ export async function recalculateCheckout(
     return CheckoutRecalculateResponseSchema.parse(response.data);
 }
 
-export async function confirmCheckout(input: ConfirmCheckoutRequest): Promise<{ orderId: string }> {
-    const response = await post<ApiResponse<string>>("/api/checkout/confirm", input);
-    return { orderId: response.data };
+export async function confirmCheckout(input: ConfirmCheckoutRequest): Promise<string> {
+    const response = await post<ApiResponse<{ sagaId: string }>>("/api/checkout/confirm", input);
+    return response.data.sagaId;
+}
+
+export async function getOrderIdBySagaId(sagaId: string): Promise<string | null> {
+    const response = await get<ApiResponse<{ orderId: string }>>(`/api/sagas/get-order/${sagaId}`);
+    return response.data?.orderId || null;
 }
 
 export async function getDeliveryLogs(orderId: string): Promise<DeliveryLog[]> {

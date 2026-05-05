@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useState } from "react";
 
 import {
     confirmCheckout,
@@ -16,6 +17,7 @@ import {
     submitOrderFeedback,
     updateOrderFeedback,
     updateOrderStatus,
+    getOrderIdBySagaId
 } from "./api";
 import type {
     CheckoutPreviewRequest,
@@ -109,6 +111,28 @@ export function useConfirmCheckout() {
             queryClient.invalidateQueries({ queryKey: ["cart"] });
         },
     });
+}
+
+export function useGetOrderIdBySagaId() {
+    return async (sagaId: string): Promise<string | null> => {
+        let attempts = 0;
+        const maxAttempts = 6;
+
+        while (attempts < maxAttempts) {
+            try {
+                await new Promise((resolve) => setTimeout(resolve, 2000));
+                
+                const orderId = await getOrderIdBySagaId(sagaId);
+                
+                if (orderId) return orderId;
+            } catch (error) {
+                console.log(`Attempt ${attempts + 1}: Order service chưa phản hồi ID, tiếp tục đợi...`);
+            }
+            
+            attempts++;
+        }
+        return null;
+    };
 }
 
 export function useUpdateOrderStatus() {

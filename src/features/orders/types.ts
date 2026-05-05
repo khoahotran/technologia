@@ -70,7 +70,7 @@ export type CheckoutPreviewRequest = z.infer<typeof CheckoutPreviewRequestSchema
 
 export const CheckoutPreviewResponseSchema = z.object({
     checkoutSessionId: z.string(),
-    discountErrorMsg: z.string(),
+    discountErrorMsg: z.string().nullable(),
     defaultAddress: AddressSchema,
     items: z.array(z.object({}).passthrough()),
     shippingFee: z.number(),
@@ -94,14 +94,14 @@ export type RecalculateCheckoutRequest = z.infer<typeof RecalculateCheckoutReque
 
 export const CheckoutRecalculateResponseSchema = z.object({
     checkoutSessionId: z.string(),
-    discountErrorMsg: z.string(),
+    discountErrorMsg: z.string().nullable(),
     items: z.array(z.object({}).passthrough()),
     shippingFee: z.number(),
     shippingDiscount: z.number(),
     voucherDiscount: z.number(),
     subTotal: z.number(),
     totalPrice: z.number(),
-    note: z.string(),
+    note: z.string().optional().nullable(),
 });
 
 export type CheckoutRecalculateResponse = z.infer<typeof CheckoutRecalculateResponseSchema>;
