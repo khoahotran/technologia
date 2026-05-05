@@ -1,8 +1,10 @@
 ﻿"use client";
 
-import { createContext, useMemo, type ReactNode } from "react";
+import { createContext, useEffect, useMemo, type ReactNode } from "react";
 
+import { useAuthStore } from "@/features/auth/store";
 import { useAuth } from "@/features/auth/hooks";
+import { initAutoRefresh } from "@/api/client";
 
 interface User {
   userId: string;
@@ -23,6 +25,13 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { user, token, isAuthenticated, logout } = useAuth();
+  const hydrated = useAuthStore((state) => state.hydrated);
+
+  useEffect(() => {
+    if (hydrated) {
+      initAutoRefresh();
+    }
+  }, [hydrated]);
 
   const value = useMemo<AuthContextType>(
     () => ({

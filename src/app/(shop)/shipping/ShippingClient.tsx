@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ChevronDown } from "lucide-react";
+import { ArrowLeft, ChevronDown, Landmark, Wallet, Banknote } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -9,7 +9,6 @@ import { toast } from "sonner";
 import { AppError } from "@/api/client";
 import { PaymentMethodList } from "@/components/features/checkout/PaymentMethodList";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useCart } from "@/features/cart/hooks";
@@ -18,6 +17,7 @@ import type { Address } from "@/features/checkout/types";
 import {
     useCheckoutPreview,
     useConfirmCheckout,
+    useGetOrderIdBySagaId,
     useRecalculateCheckout,
 } from "@/features/orders/hooks";
 import { useLanguage } from "@/providers/language.provider";
@@ -44,6 +44,7 @@ export default function ShippingClient() {
     const checkoutPreview = useCheckoutPreview();
     const recalculateCheckout = useRecalculateCheckout();
     const confirmCheckout = useConfirmCheckout();
+    const getOrderIdBySagaId = useGetOrderIdBySagaId();
     const checkoutSessionId = useOrderFlowStore((state) => state.checkoutSessionId);
     const storedSelectedCartItemIds = useOrderFlowStore((state) => state.selectedCartItemIds);
     const setCheckoutSessionId = useOrderFlowStore((state) => state.setCheckoutSessionId);
@@ -159,28 +160,38 @@ export default function ShippingClient() {
         setSelectedAddressId(activeAddress.addressId);
 
         try {
-            const preview = checkoutSessionId
-                ? await recalculateCheckout.mutateAsync({
-                      checkoutSessionId,
-                      addressId: activeAddress.addressId,
-                  })
-                : await checkoutPreview.mutateAsync({
-                      cartItemIds: selectedCartItems.map((item) => item.cartItemId),
-                  });
+            let sessionId = checkoutSessionId;
 
-            if (!checkoutSessionId) {
-                setCheckoutSessionId(preview.checkoutSessionId);
+            if (!sessionId) {
+                const preview = await checkoutPreview.mutateAsync({
+                    cartItemIds: selectedCartItems.map((item) => item.cartItemId),
+                });
+                sessionId = preview.checkoutSessionId;
+                setCheckoutSessionId(sessionId);
             }
 
+            await recalculateCheckout.mutateAsync({
+                checkoutSessionId: sessionId,
+                addressId: activeAddress.addressId,
+            });
+
             const confirmed = await confirmCheckout.mutateAsync({
-                checkoutSessionId: checkoutSessionId ?? preview.checkoutSessionId,
+                checkoutSessionId: sessionId,
                 paymentMethod,
                 paymentAccountId: paymentMethod === "COD" ? undefined : paymentAccountId,
             });
 
+            const sagaId = confirmed;
+            toast.info(t('processing_order', {}, "Đang xử lý đơn hàng, vui lòng đợi giây lát..."));
+
+            const realOrderId = await getOrderIdBySagaId(sagaId);
+
             clearCheckoutFlow();
-            router.push(`/orders/${confirmed.orderId}`);
+
+            router.push(`/orders/${realOrderId}`);
+
         } catch (error) {
+            setCheckoutSessionId(null);
             toast.error(toErrorMessage(error, "Unable to place order"));
         }
     };
@@ -327,7 +338,7 @@ export default function ShippingClient() {
                         </div>
 
                         <div className="bg-card p-5 sm:p-6 rounded-lg border border-border">
-                            <h2 className="font-bold text-gray-900 mb-4">{t('payment', {}, "Payment")}</h2>
+                            <h2 className="font-bold text-gray-900 mb-4">{t('payment', {}, "Payment Method")}</h2>
 
                             <RadioGroup
                                 value={paymentMethod}
@@ -344,32 +355,60 @@ export default function ShippingClient() {
                                     }
                                     setPaymentAccountId(walletAccounts[0]?.id ?? "");
                                 }}
-                                className="space-y-4"
+                                className="grid gap-3"
                             >
-                                <div className="flex items-start space-x-3">
-                                    <RadioGroupItem value="BANK_ACCOUNT" id="bank" className="mt-1" />
-                                    <div className="flex-1">
-                                        <Label htmlFor="bank" className="font-medium text-gray-900 cursor-pointer">
-                                            {t('direct_bank_transfer', {}, "Direct bank transfer")}
-                                        </Label>
-                                    </div>
+                                <div 
+                                    className={`relative flex items-center gap-3 p-3.5 rounded-lg border transition-all cursor-pointer ${
+                                        paymentMethod === "BANK_ACCOUNT" 
+                                        ? "border-primary bg-primary/5" 
+                                        : "border-border hover:border-primary/30"
+                                    }`}
+                                    onClick={() => {
+                                        setPaymentMethod("BANK_ACCOUNT");
+                                        setPaymentAccountId(bankAccounts[0]?.id ?? "");
+                                    }}
+                                >
+                                    <RadioGroupItem value="BANK_ACCOUNT" id="bank" />
+                                    <Landmark className={`h-5 w-5 ${paymentMethod === "BANK_ACCOUNT" ? "text-primary" : "text-muted-foreground"}`} />
+                                    <Label htmlFor="bank" className="font-medium text-gray-900 cursor-pointer flex-1">
+                                        {t('direct_bank_transfer', {}, "Direct bank transfer")}
+                                    </Label>
                                 </div>
-                                <div className="flex items-start space-x-3">
-                                    <RadioGroupItem value="E_WALLET" id="wallet" className="mt-1" />
-                                    <div className="flex-1">
-                                        <Label htmlFor="wallet" className="font-medium text-gray-900 cursor-pointer">
-                                            {t('e_wallet', {}, "E-wallet")}
-                                        </Label>
-                                    </div>
+
+                                <div 
+                                    className={`relative flex items-center gap-3 p-3.5 rounded-lg border transition-all cursor-pointer ${
+                                        paymentMethod === "E_WALLET" 
+                                        ? "border-primary bg-primary/5" 
+                                        : "border-border hover:border-primary/30"
+                                    }`}
+                                    onClick={() => {
+                                        setPaymentMethod("E_WALLET");
+                                        setPaymentAccountId(walletAccounts[0]?.id ?? "");
+                                    }}
+                                >
+                                    <RadioGroupItem value="E_WALLET" id="wallet" />
+                                    <Wallet className={`h-5 w-5 ${paymentMethod === "E_WALLET" ? "text-primary" : "text-muted-foreground"}`} />
+                                    <Label htmlFor="wallet" className="font-medium text-gray-900 cursor-pointer flex-1">
+                                        {t('e_wallet', {}, "E-wallet")}
+                                    </Label>
                                 </div>
-                                <div className="flex items-start space-x-3">
-                                    <RadioGroupItem value="COD" id="cod" className="mt-1" />
-                                    <div className="flex-1">
-                                        <Label htmlFor="cod" className="font-medium text-gray-900 cursor-pointer flex items-center gap-2 min-h-10">
-                                            <Checkbox checked={paymentMethod === "COD"} className="pointer-events-none" />
-                                            {t('cash_on_delivery', {}, "Cash on delivery")}
-                                        </Label>
-                                    </div>
+
+                                <div 
+                                    className={`relative flex items-center gap-3 p-3.5 rounded-lg border transition-all cursor-pointer ${
+                                        paymentMethod === "COD" 
+                                        ? "border-primary bg-primary/5" 
+                                        : "border-border hover:border-primary/30"
+                                    }`}
+                                    onClick={() => {
+                                        setPaymentMethod("COD");
+                                        setPaymentAccountId("");
+                                    }}
+                                >
+                                    <RadioGroupItem value="COD" id="cod" />
+                                    <Banknote className={`h-5 w-5 ${paymentMethod === "COD" ? "text-primary" : "text-muted-foreground"}`} />
+                                    <Label htmlFor="cod" className="font-medium text-gray-900 cursor-pointer flex-1">
+                                        {t('cash_on_delivery', {}, "Cash on delivery")}
+                                    </Label>
                                 </div>
                             </RadioGroup>
                         </div>

@@ -9,6 +9,7 @@ interface AuthState {
     session: AuthSession | null;
     hydrated: boolean;
     setSession: (session: AuthSession) => void;
+    updateUser: (user: Partial<AuthSession['user']>) => void;
     clearSession: () => void;
     markHydrated: () => void;
 }
@@ -21,6 +22,20 @@ export const useAuthStore = create<AuthState>()(
             setSession: (session) => {
                 authStorage.setTokens(session.accessToken, session.refreshToken);
                 set({ session });
+            },
+            updateUser: (userData) => {
+                set((state) => {
+                    if (!state.session) return state;
+                    return {
+                        session: {
+                            ...state.session,
+                            user: {
+                                ...state.session.user,
+                                ...userData,
+                            },
+                        },
+                    };
+                });
             },
             clearSession: () => {
                 authStorage.clearTokens();

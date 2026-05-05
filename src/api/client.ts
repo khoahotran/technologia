@@ -8,6 +8,9 @@ import { env } from "@/config/env";
 import { useAuthStore } from "@/features/auth/store";
 import { authStorage } from "@/utils/storage";
 
+const ACCESS_TOKEN_TTL_MS = 15 * 60 * 1000; // 15 minutes
+const REFRESH_BUFFER_MS = 60 * 1000; // refresh 1 min before expiry
+
 export class AppError extends Error {
   constructor(
     public message: string,
@@ -52,6 +55,10 @@ const getRefreshToken = () =>
 const clearAuthState = () => {
   authStorage.clearTokens();
   useAuthStore.getState().clearSession();
+  clearAutoRefresh();
+  if (!isServer) {
+    window.location.href = "/login";
+  }
 };
 
 const saveTokens = (accessToken: string, refreshToken: string) => {
@@ -62,12 +69,35 @@ const saveTokens = (accessToken: string, refreshToken: string) => {
       accessToken,
       refreshToken,
     });
+    scheduleAutoRefresh();
     return;
   }
   authStorage.setTokens(accessToken, refreshToken);
+  scheduleAutoRefresh();
 };
 
 let refreshPromise: Promise<string | null> | null = null;
+
+let autoRefreshTimer: ReturnType<typeof setTimeout> | null = null;
+
+function scheduleAutoRefresh() {
+  clearAutoRefresh();
+  const session = useAuthStore.getState().session;
+  const storedRefresh = authStorage.getRefreshToken();
+  if (!session?.refreshToken && !storedRefresh) return;
+
+  const delay = ACCESS_TOKEN_TTL_MS - REFRESH_BUFFER_MS;
+  autoRefreshTimer = setTimeout(() => {
+    runRefreshOnce();
+  }, Math.max(delay, 1000));
+}
+
+function clearAutoRefresh() {
+  if (autoRefreshTimer) {
+    clearTimeout(autoRefreshTimer);
+    autoRefreshTimer = null;
+  }
+}
 
 async function refreshAccessToken(): Promise<string | null> {
   const refreshToken = getRefreshToken();
@@ -84,6 +114,7 @@ async function refreshAccessToken(): Promise<string | null> {
     }
     const nextRefreshToken = payload.data?.refreshToken ?? refreshToken;
     saveTokens(nextAccessToken, nextRefreshToken);
+    scheduleAutoRefresh();
     return nextAccessToken;
   } catch {
     return null;
@@ -124,7 +155,7 @@ api.interceptors.response.use(
     const code = data?.code ?? `HTTP_ERROR_${status}`;
     const config = error.config as RetryConfig | undefined;
 
-    if (status === 401 && config) {
+    if ((status === 401 || status === 403) && config) {
       const isAuthRoute =
         typeof config.url === "string" && config.url.startsWith("/api/auth/");
 
@@ -137,11 +168,14 @@ api.interceptors.response.use(
         }
       }
 
-      clearAuthState();
-      if (isAuthRoute) {
-        throw new AppError(message, 401, code, data);
+      // If we reach here, either it's an auth route, already retried, or refresh failed
+      if (status === 401 || (status === 403 && !isAuthRoute)) {
+        clearAuthState();
+        if (isAuthRoute) {
+          throw new AppError(message, 401, code, data);
+        }
+        throw new AppError("Session expired. Please login again.", 401, "UNAUTHORIZED", data);
       }
-      throw new AppError("Session expired. Please login again.", 401, "UNAUTHORIZED", data);
     }
 
     if (status === 403) {
@@ -170,5 +204,13 @@ export const patch = <T>(url: string, data?: unknown, config?: AxiosRequestConfi
 
 export const del = <T>(url: string, config?: AxiosRequestConfig) =>
   api.delete<T, T>(url, config);
+
+/**
+ * Initialize auto-refresh timer on app startup.
+ * Call once after auth store hydration is complete.
+ */
+export function initAutoRefresh() {
+  scheduleAutoRefresh();
+}
 
 export default api;

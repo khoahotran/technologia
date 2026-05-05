@@ -18,11 +18,13 @@ import {
 import { Mail, Phone, Search, ShoppingBag, ShoppingCart, User } from "lucide-react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Suspense, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { CONTACT_INFO } from "@/constants/contact"
 import { useAuth } from "@/features/auth/hooks"
+import { useAuthStore } from "@/features/auth/store"
 import { useLanguage } from "@/providers/language.provider"
 
 interface HeaderProps {
@@ -44,7 +46,22 @@ interface HeaderProps {
 function AccountButton() {
   const { t } = useLanguage();
   const { token, user, logout } = useAuth();
+  const updateUser = useAuthStore((state) => state.updateUser);
   const [isOpen, setIsOpen] = useState(false);
+
+  // Fetch profile if email is missing (happens right after login)
+  useEffect(() => {
+    if (token && user && !user.email) {
+      import("@/features/user/api").then(({ getProfile }) => {
+        getProfile().then((profile) => {
+          updateUser({
+            email: profile.email,
+            username: profile.username || user.username
+          });
+        }).catch(err => console.error("Failed to fetch profile", err));
+      });
+    }
+  }, [token, user, updateUser]);
 
   if (!token) {
     return (
@@ -85,15 +102,35 @@ function AccountButton() {
               </p>
             </div>
 
-            <button
-              onClick={() => {
-                logout();
-                setIsOpen(false);
-              }}
-              className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
-            >
-              <span className="font-medium">{t('header_logout', {}, "Logout")}</span>
-            </button>
+            <div className="py-1">
+              <Link
+                href="/profile"
+                onClick={() => setIsOpen(false)}
+                className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+              >
+                <span className="font-medium">{t('header_profile', {}, "My Profile")}</span>
+              </Link>
+
+              <Link
+                href="/orders"
+                onClick={() => setIsOpen(false)}
+                className="w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+              >
+                <span className="font-medium">{t('header_my_orders', {}, "My Orders")}</span>
+              </Link>
+            </div>
+
+            <div className="border-t border-gray-50 pt-1">
+              <button
+                onClick={() => {
+                  logout();
+                  setIsOpen(false);
+                }}
+                className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
+              >
+                <span className="font-medium">{t('header_logout', {}, "Logout")}</span>
+              </button>
+            </div>
           </div>
         </>
       )}
@@ -169,20 +206,20 @@ export default function Header({ variant = "default" }: HeaderProps) {
           <div className="container mx-auto px-4 flex justify-between items-center">
             <div className="flex items-center gap-2">
               <a
-                href="tel:0123456789"
+                href={`tel:${CONTACT_INFO.phone.value}`}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-black/5 transition-colors"
                 aria-label="Call support"
               >
                 <Phone className="h-4 w-4" />
-                <span>0123 456 789</span>
+                <span>{CONTACT_INFO.phone.display}</span>
               </a>
               <a
-                href="mailto:support@technologia.vn"
+                href={`mailto:${CONTACT_INFO.email}`}
                 className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-black/5 transition-colors"
                 aria-label="Email support"
               >
                 <Mail className="h-4 w-4" />
-                <span>support@technologia.vn</span>
+                <span>{CONTACT_INFO.email}</span>
               </a>
             </div>
 
@@ -194,7 +231,7 @@ export default function Header({ variant = "default" }: HeaderProps) {
                 {t('header_about_us', {}, "About Us")}
               </Link>
 
-              <Select value={locale} onValueChange={(val) => setLocale(val as 'vi' | 'en')}>
+              <Select value={locale} onValueChange={(val) => setLocale(val as 'vi' | 'en')} modal={false}>
                 <SelectTrigger className="h-8 border-none bg-transparent hover:bg-black/5 focus:ring-0 focus:ring-offset-0 px-2 gap-1 uppercase font-semibold">
                   <SelectValue placeholder={locale.toUpperCase()} />
                 </SelectTrigger>

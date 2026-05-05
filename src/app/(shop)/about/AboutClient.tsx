@@ -1,24 +1,35 @@
 "use client"
 
-import { Award, Facebook, Heart, Linkedin, Phone, TrendingUp, Users, Youtube } from "lucide-react"
+import { Award, Facebook, Heart, Instagram, Linkedin, Phone, TrendingUp, Youtube } from "lucide-react"
+import Image from "next/image"
+import { useState } from "react"
+import { toast } from "sonner"
 
 import { HorizontalScroll } from "@/components/features/about/HorizontalScroll"
-import { PartnerLogo } from "@/components/features/about/PartnerLogo"
 import { StatCard } from "@/components/features/about/StatCard"
 import { TeamMemberCard } from "@/components/features/about/TeamMemberCard"
 import { ValueCard } from "@/components/features/about/ValueCard"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { CONTACT_INFO } from "@/constants/contact"
 import { useLanguage } from "@/providers/language.provider"
 
 export default function AboutClient() {
     const { t } = useLanguage();
+
+    const scrollToSection = (id: string) => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.scrollIntoView({ behavior: "smooth" });
+        }
+    };
+
     const stats = [
-        { value: "10000+", label: t('about_stats_products', {}, "Products launched successfully"), icon: Award },
-        { value: "50+", label: t('about_stats_partners', {}, "Partner brands"), icon: Users },
-        { value: "98%", label: t('about_stats_satisfaction', {}, "Satisfied customers"), icon: Heart },
-        { value: "20+", label: t('about_stats_experience', {}, "Years of experience"), icon: TrendingUp },
+        { value: "10+", label: t('about_stats_products', {}, "Products launched successfully"), icon: Award },
+        // { value: "5+", label: t('about_stats_partners', {}, "Partner brands"), icon: Users },
+        { value: "99%", label: t('about_stats_satisfaction', {}, "Satisfied customers"), icon: Heart },
+        { value: "2+", label: t('about_stats_experience', {}, "Years of experience"), icon: TrendingUp },
     ]
 
     const values = [
@@ -38,34 +49,20 @@ export default function AboutClient() {
 
     const team = [
         {
-            name: "Nguyễn Văn A",
+            name: "Trần Nguyễn Anh Khoa",
             role: t('about_role_ceo', {}, "CEO & Founder"),
             description: t('about_team_desc', {}, "I want Technologia to help everyone get the best technology products at the best prices."),
         },
         {
-            name: "Trần Thị B",
+            name: "Nguyễn Quốc Toàn",
             role: t('about_role_cto', {}, "CTO"),
             description: t('about_team_desc', {}, "I want Technologia to help everyone get the best technology products at the best prices."),
         },
         {
-            name: "Lê Văn C",
+            name: "Nguyễn Ngọc Quế Chi",
             role: t('about_role_marketing', {}, "Marketing Director"),
             description: t('about_team_desc', {}, "I want Technologia to help everyone get the best technology products at the best prices."),
         },
-        {
-            name: "Phạm Thị D",
-            role: t('about_role_sales', {}, "Sales Manager"),
-            description: t('about_team_desc', {}, "I want Technologia to help everyone get the best technology products at the best prices."),
-        },
-    ]
-
-    const partners = [
-        { name: "Samsung" },
-        { name: "Apple" },
-        { name: "Acer" },
-        { name: "Asus" },
-        { name: "Dell" },
-        { name: "HP" },
     ]
 
     return (
@@ -74,11 +71,18 @@ export default function AboutClient() {
             <section className="bg-gradient-to-br from-[#3E93B3] to-[#8AB0C3] py-20 px-4">
                 <div className="container mx-auto text-center">
                     <div className="max-w-3xl mx-auto mb-8">
-                        <div className="w-64 h-64 mx-auto mb-8 relative">
-                            {/* Decorative graphic - simplified version */}
-                            <div className="absolute inset-0 bg-gradient-to-br from-[#8AB0C3] to-[#D3E4F4] rounded-3xl transform rotate-45"></div>
-                            <div className="absolute inset-8 bg-gradient-to-br from-[#D3E4F4] to-white rounded-3xl transform rotate-45"></div>
-                            <div className="absolute inset-16 bg-white rounded-3xl transform rotate-45"></div>
+                        <div className="w-64 h-64 mx-auto mb-8 relative flex items-center justify-center">
+                            {/* Decorative background circles */}
+                            <div className="absolute inset-0 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
+                            <div className="relative w-48 h-48 bg-white p-8 rounded-[3rem] shadow-2xl transform rotate-12 hover:rotate-0 transition-transform duration-500 flex items-center justify-center overflow-hidden border-4 border-white/50">
+                                <Image 
+                                    src="/favicon.ico" 
+                                    alt="Technologia Logo" 
+                                    width={120} 
+                                    height={120}
+                                    className="object-contain"
+                                />
+                            </div>
                         </div>
                         <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
                             {t('about_hero_title', {}, "Welcome to Technologia")}
@@ -87,11 +91,18 @@ export default function AboutClient() {
                             {t('about_hero_subtitle', {}, "Your trusted partner in providing top technology products")}
                         </p>
                         <div className="flex gap-4 justify-center">
-                            <Button className="bg-white text-[#3E93B3] hover:bg-gray-100 font-semibold px-8">
+                            <Button 
+                                onClick={() => scrollToSection('values')}
+                                className="bg-white text-[#3E93B3] hover:bg-gray-100 font-semibold px-8"
+                            >
                                 {t('footer_about_us', {}, "About Us")}
                             </Button>
-                            <Button variant="outline" className="border-white text-white  bg-[#3E93B3] hover:bg-white/10 font-semibold px-8">
-                                {t('footer_contact_us', {}, "Contact Now")}
+                            <Button 
+                                onClick={() => scrollToSection('contact')}
+                                variant="outline" 
+                                className="border-white text-white  bg-[#3E93B3] hover:bg-white/10 font-semibold px-8"
+                            >
+                                {t('footer_contact_now', {}, "Contact Now")}
                             </Button>
                         </div>
                     </div>
@@ -100,7 +111,7 @@ export default function AboutClient() {
 
             <div className="container mx-auto px-4 py-12 space-y-16">
                 {/* Stats Section */}
-                <section>
+                <section id="achievements">
                     <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
                         {t('about_stats_title', {}, "Our Achievements")}
                     </h2>
@@ -117,7 +128,7 @@ export default function AboutClient() {
                 </section>
 
                 {/* Values Section */}
-                <section>
+                <section id="values">
                     <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
                         {t('about_values_title', {}, "Core Values")}
                     </h2>
@@ -128,20 +139,8 @@ export default function AboutClient() {
                     </div>
                 </section>
 
-                {/* Partners Section */}
-                <section>
-                    <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-                        {t('about_partners_title', {}, "Our Partners")}
-                    </h2>
-                    <HorizontalScroll>
-                        {partners.map((partner, index) => (
-                            <PartnerLogo key={index} name={partner.name} />
-                        ))}
-                    </HorizontalScroll>
-                </section>
-
                 {/* Team Section */}
-                <section>
+                <section id="team">
                     <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
                         {t('about_team_title', {}, "Our Team")}
                     </h2>
@@ -158,7 +157,7 @@ export default function AboutClient() {
                 </section>
 
                 {/* Contact Form Section */}
-                <section className="max-w-4xl mx-auto">
+                <section id="contact" className="max-w-4xl mx-auto">
                     <h2 className="text-3xl font-bold text-gray-900 mb-2 text-center">
                         {t('about_contact_title', {}, "Contact us whenever you want")}
                     </h2>
@@ -168,48 +167,104 @@ export default function AboutClient() {
                         {/* Contact Info */}
                         <div className="space-y-6">
                             <div className="flex gap-4">
-                                <Facebook className="h-6 w-6 text-[#1877F2]" />
-                                <Linkedin className="h-6 w-6 text-[#0A66C2]" />
-                                <Youtube className="h-6 w-6 text-[#FF0000]" />
-                                <Phone className="h-6 w-6 text-[#3E93B3]" />
+                                <a href={CONTACT_INFO.socials.facebook} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+                                    <Facebook className="h-6 w-6 text-[#1877F2]" />
+                                </a>
+                                <a href={CONTACT_INFO.socials.linkedin} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+                                    <Linkedin className="h-6 w-6 text-[#0A66C2]" />
+                                </a>
+                                <a href={CONTACT_INFO.socials.instagram} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+                                    <Instagram className="h-6 w-6 text-[#E4405F]" />
+                                </a>
+                                <a href={CONTACT_INFO.socials.youtube} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
+                                    <Youtube className="h-6 w-6 text-[#FF0000]" />
+                                </a>
+                                <a href={`tel:${CONTACT_INFO.phone.value}`} className="hover:opacity-80 transition-opacity">
+                                    <Phone className="h-6 w-6 text-[#3E93B3]" />
+                                </a>
                             </div>
-                            <div className="bg-[#D3E4F4] rounded-2xl p-8 h-64"></div>
-                            <p className="text-sm text-gray-600">
-                                <strong>{t('about_hotline', {}, "Hotline")}:</strong> (+84) 123456789
-                            </p>
+                            {/* Map Placeholder or Visual Graphic */}
+                            <div className="bg-[#D3E4F4] rounded-2xl h-64 flex items-center justify-center border-2 border-white shadow-lg overflow-hidden relative group">
+                                <Image 
+                                    src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1000&auto=format&fit=crop" 
+                                    alt="Technologia Office"
+                                    fill
+                                    className="object-cover opacity-60 group-hover:scale-110 transition-transform duration-700"
+                                />
+                                <div className="relative z-10 text-center bg-white/80 backdrop-blur-sm p-4 rounded-xl shadow-sm border border-white/50">
+                                    <p className="font-bold text-[#3E93B3] text-lg">Technologia HQ</p>
+                                    <p className="text-xs text-gray-600">Ho Chi Minh City, Vietnam</p>
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <p className="text-sm text-gray-600">
+                                    <strong>{t('about_hotline', {}, "Hotline")}:</strong> {CONTACT_INFO.phone.display}
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                    <strong>Email:</strong> {CONTACT_INFO.email}
+                                </p>
+                            </div>
                         </div>
 
                         {/* Contact Form */}
-                        <form className="space-y-4">
-                            <Input
-                                placeholder={t('about_name_placeholder', {}, "Name*")}
-                                className="bg-white border-gray-200"
-                            />
-                            <Input
-                                type="email"
-                                placeholder={t('about_email_placeholder', {}, "Email*")}
-                                className="bg-white border-gray-200"
-                            />
-                            <Input
-                                type="tel"
-                                placeholder={t('about_phone_placeholder', {}, "Phone number")}
-                                className="bg-white border-gray-200"
-                            />
-                            <Input
-                                placeholder={t('about_company_placeholder', {}, "Company*")}
-                                className="bg-white border-gray-200"
-                            />
-                            <Textarea
-                                placeholder={t('about_message_placeholder', {}, "Message")}
-                                className="bg-white border-gray-200 min-h-[120px]"
-                            />
-                            <Button className="w-full bg-[#8AB0C3] hover:bg-[#7A9EB0] text-white font-semibold h-12">
-                                {t('about_send_btn', {}, "Send")}
-                            </Button>
-                        </form>
+                        <ContactForm />
                     </div>
                 </section>
             </div>
         </div>
     )
+}
+
+function ContactForm() {
+    const { t } = useLanguage();
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+
+        // Giả lập gửi form
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        toast.success(t('about_contact_success', {}, "Message sent successfully! We will contact you soon."));
+        setIsSubmitting(false);
+        (e.target as HTMLFormElement).reset();
+    };
+
+    return (
+        <form className="space-y-4" onSubmit={handleSubmit}>
+            <Input
+                required
+                placeholder={t('about_name_placeholder', {}, "Name*")}
+                className="bg-white border-gray-200 focus:ring-primary h-12"
+            />
+            <Input
+                required
+                type="email"
+                placeholder={t('about_email_placeholder', {}, "Email*")}
+                className="bg-white border-gray-200 focus:ring-primary h-12"
+            />
+            <Input
+                type="tel"
+                placeholder={t('about_phone_placeholder', {}, "Phone number")}
+                className="bg-white border-gray-200 focus:ring-primary h-12"
+            />
+            <Input
+                required
+                placeholder={t('about_company_placeholder', {}, "Company*")}
+                className="bg-white border-gray-200 focus:ring-primary h-12"
+            />
+            <Textarea
+                placeholder={t('about_message_placeholder', {}, "Message")}
+                className="bg-white border-gray-200 min-h-[120px] focus:ring-primary"
+            />
+            <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full bg-[#3E93B3] hover:bg-[#2D7A96] text-white font-bold h-12 rounded-xl transition-all shadow-md"
+            >
+                {isSubmitting ? t('about_sending', {}, "Sending...") : t('about_send_btn', {}, "Send Message")}
+            </Button>
+        </form>
+    );
 }

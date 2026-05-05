@@ -10,6 +10,7 @@
  * - Thông tin liên hệ và tải ứng dụng.
  */
 import { Facebook, Youtube, Instagram, Linkedin, Headphones } from "lucide-react";
+import { CONTACT_INFO } from "@/constants/contact";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -28,18 +29,26 @@ export default function Footer() {
                 {t('footer_stay_connected', {}, "Stay connected with our tech community")}
               </p>
               <div className="flex space-x-3">
-                <Button aria-label="Facebook" variant="secondary" size="icon" className="rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100">
-                  <Facebook className="h-5 w-5" />
-                </Button>
-                <Button aria-label="YouTube" variant="secondary" size="icon" className="rounded-lg bg-red-50 text-red-600 hover:bg-red-100">
-                  <Youtube className="h-5 w-5" />
-                </Button>
-                <Button aria-label="Instagram" variant="secondary" size="icon" className="rounded-lg bg-pink-50 text-pink-600 hover:bg-pink-100">
-                  <Instagram className="h-5 w-5" />
-                </Button>
-                <Button aria-label="LinkedIn" variant="secondary" size="icon" className="rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100">
-                  <Linkedin className="h-5 w-5" />
-                </Button>
+                <a href={CONTACT_INFO.socials.facebook} target="_blank" rel="noopener noreferrer">
+                  <Button aria-label="Facebook" variant="secondary" size="icon" className="rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100">
+                    <Facebook className="h-5 w-5" />
+                  </Button>
+                </a>
+                <a href={CONTACT_INFO.socials.youtube} target="_blank" rel="noopener noreferrer">
+                  <Button aria-label="YouTube" variant="secondary" size="icon" className="rounded-lg bg-red-50 text-red-600 hover:bg-red-100">
+                    <Youtube className="h-5 w-5" />
+                  </Button>
+                </a>
+                <a href={CONTACT_INFO.socials.instagram} target="_blank" rel="noopener noreferrer">
+                  <Button aria-label="Instagram" variant="secondary" size="icon" className="rounded-lg bg-pink-50 text-pink-600 hover:bg-pink-100">
+                    <Instagram className="h-5 w-5" />
+                  </Button>
+                </a>
+                <a href={CONTACT_INFO.socials.linkedin} target="_blank" rel="noopener noreferrer">
+                  <Button aria-label="LinkedIn" variant="secondary" size="icon" className="rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100">
+                    <Linkedin className="h-5 w-5" />
+                  </Button>
+                </a>
               </div>
             </div>
           </div>
@@ -76,14 +85,16 @@ export default function Footer() {
 
               <div className="flex items-center space-x-3 py-2">
                 <Headphones className="h-8 w-8 text-gray-800" />
-                <div>
-                  <p className="text-xs text-gray-500">{t('footer_questions', {}, "Have questions?")}</p>
-                  <p className="font-bold text-blue-900">(+84) 123 456 789</p>
-                </div>
+                <a href={`tel:${CONTACT_INFO.phone.value}`}>
+                  <div>
+                    <p className="text-xs text-gray-500">{t('footer_questions', {}, "Have questions?")}</p>
+                    <p className="font-bold text-blue-900">{CONTACT_INFO.phone.display}</p>
+                  </div>
+                </a>
               </div>
 
               {/* Tải ứng dụng */}
-              <div className="flex space-x-4 pt-2">
+              {/* <div className="flex space-x-4 pt-2">
                 <div className="border rounded-md px-3 py-1.5 flex items-center space-x-2 cursor-pointer hover:bg-gray-50">
                   <div className="text-xs">
                     <p className="text-[10px] leading-none text-gray-500">{t('footer_download_on', {}, "Download on")}</p>
@@ -96,7 +107,7 @@ export default function Footer() {
                     <p className="font-semibold leading-tight text-gray-800">Amazon.com</p>
                   </div>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

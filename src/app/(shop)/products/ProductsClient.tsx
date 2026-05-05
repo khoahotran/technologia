@@ -1,6 +1,7 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useSearchParams } from "next/navigation"
+import { useEffect, useMemo, useState } from "react"
 
 import { FilterBar } from "@/components/features/product/FilterBar"
 import { ProductSidebar } from "@/components/features/product/ProductSidebar"
@@ -29,10 +30,39 @@ import { formatCurrency } from "@/utils/format"
 export default function ProductsClient() {
     const { locale } = useLanguage()
     const currentLocale = locale === 'vi' ? 'vi-VN' : 'en-US'
+    const searchParams = useSearchParams()
     const [page, setPage] = useState(0)
+
+    // Parse filters from URL
+    const minPrice = searchParams.get("minPrice")
+    const maxPrice = searchParams.get("maxPrice")
+    const sort = searchParams.get("sort") || "price_asc"
+    const categoryId = searchParams.get("categoryId")
+    const brandId = searchParams.get("brandId")
+
+    // Map sort string to API params
+    const sortMapping: Record<string, { sortBy: string, sortDirection: 'ASC' | 'DESC' }> = {
+        "price_asc": { sortBy: "price", sortDirection: "ASC" },
+        "price_desc": { sortBy: "price", sortDirection: "DESC" },
+        "newest": { sortBy: "createdAt", sortDirection: "DESC" },
+    }
+    const selectedSort = sortMapping[sort] ?? sortMapping["price_asc"]!
+    const { sortBy, sortDirection } = selectedSort
+
+    // Reset page when filters change
+    useEffect(() => {
+        setPage(0)
+    }, [minPrice, maxPrice, sort, categoryId, brandId])
+
     const { data, isLoading, isError, error } = useProducts({
         page,
         size: 12,
+        minPrice: minPrice ? Number(minPrice) : undefined,
+        maxPrice: maxPrice ? Number(maxPrice) : undefined,
+        sortBy,
+        sortDirection,
+        categoryId: categoryId || undefined,
+        brandId: brandId || undefined,
     })
     const products = data?.items ?? []
     const totalPages = data?.totalPages ?? 0

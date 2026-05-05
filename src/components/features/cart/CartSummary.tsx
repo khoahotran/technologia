@@ -5,6 +5,13 @@
  * 
  * Hiển thị bảng tóm tắt tổng số tiền dựa trên các sản phẩm đã được chọn.
  * Bao gồm nút "Thanh toán" để chuyển sang bước nhập thông tin giao hàng.
+"use client"
+
+/**
+ * Thành phần Tổng kết Giỏ hàng (Cart Summary Component)
+ * 
+ * Hiển thị bảng tóm tắt tổng số tiền dựa trên các sản phẩm đã được chọn.
+ * Bao gồm nút "Thanh toán" để chuyển sang bước nhập thông tin giao hàng.
  */
 import Link from "next/link"
 
@@ -14,6 +21,8 @@ import { useLanguage } from "@/providers/language.provider";
 interface CartSummaryProps {
   /** Tổng số tiền cần thanh toán */
   total: number
+  /** Số tiền được giảm giá */
+  discountAmount?: number
   /** Số lượng sản phẩm đã chọn (Tuỳ chọn) */
   itemCount?: number
   /** Đường link chuyển hướng khi nhấn Thanh toán (Mặc định: /shipping) */
@@ -24,6 +33,7 @@ interface CartSummaryProps {
 
 export function CartSummary({
   total,
+  discountAmount = 0,
   itemCount = 0,
   checkoutHref = "/shipping",
   disableCheckout = false,
@@ -34,12 +44,29 @@ export function CartSummary({
     <div className="bg-card p-4 sm:p-6 rounded-lg border border-border h-fit sticky top-20">
       <h3 className="font-medium text-foreground mb-5 uppercase">{t('order_summary', {}, "ORDER SUMMARY")}</h3>
 
-      {/* Khối hiển thị Tổng tiền */}
-      <div className="flex items-center justify-between mb-8">
-        <span className="text-muted-foreground">{t('total', {}, "Total")}</span>
-        <span className="text-xl font-bold text-primary">
-          {t('price_vnd', { price: new Intl.NumberFormat(currentLocale).format(total) }, `${new Intl.NumberFormat(currentLocale).format(total)} ₫`)}
-        </span>
+      <div className="space-y-4 mb-8">
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-muted-foreground">{t('subtotal', {}, "Subtotal")}</span>
+          <span className="text-foreground font-medium">
+            {t('price_vnd', { price: new Intl.NumberFormat(currentLocale).format(total + discountAmount) }, `${new Intl.NumberFormat(currentLocale).format(total + discountAmount)} ₫`)}
+          </span>
+        </div>
+
+        {discountAmount > 0 && (
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-green-600 font-medium">{t('discount', {}, "Discount")}</span>
+            <span className="text-green-600 font-medium">
+              -{t('price_vnd', { price: new Intl.NumberFormat(currentLocale).format(discountAmount) }, `${new Intl.NumberFormat(currentLocale).format(discountAmount)} ₫`)}
+            </span>
+          </div>
+        )}
+
+        <div className="flex items-center justify-between pt-4 border-t border-border">
+          <span className="text-base font-semibold">{t('total', {}, "Total")}</span>
+          <span className="text-xl font-bold text-primary">
+            {t('price_vnd', { price: new Intl.NumberFormat(currentLocale).format(total) }, `${new Intl.NumberFormat(currentLocale).format(total)} ₫`)}
+          </span>
+        </div>
       </div>
 
       {/* Hiển thị số lượng mục đã chọn */}
