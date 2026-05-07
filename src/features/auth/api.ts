@@ -14,9 +14,30 @@ import {
 
 import { post } from "@/api/client";
 
+function decodeJwtPayload(token: string) {
+  try {
+    const base64Url = token.split(".")[1];
+    if (!base64Url) return null;
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map(function (c) {
+          return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+        })
+        .join("")
+    );
+
+    return JSON.parse(jsonPayload);
+  } catch {
+    return null;
+  }
+}
+
 export async function googleLogin(request: GoogleLoginRequest): Promise<AuthSession> {
   const response = await post<unknown>("/api/auth/login/google", request);
   const parsed = LoginResponseSchema.parse(response);
+  const payload = decodeJwtPayload(parsed.data.accessToken);
 
   return {
     accessToken: parsed.data.accessToken,
@@ -25,7 +46,7 @@ export async function googleLogin(request: GoogleLoginRequest): Promise<AuthSess
       userId: parsed.data.userId,
       username: "Google User",
       email: "",
-      role: "CUSTOMER",
+      role: payload?.role ?? "CUSTOMER",
     },
   };
 }
@@ -33,6 +54,7 @@ export async function googleLogin(request: GoogleLoginRequest): Promise<AuthSess
 export async function login(credentials: LoginRequest): Promise<AuthSession> {
   const response = await post<unknown>("/api/auth/login/local", credentials);
   const parsed = LoginResponseSchema.parse(response);
+  const payload = decodeJwtPayload(parsed.data.accessToken);
 
   return {
     accessToken: parsed.data.accessToken,
@@ -41,7 +63,7 @@ export async function login(credentials: LoginRequest): Promise<AuthSession> {
       userId: parsed.data.userId,
       username: credentials.username,
       email: "",
-      role: "CUSTOMER",
+      role: payload?.role ?? "CUSTOMER",
     },
   };
 }

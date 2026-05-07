@@ -3,12 +3,14 @@ import { toast } from 'sonner';
 
 import { getProfile, updateProfile, changePassword, uploadAvatar } from './api';
 
+import { useLanguage } from '@/providers/language.provider';
 import { toErrorMessage } from '@/utils/error-message';
 
 const USER_KEY = ['user', 'profile'] as const;
 
 export function useProfile() {
     const queryClient = useQueryClient();
+    const { t } = useLanguage();
 
     const query = useQuery({
         queryKey: USER_KEY,
@@ -17,33 +19,33 @@ export function useProfile() {
 
     const updateMutation = useMutation({
         mutationFn: updateProfile,
-        onSuccess: (_data) => {
-            queryClient.setQueryData(USER_KEY, _data);
-            toast.success('Profile updated successfully');
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: USER_KEY });
+            toast.success(t('profile_updated', {}, 'Profile updated successfully'));
         },
         onError: (error: unknown) => {
-            toast.error(toErrorMessage(error, 'Failed to update profile'));
+            toast.error(toErrorMessage(error, t('failed_update_profile', {}, 'Failed to update profile')));
         },
     });
 
     const passwordMutation = useMutation({
         mutationFn: changePassword,
         onSuccess: () => {
-            toast.success('Password changed successfully');
+            toast.success(t('password_changed', {}, 'Password changed successfully'));
         },
         onError: (error: unknown) => {
-            toast.error(toErrorMessage(error, 'Failed to change password'));
+            toast.error(toErrorMessage(error, t('failed_change_password', {}, 'Failed to change password')));
         },
     });
 
     const avatarMutation = useMutation({
         mutationFn: uploadAvatar,
-        onSuccess: (_data) => {
+        onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: USER_KEY });
-            toast.success('Avatar updated successfully');
+            toast.success(t('avatar_updated', {}, 'Avatar updated successfully'));
         },
         onError: (error: unknown) => {
-            toast.error(toErrorMessage(error, 'Failed to update avatar'));
+            toast.error(toErrorMessage(error, t('failed_update_avatar', {}, 'Failed to update avatar')));
         },
     });
 

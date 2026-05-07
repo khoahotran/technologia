@@ -171,7 +171,7 @@ export default function CreateAddressClient() {
                             <Textarea value={form.note} onChange={(e) => setField("note", e.target.value)} className="bg-[#F9F8FE] border-gray-200 min-h-[100px]" />
                         </div>
 
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-2 cursor-pointer">
                             <Checkbox
                                 id="default-address"
                                 checked={form.isDefault}

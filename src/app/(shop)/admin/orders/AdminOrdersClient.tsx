@@ -50,11 +50,12 @@ export default function AdminOrdersClient() {
     const [trackOrderId, setTrackOrderId] = useState("");
     const [searchOrderId, setSearchOrderId] = useState<string>("");
 
-    const awaitingPaymentQuery = useAdminOrders({ page: 0, size: 20, status: "AWAITING_PAYMENT" });
-    const awaitingConfirmQuery = useAdminOrders({ page: 0, size: 20, status: "AWAITING_CONFIRM" });
-    const pendingQuery = useAdminOrders({ page: 0, size: 20, status: "PENDING" });
-    const shippingQuery = useAdminOrders({ page: 0, size: 20, status: "ON_SHIPPING" });
-    const deliveredQuery = useAdminOrders({ page: 0, size: 20, status: "DELIVERED" });
+    const allOrdersQuery = useAdminOrders({
+        page: 0,
+        size: 80,
+        sortBy: "orderDate",
+        sortDirection: "DESC",
+    });
 
     const adminOrderQuery = useAdminOrder(searchOrderId, Boolean(searchOrderId));
 
@@ -65,11 +66,7 @@ export default function AdminOrdersClient() {
 
     const adminOrders = useMemo(() => {
         const source = [
-            ...(awaitingPaymentQuery.data?.items ?? []),
-            ...(awaitingConfirmQuery.data?.items ?? []),
-            ...(pendingQuery.data?.items ?? []),
-            ...(shippingQuery.data?.items ?? []),
-            ...(deliveredQuery.data?.items ?? []),
+            ...(allOrdersQuery.data?.items ?? []),
         ].map((order) => toDisplayOrder(order));
 
         const dedupMap = new Map<string, AdminOrderView>();
@@ -77,11 +74,7 @@ export default function AdminOrdersClient() {
         if (trackedOrder) dedupMap.set(trackedOrder.orderId, trackedOrder);
         return Array.from(dedupMap.values());
     }, [
-        awaitingPaymentQuery.data?.items,
-        awaitingConfirmQuery.data?.items,
-        pendingQuery.data?.items,
-        shippingQuery.data?.items,
-        deliveredQuery.data?.items,
+        allOrdersQuery.data?.items,
         trackedOrder,
     ]);
 
@@ -92,19 +85,8 @@ export default function AdminOrdersClient() {
         return source.filter((order) => order.orderId.toLowerCase().includes(keyword));
     }, [adminOrders, trackOrderId]);
 
-    const isLoading =
-        awaitingPaymentQuery.isLoading ||
-        awaitingConfirmQuery.isLoading ||
-        pendingQuery.isLoading ||
-        shippingQuery.isLoading ||
-        deliveredQuery.isLoading;
-
-    const listError =
-        awaitingPaymentQuery.error ||
-        awaitingConfirmQuery.error ||
-        pendingQuery.error ||
-        shippingQuery.error ||
-        deliveredQuery.error;
+    const isLoading = allOrdersQuery.isLoading;
+    const listError = allOrdersQuery.error;
 
     const awaitingOrders = useMemo(
         () =>
@@ -126,7 +108,12 @@ export default function AdminOrdersClient() {
         [filteredOrders]
     );
     const deliveredOrders = useMemo(
-        () => mapOrderCards(filteredOrders.filter((order) => order.deliveryStatus === "DELIVERED")),
+        () =>
+            mapOrderCards(
+                filteredOrders.filter(
+                    (order) => order.deliveryStatus === "DELIVERED" || order.deliveryStatus === "CANCELED"
+                )
+            ),
         [filteredOrders]
     );
 

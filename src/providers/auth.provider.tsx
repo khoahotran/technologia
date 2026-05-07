@@ -2,9 +2,9 @@
 
 import { createContext, useEffect, useMemo, type ReactNode } from "react";
 
-import { useAuthStore } from "@/features/auth/store";
-import { useAuth } from "@/features/auth/hooks";
 import { initAutoRefresh } from "@/api/client";
+import { useAuth } from "@/features/auth/hooks";
+import { useAuthStore } from "@/features/auth/store";
 
 interface User {
   userId: string;

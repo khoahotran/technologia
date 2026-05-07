@@ -9,7 +9,7 @@ export const DiscountResponseSchema = z.object({
     type: z.string(),
     scope: z.string(),
     discountValue: z.number(),
-    description: z.string().optional(),
+    description: z.string().nullable().optional(),
     name: z.string(),
     remainingUsage: z.number().optional(),
     maxUsagePerUser: z.number().optional(),

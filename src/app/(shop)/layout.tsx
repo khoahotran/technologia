@@ -1,7 +1,8 @@
+import { ChatbotWrapper } from "./ChatbotWrapper";
+
 import Footer from "@/components/features/Footer";
 import Header from "@/components/features/Header";
 
-import { ChatbotWrapper } from "./ChatbotWrapper";
 
 export default function ShopLayout({
     children,

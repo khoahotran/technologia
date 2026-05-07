@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-require-imports, react/display-name */
 import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 
@@ -102,7 +103,7 @@ describe('Chatbot Component', () => {
         const openButton = screen.getByRole('button', { name: /Mở chat/i })
         fireEvent.click(openButton)
         
-        expect(screen.getByText(/Xin chào/)).toBeInTheDocument()
+        expect(screen.getByText(/Chào bạn/)).toBeInTheDocument()
     })
 
     it('should update input value when typing', () => {

@@ -114,6 +114,21 @@ export const ConfirmCheckoutRequestSchema = z.object({
 
 export type ConfirmCheckoutRequest = z.infer<typeof ConfirmCheckoutRequestSchema>;
 
+export const CreatePaymentRequestSchema = z.object({
+    orderId: z.string(),
+    sagaId: z.string(),
+    paymentMethod: PaymentMethodSchema,
+});
+
+export type CreatePaymentRequest = z.infer<typeof CreatePaymentRequestSchema>;
+
+export const SimulatePaymentRequestSchema = z.object({
+    orderId: z.string(),
+    paymentId: z.string(),
+});
+
+export type SimulatePaymentRequest = z.infer<typeof SimulatePaymentRequestSchema>;
+
 export const ShippingFeeResponseSchema = z.object({
     shippingFee: z.number().nonnegative(),
     shippingFeeDiscount: z.number().nonnegative(),

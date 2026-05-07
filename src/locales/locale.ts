@@ -5,6 +5,8 @@
  * các tệp từ điển ngôn ngữ (.json) tương ứng cho ứng dụng.
  */
 
+import type { Language } from "./languages.interface";
+
 import { safe } from "@/utils/result";
 
 const SUPPORTED_LOCALES = ["en", "vi"] as const;
@@ -52,18 +54,28 @@ export function getLocale() {
 }
 
 /**
+ * Định nghĩa các loader tĩnh để Vite có thể phân tích chính xác
+ */
+const localeLoaders = {
+    en: () => import("./en.json"),
+    vi: () => import("./vi.json"),
+};
+
+/**
  * Tải động (Lazy load) tệp JSON ngôn ngữ tương ứng
  * @param locale - Mã ngôn ngữ cần tải (tùy chọn)
  */
-export async function loadLocale(locale?: string) {
+export async function loadLocale(locale?: string): Promise<Language> {
     const target = locale && isSupportedLocale(locale) ? locale : currentLocale;
-    const [messages, error] = await safe(import(`@/locales/${target}.json`));
+    const loader = localeLoaders[target as SupportedLocale] || localeLoaders.en;
+    
+    const [messages, error] = await safe(loader());
 
-    if (error) {
+    if (error || !messages) {
         console.warn(`Locale "${target}" không tìm thấy, đang chuyển về dùng tiếng Anh ("en").`);
-        const [fallback] = await safe(import(`@/locales/en.json`));
-        return fallback?.default || fallback || {};
+        const [fallback] = await safe(localeLoaders.en());
+        return (fallback?.default || fallback || { locale: "en" }) as Language;
     }
 
-    return messages?.default || messages;
+    return (messages.default || messages) as Language;
 }

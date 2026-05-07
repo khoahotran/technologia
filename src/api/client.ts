@@ -45,6 +45,15 @@ const refreshApi = axios.create({
 });
 
 type RetryConfig = InternalAxiosRequestConfig & { _retry?: boolean };
+type BackendErrorPayload = {
+  timestamp?: string;
+  status?: number;
+  error?: string;
+  code?: string;
+  message?: string;
+  path?: string;
+  details?: unknown;
+};
 
 const getAccessToken = () =>
   useAuthStore.getState().session?.accessToken ?? authStorage.getAccessToken();
@@ -56,7 +65,7 @@ const clearAuthState = () => {
   authStorage.clearTokens();
   useAuthStore.getState().clearSession();
   clearAutoRefresh();
-  if (!isServer) {
+  if (!isServer && !window.location.pathname.startsWith("/login")) {
     window.location.href = "/login";
   }
 };
@@ -106,9 +115,9 @@ async function refreshAccessToken(): Promise<string | null> {
   try {
     const response = await refreshApi.post("/api/auth/refresh-token", { refreshToken });
     const payload = response.data as {
-      data?: { accessToken?: string; token?: string; refreshToken?: string };
+      data?: { accessToken?: string; refreshToken?: string };
     };
-    const nextAccessToken = payload.data?.accessToken ?? payload.data?.token;
+    const nextAccessToken = payload.data?.accessToken;
     if (!nextAccessToken) {
       return null;
     }
@@ -145,11 +154,7 @@ api.interceptors.response.use(
   (response) => response.data,
   async (error: AxiosError) => {
     const status = error.response?.status ?? 500;
-    const data = error.response?.data as {
-      message?: string;
-      error?: string;
-      code?: string;
-    };
+    const data = (error.response?.data ?? {}) as BackendErrorPayload;
     const message =
       data?.message ?? data?.error ?? error.message ?? "Unexpected request error";
     const code = data?.code ?? `HTTP_ERROR_${status}`;

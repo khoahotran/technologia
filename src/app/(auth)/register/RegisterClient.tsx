@@ -1,6 +1,6 @@
 "use client"
 
-import { Facebook, Youtube, Instagram, Linkedin, Eye, EyeOff } from "lucide-react"
+import { Eye, EyeOff, Facebook, Instagram, Linkedin, Youtube } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -8,9 +8,10 @@ import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { register } from "@/features/auth/api"
 import { CONTACT_INFO } from "@/constants/contact"
-import { useLanguage } from "@/providers/language.provider";
+import { register } from "@/features/auth/api"
+import { useLanguage } from "@/providers/language.provider"
+import { toErrorMessage } from "@/utils/error-message"
 
 /**
  * Giao diện Đăng ký (Register Client View)
@@ -83,7 +84,7 @@ export default function RegisterClient() {
         } catch (err: unknown) {
             console.error(err)
             let errorMessage = t('register_err_failed', {}, "Registration failed");
-            
+
             if (err instanceof Error) {
                 const message = err.message;
                 try {
@@ -104,9 +105,9 @@ export default function RegisterClient() {
                     errorMessage = message;
                 }
             }
-            
+
             setError(errorMessage)
-            toast.error(errorMessage);
+            toast.error(toErrorMessage(err, t('register_err_failed', {}, "Registration failed")));
         }
 
         setLoading(false)
@@ -144,38 +145,38 @@ export default function RegisterClient() {
 
                     {/* Social Media Icons */}
                     <div className="flex justify-center gap-6 pt-8">
-                        <a 
-                            href={CONTACT_INFO.socials.facebook} 
-                            target="_blank" 
+                        <a
+                            href={CONTACT_INFO.socials.facebook}
+                            target="_blank"
                             rel="noopener noreferrer"
-                            aria-label="Facebook" 
+                            aria-label="Facebook"
                             className="bg-[#1877F2] p-3 rounded-lg hover:opacity-80 transition-opacity"
                         >
                             <Facebook className="h-6 w-6" fill="white" />
                         </a>
-                        <a 
-                            href={CONTACT_INFO.socials.youtube} 
-                            target="_blank" 
+                        <a
+                            href={CONTACT_INFO.socials.youtube}
+                            target="_blank"
                             rel="noopener noreferrer"
-                            aria-label="Youtube" 
+                            aria-label="Youtube"
                             className="bg-[#FF0000] p-3 rounded-lg hover:opacity-80 transition-opacity"
                         >
                             <Youtube className="h-6 w-6" fill="white" />
                         </a>
-                        <a 
-                            href={CONTACT_INFO.socials.instagram} 
-                            target="_blank" 
+                        <a
+                            href={CONTACT_INFO.socials.instagram}
+                            target="_blank"
                             rel="noopener noreferrer"
-                            aria-label="Instagram" 
+                            aria-label="Instagram"
                             className="bg-gradient-to-br from-[#833AB4] via-[#FD1D1D] to-[#F77737] p-3 rounded-lg hover:opacity-80 transition-opacity"
                         >
                             <Instagram className="h-6 w-6" fill="white" />
                         </a>
-                        <a 
-                            href={CONTACT_INFO.socials.linkedin} 
-                            target="_blank" 
+                        <a
+                            href={CONTACT_INFO.socials.linkedin}
+                            target="_blank"
                             rel="noopener noreferrer"
-                            aria-label="Linkedin" 
+                            aria-label="Linkedin"
                             className="bg-[#0A66C2] p-3 rounded-lg hover:opacity-80 transition-opacity"
                         >
                             <Linkedin className="h-6 w-6" fill="white" />

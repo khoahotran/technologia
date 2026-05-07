@@ -7,20 +7,35 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { AppError } from "@/api/client";
+import { AddPaymentAccountDialog } from "@/components/features/checkout/AddPaymentAccountDialog";
 import { PaymentMethodList } from "@/components/features/checkout/PaymentMethodList";
 import { Button } from "@/components/ui/button";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { notifyPurchase } from "@/features/ai/api";
 import { useCart } from "@/features/cart/hooks";
-import { useAddresses, useDefaultPaymentAccounts } from "@/features/checkout/hooks";
+import {
+    useAddresses,
+    usePaymentAccounts,
+    useCreatePaymentAccount,
+    useSetDefaultPaymentAccount,
+} from "@/features/checkout/hooks";
 import type { Address } from "@/features/checkout/types";
 import {
     useCheckoutPreview,
     useConfirmCheckout,
-    useGetOrderIdBySagaId,
     useRecalculateCheckout,
 } from "@/features/orders/hooks";
 import { useLanguage } from "@/providers/language.provider";
+import { useAuthStore } from "@/store/auth.store";
 import { useOrderFlowStore } from "@/store/order-flow.store";
 import { toErrorMessage } from "@/utils/error-message";
 
@@ -34,13 +49,20 @@ export default function ShippingClient() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const selectedQuery = searchParams.get("items");
+    const voucherCodeParam = searchParams.get("voucherCode") || "";
     const addressId = searchParams.get("addressId");
 
     const [paymentMethod, setPaymentMethod] = useState<"COD" | "BANK_ACCOUNT" | "E_WALLET">("COD");
     const [paymentAccountId, setPaymentAccountId] = useState("");
+    const [showQRModal, setShowQRModal] = useState(false);
+    const [showAddPaymentDialog, setShowAddPaymentDialog] = useState(false);
     const { data: addresses = [] } = useAddresses();
-    const { data: paymentAccounts = [] } = useDefaultPaymentAccounts();
+    const { data: paymentAccounts = [], refetch: refetchPaymentAccounts } = usePaymentAccounts();
+    const createPaymentAccount = useCreatePaymentAccount();
+    const setDefaultPaymentAccount = useSetDefaultPaymentAccount();
     const { cart, isLoading, isError, error: cartError, refetch } = useCart();
+    const { session } = useAuthStore();
+    const customerId = session?.user.userId;
     const checkoutPreview = useCheckoutPreview();
     const recalculateCheckout = useRecalculateCheckout();
     const confirmCheckout = useConfirmCheckout();
@@ -141,6 +163,58 @@ export default function ShippingClient() {
         [paymentAccounts]
     );
 
+    const executeOrder = async () => {
+        try {
+            let sessionId = checkoutSessionId;
+
+            if (!sessionId) {
+                const preview = await checkoutPreview.mutateAsync({
+                    cartItemIds: selectedCartItems.map((item) => item.cartItemId),
+                    voucherCode: voucherCodeParam,
+                });
+                sessionId = preview.checkoutSessionId;
+                setCheckoutSessionId(sessionId);
+            }
+
+            await recalculateCheckout.mutateAsync({
+                checkoutSessionId: sessionId,
+                addressId: activeAddress!.addressId,
+                voucherCode: voucherCodeParam,
+            });
+
+            const sagaId = await confirmCheckout.mutateAsync({
+                checkoutSessionId: sessionId,
+                paymentMethod,
+                paymentAccountId: paymentMethod === "COD" ? undefined : paymentAccountId,
+            });
+
+            if (customerId) {
+                const uniqueVariants = new Map<string, number>();
+                for (const item of selectedCartItems) {
+                    const current = uniqueVariants.get(item.variantId) ?? 0;
+                    uniqueVariants.set(item.variantId, current + item.currentQuantity);
+                }
+
+                Promise.allSettled(
+                    Array.from(uniqueVariants.entries()).map(([variantId, amount]) =>
+                        notifyPurchase({
+                            customerId,
+                            variantId,
+                            amount,
+                        })
+                    )
+                );
+            }
+
+            clearCheckoutFlow();
+            router.push(`/order-processing?sagaId=${sagaId}&paymentMethod=${paymentMethod}`);
+
+        } catch (error) {
+            setCheckoutSessionId(null);
+            toast.error(toErrorMessage(error, t('unable_place_order', {}, "Unable to place order")));
+        }
+    };
+
     const handlePlaceOrder = async () => {
         if (!activeAddress) {
             toast.error(t('select_address_first', {}, "Please create/select a shipping address first"));
@@ -158,36 +232,12 @@ export default function ShippingClient() {
         setSelectedCartItemIds(selectedCartItems.map((item) => item.cartItemId));
         setSelectedAddressId(activeAddress.addressId);
 
-        try {
-            let sessionId = checkoutSessionId;
-
-            if (!sessionId) {
-                const preview = await checkoutPreview.mutateAsync({
-                    cartItemIds: selectedCartItems.map((item) => item.cartItemId),
-                });
-                sessionId = preview.checkoutSessionId;
-                setCheckoutSessionId(sessionId);
-            }
-
-            await recalculateCheckout.mutateAsync({
-                checkoutSessionId: sessionId,
-                addressId: activeAddress.addressId,
-            });
-
-            const confirmed = await confirmCheckout.mutateAsync({
-                checkoutSessionId: sessionId,
-                paymentMethod,
-                paymentAccountId: paymentMethod === "COD" ? undefined : paymentAccountId,
-            });
-
-            const sagaId = confirmed;
-            clearCheckoutFlow();
-            router.push(`/order-processing?sagaId=${sagaId}`);
-
-        } catch (error) {
-            setCheckoutSessionId(null);
-            toast.error(toErrorMessage(error, "Unable to place order"));
+        if (paymentMethod !== "COD") {
+            setShowQRModal(true);
+            return;
         }
+
+        await executeOrder();
     };
 
     if (isLoading) {
@@ -245,6 +295,8 @@ export default function ShippingClient() {
                                 setPaymentMethod("BANK_ACCOUNT");
                                 setPaymentAccountId(id);
                             }}
+                            onSetDefault={(id) => setDefaultPaymentAccount.mutate(id)}
+                            onAddNew={() => setShowAddPaymentDialog(true)}
                         />
                         <PaymentMethodList
                             type="wallet"
@@ -253,6 +305,8 @@ export default function ShippingClient() {
                                 setPaymentMethod("E_WALLET");
                                 setPaymentAccountId(id);
                             }}
+                            onSetDefault={(id) => setDefaultPaymentAccount.mutate(id)}
+                            onAddNew={() => setShowAddPaymentDialog(true)}
                         />
                         {unsupportedPaymentAccountTypes.length > 0 && (
                             <div className="bg-white p-4 rounded-xl border border-gray-100 text-sm text-gray-600">
@@ -420,6 +474,60 @@ export default function ShippingClient() {
                     </div>
                 </div>
             </div>
+
+            <Dialog open={showQRModal} onOpenChange={setShowQRModal}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>{t('payment_qr_title', {}, "Scan QR to Pay")}</DialogTitle>
+                        <DialogDescription>
+                            {t('payment_qr_description', {}, "Please scan the QR code below to complete your payment.")}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex flex-col items-center justify-center space-y-4 py-6">
+                        <div className="bg-white p-4 rounded-xl border-2 border-primary/20 shadow-sm">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img 
+                                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PAYMENT_FOR_ORDER_${total}`} 
+                                alt="Payment QR Code"
+                                className="w-48 h-48"
+                            />
+                        </div>
+                        <div className="text-center space-y-1">
+                            <p className="text-sm text-muted-foreground">{t('amount_to_pay', {}, "Amount to pay:")}</p>
+                            <p className="text-2xl font-bold text-primary">
+                                {t('price_vnd', { price: new Intl.NumberFormat(currentLocale).format(total) }, `${new Intl.NumberFormat(currentLocale).format(total)} VND`)}
+                            </p>
+                        </div>
+                    </div>
+                    <DialogFooter className="sm:justify-center">
+                        <Button
+                            type="button"
+                            className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold"
+                            onClick={async () => {
+                                setShowQRModal(false);
+                                await executeOrder();
+                            }}
+                            disabled={checkoutPreview.isPending || recalculateCheckout.isPending || confirmCheckout.isPending}
+                        >
+                            {t('i_have_paid', {}, "I have paid successfully")}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <AddPaymentAccountDialog
+                open={showAddPaymentDialog}
+                onOpenChange={setShowAddPaymentDialog}
+                onConfirm={(data) => {
+                    createPaymentAccount.mutate(data, {
+                        onSuccess: () => {
+                            setShowAddPaymentDialog(false);
+                            refetchPaymentAccounts();
+                        },
+                    });
+                }}
+                isPending={createPaymentAccount.isPending}
+            />
         </div>
     );
 }

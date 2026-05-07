@@ -16,8 +16,8 @@ import { AppError } from "@/api/client";
 import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/ui/product-card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useCart } from "@/features/cart/hooks";
 import { useAuth } from "@/features/auth/hooks";
+import { useCart } from "@/features/cart/hooks";
 import {
     useProductDetail,
     useProducts

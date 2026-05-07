@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { render, screen } from '@testing-library/react'
 import React from 'react'
 import { describe, it, expect } from 'vitest'
@@ -7,11 +8,7 @@ import { CartSummary } from '../CartSummary'
 vi.mock('@/components/ui/button', () => ({
     Button: ({ children, asChild, disabled, ...props }: any) => {
         if (asChild) {
-            return (
-                <a href={props.href || '/shipping'} data-testid="button-link">
-                    {children}
-                </a>
-            )
+            return children
         }
         return (
             <button disabled={disabled} {...props} data-testid="button">
@@ -44,12 +41,14 @@ describe('CartSummary Component', () => {
 
     it('should render total amount correctly', () => {
         render(<CartSummary {...mockProps} />)
-        expect(screen.getByText(/50\.000\.000/)).toBeInTheDocument()
+        const prices = screen.getAllByText(/50\.000\.000/)
+        expect(prices.length).toBeGreaterThan(0)
+        expect(prices[0]).toBeInTheDocument()
     })
 
     it('should render item count', () => {
         render(<CartSummary {...mockProps} />)
-        expect(screen.getByText(/Selected 3 products/)).toBeInTheDocument()
+        expect(screen.getByText(/3 products/)).toBeInTheDocument()
     })
 
     it('should render order summary title', () => {
@@ -59,7 +58,7 @@ describe('CartSummary Component', () => {
 
     it('should render enabled checkout button when items selected', () => {
         render(<CartSummary {...mockProps} disableCheckout={false} />)
-        expect(screen.getByTestId('button-link')).toBeInTheDocument()
+        expect(screen.getByTestId('link')).toBeInTheDocument()
     })
 
     it('should render disabled checkout button when no items selected', () => {

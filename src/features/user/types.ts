@@ -7,8 +7,8 @@ export const UserProfileSchema = z.object({
     displayName: z.string().optional(),
     firstName: z.string().optional(),
     lastName: z.string().optional(),
-    phoneNumber: z.string().optional(),
-    imageUrl: z.string().optional(),
+    phoneNumber: z.string().nullable().optional(),
+    imageUrl: z.string().nullable().optional(),
     role: z.string().optional(),
 });
 
@@ -17,7 +17,7 @@ export type UserProfile = z.infer<typeof UserProfileSchema>;
 export const UpdateProfileSchema = z.object({
     firstName: z.string(),
     lastName: z.string(),
-    email: z.email().optional(),
+    email: z.string().email().optional(),
     displayName: z.string().optional(),
     phoneNumber: z.string(),
 });
@@ -27,7 +27,7 @@ export type UpdateProfile = z.infer<typeof UpdateProfileSchema>;
 export const UpdateProfileApiRequestSchema = z.object({
     firstname: z.string(),
     lastname: z.string(),
-    email: z.email().optional(),
+    email: z.string().email().optional(),
     displayName: z.string().optional(),
     phoneNumber: z.string(),
 });

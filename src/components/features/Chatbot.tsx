@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { env } from "@/config/env";
+import { chatWithAgent } from "@/features/ai/api";
 import { useLanguage } from "@/providers/language.provider";
 import { useAuthStore } from "@/store/auth.store";
 import { cn } from "@/utils/cn";
@@ -37,8 +37,19 @@ export function Chatbot() {
     const [isMinimized, setIsMinimized] = useState(false);
     const [inputValue, setInputValue] = useState("");
     const [isTyping, setIsTyping] = useState(false);
-    const [sessionId] = useState(() => crypto.randomUUID());
+    const [sessionId] = useState(() => {
+        if (typeof window !== "undefined") {
+            const existing = localStorage.getItem("chat_session_id");
+            if (existing) return existing;
+            const fresh = crypto.randomUUID();
+            localStorage.setItem("chat_session_id", fresh);
+            return fresh;
+        }
+        return crypto.randomUUID();
+    });
     const scrollRef = useRef<HTMLDivElement>(null);
+    const idCounter = useRef(0);
+    const generateId = () => `msg-${idCounter.current++}`;
 
     const quickPrompts = useMemo(
         () =>
@@ -75,11 +86,9 @@ export function Chatbot() {
     );
 
     const [messages, setMessages] = useState<Message[]>([]);
-    const [mounted, setMounted] = useState(false);
     const showChatWindow = isOpen && !isMinimized;
 
     useEffect(() => {
-        setMounted(true);
         setMessages(initialMessages);
     }, [initialMessages]);
 
@@ -90,26 +99,12 @@ export function Chatbot() {
 
     const callChatApi = async (message: string) => {
         try {
-            const response = await fetch(`${env.aiAgentUrl}/api/agent/chat`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    session_id: sessionId,
-                    message: message,
-                    customer_id: customerId || null,
-                }),
+            return await chatWithAgent({
+                sessionId,
+                message,
+                customerId: customerId ?? null,
             });
-
-            if (!response.ok) {
-                throw new Error("Failed to fetch from AI service");
-            }
-
-            const data = await response.json();
-            return data.reply;
-        } catch (error) {
-            console.error("Chatbot API Error:", error);
+        } catch {
             return t("chatbot_error", {}, "Rất tiếc, mình đang gặp sự cố kết nối. Bạn vui lòng thử lại sau nhé!");
         }
     };
@@ -118,7 +113,7 @@ export function Chatbot() {
         setMessages((prev) => [
             ...prev,
             {
-                id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+                id: generateId(),
                 text,
                 sender,
                 timestamp: new Date(),
@@ -135,7 +130,28 @@ export function Chatbot() {
         setIsTyping(true);
 
         const reply = await callChatApi(trimmed);
-        appendMessage(reply, "bot");
+
+        const botMessageId = generateId();
+        setMessages((prev) => [
+            ...prev,
+            {
+                id: botMessageId,
+                text: "",
+                sender: "bot",
+                timestamp: new Date(),
+            },
+        ]);
+
+        const chars = reply.split("");
+        for (let i = 0; i < chars.length; i++) {
+            await new Promise((resolve) => setTimeout(resolve, 15));
+            setMessages((prev) =>
+                prev.map((msg) =>
+                    msg.id === botMessageId ? { ...msg, text: reply.slice(0, i + 1) } : msg
+                )
+            );
+        }
+
         setIsTyping(false);
     };
 
@@ -276,3 +292,4 @@ export function Chatbot() {
         </div>
     );
 }
+

@@ -51,7 +51,8 @@ export default function ProductsClient() {
 
     // Reset page when filters change
     useEffect(() => {
-        setPage(0)
+        const handle = setTimeout(() => setPage(0), 0)
+        return () => clearTimeout(handle)
     }, [minPrice, maxPrice, sort, categoryId, brandId])
 
     const { data, isLoading, isError, error } = useProducts({

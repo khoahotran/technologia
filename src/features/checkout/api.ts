@@ -1,5 +1,5 @@
-import type { Address, CreateAddress, PaymentAccountResponse } from './types';
-import { AddressSchema, PaymentAccountResponseSchema } from './types';
+import type { Address, CreateAddress, CreatePaymentAccount, PaymentAccountResponse } from './types';
+import { AddressSchema, CreatePaymentAccountSchema, PaymentAccountResponseSchema } from './types';
 
 import { get, post, del, patch } from '@/api/client';
 import type { ApiResponse } from '@/types/api.types';
@@ -39,4 +39,19 @@ export async function setDefaultAddress(id: string): Promise<Address> {
 export async function setDefaultPaymentAccount(id: string): Promise<PaymentAccountResponse> {
     const response = await patch<ApiResponse<PaymentAccountResponse>>(`/api/payment-accounts/set-default/${id}`);
     return PaymentAccountResponseSchema.parse(response.data);
+}
+
+export async function getAllPaymentAccounts(): Promise<PaymentAccountResponse[]> {
+    const response = await get<PaymentAccountResponse[]>('/api/payment-accounts');
+    return response.map((item) => PaymentAccountResponseSchema.parse(item));
+}
+
+export async function createPaymentAccount(data: CreatePaymentAccount): Promise<PaymentAccountResponse> {
+    const validData = CreatePaymentAccountSchema.parse(data);
+    const response = await post<ApiResponse<PaymentAccountResponse>>('/api/payment-accounts', validData);
+    return PaymentAccountResponseSchema.parse(response.data);
+}
+
+export async function deletePaymentAccount(id: string): Promise<void> {
+    await del(`/api/payment-accounts/${id}`);
 }

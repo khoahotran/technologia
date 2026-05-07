@@ -203,15 +203,10 @@ export const LoginResponseSchema = z.object({
   status: z.number().optional(), // Match non-standard backend
   message: z.string(),
   data: z.object({
-    accessToken: z.string().optional(),
-    token: z.string().optional(), // Matches Google Login response in Postman
+    accessToken: z.string(),
     refreshToken: z.string(),
     userId: z.union([z.string(), z.number()]),
-  }).transform(val => ({
-    accessToken: val.accessToken || val.token || '',
-    refreshToken: val.refreshToken,
-    userId: val.userId,
-  })),
+  }),
 });
 
 

@@ -3,7 +3,6 @@
 import { Search } from "lucide-react";
 import { useMemo, useState } from "react";
 
-import { UnknownApiNotice } from "@/components/features/admin/UnknownApiNotice";
 import { Input } from "@/components/ui/input";
 import {
     Pagination,
@@ -15,11 +14,12 @@ import {
 } from "@/components/ui/pagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
+    useAdminActionLog,
+    useAdminActionLogs,
     useAdminReports,
     useCreateMonthlyRevenueReport,
     useCreateTopSellingProductsReport,
 } from "@/features/admin/hooks";
-import { ADMIN_UNKNOWN_API_MESSAGE } from "@/features/admin/service-adapter";
 import type { ReportResponse, ReportType } from "@/features/admin/types";
 import { useLanguage } from "@/providers/language.provider";
 
@@ -43,15 +43,6 @@ const reportTypeOptions: Array<{ value: "all" | ReportType; label: string }> = [
     { value: "MONTHLY_REVENUE", label: "Monthly Revenue" },
     { value: "TOP_SELLING_PRODUCTS", label: "Top Selling Products" },
 ];
-
-const actionRows = Array.from({ length: 10 }).map((_, index) => ({
-    id: "#Id",
-    action: "action_placeholder",
-    createdDate: "dd/mm/yyyy",
-    entityType: "entity_type",
-    note: "note_placeholder",
-    key: `action-${index}`,
-}));
 
 type TableRow = {
     key: string;
@@ -217,6 +208,7 @@ export default function AdminReportsClient() {
     const [sortDirection] = useState<"ASC" | "DESC">("DESC");
     const [keyword, setKeyword] = useState("");
     const [reportTypeFilter, setReportTypeFilter] = useState<"all" | ReportType>("all");
+    const [selectedActionLogId, setSelectedActionLogId] = useState("");
 
     const createMonthlyRevenueMutation = useCreateMonthlyRevenueReport();
     const createTopSellingMutation = useCreateTopSellingProductsReport();
@@ -228,6 +220,13 @@ export default function AdminReportsClient() {
         ...(reportTypeFilter === "all" ? {} : { reportType: reportTypeFilter }),
     };
     const reportQuery = useAdminReports(reportParams);
+    const actionLogQuery = useAdminActionLogs({
+        page,
+        size,
+        sortBy: "createdAt",
+        sortDirection,
+    });
+    const actionLogDetailQuery = useAdminActionLog(selectedActionLogId, Boolean(selectedActionLogId));
 
     const reports = useMemo(() => reportQuery.data?.items ?? [], [reportQuery.data?.items]);
     const filteredReports = useMemo(() => {
@@ -250,11 +249,13 @@ export default function AdminReportsClient() {
     }));
     const maxRevenue = Math.max(...monthRevenue.map((item) => item.value), 1);
 
-    const actionLogRows = actionRows.map((row) => ({
-        ...row,
-        action: t("admin_action_placeholder", {}, "Actionnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn..."),
-        entityType: t("admin_entity_type", {}, "entity type"),
-        note: t("admin_note_placeholder", {}, "Noteeeeeeeeee"),
+    const actionLogRows = (actionLogQuery.data?.items ?? []).map((row) => ({
+        key: row.adminActionLogId,
+        id: row.adminActionLogId,
+        action: row.action,
+        createdDate: new Date(row.createdAt).toLocaleDateString("vi-VN"),
+        entityType: row.entityType,
+        note: row.note,
     }));
 
     return (
@@ -379,9 +380,6 @@ export default function AdminReportsClient() {
                 <h3 className="text-3xl md:text-4xl font-semibold text-[#3B4F66] text-center mb-6">
                     {t("admin_action_logs", {}, "Admin action logs")}
                 </h3>
-                <div className="text-center mb-4">
-                    <UnknownApiNotice text={ADMIN_UNKNOWN_API_MESSAGE} />
-                </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm md:text-lg">
                         <thead>
@@ -394,9 +392,24 @@ export default function AdminReportsClient() {
                             </tr>
                         </thead>
                         <tbody>
+                            {actionLogRows.length === 0 && (
+                                <tr>
+                                    <td className="py-4 px-3 text-center text-muted-foreground" colSpan={5}>
+                                        {t("admin_no_action_logs", {}, "No action logs found")}
+                                    </td>
+                                </tr>
+                            )}
                             {actionLogRows.map((row, index) => (
                                 <tr key={row.key} className={index % 2 === 0 ? "bg-[#EED8B7]" : "bg-transparent"}>
-                                    <td className="py-3 px-3">{row.id}</td>
+                                    <td className="py-3 px-3">
+                                        <button
+                                            type="button"
+                                            className="text-left underline-offset-2 hover:underline"
+                                            onClick={() => setSelectedActionLogId(row.id)}
+                                        >
+                                            {row.id}
+                                        </button>
+                                    </td>
                                     <td className="py-3 px-3">{row.action}</td>
                                     <td className="py-3 px-3">{row.createdDate}</td>
                                     <td className="py-3 px-3">{row.entityType}</td>
@@ -406,6 +419,20 @@ export default function AdminReportsClient() {
                         </tbody>
                     </table>
                 </div>
+                {selectedActionLogId && (
+                    <div className="mt-4 rounded-lg border border-border bg-background p-3 text-sm">
+                        {actionLogDetailQuery.isLoading ? (
+                            <p>{t("loading", {}, "Loading...")}</p>
+                        ) : actionLogDetailQuery.data ? (
+                            <p>
+                                {t("admin_action_log_detail", {}, "Detail")}: {actionLogDetailQuery.data.action} -{" "}
+                                {actionLogDetailQuery.data.note}
+                            </p>
+                        ) : (
+                            <p>{t("order_not_found", {}, "Not found")}</p>
+                        )}
+                    </div>
+                )}
             </section>
         </div>
     );

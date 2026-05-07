@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 /**
  * Giao dien Danh sach San pham (Product List View)
@@ -33,8 +33,8 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useCart } from "@/features/cart/hooks";
 import { useAuth } from "@/features/auth/hooks";
+import { useCart } from "@/features/cart/hooks";
 import {
     useProducts,
     useBrands,
@@ -368,8 +368,7 @@ export function ProductListView() {
                                         addToCart(
                                             { productId: product.productId, variantId },
                                             {
-                                                onSuccess: () => toast.success(t('added_to_cart', {}, "Added to cart")),
-                                                onError: (err: unknown) => {
+                                                onError: () => {
                                                     toast.error(t('add_to_cart_failed', {}, "Failed to add to cart. Please try again."));
                                                 }
                                             }

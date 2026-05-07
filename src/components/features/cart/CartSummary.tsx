@@ -5,17 +5,10 @@
  * 
  * Hiển thị bảng tóm tắt tổng số tiền dựa trên các sản phẩm đã được chọn.
  * Bao gồm nút "Thanh toán" để chuyển sang bước nhập thông tin giao hàng.
-"use client"
-
-/**
- * Thành phần Tổng kết Giỏ hàng (Cart Summary Component)
- * 
- * Hiển thị bảng tóm tắt tổng số tiền dựa trên các sản phẩm đã được chọn.
- * Bao gồm nút "Thanh toán" để chuyển sang bước nhập thông tin giao hàng.
  */
-import Link from "next/link"
+import Link from "next/link";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/providers/language.provider";
 
 interface CartSummaryProps {
@@ -46,7 +39,7 @@ export function CartSummary({
 
       <div className="space-y-4 mb-8">
         <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">{t('subtotal', {}, "Subtotal")}</span>
+          <span className="text-muted-foreground">{t('sub_total', {}, "Subtotal")}</span>
           <span className="text-foreground font-medium">
             {t('price_vnd', { price: new Intl.NumberFormat(currentLocale).format(total + discountAmount) }, `${new Intl.NumberFormat(currentLocale).format(total + discountAmount)} ₫`)}
           </span>

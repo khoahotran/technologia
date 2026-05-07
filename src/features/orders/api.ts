@@ -127,6 +127,23 @@ export async function updateOrderStatus(orderId: string, deliveryStatus: AdminUp
     });
 }
 
+export async function createPayment(orderId: string, sagaId: string, paymentMethod: string): Promise<string> {
+    const response = await post<ApiResponse<{ paymentId: string }>>("/api/payments", {
+        orderId,
+        sagaId,
+        paymentMethod,
+    });
+    return response.data.paymentId;
+}
+
+export async function simulatePayment(orderId: string, paymentId: string): Promise<void> {
+    await post("/api/payments/simulate", { orderId, paymentId });
+}
+
+export async function cancelPayment(orderId: string, paymentId: string): Promise<void> {
+    await post("/api/payments/simulate/cancel", { orderId, paymentId });
+}
+
 export async function submitOrderFeedback(payload: SubmitFeedbackRequest): Promise<Order> {
     await Promise.all(
         payload.items.map((item) =>

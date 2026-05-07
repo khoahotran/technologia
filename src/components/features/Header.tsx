@@ -8,13 +8,6 @@
  * - Thanh Main Bar: Logo, Ô tìm kiếm và các hành động (Giỏ hàng, Tài khoản).
  * - Tích hợp logic Xác thực (Auth) để hiển thị trạng thái đăng nhập.
  */
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Mail, Phone, Search, ShoppingBag, ShoppingCart, User } from "lucide-react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -22,6 +15,13 @@ import { Suspense, useEffect, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { CONTACT_INFO } from "@/constants/contact"
 import { useAuth } from "@/features/auth/hooks"
 import { useAuthStore } from "@/features/auth/store"

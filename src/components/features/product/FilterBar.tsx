@@ -6,7 +6,6 @@
  * Cho phép người dùng trực tiếp thay đổi URL query parameters (?minPrice=...&sort=...)
  * để lọc và sắp xếp danh sách sản phẩm. Cung cấp bộ lọc theo khoảng giá và tiêu chí sắp xếp.
  */
-import { ArrowDownUp } from "lucide-react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 
 import {

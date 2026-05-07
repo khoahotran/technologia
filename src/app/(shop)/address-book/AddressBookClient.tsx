@@ -3,7 +3,6 @@
 import { Info } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 
 import { AddressCard } from "@/components/features/checkout/AddressCard";
 import { Button } from "@/components/ui/button";

@@ -1,11 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { render, screen } from '@testing-library/react'
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
-import { Alert, AlertTitle, AlertDescription } from '../alert'
+import { Alert, AlertDescription, AlertTitle } from '../alert'
 import { Badge, badgeVariants } from '../badge'
-import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator } from '../breadcrumb'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../card'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '../tabs'
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbSeparator } from '../breadcrumb'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../tabs'
 
 vi.mock('@/utils/cn', () => ({
     cn: (...classes: (string | undefined)[]) => classes.filter(Boolean).join(' '),
@@ -23,7 +24,7 @@ vi.mock('@radix-ui/react-slot', () => ({
 }))
 
 vi.mock('class-variance-authority', () => ({
-    cva: (base: string, config: any) => () => base,
+    cva: (base: string, _config: any) => () => base,
 }))
 
 vi.mock('lucide-react', () => ({
@@ -35,7 +36,7 @@ describe('UI Display Elements', () => {
 
     describe('Tabs Component', () => {
         it('should render Tabs', () => {
-            render(<Tabs><TabsList><TabsTrigger>Tab 1</TabsTrigger></TabsList><TabsContent>Content</TabsContent></Tabs>)
+            render(<Tabs><TabsList><TabsTrigger value="1">Tab 1</TabsTrigger></TabsList><TabsContent value="1">Content</TabsContent></Tabs>)
             expect(screen.getByText('Tab 1')).toBeInTheDocument()
         })
 
@@ -45,12 +46,12 @@ describe('UI Display Elements', () => {
         })
 
         it('should render TabsTrigger', () => {
-            render(<Tabs><TabsList><TabsTrigger>Trigger</TabsTrigger></TabsList></Tabs>)
+            render(<Tabs><TabsList><TabsTrigger value="1">Trigger</TabsTrigger></TabsList></Tabs>)
             expect(screen.getByText('Trigger')).toBeInTheDocument()
         })
 
         it('should render TabsContent', () => {
-            render(<Tabs><TabsContent>Content</TabsContent></Tabs>)
+            render(<Tabs><TabsContent value="1">Content</TabsContent></Tabs>)
             expect(screen.getByText('Content')).toBeInTheDocument()
         })
     })

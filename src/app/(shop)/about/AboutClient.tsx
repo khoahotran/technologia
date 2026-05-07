@@ -13,7 +13,9 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { CONTACT_INFO } from "@/constants/contact"
+import { submitContact } from "@/features/contacts/api"
 import { useLanguage } from "@/providers/language.provider"
+import { toErrorMessage } from "@/utils/error-message"
 
 export default function AboutClient() {
     const { t } = useLanguage();
@@ -54,7 +56,7 @@ export default function AboutClient() {
             description: t('about_team_desc', {}, "I want Technologia to help everyone get the best technology products at the best prices."),
         },
         {
-            name: "Nguyễn Quốc Toàn",
+            name: "Phạm Quốc Toàn",
             role: t('about_role_cto', {}, "CTO"),
             description: t('about_team_desc', {}, "I want Technologia to help everyone get the best technology products at the best prices."),
         },
@@ -75,10 +77,10 @@ export default function AboutClient() {
                             {/* Decorative background circles */}
                             <div className="absolute inset-0 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
                             <div className="relative w-48 h-48 bg-white p-8 rounded-[3rem] shadow-2xl transform rotate-12 hover:rotate-0 transition-transform duration-500 flex items-center justify-center overflow-hidden border-4 border-white/50">
-                                <Image 
-                                    src="/favicon.ico" 
-                                    alt="Technologia Logo" 
-                                    width={120} 
+                                <Image
+                                    src="/favicon.ico"
+                                    alt="Technologia Logo"
+                                    width={120}
                                     height={120}
                                     className="object-contain"
                                 />
@@ -91,15 +93,15 @@ export default function AboutClient() {
                             {t('about_hero_subtitle', {}, "Your trusted partner in providing top technology products")}
                         </p>
                         <div className="flex gap-4 justify-center">
-                            <Button 
+                            <Button
                                 onClick={() => scrollToSection('values')}
                                 className="bg-white text-[#3E93B3] hover:bg-gray-100 font-semibold px-8"
                             >
                                 {t('footer_about_us', {}, "About Us")}
                             </Button>
-                            <Button 
+                            <Button
                                 onClick={() => scrollToSection('contact')}
-                                variant="outline" 
+                                variant="outline"
                                 className="border-white text-white  bg-[#3E93B3] hover:bg-white/10 font-semibold px-8"
                             >
                                 {t('footer_contact_now', {}, "Contact Now")}
@@ -185,8 +187,8 @@ export default function AboutClient() {
                             </div>
                             {/* Map Placeholder or Visual Graphic */}
                             <div className="bg-[#D3E4F4] rounded-2xl h-64 flex items-center justify-center border-2 border-white shadow-lg overflow-hidden relative group">
-                                <Image 
-                                    src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1000&auto=format&fit=crop" 
+                                <Image
+                                    src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1000&auto=format&fit=crop"
                                     alt="Technologia Office"
                                     fill
                                     className="object-cover opacity-60 group-hover:scale-110 transition-transform duration-700"
@@ -218,43 +220,79 @@ export default function AboutClient() {
 function ContactForm() {
     const { t } = useLanguage();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [formData, setFormData] = useState({
+        name: "",
+        email: "",
+        phoneNumber: "",
+        company: "",
+        message: ""
+    });
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setIsSubmitting(true);
 
-        // Giả lập gửi form
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        try {
+            await submitContact(formData);
+            toast.success(t('about_contact_success', {}, "Message sent successfully! We will contact you soon."));
+            setFormData({
+                name: "",
+                email: "",
+                phoneNumber: "",
+                company: "",
+                message: ""
+            });
+        } catch (error: any) {
+            toast.error(toErrorMessage(error, t('about_contact_error', {}, "Failed to send message. Please try again later.")));
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
-        toast.success(t('about_contact_success', {}, "Message sent successfully! We will contact you soon."));
-        setIsSubmitting(false);
-        (e.target as HTMLFormElement).reset();
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
     };
 
     return (
         <form className="space-y-4" onSubmit={handleSubmit}>
             <Input
                 required
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
                 placeholder={t('about_name_placeholder', {}, "Name*")}
                 className="bg-white border-gray-200 focus:ring-primary h-12"
             />
             <Input
                 required
                 type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
                 placeholder={t('about_email_placeholder', {}, "Email*")}
                 className="bg-white border-gray-200 focus:ring-primary h-12"
             />
             <Input
                 type="tel"
+                name="phoneNumber"
+                value={formData.phoneNumber}
+                onChange={handleChange}
                 placeholder={t('about_phone_placeholder', {}, "Phone number")}
                 className="bg-white border-gray-200 focus:ring-primary h-12"
             />
             <Input
                 required
+                name="company"
+                value={formData.company}
+                onChange={handleChange}
                 placeholder={t('about_company_placeholder', {}, "Company*")}
                 className="bg-white border-gray-200 focus:ring-primary h-12"
             />
             <Textarea
+                name="message"
+                value={formData.message}
+                onChange={handleChange}
                 placeholder={t('about_message_placeholder', {}, "Message")}
                 className="bg-white border-gray-200 min-h-[120px] focus:ring-primary"
             />

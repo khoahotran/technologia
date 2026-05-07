@@ -1,22 +1,23 @@
 "use client";
 
-import { Ticket, Loader2 } from "lucide-react";
+import { Loader2, Tag, Ticket } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { CartItem } from "@/components/features/cart/CartItem";
 import { CartSummary } from "@/components/features/cart/CartSummary";
 import { Subscribe } from "@/components/features/home/Subscribe";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { calculateCartPrice } from "@/features/cart/api";
 import { useCart } from "@/features/cart/hooks";
+import { CountPriceResponse } from "@/features/cart/types";
+import { getAvailableDiscounts, getDiscountByCode, getUserDiscounts } from "@/features/discounts/api";
+import { DiscountResponse } from "@/features/discounts/types";
 import { useLanguage } from "@/providers/language.provider";
 import { useOrderFlowStore } from "@/store/order-flow.store";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { calculateCartPrice } from "@/features/cart/api";
-import { getDiscountByCode } from "@/features/discounts/api";
-import { DiscountResponse } from "@/features/discounts/types";
-import { CountPriceResponse } from "@/features/cart/types";
+import { cn } from "@/utils";
 
 export default function CartClient() {
     const { t } = useLanguage();
@@ -26,7 +27,7 @@ export default function CartClient() {
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
     const [hasUserSelection, setHasUserSelection] = useState(false);
     const setSelectedCartItemIds = useOrderFlowStore((state) => state.setSelectedCartItemIds);
-    const effectiveSelectedIds = useMemo(() => 
+    const effectiveSelectedIds = useMemo(() =>
         hasUserSelection ? selectedIds : items.map((item) => item.cartItemId),
         [hasUserSelection, selectedIds, items]
     );
@@ -36,6 +37,28 @@ export default function CartClient() {
     const [appliedDiscount, setAppliedDiscount] = useState<DiscountResponse | null>(null);
     const [priceResult, setPriceResult] = useState<CountPriceResponse | null>(null);
     const [isCalculating, setIsCalculating] = useState(false);
+    const [availableDiscounts, setAvailableDiscounts] = useState<DiscountResponse[]>([]);
+
+    useEffect(() => {
+        const fetchDiscounts = async () => {
+            try {
+                const [publicDiscounts, userDiscounts] = await Promise.all([
+                    getAvailableDiscounts(),
+                    getUserDiscounts().catch(() => [] as DiscountResponse[]),
+                ]);
+                const merged = [...publicDiscounts];
+                for (const ud of userDiscounts) {
+                    if (!merged.some(d => d.discountId === ud.discountId)) {
+                        merged.push(ud);
+                    }
+                }
+                setAvailableDiscounts(merged);
+            } catch (error) {
+                console.error("Failed to fetch discounts", error);
+            }
+        };
+        fetchDiscounts();
+    }, []);
 
     // Calculate real price whenever selection or discount changes
     useEffect(() => {
@@ -92,7 +115,7 @@ export default function CartClient() {
                 toast.error(t('promo_invalid', {}, "Invalid promo code"));
                 setAppliedDiscount(null);
             }
-        } catch (error) {
+        } catch {
             toast.error(t('promo_error', {}, "Failed to verify promo code"));
         } finally {
             setIsCalculating(false);
@@ -165,7 +188,6 @@ export default function CartClient() {
                                     effectiveSelectedIds.forEach((id) => {
                                         remove(id);
                                     });
-                                    toast.success(t('removed_selected', {}, "Removed selected items"));
                                 }}
                             >
                                 {t('remove', {}, "REMOVE")}
@@ -240,12 +262,63 @@ export default function CartClient() {
                             )}
                         </div>
 
+                        {availableDiscounts.length > 0 && (
+                            <div className="bg-card p-4 rounded-lg border border-border space-y-4">
+                                <div className="flex items-center gap-2 text-foreground font-medium">
+                                    <Tag className="h-5 w-5 text-primary" />
+                                    <span>{t('available_discounts', {}, "Available Discounts")}</span>
+                                </div>
+                                <div className="space-y-3 max-h-60 overflow-y-auto pr-1 custom-scrollbar">
+                                    {availableDiscounts.map((discount) => (
+                                        <button
+                                            key={discount.discountId}
+                                            onClick={() => {
+                                                setPromoCode(discount.code);
+                                                setAppliedDiscount(discount);
+                                                toast.success(t('promo_applied', { code: discount.code }, `Promo code ${discount.code} applied!`));
+                                            }}
+                                            className={cn(
+                                                "w-full text-left p-3 rounded-lg border transition-all hover:border-primary/50 group",
+                                                appliedDiscount?.discountId === discount.discountId
+                                                    ? "border-primary bg-primary/5"
+                                                    : "border-border bg-gray-50/50"
+                                            )}
+                                        >
+                                            <div className="flex justify-between items-start mb-1">
+                                                <div className="flex items-center gap-2 min-w-0">
+                                                    <span className="font-bold text-sm text-gray-900 group-hover:text-primary transition-colors truncate">
+                                                        {discount.code}
+                                                    </span>
+                                                    {discount.scope === "USER_SPECIFIC" && (
+                                                        <span className="text-[10px] font-semibold text-purple-600 bg-purple-100 px-1.5 py-0.5 rounded shrink-0">
+                                                            {t('your_discount_badge', {}, "For you")}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                {discount.discountValue > 0 && (
+                                                    <span className="text-xs font-bold bg-primary/10 text-primary px-2 py-0.5 rounded shrink-0">
+                                                        -{discount.type === 'PERCENTAGE' ? `${discount.discountValue}%` : `${new Intl.NumberFormat().format(discount.discountValue)} VND`}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            {/* <p className="text-xs text-muted-foreground line-clamp-2">{discount.description || discount.name}</p> */}
+                                            {discount.minOrderValue && discount.minOrderValue > 0 && (
+                                                <p className="text-[11px] text-muted-foreground/70 mt-1">
+                                                    {t('min_order_value', {}, "Min order:")} {new Intl.NumberFormat().format(discount.minOrderValue)} VND
+                                                </p>
+                                            )}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
                         <CartSummary
                             total={displayTotal}
                             discountAmount={displayDiscount}
                             itemCount={effectiveSelectedIds.length}
                             disableCheckout={effectiveSelectedIds.length === 0 || isCalculating}
-                            checkoutHref={`/shipping?items=${effectiveSelectedIds.join(",")}${appliedDiscount ? `&discountId=${appliedDiscount.discountId}` : ""}`}
+                            checkoutHref={`/shipping?items=${effectiveSelectedIds.join(",")}${appliedDiscount ? `&voucherCode=${appliedDiscount.code}` : ""}`}
                         />
                     </div>
                 </div>

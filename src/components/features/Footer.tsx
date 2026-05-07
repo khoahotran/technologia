@@ -9,11 +9,11 @@
  * - Khu vực hỗ trợ khách hàng (Customer Area).
  * - Thông tin liên hệ và tải ứng dụng.
  */
-import { Facebook, Youtube, Instagram, Linkedin, Headphones } from "lucide-react";
-import { CONTACT_INFO } from "@/constants/contact";
+import { Facebook, Headphones, Instagram, Linkedin, Youtube } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
+import { CONTACT_INFO } from "@/constants/contact";
 import { useLanguage } from "@/providers/language.provider";
 
 export default function Footer() {
@@ -58,7 +58,7 @@ export default function Footer() {
             <h3 className="font-bold text-gray-900 mb-6 uppercase tracking-wider text-sm">{t('footer_quick_links', {}, "Quick Links")}</h3>
             <ul className="space-y-4">
               <li><Link href="/about" className="text-gray-600 hover:text-primary transition-colors text-sm">{t('footer_about_us', {}, "About Us")}</Link></li>
-              <li><Link href="/contact" className="text-gray-600 hover:text-primary transition-colors text-sm">{t('footer_contact_us', {}, "Contact")}</Link></li>
+              <li><Link href="/about#contact" className="text-gray-600 hover:text-primary transition-colors text-sm">{t('footer_contact_us', {}, "Contact")}</Link></li>
               <li><Link href="/products" className="text-gray-600 hover:text-primary transition-colors text-sm">{t('footer_products', {}, "Products")}</Link></li>
               <li><Link href="/login" className="text-gray-600 hover:text-primary transition-colors text-sm">{t('footer_login', {}, "Login")}</Link></li>
               <li><Link href="/signup" className="text-gray-600 hover:text-primary transition-colors text-sm">{t('footer_signup', {}, "Sign Up")}</Link></li>
@@ -69,7 +69,7 @@ export default function Footer() {
           <div>
             <h3 className="font-bold text-gray-900 mb-6 uppercase tracking-wider text-sm">{t('footer_customer_service', {}, "Customer Service")}</h3>
             <ul className="space-y-4">
-              <li><Link href="/account" className="text-gray-600 hover:text-primary transition-colors text-sm">{t('footer_my_account', {}, "My Account")}</Link></li>
+              <li><Link href="/profile" className="text-gray-600 hover:text-primary transition-colors text-sm">{t('footer_my_account', {}, "My Account")}</Link></li>
               <li><Link href="/orders" className="text-gray-600 hover:text-primary transition-colors text-sm">{t('footer_orders', {}, "Orders")}</Link></li>
               <li><Link href="/cart" className="text-gray-600 hover:text-primary transition-colors text-sm">{t('footer_cart', {}, "Cart")}</Link></li>
               <li><Link href="/terms" className="text-gray-600 hover:text-primary transition-colors text-sm">{t('footer_terms', {}, "Terms of Use")}</Link></li>
