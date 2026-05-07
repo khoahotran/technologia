@@ -2,9 +2,11 @@
 
 import { Package, PackageCheck, PackageX, Truck } from "lucide-react";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo } from "react";
 
 import { OrderCategory } from "@/components/features/orders/OrderCard";
+import { useAuth } from "@/features/auth/hooks";
 import { useOrders } from "@/features/orders/hooks";
 import { isCreatedOrder } from "@/features/orders/presentation";
 import { useLanguage } from "@/providers/language.provider";
@@ -31,6 +33,15 @@ function toOrderCardItems(order: { items: unknown[] }) {
 
 export default function OrdersClient() {
     const { t } = useLanguage();
+    const router = useRouter();
+    const { isAuthenticated } = useAuth();
+
+    useEffect(() => {
+        if (!isAuthenticated) {
+            router.push("/login");
+        }
+    }, [isAuthenticated, router]);
+
     const awaitingPaymentQuery = useOrders({ page: 0, size: 20, status: "AWAITING_PAYMENT" });
     const awaitingQuery = useOrders({ page: 0, size: 20, status: "AWAITING_CONFIRM" });
     const pendingQuery = useOrders({ page: 0, size: 20, status: "PENDING" });

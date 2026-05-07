@@ -2,25 +2,30 @@ import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
+import { useLanguage } from "@/providers/language.provider";
+import { toErrorMessage } from "@/utils/error-message";
 import { googleLogin, login, logout } from "./api";
 import { useAuthStore } from "./store";
 import type { AuthSession } from "./types";
 
-import { toErrorMessage } from "@/utils/error-message";
-
 export function useLogin() {
   const setSession = useAuthStore((state) => state.setSession);
   const router = useRouter();
+  const { t } = useLanguage();
 
   return useMutation({
     mutationFn: login,
     onSuccess: (session: AuthSession) => {
       setSession(session);
-      toast.success("Login successful");
-      router.push("/");
+      toast.success(t('login_success', {}, "Login successful"));
+      if (session.user.role === "ADMIN") {
+        router.push("/admin/home");
+      } else {
+        router.push("/");
+      }
     },
     onError: (error: unknown) => {
-      toast.error(toErrorMessage(error));
+      toast.error(toErrorMessage(error, t('login_failed', {}, "Login failed")));
     },
   });
 }
@@ -28,16 +33,21 @@ export function useLogin() {
 export function useGoogleLogin() {
   const setSession = useAuthStore((state) => state.setSession);
   const router = useRouter();
+  const { t } = useLanguage();
 
   return useMutation({
     mutationFn: googleLogin,
     onSuccess: (session: AuthSession) => {
       setSession(session);
-      toast.success("Google login successful");
-      router.push("/");
+      toast.success(t('google_login_success', {}, "Google login successful"));
+      if (session.user.role === "ADMIN") {
+        router.push("/admin/home");
+      } else {
+        router.push("/");
+      }
     },
     onError: (error: unknown) => {
-      toast.error(toErrorMessage(error));
+      toast.error(toErrorMessage(error, t('google_login_failed', {}, "Google login failed")));
     },
   });
 }

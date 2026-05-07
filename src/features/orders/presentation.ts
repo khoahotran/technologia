@@ -54,6 +54,23 @@ export function formatPaymentMethodLabel(paymentMethod: Order["paymentMethod"], 
     return t ? t("payment_method_cod", {}, "Cash on delivery") : "Cash on delivery";
 }
 
+export function formatDeliveryLogStatusLabel(status: string, t?: Translator) {
+    switch (status) {
+        case "PENDING":
+            return t ? t("order_status_pending", {}, "Pending") : "Pending";
+        case "COMPLETED":
+            return t ? t("delivery_log_completed", {}, "Completed") : "Completed";
+        case "COMPENSATING":
+            return t ? t("delivery_log_compensating", {}, "Compensating") : "Compensating";
+        case "COMPENSATED":
+            return t ? t("delivery_log_compensated", {}, "Compensated") : "Compensated";
+        case "FAILED":
+            return t ? t("delivery_log_failed", {}, "Failed") : "Failed";
+        default:
+            return status;
+    }
+}
+
 export function formatCurrencyVnd(value: number, locale: string) {
     return `${new Intl.NumberFormat(locale).format(value)} VND`;
 }

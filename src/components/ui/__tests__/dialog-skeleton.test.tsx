@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { render, screen } from '@testing-library/react'
 import { vi, describe, it, expect } from 'vitest'
 
@@ -9,7 +10,7 @@ vi.mock('@/utils/cn', () => ({
 }))
 
 vi.mock('@radix-ui/react-dialog', () => ({
-    Root: ({ children, open, onOpenChange, ...props }: any) => (
+    Root: ({ children, open, onOpenChange: _onOpenChange, ...props }: any) => (
         <div data-testid="dialog-root" data-open={open} {...props}>{children}</div>
     ),
     Trigger: ({ children, ...props }: any) => (

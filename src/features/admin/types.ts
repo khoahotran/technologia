@@ -57,3 +57,31 @@ export interface ReportListResponse {
     totalItems: number;
     totalPages: number;
 }
+
+export interface AdminActionLogResponse {
+    adminActionLogId: string;
+    adminId: string;
+    action: string;
+    note: string;
+    createdAt: string;
+    entityType: string;
+}
+
+export interface AdminActionLogQueryParams {
+    page?: number;
+    size?: number;
+    sortBy?: string;
+    sortDirection?: "ASC" | "DESC";
+    adminId?: string;
+    action?: string;
+    fromDate?: string;
+    toDate?: string;
+}
+
+export interface AdminActionLogListResponse {
+    items: AdminActionLogResponse[];
+    pageNumber: number;
+    pageSize: number;
+    totalItems: number;
+    totalPages: number;
+}

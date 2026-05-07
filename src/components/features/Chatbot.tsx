@@ -7,7 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { chatWithAgent } from "@/features/ai/api";
 import { useLanguage } from "@/providers/language.provider";
+import { useAuthStore } from "@/store/auth.store";
 import { cn } from "@/utils/cn";
 
 type Sender = "user" | "bot";
@@ -28,10 +30,26 @@ const HARD_CODED_QUICK_PROMPTS = [
 
 export function Chatbot() {
     const { t } = useLanguage();
+    const { session } = useAuthStore();
+    const customerId = session?.user.userId;
+
     const [isOpen, setIsOpen] = useState(false);
     const [isMinimized, setIsMinimized] = useState(false);
     const [inputValue, setInputValue] = useState("");
+    const [isTyping, setIsTyping] = useState(false);
+    const [sessionId] = useState(() => {
+        if (typeof window !== "undefined") {
+            const existing = localStorage.getItem("chat_session_id");
+            if (existing) return existing;
+            const fresh = crypto.randomUUID();
+            localStorage.setItem("chat_session_id", fresh);
+            return fresh;
+        }
+        return crypto.randomUUID();
+    });
     const scrollRef = useRef<HTMLDivElement>(null);
+    const idCounter = useRef(0);
+    const generateId = () => `msg-${idCounter.current++}`;
 
     const quickPrompts = useMemo(
         () =>
@@ -40,64 +58,14 @@ export function Chatbot() {
                     key,
                     {},
                     key === "chatbot_q1"
-                        ? "Where is my order?"
+                        ? "Đơn hàng của tôi ở đâu?"
                         : key === "chatbot_q2"
-                            ? "What is the return policy?"
+                            ? "Chính sách đổi trả thế nào?"
                             : key === "chatbot_q3"
-                                ? "Is there free shipping?"
-                                : "How to contact support?"
+                                ? "Có được miễn phí ship không?"
+                                : "So sánh iPhone 15 và iPhone 16"
                 )
             ),
-        [t]
-    );
-
-    const autoResponseRules = useMemo(
-        () => [
-            {
-                keywords: ["đơn hàng", "order"],
-                response: t(
-                    "chatbot_res_order",
-                    {},
-                    "You can track your order in Orders. If you share the order ID, I can guide the next step."
-                ),
-            },
-            {
-                keywords: ["đổi trả", "return"],
-                response: t(
-                    "chatbot_res_return",
-                    {},
-                    "We support returns within 30 days if the product is still in good condition."
-                ),
-            },
-            {
-                keywords: ["vận chuyển", "shipping"],
-                response: t(
-                    "chatbot_res_shipping",
-                    {},
-                    "Free shipping for orders over 1,000,000 VND. Standard shipping fee is 30,000 VND."
-                ),
-            },
-            {
-                keywords: ["liên hệ", "contact"],
-                response: t(
-                    "chatbot_res_contact",
-                    {},
-                    "You can reach support via support@technologia.com or (+84) 123 456 789."
-                ),
-            },
-            {
-                keywords: ["xin chào", "hello", "hi"],
-                response: t(
-                    "chatbot_res_greeting",
-                    {},
-                    "Hello! I'm Lạc Lạc, your Technologia assistant. How can I help?"
-                ),
-            },
-            {
-                keywords: ["tạm biệt", "bye"],
-                response: t("chatbot_res_goodbye", {}, "Goodbye! Have a nice day."),
-            },
-        ],
         [t]
     );
 
@@ -108,7 +76,7 @@ export function Chatbot() {
                 text: t(
                     "chatbot_welcome",
                     {},
-                    "Xin chào! Mình là Lạc Lạc - trợ lý của Technologia. Bạn cần mình hỗ trợ gì hôm nay?"
+                    "Chào bạn! Mình là Lạc Lạc, trợ lý AI từ Technologia. Bạn cần mình tư vấn sản phẩm hay hỗ trợ đơn hàng gì không?"
                 ),
                 sender: "bot",
                 timestamp: new Date(),
@@ -118,11 +86,9 @@ export function Chatbot() {
     );
 
     const [messages, setMessages] = useState<Message[]>([]);
-    const [mounted, setMounted] = useState(false);
     const showChatWindow = isOpen && !isMinimized;
 
     useEffect(() => {
-        setMounted(true);
         setMessages(initialMessages);
     }, [initialMessages]);
 
@@ -131,19 +97,23 @@ export function Chatbot() {
         scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }, [messages, isOpen]);
 
-    const getAutoReply = (text: string) => {
-        const normalized = text.toLowerCase();
-        const matchedRule = autoResponseRules.find((rule) =>
-            rule.keywords.some((keyword) => normalized.includes(keyword))
-        );
-        return matchedRule?.response ?? t("chatbot_res_default", {}, "Mình chưa hiểu rõ. Bạn có thể diễn đạt lại giúp mình nhé.");
+    const callChatApi = async (message: string) => {
+        try {
+            return await chatWithAgent({
+                sessionId,
+                message,
+                customerId: customerId ?? null,
+            });
+        } catch {
+            return t("chatbot_error", {}, "Rất tiếc, mình đang gặp sự cố kết nối. Bạn vui lòng thử lại sau nhé!");
+        }
     };
 
     const appendMessage = (text: string, sender: Sender) => {
         setMessages((prev) => [
             ...prev,
             {
-                id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+                id: generateId(),
                 text,
                 sender,
                 timestamp: new Date(),
@@ -151,16 +121,38 @@ export function Chatbot() {
         ]);
     };
 
-    const handleSendMessage = (text: string) => {
+    const handleSendMessage = async (text: string) => {
         const trimmed = text.trim();
-        if (!trimmed) return;
+        if (!trimmed || isTyping) return;
 
         appendMessage(trimmed, "user");
         setInputValue("");
+        setIsTyping(true);
 
-        window.setTimeout(() => {
-            appendMessage(getAutoReply(trimmed), "bot");
-        }, 500);
+        const reply = await callChatApi(trimmed);
+
+        const botMessageId = generateId();
+        setMessages((prev) => [
+            ...prev,
+            {
+                id: botMessageId,
+                text: "",
+                sender: "bot",
+                timestamp: new Date(),
+            },
+        ]);
+
+        const chars = reply.split("");
+        for (let i = 0; i < chars.length; i++) {
+            await new Promise((resolve) => setTimeout(resolve, 15));
+            setMessages((prev) =>
+                prev.map((msg) =>
+                    msg.id === botMessageId ? { ...msg, text: reply.slice(0, i + 1) } : msg
+                )
+            );
+        }
+
+        setIsTyping(false);
     };
 
     const toggleChat = () => {
@@ -172,7 +164,7 @@ export function Chatbot() {
         <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-[max(1rem,env(safe-area-inset-right))] z-50 flex flex-col items-end gap-2 pointer-events-none">
             <Card
                 className={cn(
-                    "w-[calc(100vw-1rem)] max-w-[420px] sm:w-[380px] border-primary/20 shadow-2xl transition-all duration-300",
+                    "w-[calc(100vw-1rem)] max-w-[420px] sm:w-[380px] border-primary/20 shadow-2xl transition-all duration-300 py-0",
                     showChatWindow
                         ? "pointer-events-auto translate-y-0 opacity-100"
                         : "pointer-events-none translate-y-4 opacity-0 invisible"
@@ -185,7 +177,7 @@ export function Chatbot() {
                             <div className="flex items-center gap-2">
                                 <CardTitle className="text-base font-semibold">Lạc Lạc</CardTitle>
                                 <Badge className="bg-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/20">
-                                    {t("chatbot_online", {}, "Online")}
+                                    {t("chatbot_online", {}, "Trực tuyến")}
                                 </Badge>
                             </div>
                         </div>
@@ -195,7 +187,7 @@ export function Chatbot() {
                                 size="icon"
                                 className="h-7 w-7 text-primary-foreground hover:bg-primary/80"
                                 onClick={() => setIsMinimized(true)}
-                                aria-label={t("chatbot_minimize", {}, "Minimize chat")}
+                                aria-label={t("chatbot_minimize", {}, "Thu nhỏ chat")}
                             >
                                 <Minus className="h-4 w-4" />
                             </Button>
@@ -204,7 +196,7 @@ export function Chatbot() {
                                 size="icon"
                                 className="h-7 w-7 text-primary-foreground hover:bg-primary/80"
                                 onClick={() => setIsOpen(false)}
-                                aria-label={t("chatbot_close", {}, "Close chat")}
+                                aria-label={t("chatbot_close", {}, "Đóng chat")}
                             >
                                 <X className="h-4 w-4" />
                             </Button>
@@ -227,6 +219,17 @@ export function Chatbot() {
                                 <p>{message.text}</p>
                             </div>
                         ))}
+
+                        {isTyping && (
+                            <div className="mr-auto max-w-[88%] rounded-2xl rounded-bl-md border bg-card px-4 py-3 text-sm sm:max-w-[84%]">
+                                <div className="flex gap-1">
+                                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/60 [animation-delay:-0.3s]"></span>
+                                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/60 [animation-delay:-0.15s]"></span>
+                                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/60"></span>
+                                </div>
+                                <p className="mt-1 text-[10px] text-muted-foreground animate-pulse">Lạc Lạc đang suy nghĩ...</p>
+                            </div>
+                        )}
                     </div>
 
                     {messages.length <= 2 && (
@@ -256,10 +259,11 @@ export function Chatbot() {
                         <Input
                             value={inputValue}
                             onChange={(event) => setInputValue(event.target.value)}
-                            placeholder={t("chatbot_placeholder", {}, "Type a message...")}
+                            placeholder={isTyping ? t("chatbot_thinking", {}, "Lạc Lạc đang suy nghĩ...") : t("chatbot_placeholder", {}, "Nhập tin nhắn...")}
                             className="h-10 flex-1"
+                            disabled={isTyping}
                         />
-                        <Button type="submit" size="icon" className="h-10 w-10" disabled={!inputValue.trim()} aria-label={t("chatbot_send", {}, "Send")}>
+                        <Button type="submit" size="icon" className="h-10 w-10" disabled={!inputValue.trim() || isTyping} aria-label={t("chatbot_send", {}, "Gửi")}>
                             <Send className="h-4 w-4" />
                         </Button>
                     </form>
@@ -270,7 +274,7 @@ export function Chatbot() {
                 <Button
                     className="h-12 w-12 rounded-full bg-primary p-0 text-primary-foreground shadow-lg transition-all duration-300 hover:scale-105 pointer-events-auto"
                     onClick={() => setIsMinimized(false)}
-                    aria-label={t("chatbot_expand", {}, "Expand chat")}
+                    aria-label={t("chatbot_expand", {}, "Mở rộng chat")}
                 >
                     <MessageCircle className="h-5 w-5" />
                 </Button>
@@ -280,7 +284,7 @@ export function Chatbot() {
                 <Button
                     className="h-14 w-14 rounded-full bg-primary p-0 text-primary-foreground shadow-lg transition-transform hover:scale-105 hover:bg-primary/90 pointer-events-auto"
                     onClick={toggleChat}
-                    aria-label={t("chatbot_open", {}, "Open chat")}
+                    aria-label={t("chatbot_open", {}, "Mở chat")}
                 >
                     <MessageCircle className="h-6 w-6" />
                 </Button>
@@ -288,3 +292,4 @@ export function Chatbot() {
         </div>
     );
 }
+

@@ -2,12 +2,12 @@
 
 import { ArrowLeft, Star } from "lucide-react";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { useOrder, useSubmitOrderFeedback } from "@/features/orders/hooks";
+import { useOrder, useOrderFeedbacks, useSubmitOrderFeedback, useUpdateOrderFeedback } from "@/features/orders/hooks";
 import { canGiveFeedback, formatOrderStatusLabel } from "@/features/orders/presentation";
 import { useLanguage } from "@/providers/language.provider";
 import { useOrderFlowStore } from "@/store/order-flow.store";
@@ -59,7 +59,9 @@ function toFeedbackItem(item: unknown, index: number): FeedbackItem {
 export default function GiveFeedbackClient({ id }: { id: string }) {
     const { t } = useLanguage();
     const { data: order, isLoading, isError, error } = useOrder(id);
+    const feedbackQuery = useOrderFeedbacks(id, Boolean(id));
     const submitFeedback = useSubmitOrderFeedback();
+    const updateFeedback = useUpdateOrderFeedback();
     const feedbackDrafts = useOrderFlowStore((state) => state.feedbackDrafts);
     const setFeedbackDraft = useOrderFlowStore((state) => state.setFeedbackDraft);
     const clearFeedbackDrafts = useOrderFlowStore((state) => state.clearFeedbackDrafts);
@@ -68,6 +70,25 @@ export default function GiveFeedbackClient({ id }: { id: string }) {
         if (!order) return [];
         return order.items.map((item, index) => toFeedbackItem(item, index));
     }, [order]);
+
+    const existingFeedbackByOrderItemId = useMemo(() => {
+        const map = new Map<string, { rating: number; comment: string }>();
+        (feedbackQuery.data ?? []).forEach((item) => {
+            map.set(item.orderItemId, { rating: item.rating, comment: item.comment });
+        });
+        return map;
+    }, [feedbackQuery.data]);
+
+    useEffect(() => {
+        feedbackItems.forEach((item) => {
+            if (!item.orderItemId) return;
+            const existing = existingFeedbackByOrderItemId.get(item.orderItemId);
+            if (!existing) return;
+            if (!feedbackDrafts[item.key]) {
+                setFeedbackDraft(item.key, existing);
+            }
+        });
+    }, [existingFeedbackByOrderItemId, feedbackDrafts, feedbackItems, setFeedbackDraft]);
 
     if (isLoading) {
         return <div className="flex justify-center p-8">{t("loading", {}, "Loading...")}</div>;
@@ -87,7 +108,8 @@ export default function GiveFeedbackClient({ id }: { id: string }) {
         );
     }
 
-    const disabled = !canGiveFeedback(order) || submitFeedback.isPending;
+    const disabled =
+        !canGiveFeedback(order) || submitFeedback.isPending || updateFeedback.isPending || feedbackQuery.isLoading;
 
     const handleSubmit = () => {
         if (!canGiveFeedback(order)) {
@@ -122,21 +144,37 @@ export default function GiveFeedbackClient({ id }: { id: string }) {
             return;
         }
 
-        submitFeedback.mutate(
-            {
-                orderId: order.orderId,
-                items: payloadItems.map((item) => ({
-                    orderItemId: item.orderItemId as string,
+        const normalized = payloadItems.map((item) => ({
+            orderItemId: item.orderItemId as string,
+            rating: item.rating,
+            comment: item.comment,
+        }));
+
+        const toCreate = normalized.filter((item) => !existingFeedbackByOrderItemId.has(item.orderItemId));
+        const toUpdate = normalized.filter((item) => existingFeedbackByOrderItemId.has(item.orderItemId));
+
+        Promise.all([
+            toCreate.length > 0
+                ? submitFeedback.mutateAsync({
+                      orderId: order.orderId,
+                      items: toCreate,
+                  })
+                : Promise.resolve(),
+            ...toUpdate.map((item) =>
+                updateFeedback.mutateAsync({
+                    orderItemId: item.orderItemId,
                     rating: item.rating,
                     comment: item.comment,
-                })),
-            },
-            {
-                onSuccess: () => {
-                    clearFeedbackDrafts();
-                },
-            }
-        );
+                })
+            ),
+        ])
+            .then(() => {
+                toast.success(t("feedback_saved", {}, "Feedback saved successfully"));
+                clearFeedbackDrafts();
+            })
+            .catch((submitError: unknown) => {
+                toast.error(toErrorMessage(submitError, t("unable_save_feedback", {}, "Unable to save feedback")));
+            });
     };
 
     return (

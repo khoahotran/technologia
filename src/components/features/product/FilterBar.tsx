@@ -6,7 +6,6 @@
  * Cho phép người dùng trực tiếp thay đổi URL query parameters (?minPrice=...&sort=...)
  * để lọc và sắp xếp danh sách sản phẩm. Cung cấp bộ lọc theo khoảng giá và tiêu chí sắp xếp.
  */
-import { ArrowDownUp } from "lucide-react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 
 import {
@@ -80,7 +79,7 @@ export function FilterBar() {
             <SelectItem value="5000000">5.000.000 VND</SelectItem>
             <SelectItem value="10000000">10.000.000 VND</SelectItem>
             <SelectItem value="20000000">20.000.000 VND</SelectItem>
-            <SelectItem value="50000000">5.000.000 VND</SelectItem>
+            <SelectItem value="50000000">50.000.000 VND</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -101,7 +100,7 @@ export function FilterBar() {
             <SelectItem value="5000000">5.000.000 VND</SelectItem>
             <SelectItem value="10000000">10.000.000 VND</SelectItem>
             <SelectItem value="20000000">20.000.000 VND</SelectItem>
-            <SelectItem value="50000000">5.000.000 VND</SelectItem>
+            <SelectItem value="50000000">50.000.000 VND</SelectItem>
             <SelectItem value="100000000">100.000.000 VND</SelectItem>
           </SelectContent>
         </Select>
@@ -114,11 +113,8 @@ export function FilterBar() {
           defaultValue={searchParams.get("sort") || "price_asc"}
           onValueChange={(val) => updateFilter("sort", val)}
         >
-          <SelectTrigger className="w-[140px] bg-blue-100/50 border-none h-9 rounded-lg">
-            <div className="flex items-center gap-2">
-              <span>Tiêu chí</span>
-              <ArrowDownUp className="h-3 w-3" />
-            </div>
+          <SelectTrigger className="w-[180px] bg-blue-100/50 border-none h-9 rounded-lg">
+            <SelectValue placeholder={t('select_sort', {}, "Sắp xếp")} />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="price_asc">{t('price_asc', {}, "Giá tăng dần")}</SelectItem>

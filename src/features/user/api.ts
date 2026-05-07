@@ -17,7 +17,7 @@ export async function getProfile(): Promise<UserProfile> {
     return UserProfileSchema.parse(response.data);
 }
 
-export async function updateProfile(data: UpdateProfile): Promise<UserProfile> {
+export async function updateProfile(data: UpdateProfile): Promise<void> {
     const payload = UpdateProfileSchema.parse(data);
     const requestBody: UpdateProfileApiRequest = UpdateProfileApiRequestSchema.parse({
         firstname: payload.firstName,
@@ -26,8 +26,7 @@ export async function updateProfile(data: UpdateProfile): Promise<UserProfile> {
         displayName: payload.displayName,
         phoneNumber: payload.phoneNumber,
     });
-    const response = await put<ApiResponse<UserProfile>>('/api/users/profile/me', requestBody);
-    return UserProfileSchema.parse(response.data);
+    await put('/api/users/profile/me', requestBody);
 }
 
 export async function changePassword(data: ChangePassword): Promise<void> {
@@ -38,9 +37,8 @@ export async function changePassword(data: ChangePassword): Promise<void> {
     });
 }
 
-export async function uploadAvatar(file: File): Promise<UserProfile> {
+export async function uploadAvatar(file: File): Promise<void> {
     const formData = new FormData();
-    formData.append('avatar', file); // Field name should be 'avatar' as per docs
-    const response = await put<ApiResponse<UserProfile>>('/api/users/change-avatar/me', formData);
-    return UserProfileSchema.parse(response.data);
+    formData.append('avatar', file);
+    await put('/api/users/change-avatar/me', formData);
 }

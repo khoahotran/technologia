@@ -168,26 +168,42 @@ export function ProductCard({
             </div>
 
             {/* Giá và các nút hành động */}
-            <div className="flex items-center justify-between">
-              <span className="text-xl font-bold text-primary">{price}</span>
+            <div className="flex flex lg:flex-col items-end justify-between">
+
+              {/* Price */}
+              <span
+                className="
+      text-xl font-bold text-primary
+      min-w-0 break-words
+    "
+              >
+                {price}
+              </span>
 
               {variant === "default" && (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
+
                   {/* Nút thêm nhanh vào giỏ */}
                   {onAddToCart && (
                     <Button
                       size="icon"
                       variant="outline"
-                      className="h-9 w-9 rounded-full border-primary/30 text-primary hover:bg-primary/10"
+                      className="h-9 w-9 rounded-full border-primary/30 text-primary hover:bg-primary/10 shrink-0"
                       onClick={handleAddToCart}
                       aria-label={t('add_to_cart_aria', { title })}
                     >
                       <ShoppingCart className="h-4 w-4" />
                     </Button>
                   )}
+
                   {/* Nút Xem chi tiết */}
                   <Button
-                    className="bg-primary hover:bg-primary/90 text-white shadow-none rounded-full px-6 h-9 font-medium"
+                    className="
+          bg-primary hover:bg-primary/90
+          text-white shadow-none
+          rounded-full px-6 h-9
+          font-medium shrink-0
+        "
                     onClick={handleDetailsClick}
                   >
                     {t('details', {}, "Details")}

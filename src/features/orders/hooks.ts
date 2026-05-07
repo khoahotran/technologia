@@ -1,25 +1,30 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback } from "react";
 import { toast } from "sonner";
 
 import {
+    cancelPayment,
     confirmCheckout,
-    getAdminOrders,
+    createPayment,
+    deleteOrderFeedback,
     getAdminOrderById,
+    getAdminOrders,
     getDeliveryLogs,
     getOrderById,
     getOrderFeedbacks,
+    getOrderIdBySagaId,
     getOrders,
     getProductFeedbacks,
     initCheckoutPreview,
     recalculateCheckout,
-    deleteOrderFeedback,
+    simulatePayment,
     submitOrderFeedback,
     updateOrderFeedback,
     updateOrderStatus,
 } from "./api";
 import type {
-    CheckoutPreviewRequest,
     AdminUpdateOrderStatus,
+    CheckoutPreviewRequest,
     ConfirmCheckoutRequest,
     DeliveryLog,
     Order,
@@ -31,7 +36,9 @@ import type {
 } from "./types";
 
 import { checkoutKeys } from "@/constants/query-keys";
+import { useLanguage } from "@/providers/language.provider";
 import { toErrorMessage } from "@/utils/error-message";
+import { logger } from "@/utils/logger";
 
 export function useOrders(params?: OrderListParams) {
     return useQuery({
@@ -111,8 +118,52 @@ export function useConfirmCheckout() {
     });
 }
 
+export function useGetOrderIdBySagaId() {
+    return useCallback(async (sagaId: string): Promise<string | null> => {
+        let attempts = 0;
+        const maxAttempts = 6;
+
+        while (attempts < maxAttempts) {
+            try {
+                await new Promise((resolve) => setTimeout(resolve, 2000));
+
+                const orderId = await getOrderIdBySagaId(sagaId);
+
+                if (orderId) return orderId;
+            } catch {
+                logger.error(`Attempt ${attempts + 1}: Order service chưa phản hồi ID, tiếp tục đợi...`);
+            }
+
+            attempts++;
+        }
+        return null;
+    }, []);
+}
+
+export function useCreatePayment() {
+    return useMutation({
+        mutationFn: ({ orderId, sagaId, paymentMethod }: { orderId: string; sagaId: string; paymentMethod: string }) =>
+            createPayment(orderId, sagaId, paymentMethod),
+    });
+}
+
+export function useSimulatePayment() {
+    return useMutation({
+        mutationFn: ({ orderId, paymentId }: { orderId: string; paymentId: string }) =>
+            simulatePayment(orderId, paymentId),
+    });
+}
+
+export function useCancelPayment() {
+    return useMutation({
+        mutationFn: ({ orderId, paymentId }: { orderId: string; paymentId: string }) =>
+            cancelPayment(orderId, paymentId),
+    });
+}
+
 export function useUpdateOrderStatus() {
     const queryClient = useQueryClient();
+    const { t } = useLanguage();
 
     return useMutation({
         mutationFn: ({ orderId, deliveryStatus }: { orderId: string; deliveryStatus: AdminUpdateOrderStatus }) =>
@@ -124,7 +175,7 @@ export function useUpdateOrderStatus() {
             queryClient.invalidateQueries({ queryKey: [...checkoutKeys.all, "delivery-logs", variables.orderId] });
         },
         onError: (error) => {
-            toast.error(toErrorMessage(error, "Unable to update order status"));
+            toast.error(toErrorMessage(error, t('admin_failed_update_order_status', {}, "Unable to update order status")));
         },
     });
 }
@@ -144,16 +195,17 @@ export function useDeleteOrderFeedback() {
 
 export function useSubmitOrderFeedback() {
     const queryClient = useQueryClient();
+    const { t } = useLanguage();
 
     return useMutation({
         mutationFn: (payload: SubmitFeedbackRequest) => submitOrderFeedback(payload),
         onSuccess: (updatedOrder: Order) => {
             queryClient.setQueryData(checkoutKeys.order(updatedOrder.orderId), updatedOrder);
             queryClient.invalidateQueries({ queryKey: checkoutKeys.orders() });
-            toast.success("Feedback submitted successfully");
+            toast.success(t('feedback_submitted_success', {}, "Feedback submitted successfully"));
         },
         onError: (error) => {
-            toast.error(toErrorMessage(error, "Unable to submit feedback"));
+            toast.error(toErrorMessage(error, t('failed_submit_feedback', {}, "Unable to submit feedback")));
         },
     });
 }

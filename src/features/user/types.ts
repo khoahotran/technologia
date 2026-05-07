@@ -7,8 +7,8 @@ export const UserProfileSchema = z.object({
     displayName: z.string().optional(),
     firstName: z.string().optional(),
     lastName: z.string().optional(),
-    phoneNumber: z.string().optional(),
-    imageUrl: z.string().optional(),
+    phoneNumber: z.string().nullable().optional(),
+    imageUrl: z.string().nullable().optional(),
     role: z.string().optional(),
 });
 

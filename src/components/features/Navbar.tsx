@@ -20,8 +20,14 @@ export default function Navbar() {
       <Link href="/" className="hover:text-primary transition-colors">{t('navbar_home', {}, "Home")}</Link>
       <Link href="/products" className="hover:text-primary transition-colors">{t('navbar_products', {}, "Products")}</Link>
 
-      {/* Chỉ hiển thị Giỏ hàng nếu người dùng đã đăng nhập */}
-      {user && <Link href="/cart" className="hover:text-primary transition-colors">{t('navbar_cart', {}, "Cart")}</Link>}
+      {/* Chỉ hiển thị Giỏ hàng, Profile và Orders nếu người dùng đã đăng nhập */}
+      {user && (
+        <>
+          <Link href="/cart" className="hover:text-primary transition-colors">{t('navbar_cart', {}, "Cart")}</Link>
+          {/* <Link href="/profile" className="hover:text-primary transition-colors">{t('navbar_profile', {}, "Profile")}</Link>
+          <Link href="/orders" className="hover:text-primary transition-colors">{t('navbar_orders', {}, "Orders")}</Link> */}
+        </>
+      )}
 
       {/* Chỉ hiển thị Dashboard nếu người dùng có vai trò là quản trị viên */}
       {user?.role === "admin" && (

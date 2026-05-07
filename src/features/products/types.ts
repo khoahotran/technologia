@@ -66,17 +66,17 @@ export interface Category {
  * Search Params for Products
  */
 export interface ProductSearchParams {
-    page?: number;
-    size?: number;
-    sortBy?: string;
-    sortDirection?: 'ASC' | 'DESC';
-    minPrice?: number;
-    maxPrice?: number;
-    keyword?: string;
-    minRating?: number;
-    maxRating?: number;
-    categoryId?: number | string;
-    brandId?: number | string;
+    page?: number | undefined;
+    size?: number | undefined;
+    sortBy?: string | undefined;
+    sortDirection?: 'ASC' | 'DESC' | undefined;
+    minPrice?: number | undefined;
+    maxPrice?: number | undefined;
+    keyword?: string | undefined;
+    minRating?: number | undefined;
+    maxRating?: number | undefined;
+    categoryId?: number | string | undefined;
+    brandId?: number | string | undefined;
 }
 
 export type ProductStatus = "ACTIVE" | "INACTIVE";

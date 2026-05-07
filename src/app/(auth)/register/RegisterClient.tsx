@@ -1,6 +1,6 @@
 "use client"
 
-import { Facebook, Youtube, Instagram, Linkedin } from "lucide-react"
+import { Eye, EyeOff, Facebook, Instagram, Linkedin, Youtube } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -8,8 +8,10 @@ import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { CONTACT_INFO } from "@/constants/contact"
 import { register } from "@/features/auth/api"
-import { useLanguage } from "@/providers/language.provider";
+import { useLanguage } from "@/providers/language.provider"
+import { toErrorMessage } from "@/utils/error-message"
 
 /**
  * Giao diện Đăng ký (Register Client View)
@@ -22,6 +24,8 @@ export default function RegisterClient() {
     const router = useRouter()
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState("")
+    const [showPassword, setShowPassword] = useState(false)
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false)
     const [formData, setFormData] = useState({
         username: "",
         password: "",
@@ -41,8 +45,20 @@ export default function RegisterClient() {
         setError("")
         setLoading(true)
 
+        if (formData.password.length < 8) {
+            setError(t('register_err_password_length', {}, "Password must be at least 8 characters"))
+            setLoading(false)
+            return
+        }
+
         if (formData.password !== formData.confirmPassword) {
             setError(t('register_err_password_match', {}, "Passwords do not match"))
+            setLoading(false)
+            return
+        }
+
+        if (!formData.phoneNumber.trim()) {
+            setError(t('register_err_phone_required', {}, "Phone number is required"))
             setLoading(false)
             return
         }
@@ -67,10 +83,31 @@ export default function RegisterClient() {
             }, 2000)
         } catch (err: unknown) {
             console.error(err)
-            const message = err instanceof Error ? err.message : 'Unknown error';
-            const errorMessage = message || t('register_err_failed', {}, "Registration failed");
+            let errorMessage = t('register_err_failed', {}, "Registration failed");
+
+            if (err instanceof Error) {
+                const message = err.message;
+                try {
+                    // Try to parse if it's a stringified JSON array from Zod
+                    if (message.startsWith('[') || message.startsWith('{')) {
+                        const parsed = JSON.parse(message);
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                            errorMessage = parsed[0].message || errorMessage;
+                        } else if (parsed.message) {
+                            errorMessage = parsed.message;
+                        } else {
+                            errorMessage = message;
+                        }
+                    } else {
+                        errorMessage = message;
+                    }
+                } catch {
+                    errorMessage = message;
+                }
+            }
+
             setError(errorMessage)
-            toast.error(errorMessage);
+            toast.error(toErrorMessage(err, t('register_err_failed', {}, "Registration failed")));
         }
 
         setLoading(false)
@@ -108,16 +145,40 @@ export default function RegisterClient() {
 
                     {/* Social Media Icons */}
                     <div className="flex justify-center gap-6 pt-8">
-                        <a href="#" aria-label="Facebook" className="bg-[#1877F2] p-3 rounded-lg hover:opacity-80 transition-opacity">
+                        <a
+                            href={CONTACT_INFO.socials.facebook}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="Facebook"
+                            className="bg-[#1877F2] p-3 rounded-lg hover:opacity-80 transition-opacity"
+                        >
                             <Facebook className="h-6 w-6" fill="white" />
                         </a>
-                        <a href="#" aria-label="Youtube" className="bg-[#FF0000] p-3 rounded-lg hover:opacity-80 transition-opacity">
+                        <a
+                            href={CONTACT_INFO.socials.youtube}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="Youtube"
+                            className="bg-[#FF0000] p-3 rounded-lg hover:opacity-80 transition-opacity"
+                        >
                             <Youtube className="h-6 w-6" fill="white" />
                         </a>
-                        <a href="#" aria-label="Instagram" className="bg-gradient-to-br from-[#833AB4] via-[#FD1D1D] to-[#F77737] p-3 rounded-lg hover:opacity-80 transition-opacity">
+                        <a
+                            href={CONTACT_INFO.socials.instagram}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="Instagram"
+                            className="bg-gradient-to-br from-[#833AB4] via-[#FD1D1D] to-[#F77737] p-3 rounded-lg hover:opacity-80 transition-opacity"
+                        >
                             <Instagram className="h-6 w-6" fill="white" />
                         </a>
-                        <a href="#" aria-label="Linkedin" className="bg-[#0A66C2] p-3 rounded-lg hover:opacity-80 transition-opacity">
+                        <a
+                            href={CONTACT_INFO.socials.linkedin}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="Linkedin"
+                            className="bg-[#0A66C2] p-3 rounded-lg hover:opacity-80 transition-opacity"
+                        >
                             <Linkedin className="h-6 w-6" fill="white" />
                         </a>
                     </div>
@@ -144,25 +205,45 @@ export default function RegisterClient() {
                             required
                         />
 
-                        <Input
-                            name="password"
-                            type="password"
-                            placeholder={t('register_password_placeholder', {}, "Password*")}
-                            className="h-12 bg-background border-gray-200"
-                            value={formData.password}
-                            onChange={handleChange}
-                            required
-                        />
+                        <div className="relative">
+                            <Input
+                                name="password"
+                                type={showPassword ? "text" : "password"}
+                                placeholder={t('register_password_placeholder', {}, "Password*")}
+                                className="h-12 bg-background border-gray-200 pr-12"
+                                value={formData.password}
+                                onChange={handleChange}
+                                required
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                aria-label={showPassword ? t('register_hide_password', {}, "Hide password") : t('register_show_password', {}, "Show password")}
+                            >
+                                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                            </button>
+                        </div>
 
-                        <Input
-                            name="confirmPassword"
-                            type="password"
-                            placeholder={t('register_confirm_password_placeholder', {}, "Confirm Password*")}
-                            className="h-12 bg-background border-gray-200"
-                            value={formData.confirmPassword}
-                            onChange={handleChange}
-                            required
-                        />
+                        <div className="relative">
+                            <Input
+                                name="confirmPassword"
+                                type={showConfirmPassword ? "text" : "password"}
+                                placeholder={t('register_confirm_password_placeholder', {}, "Confirm Password*")}
+                                className="h-12 bg-background border-gray-200 pr-12"
+                                value={formData.confirmPassword}
+                                onChange={handleChange}
+                                required
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                aria-label={showConfirmPassword ? t('register_hide_password', {}, "Hide password") : t('register_show_password', {}, "Show password")}
+                            >
+                                {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                            </button>
+                        </div>
 
                         <Input
                             name="email"

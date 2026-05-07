@@ -1,19 +1,33 @@
 "use client";
 
-import { ArrowLeft, ChevronDown } from "lucide-react";
+import { ArrowLeft, ChevronDown, Landmark, Wallet, Banknote } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { AppError } from "@/api/client";
+import { AddPaymentAccountDialog } from "@/components/features/checkout/AddPaymentAccountDialog";
 import { PaymentMethodList } from "@/components/features/checkout/PaymentMethodList";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { notifyPurchase } from "@/features/ai/api";
 import { useCart } from "@/features/cart/hooks";
-import { useAddresses, useDefaultPaymentAccounts } from "@/features/checkout/hooks";
+import {
+    useAddresses,
+    usePaymentAccounts,
+    useCreatePaymentAccount,
+    useSetDefaultPaymentAccount,
+} from "@/features/checkout/hooks";
 import type { Address } from "@/features/checkout/types";
 import {
     useCheckoutPreview,
@@ -21,6 +35,7 @@ import {
     useRecalculateCheckout,
 } from "@/features/orders/hooks";
 import { useLanguage } from "@/providers/language.provider";
+import { useAuthStore } from "@/store/auth.store";
 import { useOrderFlowStore } from "@/store/order-flow.store";
 import { toErrorMessage } from "@/utils/error-message";
 
@@ -34,13 +49,20 @@ export default function ShippingClient() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const selectedQuery = searchParams.get("items");
+    const voucherCodeParam = searchParams.get("voucherCode") || "";
     const addressId = searchParams.get("addressId");
 
     const [paymentMethod, setPaymentMethod] = useState<"COD" | "BANK_ACCOUNT" | "E_WALLET">("COD");
     const [paymentAccountId, setPaymentAccountId] = useState("");
+    const [showQRModal, setShowQRModal] = useState(false);
+    const [showAddPaymentDialog, setShowAddPaymentDialog] = useState(false);
     const { data: addresses = [] } = useAddresses();
-    const { data: paymentAccounts = [] } = useDefaultPaymentAccounts();
+    const { data: paymentAccounts = [], refetch: refetchPaymentAccounts } = usePaymentAccounts();
+    const createPaymentAccount = useCreatePaymentAccount();
+    const setDefaultPaymentAccount = useSetDefaultPaymentAccount();
     const { cart, isLoading, isError, error: cartError, refetch } = useCart();
+    const { session } = useAuthStore();
+    const customerId = session?.user.userId;
     const checkoutPreview = useCheckoutPreview();
     const recalculateCheckout = useRecalculateCheckout();
     const confirmCheckout = useConfirmCheckout();
@@ -141,6 +163,58 @@ export default function ShippingClient() {
         [paymentAccounts]
     );
 
+    const executeOrder = async () => {
+        try {
+            let sessionId = checkoutSessionId;
+
+            if (!sessionId) {
+                const preview = await checkoutPreview.mutateAsync({
+                    cartItemIds: selectedCartItems.map((item) => item.cartItemId),
+                    voucherCode: voucherCodeParam,
+                });
+                sessionId = preview.checkoutSessionId;
+                setCheckoutSessionId(sessionId);
+            }
+
+            await recalculateCheckout.mutateAsync({
+                checkoutSessionId: sessionId,
+                addressId: activeAddress!.addressId,
+                voucherCode: voucherCodeParam,
+            });
+
+            const sagaId = await confirmCheckout.mutateAsync({
+                checkoutSessionId: sessionId,
+                paymentMethod,
+                paymentAccountId: paymentMethod === "COD" ? undefined : paymentAccountId,
+            });
+
+            if (customerId) {
+                const uniqueVariants = new Map<string, number>();
+                for (const item of selectedCartItems) {
+                    const current = uniqueVariants.get(item.variantId) ?? 0;
+                    uniqueVariants.set(item.variantId, current + item.currentQuantity);
+                }
+
+                Promise.allSettled(
+                    Array.from(uniqueVariants.entries()).map(([variantId, amount]) =>
+                        notifyPurchase({
+                            customerId,
+                            variantId,
+                            amount,
+                        })
+                    )
+                );
+            }
+
+            clearCheckoutFlow();
+            router.push(`/order-processing?sagaId=${sagaId}&paymentMethod=${paymentMethod}`);
+
+        } catch (error) {
+            setCheckoutSessionId(null);
+            toast.error(toErrorMessage(error, t('unable_place_order', {}, "Unable to place order")));
+        }
+    };
+
     const handlePlaceOrder = async () => {
         if (!activeAddress) {
             toast.error(t('select_address_first', {}, "Please create/select a shipping address first"));
@@ -158,31 +232,12 @@ export default function ShippingClient() {
         setSelectedCartItemIds(selectedCartItems.map((item) => item.cartItemId));
         setSelectedAddressId(activeAddress.addressId);
 
-        try {
-            const preview = checkoutSessionId
-                ? await recalculateCheckout.mutateAsync({
-                      checkoutSessionId,
-                      addressId: activeAddress.addressId,
-                  })
-                : await checkoutPreview.mutateAsync({
-                      cartItemIds: selectedCartItems.map((item) => item.cartItemId),
-                  });
-
-            if (!checkoutSessionId) {
-                setCheckoutSessionId(preview.checkoutSessionId);
-            }
-
-            const confirmed = await confirmCheckout.mutateAsync({
-                checkoutSessionId: checkoutSessionId ?? preview.checkoutSessionId,
-                paymentMethod,
-                paymentAccountId: paymentMethod === "COD" ? undefined : paymentAccountId,
-            });
-
-            clearCheckoutFlow();
-            router.push(`/orders/${confirmed.orderId}`);
-        } catch (error) {
-            toast.error(toErrorMessage(error, "Unable to place order"));
+        if (paymentMethod !== "COD") {
+            setShowQRModal(true);
+            return;
         }
+
+        await executeOrder();
     };
 
     if (isLoading) {
@@ -240,6 +295,8 @@ export default function ShippingClient() {
                                 setPaymentMethod("BANK_ACCOUNT");
                                 setPaymentAccountId(id);
                             }}
+                            onSetDefault={(id) => setDefaultPaymentAccount.mutate(id)}
+                            onAddNew={() => setShowAddPaymentDialog(true)}
                         />
                         <PaymentMethodList
                             type="wallet"
@@ -248,6 +305,8 @@ export default function ShippingClient() {
                                 setPaymentMethod("E_WALLET");
                                 setPaymentAccountId(id);
                             }}
+                            onSetDefault={(id) => setDefaultPaymentAccount.mutate(id)}
+                            onAddNew={() => setShowAddPaymentDialog(true)}
                         />
                         {unsupportedPaymentAccountTypes.length > 0 && (
                             <div className="bg-white p-4 rounded-xl border border-gray-100 text-sm text-gray-600">
@@ -327,7 +386,7 @@ export default function ShippingClient() {
                         </div>
 
                         <div className="bg-card p-5 sm:p-6 rounded-lg border border-border">
-                            <h2 className="font-bold text-gray-900 mb-4">{t('payment', {}, "Payment")}</h2>
+                            <h2 className="font-bold text-gray-900 mb-4">{t('payment', {}, "Payment Method")}</h2>
 
                             <RadioGroup
                                 value={paymentMethod}
@@ -344,32 +403,60 @@ export default function ShippingClient() {
                                     }
                                     setPaymentAccountId(walletAccounts[0]?.id ?? "");
                                 }}
-                                className="space-y-4"
+                                className="grid gap-3"
                             >
-                                <div className="flex items-start space-x-3">
-                                    <RadioGroupItem value="BANK_ACCOUNT" id="bank" className="mt-1" />
-                                    <div className="flex-1">
-                                        <Label htmlFor="bank" className="font-medium text-gray-900 cursor-pointer">
-                                            {t('direct_bank_transfer', {}, "Direct bank transfer")}
-                                        </Label>
-                                    </div>
+                                <div 
+                                    className={`relative flex items-center gap-3 p-3.5 rounded-lg border transition-all cursor-pointer ${
+                                        paymentMethod === "BANK_ACCOUNT" 
+                                        ? "border-primary bg-primary/5" 
+                                        : "border-border hover:border-primary/30"
+                                    }`}
+                                    onClick={() => {
+                                        setPaymentMethod("BANK_ACCOUNT");
+                                        setPaymentAccountId(bankAccounts[0]?.id ?? "");
+                                    }}
+                                >
+                                    <RadioGroupItem value="BANK_ACCOUNT" id="bank" />
+                                    <Landmark className={`h-5 w-5 ${paymentMethod === "BANK_ACCOUNT" ? "text-primary" : "text-muted-foreground"}`} />
+                                    <Label htmlFor="bank" className="font-medium text-gray-900 cursor-pointer flex-1">
+                                        {t('direct_bank_transfer', {}, "Direct bank transfer")}
+                                    </Label>
                                 </div>
-                                <div className="flex items-start space-x-3">
-                                    <RadioGroupItem value="E_WALLET" id="wallet" className="mt-1" />
-                                    <div className="flex-1">
-                                        <Label htmlFor="wallet" className="font-medium text-gray-900 cursor-pointer">
-                                            {t('e_wallet', {}, "E-wallet")}
-                                        </Label>
-                                    </div>
+
+                                <div 
+                                    className={`relative flex items-center gap-3 p-3.5 rounded-lg border transition-all cursor-pointer ${
+                                        paymentMethod === "E_WALLET" 
+                                        ? "border-primary bg-primary/5" 
+                                        : "border-border hover:border-primary/30"
+                                    }`}
+                                    onClick={() => {
+                                        setPaymentMethod("E_WALLET");
+                                        setPaymentAccountId(walletAccounts[0]?.id ?? "");
+                                    }}
+                                >
+                                    <RadioGroupItem value="E_WALLET" id="wallet" />
+                                    <Wallet className={`h-5 w-5 ${paymentMethod === "E_WALLET" ? "text-primary" : "text-muted-foreground"}`} />
+                                    <Label htmlFor="wallet" className="font-medium text-gray-900 cursor-pointer flex-1">
+                                        {t('e_wallet', {}, "E-wallet")}
+                                    </Label>
                                 </div>
-                                <div className="flex items-start space-x-3">
-                                    <RadioGroupItem value="COD" id="cod" className="mt-1" />
-                                    <div className="flex-1">
-                                        <Label htmlFor="cod" className="font-medium text-gray-900 cursor-pointer flex items-center gap-2 min-h-10">
-                                            <Checkbox checked={paymentMethod === "COD"} className="pointer-events-none" />
-                                            {t('cash_on_delivery', {}, "Cash on delivery")}
-                                        </Label>
-                                    </div>
+
+                                <div 
+                                    className={`relative flex items-center gap-3 p-3.5 rounded-lg border transition-all cursor-pointer ${
+                                        paymentMethod === "COD" 
+                                        ? "border-primary bg-primary/5" 
+                                        : "border-border hover:border-primary/30"
+                                    }`}
+                                    onClick={() => {
+                                        setPaymentMethod("COD");
+                                        setPaymentAccountId("");
+                                    }}
+                                >
+                                    <RadioGroupItem value="COD" id="cod" />
+                                    <Banknote className={`h-5 w-5 ${paymentMethod === "COD" ? "text-primary" : "text-muted-foreground"}`} />
+                                    <Label htmlFor="cod" className="font-medium text-gray-900 cursor-pointer flex-1">
+                                        {t('cash_on_delivery', {}, "Cash on delivery")}
+                                    </Label>
                                 </div>
                             </RadioGroup>
                         </div>
@@ -387,6 +474,60 @@ export default function ShippingClient() {
                     </div>
                 </div>
             </div>
+
+            <Dialog open={showQRModal} onOpenChange={setShowQRModal}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>{t('payment_qr_title', {}, "Scan QR to Pay")}</DialogTitle>
+                        <DialogDescription>
+                            {t('payment_qr_description', {}, "Please scan the QR code below to complete your payment.")}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex flex-col items-center justify-center space-y-4 py-6">
+                        <div className="bg-white p-4 rounded-xl border-2 border-primary/20 shadow-sm">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img 
+                                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PAYMENT_FOR_ORDER_${total}`} 
+                                alt="Payment QR Code"
+                                className="w-48 h-48"
+                            />
+                        </div>
+                        <div className="text-center space-y-1">
+                            <p className="text-sm text-muted-foreground">{t('amount_to_pay', {}, "Amount to pay:")}</p>
+                            <p className="text-2xl font-bold text-primary">
+                                {t('price_vnd', { price: new Intl.NumberFormat(currentLocale).format(total) }, `${new Intl.NumberFormat(currentLocale).format(total)} VND`)}
+                            </p>
+                        </div>
+                    </div>
+                    <DialogFooter className="sm:justify-center">
+                        <Button
+                            type="button"
+                            className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold"
+                            onClick={async () => {
+                                setShowQRModal(false);
+                                await executeOrder();
+                            }}
+                            disabled={checkoutPreview.isPending || recalculateCheckout.isPending || confirmCheckout.isPending}
+                        >
+                            {t('i_have_paid', {}, "I have paid successfully")}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <AddPaymentAccountDialog
+                open={showAddPaymentDialog}
+                onOpenChange={setShowAddPaymentDialog}
+                onConfirm={(data) => {
+                    createPaymentAccount.mutate(data, {
+                        onSuccess: () => {
+                            setShowAddPaymentDialog(false);
+                            refetchPaymentAccounts();
+                        },
+                    });
+                }}
+                isPending={createPaymentAccount.isPending}
+            />
         </div>
     );
 }

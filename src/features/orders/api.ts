@@ -105,9 +105,14 @@ export async function recalculateCheckout(
     return CheckoutRecalculateResponseSchema.parse(response.data);
 }
 
-export async function confirmCheckout(input: ConfirmCheckoutRequest): Promise<{ orderId: string }> {
-    const response = await post<ApiResponse<string>>("/api/checkout/confirm", input);
-    return { orderId: response.data };
+export async function confirmCheckout(input: ConfirmCheckoutRequest): Promise<string> {
+    const response = await post<ApiResponse<{ sagaId: string }>>("/api/checkout/confirm", input);
+    return response.data.sagaId;
+}
+
+export async function getOrderIdBySagaId(sagaId: string): Promise<string | null> {
+    const response = await get<ApiResponse<{ orderId: string }>>(`/api/sagas/get-order/${sagaId}`);
+    return response.data?.orderId || null;
 }
 
 export async function getDeliveryLogs(orderId: string): Promise<DeliveryLog[]> {
@@ -120,6 +125,23 @@ export async function updateOrderStatus(orderId: string, deliveryStatus: AdminUp
     await patch(`/api/orders/admin/${orderId}/status`, {
         newStatus: nextStatus,
     });
+}
+
+export async function createPayment(orderId: string, sagaId: string, paymentMethod: string): Promise<string> {
+    const response = await post<ApiResponse<{ paymentId: string }>>("/api/payments", {
+        orderId,
+        sagaId,
+        paymentMethod,
+    });
+    return response.data.paymentId;
+}
+
+export async function simulatePayment(orderId: string, paymentId: string): Promise<void> {
+    await post("/api/payments/simulate", { orderId, paymentId });
+}
+
+export async function cancelPayment(orderId: string, paymentId: string): Promise<void> {
+    await post("/api/payments/simulate/cancel", { orderId, paymentId });
 }
 
 export async function submitOrderFeedback(payload: SubmitFeedbackRequest): Promise<Order> {

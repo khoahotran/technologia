@@ -1,7 +1,7 @@
 "use client";
 
 import { Bell, CirclePlus, Search, SlidersHorizontal, Star, X } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { Checkbox } from "@/components/ui/checkbox";
@@ -17,6 +17,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
     useAddProductVariantAdmin,
+    useAddVariantImageAdmin,
     useApplyProductsToDiscountAdmin,
     useBrands,
     useCategories,
@@ -86,7 +87,7 @@ function ProductTile({
     menuOpen: boolean;
     onToggle: () => void;
     onToggleMenu: () => void;
-    onAction: (action: "view" | "edit" | "remove" | "apply") => void;
+    onAction: (action: "view" | "edit" | "remove" | "apply" | "upload") => void;
 }) {
     const { t } = useLanguage();
     return (
@@ -160,6 +161,13 @@ function ProductTile({
                     >
                         {t("admin_action_apply", {}, "Apply")}
                     </button>
+                    <button
+                        type="button"
+                        className="w-full text-left px-4 py-2 text-xl hover:bg-[#EDF4F8]"
+                        onClick={() => onAction("upload")}
+                    >
+                        {t("admin_action_upload_image", {}, "Upload image")}
+                    </button>
                 </div>
             )}
         </article>
@@ -177,11 +185,14 @@ export default function AdminProductsClient() {
     const [sortBy, setSortBy] = useState<string>("displayPrice");
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
     const [menuOpenFor, setMenuOpenFor] = useState<string | null>(null);
+    const [uploadTarget, setUploadTarget] = useState<{ productId: string; variantId: string } | null>(null);
+    const uploadInputRef = useRef<HTMLInputElement | null>(null);
 
     const createProductMutation = useCreateProductAdmin();
     const updateProductMutation = useUpdateProductAdmin();
     const deleteProductMutation = useDeleteProductAdmin();
     const addVariantMutation = useAddProductVariantAdmin();
+    const addVariantImageMutation = useAddVariantImageAdmin();
     const applyDiscountMutation = useApplyProductsToDiscountAdmin();
 
     const { data: categories = [] } = useCategories();
@@ -225,6 +236,7 @@ export default function AdminProductsClient() {
         updateProductMutation.isPending ||
         deleteProductMutation.isPending ||
         addVariantMutation.isPending ||
+        addVariantImageMutation.isPending ||
         applyDiscountMutation.isPending;
 
     const toggleProduct = (id: string) => {
@@ -294,7 +306,7 @@ export default function AdminProductsClient() {
         });
     };
 
-    const handleAction = (action: "view" | "edit" | "remove" | "apply", productId: string) => {
+    const handleAction = (action: "view" | "edit" | "remove" | "apply" | "upload", productId: string) => {
         setMenuOpenFor(null);
         const selectedProduct = products.find((item) => String(item.productId) === productId);
 
@@ -340,6 +352,17 @@ export default function AdminProductsClient() {
             return;
         }
 
+        if (action === "upload") {
+            const firstVariant = selectedProduct.variants?.find((variant) => Boolean(variant.variantId));
+            if (!firstVariant?.variantId) {
+                toast.error(t("admin_variant_missing_for_upload", {}, "No variant available for image upload"));
+                return;
+            }
+            setUploadTarget({ productId, variantId: firstVariant.variantId });
+            uploadInputRef.current?.click();
+            return;
+        }
+
         const nextName = askValue(t("admin_product_name", {}, "Product name"), selectedProduct.name);
         if (!nextName) return;
         const nextDescription = askValue(
@@ -381,6 +404,22 @@ export default function AdminProductsClient() {
 
     return (
         <div className="container mx-auto px-4 py-10 space-y-8">
+            <input
+                ref={uploadInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    if (!file || !uploadTarget) return;
+                    addVariantImageMutation.mutate({
+                        productId: uploadTarget.productId,
+                        variantId: uploadTarget.variantId,
+                        image: file,
+                    });
+                    event.currentTarget.value = "";
+                }}
+            />
             <div className="max-w-[760px] mx-auto relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-7 w-7 text-[#1E1E1E]" />
                 <Input

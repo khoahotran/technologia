@@ -14,7 +14,7 @@ export default function ResetPasswordClient() {
     const { t } = useLanguage()
     const router = useRouter()
     const searchParams = useSearchParams()
-    const token = searchParams.get("token")
+    const resetToken = searchParams.get("resetToken") ?? searchParams.get("token")
 
     const [password, setPassword] = useState("")
     const [confirmPassword, setConfirmPassword] = useState("")
@@ -26,7 +26,7 @@ export default function ResetPasswordClient() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
-        if (!token) {
+        if (!resetToken) {
             setError(t('invalid_reset_token', {}, "Invalid or missing reset token."))
             return
         }
@@ -46,7 +46,7 @@ export default function ResetPasswordClient() {
 
         try {
             await resetPassword({
-                resetToken: token,
+                resetToken,
                 newPassword: password
             });
             setSuccess(true);
@@ -54,7 +54,6 @@ export default function ResetPasswordClient() {
                 router.push("/login");
             }, 3000);
         } catch (err: unknown) {
-            console.error(err);
             const message = err instanceof Error ? err.message : 'Unknown error';
             setError(message || t('failed_reset_password', {}, "Failed to reset password. Please try again."));
         }
@@ -62,7 +61,7 @@ export default function ResetPasswordClient() {
         setLoading(false)
     }
 
-    if (!token) {
+    if (!resetToken) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
                 <div className="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 text-center space-y-6">

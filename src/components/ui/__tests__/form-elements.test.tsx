@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { render, screen, fireEvent } from '@testing-library/react'
 import { vi, describe, it, expect } from 'vitest'
 
@@ -11,14 +12,20 @@ vi.mock('@/utils/cn', () => ({
 
 vi.mock('@radix-ui/react-checkbox', () => ({
     Root: ({ children, checked, onCheckedChange, disabled, ...props }: any) => (
-        <input
-            type="checkbox"
-            data-slot="checkbox"
-            checked={checked}
-            onChange={(e) => onCheckedChange?.(e.target.checked)}
-            disabled={disabled}
+        <button
             {...props}
-        />
+            role="checkbox"
+            aria-checked={checked}
+            data-slot="checkbox"
+            onClick={(e) => {
+                onCheckedChange?.(!checked)
+                props.onChange?.(e)
+                props.onClick?.(e)
+            }}
+            disabled={disabled}
+        >
+            {children}
+        </button>
     ),
     Indicator: ({ children }: any) => <span data-slot="checkbox-indicator">{children}</span>,
 }))
@@ -129,12 +136,12 @@ describe('Form Elements Integration Tests', () => {
 
         it('should render checked checkbox', () => {
             render(<Checkbox checked />)
-            expect(screen.getByRole('checkbox')).toHaveProperty('checked', true)
+            expect(screen.getByRole('checkbox')).toHaveAttribute('aria-checked', 'true')
         })
 
         it('should render unchecked checkbox', () => {
             render(<Checkbox checked={false} />)
-            expect(screen.getByRole('checkbox')).toHaveProperty('checked', false)
+            expect(screen.getByRole('checkbox')).toHaveAttribute('aria-checked', 'false')
         })
 
         it('should render disabled checkbox', () => {

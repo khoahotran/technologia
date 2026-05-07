@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-require-imports, react/display-name */
 import { render, screen, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 
@@ -51,9 +52,10 @@ vi.mock('@/components/ui/input', () => {
     }
 })
 
+const mockT = (key: string, _params?: object, fallback?: string) => fallback || key;
 vi.mock('@/providers/language.provider', () => ({
     useLanguage: () => ({
-        t: (key: string, _params?: object, fallback?: string) => fallback || key,
+        t: mockT,
         locale: 'vi',
     }),
 }))
@@ -73,14 +75,14 @@ describe('Chatbot Component', () => {
 
     it('should render initial minimized button state', () => {
         render(<Chatbot />)
-        const button = screen.getByRole('button', { name: /Open chat/i })
+        const button = screen.getByRole('button', { name: /Mở chat/i })
         expect(button).toBeInTheDocument()
     })
 
     it('should open chat window when toggle button is clicked', () => {
         render(<Chatbot />)
         
-        const toggleButton = screen.getByRole('button', { name: /Open chat/i })
+        const toggleButton = screen.getByRole('button', { name: /Mở chat/i })
         fireEvent.click(toggleButton)
         
         expect(screen.getByTestId('card')).toBeInTheDocument()
@@ -89,7 +91,7 @@ describe('Chatbot Component', () => {
     it('should render chatbot title in header', () => {
         render(<Chatbot />)
         
-        const openButton = screen.getByRole('button', { name: /Open chat/i })
+        const openButton = screen.getByRole('button', { name: /Mở chat/i })
         fireEvent.click(openButton)
         
         expect(screen.getByText('Lạc Lạc')).toBeInTheDocument()
@@ -98,16 +100,16 @@ describe('Chatbot Component', () => {
     it('should render welcome message', () => {
         render(<Chatbot />)
         
-        const openButton = screen.getByRole('button', { name: /Open chat/i })
+        const openButton = screen.getByRole('button', { name: /Mở chat/i })
         fireEvent.click(openButton)
         
-        expect(screen.getByText(/Xin chào/)).toBeInTheDocument()
+        expect(screen.getByText(/Chào bạn/)).toBeInTheDocument()
     })
 
     it('should update input value when typing', () => {
         render(<Chatbot />)
         
-        const openButton = screen.getByRole('button', { name: /Open chat/i })
+        const openButton = screen.getByRole('button', { name: /Mở chat/i })
         fireEvent.click(openButton)
         
         const input = screen.getByTestId('input')
@@ -119,22 +121,22 @@ describe('Chatbot Component', () => {
     it('should render quick prompt buttons when messages <= 2', () => {
         render(<Chatbot />)
         
-        const openButton = screen.getByRole('button', { name: /Open chat/i })
+        const openButton = screen.getByRole('button', { name: /Mở chat/i })
         fireEvent.click(openButton)
         
-        expect(screen.getByText('Where is my order?')).toBeInTheDocument()
+        expect(screen.getByText('Đơn hàng của tôi ở đâu?')).toBeInTheDocument()
     })
 
     it('should close chat window', () => {
         render(<Chatbot />)
         
-        const openButton = screen.getByRole('button', { name: /Open chat/i })
+        const openButton = screen.getByRole('button', { name: /Mở chat/i })
         fireEvent.click(openButton)
         
         const card = screen.getByTestId('card')
         expect(card).toBeInTheDocument()
         
-        const closeButton = screen.getByRole('button', { name: /Close chat/i })
+        const closeButton = screen.getByRole('button', { name: /Đóng chat/i })
         fireEvent.click(closeButton)
     })
 })

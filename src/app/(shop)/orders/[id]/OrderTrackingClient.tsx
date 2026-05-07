@@ -9,8 +9,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useDeliveryLogs, useOrder } from "@/features/orders/hooks";
-import { canGiveFeedback, formatCurrencyVnd, formatOrderStatusLabel, formatPaymentMethodLabel } from "@/features/orders/presentation";
-import { DeliveryStatusSchema } from "@/features/orders/types";
+import { canGiveFeedback, formatCurrencyVnd, formatDeliveryLogStatusLabel, formatOrderStatusLabel, formatPaymentMethodLabel } from "@/features/orders/presentation";
 import { useLanguage } from "@/providers/language.provider";
 import { useOrderFlowStore } from "@/store/order-flow.store";
 import { toErrorMessage } from "@/utils/error-message";
@@ -30,14 +29,6 @@ function toDisplayItemQuantity(item: unknown) {
         return item.quantity;
     }
     return 1;
-}
-
-function formatTimelineStatusLabel(status: string, t: ReturnType<typeof useLanguage>["t"]) {
-    const parsedStatus = DeliveryStatusSchema.safeParse(status);
-    if (parsedStatus.success) {
-        return formatOrderStatusLabel(parsedStatus.data, t);
-    }
-    return status;
 }
 
 export default function OrderTrackingClient({ id }: { id: string }) {
@@ -186,7 +177,7 @@ export default function OrderTrackingClient({ id }: { id: string }) {
                                     </div>
                                     <div>
                                         <p className="font-semibold text-[#1E1E1E]">
-                                            {formatTimelineStatusLabel(item.status, t)}
+                                            {formatDeliveryLogStatusLabel(item.status, t)}
                                         </p>
                                         {item.message ? <p className="text-sm text-[#556070] mt-1">{item.message}</p> : null}
                                     </div>

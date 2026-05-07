@@ -16,8 +16,20 @@ import type {
 import { del, get, patch, post, put } from "@/api/client";
 import type { ApiResponse, PaginatedResponse } from "@/types/api.types";
 
+function sanitizeParams(params: Record<string, unknown>): Record<string, unknown> {
+    const clean: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(params)) {
+        if (value !== undefined && value !== null && value !== "") {
+            clean[key] = value;
+        }
+    }
+    return clean;
+}
+
 export async function getProducts(params: ProductSearchParams = {}): Promise<ProductListResponse> {
-    const response = await get<PaginatedResponse<Product>>("/api/products/search-filter", { params });
+    const response = await get<PaginatedResponse<Product>>("/api/products/search-filter", {
+        params: sanitizeParams(params as Record<string, unknown>),
+    });
 
     return {
         items: response.data || [],
