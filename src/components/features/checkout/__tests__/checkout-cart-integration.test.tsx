@@ -146,7 +146,7 @@ describe('Cart Store Integration with Checkout Flow', () => {
 })
 
 describe('Router Navigation for Checkout', () => {
-    let mockRouter: { push: ReturnType<typeof vi.fn> }
+    let mockRouter: { push: (url: string) => void }
 
     beforeEach(() => {
         mockRouter = { push: vi.fn() }
@@ -154,7 +154,7 @@ describe('Router Navigation for Checkout', () => {
     })
 
     afterEach(() => {
-        mockRouter.push.mockClear()
+        vi.mocked(mockRouter.push).mockClear()
     })
 
     it('should redirect to orders page after successful checkout', () => {

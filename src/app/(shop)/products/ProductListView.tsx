@@ -7,10 +7,10 @@
  * quan ly trang thai (state) cho bo loc, phan trang, va goi cac custom hooks 
  * de tuong tac voi Backend (Lay danh sach san pham, danh muc, thuong hieu, them vao gio...).
  */
-import { Loader2, Flame, Trophy, Music, Tag, Smartphone } from "lucide-react";
+import { Loader2, Flame, Music, Tag, Smartphone } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, startTransition } from "react";
 import { toast } from "sonner";
 
 import { FilterBar } from "@/components/features/product/FilterBar";
@@ -55,7 +55,10 @@ export function ProductListView() {
 
     const pageSize = 12;
 
-    const [activeCategory, setActiveCategory] = useState<number | string | undefined>(undefined);
+    const categoryIdParam = searchParams.get('categoryId');
+    const [activeCategory, setActiveCategory] = useState<number | string | undefined>(
+        categoryIdParam ? Number(categoryIdParam) : undefined
+    );
     const [activeBrand, setActiveBrand] = useState<number | string | undefined>(undefined);
     const [activeTab, setActiveTab] = useState<string>('all'); // 'all', 'hot', 'best', 'new'
     const { addToCart } = useCart();
@@ -84,7 +87,13 @@ export function ProductListView() {
     if (activeTab === 'new') {
         sortBy = "created_at";
         sortDirection = "DESC";
-    }
+    } else if (activeTab === 'hot') {
+        sortBy = "average_rating";
+        sortDirection = "DESC";
+    } /* else if (activeTab === 'best') {
+        sortBy = "total_stock";
+        sortDirection = "DESC";
+    } */
 
     // Fetch Data
     const { data: categories } = useCategories();
@@ -114,6 +123,13 @@ export function ProductListView() {
     const products = productData?.items ?? [];
     const totalPages = productData?.totalPages ?? 0;
     const isLoading = isLoadingProducts;
+
+    // Sync activeCategory from URL param
+    useEffect(() => {
+        startTransition(() => {
+            setActiveCategory(categoryIdParam ? Number(categoryIdParam) : undefined);
+        });
+    }, [categoryIdParam]);
 
     // Reset page when filters change
     useEffect(() => {
@@ -204,10 +220,10 @@ export function ProductListView() {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
                     {/* Sidebar */}
                     <div className="lg:col-span-2 space-y-8">
-                        <div className="space-y-4">
+                        <div className="flex lg:flex-col overflow-x-auto lg:overflow-x-visible pb-2 lg:pb-0 gap-2 lg:space-y-4 scrollbar-hide shrink-0">
                             <Button
                                 variant="ghost"
-                                className={`w-full justify-start gap-3 h-12 rounded-xl text-md font-semibold ${
+                                className={`w-full lg:w-full justify-start gap-3 h-12 rounded-xl text-md font-semibold shrink-0 lg:shrink ${
                                     activeTab === "all"
                                         ? "bg-accent text-primary"
                                         : "bg-transparent text-muted-foreground hover:text-foreground"
@@ -218,7 +234,7 @@ export function ProductListView() {
                             </Button>
                             <Button
                                 variant="ghost"
-                                className={`w-full justify-start gap-3 h-12 rounded-xl text-md font-semibold ${
+                                className={`w-full lg:w-full justify-start gap-3 h-12 rounded-xl text-md font-semibold shrink-0 lg:shrink ${
                                     activeTab === "hot"
                                         ? "bg-accent text-primary"
                                         : "bg-transparent text-muted-foreground hover:text-foreground"
@@ -227,9 +243,10 @@ export function ProductListView() {
                             >
                                 <Flame className="w-5 h-5" /> {t('hot_sales', {}, "Hot sales")}
                             </Button>
+                            {/* 
                             <Button
                                 variant="ghost"
-                                className={`w-full justify-start gap-3 h-12 rounded-xl text-md font-semibold ${
+                                className={`w-full lg:w-full justify-start gap-3 h-12 rounded-xl text-md font-semibold shrink-0 lg:shrink ${
                                     activeTab === "best"
                                         ? "bg-accent text-primary"
                                         : "bg-transparent text-muted-foreground hover:text-foreground"
@@ -238,9 +255,10 @@ export function ProductListView() {
                             >
                                 <Trophy className="w-5 h-5" /> {t('best_seller', {}, "Best Seller")}
                             </Button>
+                            */}
                             <Button
                                 variant="ghost"
-                                className={`w-full justify-start gap-3 h-12 rounded-xl text-md font-semibold ${
+                                className={`w-full lg:w-full justify-start gap-3 h-12 rounded-xl text-md font-semibold shrink-0 lg:shrink ${
                                     activeTab === "new"
                                         ? "bg-accent text-primary"
                                         : "bg-transparent text-muted-foreground hover:text-foreground"
@@ -343,7 +361,7 @@ export function ProductListView() {
                     {/* Main Content */}
                     <div className="lg:col-span-10 space-y-6">
                         <FilterBar />
-                        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                        <div className="grid gap-4 md:gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4">
                             {products?.map((product) => (
                                 <ProductCard
                                     key={product.productId}

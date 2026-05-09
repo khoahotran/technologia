@@ -1,7 +1,7 @@
-import { render, screen, fireEvent } from '@testing-library/react'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { fireEvent, render, screen } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { CartItem } from '../CartItem'
+import { CartItem } from '../CartItem';
 
 vi.mock('@/components/features/product/QuantitySelector', () => ({
     QuantitySelector: ({ value, onChange }: { value: number; onChange: (val: number) => void }) => (
@@ -31,7 +31,7 @@ vi.mock('@/components/ui/input', () => ({
 }))
 
 vi.mock('@/components/ui/button', () => ({
-    Button: ({ children, onClick, ...props }: any) => (
+    Button: ({ children, onClick, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
         <button onClick={onClick} {...props} data-testid="button">
             {children}
         </button>
@@ -67,7 +67,7 @@ describe('CartItem Component', () => {
 
     it('should render product information correctly', () => {
         render(<CartItem {...mockProps} />)
-        
+
         expect(screen.getByText('iPhone 15 Pro')).toBeInTheDocument()
         expect(screen.getByText(/25.000.000/)).toBeInTheDocument()
         expect(screen.getByAltText('iPhone 15 Pro')).toBeInTheDocument()
@@ -80,42 +80,42 @@ describe('CartItem Component', () => {
 
     it('should call onQuantityChange when quantity increases', () => {
         render(<CartItem {...mockProps} />)
-        
+
         const increaseBtn = screen.getByTestId('qty-increase')
         fireEvent.click(increaseBtn)
-        
+
         expect(mockProps.onQuantityChange).toHaveBeenCalledWith(3)
     })
 
     it('should call onQuantityChange when quantity decreases', () => {
         render(<CartItem {...mockProps} />)
-        
+
         const decreaseBtn = screen.getByTestId('qty-decrease')
         fireEvent.click(decreaseBtn)
-        
+
         expect(mockProps.onQuantityChange).toHaveBeenCalledWith(1)
     })
 
     it('should call onRemove when remove button is clicked', () => {
         render(<CartItem {...mockProps} />)
-        
+
         const removeBtn = screen.getByTestId('button')
         fireEvent.click(removeBtn)
-        
+
         expect(mockProps.onRemove).toHaveBeenCalledTimes(1)
     })
 
     it('should call onToggle when checkbox is clicked', () => {
         render(<CartItem {...mockProps} />)
-        
+
         const checkbox = screen.getByTestId('checkbox')
         fireEvent.click(checkbox)
-        
+
         expect(mockProps.onToggle).toHaveBeenCalledWith(false)
     })
 
     it('should render with default product code when not provided', () => {
-        render(<CartItem {...mockProps} productCode={undefined} />)
+        render(<CartItem {...mockProps} productCode='' />)
         expect(screen.getByText('PRODUCT CODE')).toBeInTheDocument()
     })
 })

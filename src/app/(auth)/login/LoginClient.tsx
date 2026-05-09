@@ -1,15 +1,15 @@
 "use client"
 
-import { GoogleLogin, type CredentialResponse, GoogleOAuthProvider } from "@react-oauth/google"
-import { Facebook, Youtube, Instagram, Linkedin, Eye, EyeOff } from "lucide-react"
+import { GoogleLogin, GoogleOAuthProvider, type CredentialResponse } from "@react-oauth/google"
+import { Eye, EyeOff, Facebook, Instagram, Linkedin, Youtube } from "lucide-react"
 import Link from "next/link"
 import { useMemo, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { CONTACT_INFO } from "@/constants/contact"
-import { useLogin, useGoogleLogin } from "@/features/auth/hooks"
-import { useLanguage } from "@/providers/language.provider";
+import { useGoogleLogin, useLogin } from "@/features/auth/hooks"
+import { useLanguage } from "@/providers/language.provider"
 
 export default function LoginClient() {
     const { t } = useLanguage()
@@ -159,6 +159,12 @@ export default function LoginClient() {
                                     {t('login_sign_up', {}, "Sign Up")}
                                 </Link>
                             </div>
+
+                            <div className="text-center text-sm text-gray-600">
+                                <Link href="/" className="text-gray-400 hover:text-gray-600">
+                                    {t('register_home_link', {}, "Home")} &rarr;
+                                </Link>
+                            </div>
                         </form>
                     </div>
                 </div>
@@ -190,38 +196,38 @@ export default function LoginClient() {
                         </p>
 
                         <div className="flex justify-center gap-6 pt-8">
-                            <a 
-                                href={CONTACT_INFO.socials.facebook} 
-                                target="_blank" 
+                            <a
+                                href={CONTACT_INFO.socials.facebook}
+                                target="_blank"
                                 rel="noopener noreferrer"
-                                aria-label="Facebook" 
+                                aria-label="Facebook"
                                 className="bg-[#1877F2] p-3 rounded-lg hover:opacity-80 transition-opacity"
                             >
                                 <Facebook className="h-6 w-6" fill="white" />
                             </a>
-                            <a 
-                                href={CONTACT_INFO.socials.youtube} 
-                                target="_blank" 
+                            <a
+                                href={CONTACT_INFO.socials.youtube}
+                                target="_blank"
                                 rel="noopener noreferrer"
-                                aria-label="Youtube" 
+                                aria-label="Youtube"
                                 className="bg-[#FF0000] p-3 rounded-lg hover:opacity-80 transition-opacity"
                             >
                                 <Youtube className="h-6 w-6" fill="white" />
                             </a>
-                            <a 
-                                href={CONTACT_INFO.socials.instagram} 
-                                target="_blank" 
+                            <a
+                                href={CONTACT_INFO.socials.instagram}
+                                target="_blank"
                                 rel="noopener noreferrer"
-                                aria-label="Instagram" 
+                                aria-label="Instagram"
                                 className="bg-gradient-to-br from-[#833AB4] via-[#FD1D1D] to-[#F77737] p-3 rounded-lg hover:opacity-80 transition-opacity"
                             >
                                 <Instagram className="h-6 w-6" fill="white" />
                             </a>
-                            <a 
-                                href={CONTACT_INFO.socials.linkedin} 
-                                target="_blank" 
+                            <a
+                                href={CONTACT_INFO.socials.linkedin}
+                                target="_blank"
                                 rel="noopener noreferrer"
-                                aria-label="Linkedin" 
+                                aria-label="Linkedin"
                                 className="bg-[#0A66C2] p-3 rounded-lg hover:opacity-80 transition-opacity"
                             >
                                 <Linkedin className="h-6 w-6" fill="white" />

@@ -1,4 +1,4 @@
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { useAuthStore } from '@/features/auth/store'
 import type { AuthSession } from '@/features/auth/types'
@@ -17,10 +17,9 @@ const mockSession: AuthSession = {
     refreshToken: 'mock-refresh-token-456',
     user: {
         userId: 'user-1',
+        username: 'testuser',
         email: 'test@example.com',
-        firstName: 'John',
-        lastName: 'Doe',
-        avatar: 'https://example.com/avatar.jpg',
+        role: 'CUSTOMER',
     },
 }
 
@@ -48,8 +47,8 @@ describe('Auth Store', () => {
 
             const session = useAuthStore.getState().session
             expect(session?.user?.userId).toBe('user-1')
-            expect(session?.user?.firstName).toBe('John')
-            expect(session?.user?.lastName).toBe('Doe')
+            expect(session?.user?.username).toBe('testuser')
+            expect(session?.user?.role).toBe('CUSTOMER')
         })
     })
 

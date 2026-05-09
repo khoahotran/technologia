@@ -1,9 +1,6 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import { productKeys } from "@/constants/query-keys";
-import { useLanguage } from "@/providers/language.provider";
-import { toErrorMessage } from "@/utils/error-message";
 import {
     addProductVariantAdmin,
     addVariantImageAdmin,
@@ -30,6 +27,10 @@ import type {
     ProductSearchParams,
     UpdateProductRequest,
 } from "./types";
+
+import { productKeys } from "@/constants/query-keys";
+import { useLanguage } from "@/providers/language.provider";
+import { toErrorMessage } from "@/utils/error-message";
 
 export function useProducts(params: ProductSearchParams = {}) {
     return useQuery({
@@ -75,7 +76,7 @@ export function useCreateBrandAdmin() {
             toast.success(t('admin_brand_created_success', {}, "Brand created successfully"));
         },
         onError: (error: unknown) => {
-            toast.error(toErrorMessage(error, t('admin_failed_create_brand', {}, "Failed to create brand")));
+            toast.error(t(toErrorMessage(error, 'admin_failed_create_brand')));
         },
     });
 }
@@ -91,7 +92,7 @@ export function useUpdateBrandAdmin() {
             toast.success(t('admin_brand_updated_success', {}, "Brand updated successfully"));
         },
         onError: (error: unknown) => {
-            toast.error(toErrorMessage(error, t('admin_failed_update_brand', {}, "Failed to update brand")));
+            toast.error(t(toErrorMessage(error, 'admin_failed_update_brand')));
         },
     });
 }
@@ -106,7 +107,7 @@ export function useDeleteBrandAdmin() {
             toast.success(t('admin_brand_deleted_success', {}, "Brand deleted successfully"));
         },
         onError: (error: unknown) => {
-            toast.error(toErrorMessage(error, t('admin_failed_delete_brand', {}, "Failed to delete brand")));
+            toast.error(t(toErrorMessage(error, 'admin_failed_delete_brand')));
         },
     });
 }
@@ -121,7 +122,7 @@ export function useCreateCategoryAdmin() {
             toast.success(t('admin_category_created_success', {}, "Category created successfully"));
         },
         onError: (error: unknown) => {
-            toast.error(toErrorMessage(error, t('admin_failed_create_category', {}, "Failed to create category")));
+            toast.error(t(toErrorMessage(error, 'admin_failed_create_category')));
         },
     });
 }
@@ -137,7 +138,7 @@ export function useUpdateCategoryAdmin() {
             toast.success(t('admin_category_updated_success', {}, "Category updated successfully"));
         },
         onError: (error: unknown) => {
-            toast.error(toErrorMessage(error, t('admin_failed_update_category', {}, "Failed to update category")));
+            toast.error(t(toErrorMessage(error, 'admin_failed_update_category')));
         },
     });
 }
@@ -152,7 +153,7 @@ export function useDeleteCategoryAdmin() {
             toast.success(t('admin_category_deleted_success', {}, "Category deleted successfully"));
         },
         onError: (error: unknown) => {
-            toast.error(toErrorMessage(error, t('admin_failed_delete_category', {}, "Failed to delete category")));
+            toast.error(t(toErrorMessage(error, 'admin_failed_delete_category')));
         },
     });
 }
@@ -167,7 +168,7 @@ export function useCreateProductAdmin() {
             toast.success(t('admin_product_created_success', {}, "Product created successfully"));
         },
         onError: (error: unknown) => {
-            toast.error(toErrorMessage(error, t('admin_failed_create_product', {}, "Failed to create product")));
+            toast.error(t(toErrorMessage(error, 'admin_failed_create_product')));
         },
     });
 }
@@ -183,7 +184,7 @@ export function useUpdateProductAdmin() {
             toast.success(t('admin_product_updated_success', {}, "Product updated successfully"));
         },
         onError: (error: unknown) => {
-            toast.error(toErrorMessage(error, t('admin_failed_update_product', {}, "Failed to update product")));
+            toast.error(t(toErrorMessage(error, 'admin_failed_update_product')));
         },
     });
 }
@@ -198,7 +199,7 @@ export function useDeleteProductAdmin() {
             toast.success(t('admin_product_deleted_success', {}, "Product deleted successfully"));
         },
         onError: (error: unknown) => {
-            toast.error(toErrorMessage(error, t('admin_failed_delete_product', {}, "Failed to delete product")));
+            toast.error(t(toErrorMessage(error, 'admin_failed_delete_product')));
         },
     });
 }
@@ -214,7 +215,7 @@ export function useAddProductVariantAdmin() {
             toast.success(t('admin_product_variant_added_success', {}, "Product variant added successfully"));
         },
         onError: (error: unknown) => {
-            toast.error(toErrorMessage(error, t('admin_failed_add_variant', {}, "Failed to add product variant")));
+            toast.error(t(toErrorMessage(error, 'admin_failed_add_variant')));
         },
     });
 }
@@ -228,7 +229,7 @@ export function useApplyProductsToDiscountAdmin() {
             toast.success(t('admin_discount_applied_success', {}, "Discount applied successfully"));
         },
         onError: (error: unknown) => {
-            toast.error(toErrorMessage(error, t('admin_failed_apply_discount', {}, "Failed to apply discount")));
+            toast.error(t(toErrorMessage(error, 'admin_failed_apply_discount')));
         },
     });
 }
@@ -244,7 +245,7 @@ export function useAddVariantImageAdmin() {
             toast.success(t('admin_variant_image_uploaded_success', {}, "Variant image uploaded successfully"));
         },
         onError: (error: unknown) => {
-            toast.error(toErrorMessage(error, t('admin_failed_upload_image', {}, "Failed to upload variant image")));
+            toast.error(t(toErrorMessage(error, 'admin_failed_upload_image')));
         },
     });
 }

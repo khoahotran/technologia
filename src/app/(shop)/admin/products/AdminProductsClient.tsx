@@ -1,20 +1,35 @@
 "use client";
 
-import { Bell, CirclePlus, Search, SlidersHorizontal, Star, X } from "lucide-react";
+import { Bell, CirclePlus, Search, SlidersHorizontal, Smartphone, Star, Tag, X } from "lucide-react";
+import Image from "next/image";
 import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import type { ProductFormData, ProductFormMode } from "@/components/features/admin/ProductFormDialog";
+import { ProductFormDialog } from "@/components/features/admin/ProductFormDialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
     Pagination,
     PaginationContent,
+    PaginationEllipsis,
     PaginationItem,
     PaginationLink,
     PaginationNext,
     PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
     useAddProductVariantAdmin,
     useAddVariantImageAdmin,
@@ -29,25 +44,16 @@ import {
 import type { Brand, Category, Product, ProductStatus } from "@/features/products/types";
 import { useLanguage } from "@/providers/language.provider";
 
-function currencyVnd(value: number) {
-    return new Intl.NumberFormat("vi-VN").format(value);
-}
-
-function parsePositiveNumber(value: string, fallback: number) {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
+function currencyVnd(value: number, locale: string, t?: (key: string, r?: any, d?: string) => string) {
+    const formatted = new Intl.NumberFormat(locale === "vi" ? "vi-VN" : "en-US").format(value);
+    const unit = t ? t("currency_vnd", {}, "VND") : "VND";
+    return `${formatted} ${unit}`;
 }
 
 function toIdFromFilter(value: string) {
     if (value === "all") return null;
     const parsed = Number(value);
     return Number.isNaN(parsed) ? null : parsed;
-}
-
-function askValue(label: string, initialValue = "") {
-    const value = window.prompt(label, initialValue);
-    if (value === null) return null;
-    return value.trim();
 }
 
 function getBrandId(product: Product, brands: Brand[], selectedBrandId: string) {
@@ -69,123 +75,165 @@ function getCategoryId(product: Product, categories: Category[], selectedCategor
 }
 
 function ProductTile({
-    id,
     name,
     price,
     rating,
+    description,
+    image,
+    status,
     selected,
     menuOpen,
     onToggle,
     onToggleMenu,
     onAction,
 }: {
-    id: string;
     name: string;
     price: number;
     rating: number;
+    description: string | undefined;
+    image: string | undefined;
+    status: string | undefined;
     selected: boolean;
     menuOpen: boolean;
     onToggle: () => void;
     onToggleMenu: () => void;
     onAction: (action: "view" | "edit" | "remove" | "apply" | "upload") => void;
 }) {
-    const { t } = useLanguage();
+    const { t, locale } = useLanguage();
+    const [imgError, setImgError] = useState(false);
+
     return (
-        <article
-            className={`relative h-[380px] rounded-[44px] border p-6 flex flex-col justify-end ${
-                selected ? "border-[5px] border-[#3E93B3]" : "border-[3px] border-[#76B8D7]"
-            }`}
+        <div
+            className={`relative bg-card rounded-2xl border ${menuOpen ? "" : "overflow-hidden"} transition-all duration-300 hover:shadow-lg hover:border-primary/20 flex flex-col ${selected ? "ring-2 ring-primary border-primary" : "border-border"
+                }`}
         >
-            <Checkbox
-                checked={selected}
-                onCheckedChange={onToggle}
-                className="absolute left-6 top-6 h-8 w-8 border-[#4CA8D0]"
-            />
-
-            <div className="space-y-2">
-                <p className="text-2xl md:text-3xl font-semibold text-[#1E1E1E] leading-tight">{name}</p>
-                <p className="text-xl md:text-2xl text-[#1E1E1E] leading-tight">
-                    {t("admin_product_two_lines", {}, "2 lines")}
-                </p>
+            <div className="absolute top-3 left-3 z-10">
+                <Checkbox checked={selected} onCheckedChange={onToggle} />
             </div>
 
-            <div className="mt-3 flex items-center justify-between">
-                <div className="flex items-center gap-1">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                        <Star
-                            key={`${id}-${star}`}
-                            className={`h-7 w-7 ${
-                                star <= rating ? "fill-[#3E93B3] text-[#3E93B3]" : "text-[#C4DCEE] fill-[#C4DCEE]"
-                            }`}
-                        />
-                    ))}
-                </div>
-                <span className="text-2xl md:text-3xl text-[#1E1E1E]">{currencyVnd(price)}</span>
-            </div>
-
-            <button
-                type="button"
-                onClick={onToggleMenu}
-                className="absolute right-6 bottom-8 h-12 w-12 rounded-full bg-[#3E93B3] text-white inline-flex items-center justify-center"
-            >
-                <SlidersHorizontal className="h-6 w-6" />
-            </button>
-
-            {menuOpen && (
-                <div className="absolute right-12 top-20 bg-white border border-[#AAB3BC] shadow-[0_4px_8px_rgba(0,0,0,0.18)] z-10 min-w-28">
-                    <button
-                        type="button"
-                        className="w-full text-left px-4 py-2 text-xl hover:bg-[#EDF4F8]"
-                        onClick={() => onAction("view")}
-                    >
-                        {t("admin_action_view", {}, "View")}
-                    </button>
-                    <button
-                        type="button"
-                        className="w-full text-left px-4 py-2 text-xl hover:bg-[#EDF4F8]"
-                        onClick={() => onAction("edit")}
-                    >
-                        {t("admin_action_edit", {}, "Edit")}
-                    </button>
-                    <button
-                        type="button"
-                        className="w-full text-left px-4 py-2 text-xl hover:bg-[#EDF4F8]"
-                        onClick={() => onAction("remove")}
-                    >
-                        {t("admin_action_remove", {}, "Remove")}
-                    </button>
-                    <button
-                        type="button"
-                        className="w-full text-left px-4 py-2 text-xl hover:bg-[#EDF4F8]"
-                        onClick={() => onAction("apply")}
-                    >
-                        {t("admin_action_apply", {}, "Apply")}
-                    </button>
-                    <button
-                        type="button"
-                        className="w-full text-left px-4 py-2 text-xl hover:bg-[#EDF4F8]"
-                        onClick={() => onAction("upload")}
-                    >
-                        {t("admin_action_upload_image", {}, "Upload image")}
-                    </button>
+            {status && status === "NEW" && (
+                <div className="absolute top-3 right-3 z-10">
+                    <Badge variant="secondary" className="rounded-full px-2.5 text-[10px] font-semibold">
+                        {t("new", {}, "New")}
+                    </Badge>
                 </div>
             )}
-        </article>
+
+            {status === "INACTIVE" && (
+                <div className="absolute top-3 right-3 z-10">
+                    <Badge variant="outline" className="rounded-full px-2.5 text-[10px]">
+                        {t("inactive", {}, "Inactive")}
+                    </Badge>
+                </div>
+            )}
+
+            <div className="aspect-square w-full bg-muted/30 flex items-center justify-center relative p-6">
+                {image && !imgError ? (
+                    <Image
+                        src={image}
+                        alt={name}
+                        fill
+                        className="object-contain p-4"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                        onError={() => setImgError(true)}
+                    />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground/20">
+                        <div className="w-12 h-12 rounded-full bg-muted/30" />
+                    </div>
+                )}
+            </div>
+
+            <div className="p-3 flex flex-col flex-1 min-w-0">
+                <h3 className="font-semibold text-sm leading-tight line-clamp-2 min-h-[2.2em]">{name}</h3>
+                {description && (
+                    <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">{description}</p>
+                )}
+
+                <div className="mt-auto pt-2">
+                    <div className="flex items-center gap-0.5 mb-1.5">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                                key={star}
+                                className={`h-3 w-3 ${star <= rating ? "fill-primary text-primary" : "fill-muted text-muted"}`}
+                            />
+                        ))}
+                    </div>
+                    <div className="flex items-center justify-between">
+                        <span className="text-sm font-bold text-primary">{currencyVnd(price, locale, t)}</span>
+                        <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); onToggleMenu(); }}
+                            className="h-7 w-7 rounded-full bg-muted hover:bg-accent text-muted-foreground hover:text-primary inline-flex items-center justify-center transition-colors"
+                        >
+                            <SlidersHorizontal className="h-3.5 w-3.5" />
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {menuOpen && (
+                <>
+                    <div className="fixed inset-0 z-20" onClick={onToggleMenu} />
+                    <div className="absolute bottom-full right-3 mb-1 bg-popover border rounded-xl shadow-md z-30 min-w-32 py-1 overflow-hidden">
+                        {(["view", "edit", "remove", "apply", "upload"] as const).map((action) => (
+                            <button
+                                key={action}
+                                type="button"
+                                className="w-full text-left px-3 py-1.5 text-sm hover:bg-accent transition-colors"
+                                onClick={() => onAction(action)}
+                            >
+                                {t(
+                                    `admin_action_${action}`,
+                                    {},
+                                    action === "view" ? "View" :
+                                        action === "edit" ? "Edit" :
+                                            action === "remove" ? "Archive" :
+                                                action === "apply" ? "Apply" : "Upload image"
+                                )}
+                            </button>
+                        ))}
+                    </div>
+                </>
+            )}
+        </div>
     );
 }
 
+function getPaginationItems(current: number, last: number): (number | "...")[] {
+    const items: (number | "...")[] = [];
+    if (last <= 7) {
+        for (let i = 1; i <= last; i++) items.push(i);
+    } else {
+        items.push(1);
+        if (current > 3) items.push("...");
+        const start = Math.max(2, current - 1);
+        const end = Math.min(last - 1, current + 1);
+        for (let i = start; i <= end; i++) items.push(i);
+        if (current < last - 2) items.push("...");
+        items.push(last);
+    }
+    return items;
+}
+
 export default function AdminProductsClient() {
-    const { t } = useLanguage();
+    const { t, locale } = useLanguage();
     const [page, setPage] = useState(0);
     const [search, setSearch] = useState("");
     const [categoryId, setCategoryId] = useState<string>("all");
     const [brandId, setBrandId] = useState<string>("all");
     const [minPrice, setMinPrice] = useState<string>("0");
-    const [maxPrice, setMaxPrice] = useState<string>("100000");
+    const [maxPrice, setMaxPrice] = useState<string>("100000000");
     const [sortBy, setSortBy] = useState<string>("displayPrice");
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
     const [menuOpenFor, setMenuOpenFor] = useState<string | null>(null);
     const [uploadTarget, setUploadTarget] = useState<{ productId: string; variantId: string } | null>(null);
+    const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [dialogMode, setDialogMode] = useState<ProductFormMode>("create");
+    const [dialogProduct, setDialogProduct] = useState<Product | undefined>(undefined);
+    const [discountDialogOpen, setDiscountDialogOpen] = useState(false);
+    const [discountIdInput, setDiscountIdInput] = useState("");
     const uploadInputRef = useRef<HTMLInputElement | null>(null);
 
     const createProductMutation = useCreateProductAdmin();
@@ -223,12 +271,18 @@ export default function AdminProductsClient() {
 
     const priceRanges = useMemo(
         () => [
-            { label: "0 VND", value: "0" },
-            { label: "100.000 VND", value: "100000" },
-            { label: "500.000 VND", value: "500000" },
-            { label: "1.000.000 VND", value: "1000000" },
+            { label: `0 ${t("currency_vnd", {}, "VND")}`, value: "0" },
+            { label: `100.000 ${t("currency_vnd", {}, "VND")}`, value: "100000" },
+            { label: `500.000 ${t("currency_vnd", {}, "VND")}`, value: "500000" },
+            { label: `1.000.000 ${t("currency_vnd", {}, "VND")}`, value: "1000000" },
+            { label: `3.000.000 ${t("currency_vnd", {}, "VND")}`, value: "3000000" },
+            { label: `5.000.000 ${t("currency_vnd", {}, "VND")}`, value: "5000000" },
+            { label: `10.000.000 ${t("currency_vnd", {}, "VND")}`, value: "10000000" },
+            { label: `20.000.000 ${t("currency_vnd", {}, "VND")}`, value: "20000000" },
+            { label: `50.000.000 ${t("currency_vnd", {}, "VND")}`, value: "50000000" },
+            { label: `100.000.000 ${t("currency_vnd", {}, "VND")}`, value: "100000000" },
         ],
-        []
+        [t]
     );
 
     const isBusy =
@@ -260,50 +314,9 @@ export default function AdminProductsClient() {
             toast.error(t("admin_create_product_requires_brand_category", {}, "Brand and category are required"));
             return;
         }
-        const fallbackBrand = brands[0];
-        const fallbackCategory = categories[0];
-        if (!fallbackBrand || !fallbackCategory) {
-            toast.error(t("admin_create_product_requires_brand_category", {}, "Brand and category are required"));
-            return;
-        }
-
-        const name = askValue(t("admin_product_name", {}, "Product name"), "");
-        if (!name) return;
-        const description = askValue(t("description", {}, "Description"), "") ?? "";
-        const displayPrice = parsePositiveNumber(
-            askValue(t("admin_price", {}, "Price"), "1000000") ?? "",
-            1000000
-        );
-        const stock = parsePositiveNumber(askValue(t("stock", {}, "Stock"), "10") ?? "", 10);
-        const variantCode =
-            askValue(t("admin_variant_code", {}, "Variant code"), `${name.replace(/\s+/g, "-").toUpperCase()}-1`) ??
-            `${name.replace(/\s+/g, "-").toUpperCase()}-1`;
-        const storage = askValue(t("storage", {}, "Storage"), "128GB") ?? "128GB";
-        const color = askValue(t("color", {}, "Color"), "Black") ?? "Black";
-        const statusInput = (askValue(t("status", {}, "Status"), "ACTIVE") ?? "ACTIVE").toUpperCase();
-        const status: ProductStatus = statusInput === "INACTIVE" ? "INACTIVE" : "ACTIVE";
-
-        const selectedBrandId = toIdFromFilter(brandId) ?? Number(fallbackBrand.brandId);
-        const selectedCategoryId = toIdFromFilter(categoryId) ?? Number(fallbackCategory.categoryId);
-
-        createProductMutation.mutate({
-            name,
-            description,
-            displayPrice,
-            brandId: selectedBrandId,
-            categoryId: selectedCategoryId,
-            status,
-            variants: [
-                {
-                    variantCode,
-                    price: displayPrice,
-                    stock,
-                    storage,
-                    color,
-                    images: [],
-                },
-            ],
-        });
+        setDialogMode("create");
+        setDialogProduct(undefined);
+        setDialogOpen(true);
     };
 
     const handleAction = (action: "view" | "edit" | "remove" | "apply" | "upload", productId: string) => {
@@ -321,34 +334,14 @@ export default function AdminProductsClient() {
         }
 
         if (action === "remove") {
-            if (!window.confirm(t("admin_confirm_delete_item", { name: selectedProduct.name }, "Delete {name}?"))) {
-                return;
-            }
-            deleteProductMutation.mutate(productId);
+            setDeleteConfirm(productId);
             return;
         }
 
         if (action === "apply") {
-            const variantCode = askValue(t("admin_variant_code", {}, "Variant code"), `VAR-${Date.now()}`);
-            if (!variantCode) return;
-            const price = parsePositiveNumber(
-                askValue(t("admin_price", {}, "Price"), String(selectedProduct.displayPrice ?? 0)) ?? "",
-                Number(selectedProduct.displayPrice ?? 0)
-            );
-            const stock = parsePositiveNumber(askValue(t("stock", {}, "Stock"), "10") ?? "", 10);
-            const storage = askValue(t("storage", {}, "Storage"), "128GB") ?? "128GB";
-            const color = askValue(t("color", {}, "Color"), "Black") ?? "Black";
-            addVariantMutation.mutate({
-                productId,
-                payload: {
-                    variantCode,
-                    price,
-                    stock,
-                    storage,
-                    color,
-                    images: [],
-                },
-            });
+            setDialogMode("add-variant");
+            setDialogProduct(selectedProduct);
+            setDialogOpen(true);
             return;
         }
 
@@ -363,47 +356,81 @@ export default function AdminProductsClient() {
             return;
         }
 
-        const nextName = askValue(t("admin_product_name", {}, "Product name"), selectedProduct.name);
-        if (!nextName) return;
-        const nextDescription = askValue(
-            t("description", {}, "Description"),
-            selectedProduct.description ?? ""
-        );
-        if (nextDescription === null) return;
-        const nextPrice = parsePositiveNumber(
-            askValue(
-                t("admin_price", {}, "Price"),
-                String(selectedProduct.displayPrice ?? 0)
-            ) ?? "",
-            Number(selectedProduct.displayPrice ?? 0)
-        );
-        const statusInput = (
-            askValue(t("status", {}, "Status"), selectedProduct.status ?? "ACTIVE") ?? selectedProduct.status ?? "ACTIVE"
-        ).toUpperCase();
-        const status: ProductStatus = statusInput === "INACTIVE" ? "INACTIVE" : "ACTIVE";
-        const resolvedBrandId = getBrandId(selectedProduct, brands, brandId);
-        const resolvedCategoryId = getCategoryId(selectedProduct, categories, categoryId);
-
-        if (resolvedBrandId === null || resolvedCategoryId === null) {
-            toast.error(t("admin_create_product_requires_brand_category", {}, "Brand and category are required"));
-            return;
-        }
-
-        updateProductMutation.mutate({
-            productId,
-            payload: {
-                name: nextName,
-                description: nextDescription,
-                displayPrice: nextPrice,
-                brandId: resolvedBrandId,
-                categoryId: resolvedCategoryId,
-                status,
-            },
-        });
+        setDialogMode("edit");
+        setDialogProduct(selectedProduct);
+        setDialogOpen(true);
     };
 
+    const handleDialogSubmit = (data: ProductFormData) => {
+        if (dialogMode === "create") {
+            const selectedBrandId = toIdFromFilter(brandId) ?? (brands[0] ? Number(brands[0].brandId) : null);
+            const selectedCategoryId = toIdFromFilter(categoryId) ?? (categories[0] ? Number(categories[0].categoryId) : null);
+            if (selectedBrandId === null || selectedCategoryId === null) {
+                toast.error(t("admin_create_product_requires_brand_category", {}, "Brand and category are required"));
+                return;
+            }
+            const variants = (data.variants ?? []).map((v) => ({
+                variantCode: v.variantCode,
+                price: v.price,
+                stock: v.stock,
+                storage: v.storage,
+                color: v.color,
+                images: [],
+            }));
+            createProductMutation.mutate({
+                name: data.name!,
+                description: data.description!,
+                displayPrice: data.displayPrice!,
+                brandId: selectedBrandId,
+                categoryId: selectedCategoryId,
+                status: data.status ?? "ACTIVE",
+                variants,
+            });
+        } else if (dialogMode === "edit" && dialogProduct) {
+            const resolvedBrandId = getBrandId(dialogProduct, brands, brandId);
+            const resolvedCategoryId = getCategoryId(dialogProduct, categories, categoryId);
+            if (resolvedBrandId === null || resolvedCategoryId === null) {
+                toast.error(t("admin_create_product_requires_brand_category", {}, "Brand and category are required"));
+                return;
+            }
+            updateProductMutation.mutate({
+                productId: String(dialogProduct.productId),
+                payload: {
+                    name: data.name!,
+                    description: data.description!,
+                    displayPrice: data.displayPrice!,
+                    brandId: resolvedBrandId,
+                    categoryId: resolvedCategoryId,
+                    status: data.status ?? "ACTIVE",
+                },
+            });
+        } else if (dialogMode === "add-variant" && dialogProduct) {
+            addVariantMutation.mutate({
+                productId: String(dialogProduct.productId),
+                payload: {
+                    variantCode: data.variantCode ?? `VAR-${Date.now()}`,
+                    price: data.price ?? 0,
+                    stock: data.stock ?? 0,
+                    storage: data.storage ?? "",
+                    color: data.color ?? "",
+                    images: [],
+                },
+            });
+        }
+        setDialogOpen(false);
+    };
+
+    const handlePageChange = (newPage: number) => {
+        if (newPage >= 0 && newPage < totalPages) {
+            setPage(newPage);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+    };
+
+    const paginationItems = useMemo(() => getPaginationItems(page + 1, totalPages), [page, totalPages]);
+
     return (
-        <div className="container mx-auto px-4 py-10 space-y-8">
+        <div className="container mx-auto px-4 py-6 space-y-4">
             <input
                 ref={uploadInputRef}
                 type="file"
@@ -420,21 +447,25 @@ export default function AdminProductsClient() {
                     event.currentTarget.value = "";
                 }}
             />
-            <div className="max-w-[760px] mx-auto relative">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-7 w-7 text-[#1E1E1E]" />
+
+            <div className="max-w-md mx-auto relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                     value={search}
                     onChange={(event) => setSearch(event.target.value)}
                     placeholder={t("admin_search_here", {}, "Search here")}
-                    className="h-[62px] pl-14 rounded-full bg-[#C9D8E5] border-[#C9D8E5] text-lg md:text-2xl"
+                    className="h-10 pl-9 rounded-xl text-sm bg-card"
                 />
             </div>
 
-            <div className="grid lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
                 <div>
-                    <p className="text-lg md:text-2xl mb-2">{t("admin_filter_category", {}, "Category")}</p>
+                    <p className="text-[10px] font-medium text-muted-foreground mb-1 uppercase tracking-wider">
+                        {t("admin_filter_category", {}, "Category")}
+                    </p>
                     <Select value={categoryId} onValueChange={setCategoryId}>
-                        <SelectTrigger className="h-[66px] bg-[#C9DDF0] border-[#C9DDF0] rounded-[18px] text-lg md:text-2xl">
+                        <SelectTrigger className="h-9 text-xs gap-1 px-2.5">
+                            <Smartphone className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -448,9 +479,12 @@ export default function AdminProductsClient() {
                     </Select>
                 </div>
                 <div>
-                    <p className="text-lg md:text-2xl mb-2">{t("admin_filter_brand", {}, "Brand")}</p>
+                    <p className="text-[10px] font-medium text-muted-foreground mb-1 uppercase tracking-wider">
+                        {t("admin_filter_brand", {}, "Brand")}
+                    </p>
                     <Select value={brandId} onValueChange={setBrandId}>
-                        <SelectTrigger className="h-[66px] bg-[#C9DDF0] border-[#C9DDF0] rounded-[18px] text-lg md:text-2xl">
+                        <SelectTrigger className="h-9 text-xs gap-1 px-2.5">
+                            <Tag className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -464,9 +498,11 @@ export default function AdminProductsClient() {
                     </Select>
                 </div>
                 <div>
-                    <p className="text-lg md:text-2xl mb-2">{t("admin_filter_min_price", {}, "Min price")}</p>
+                    <p className="text-[10px] font-medium text-muted-foreground mb-1 uppercase tracking-wider">
+                        {t("admin_filter_min_price", {}, "Min price")}
+                    </p>
                     <Select value={minPrice} onValueChange={setMinPrice}>
-                        <SelectTrigger className="h-[66px] bg-[#C9DDF0] border-[#C9DDF0] rounded-[18px] text-lg md:text-2xl">
+                        <SelectTrigger className="h-9 text-xs gap-1 px-2.5">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -479,9 +515,11 @@ export default function AdminProductsClient() {
                     </Select>
                 </div>
                 <div>
-                    <p className="text-lg md:text-2xl mb-2">{t("admin_filter_max_price", {}, "Max price")}</p>
+                    <p className="text-[10px] font-medium text-muted-foreground mb-1 uppercase tracking-wider">
+                        {t("admin_filter_max_price", {}, "Max price")}
+                    </p>
                     <Select value={maxPrice} onValueChange={setMaxPrice}>
-                        <SelectTrigger className="h-[66px] bg-[#C9DDF0] border-[#C9DDF0] rounded-[18px] text-lg md:text-2xl">
+                        <SelectTrigger className="h-9 text-xs gap-1 px-2.5">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -494,9 +532,11 @@ export default function AdminProductsClient() {
                     </Select>
                 </div>
                 <div>
-                    <p className="text-lg md:text-2xl mb-2">{t("admin_filter_order", {}, "Order")}</p>
+                    <p className="text-[10px] font-medium text-muted-foreground mb-1 uppercase tracking-wider">
+                        {t("admin_filter_order", {}, "Order")}
+                    </p>
                     <Select value={sortBy} onValueChange={setSortBy}>
-                        <SelectTrigger className="h-[66px] bg-[#C9DDF0] border-[#C9DDF0] rounded-[18px] text-lg md:text-2xl">
+                        <SelectTrigger className="h-9 text-xs gap-1 px-2.5">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -507,66 +547,79 @@ export default function AdminProductsClient() {
                 </div>
             </div>
 
-            <div className="grid lg:grid-cols-[auto_1fr] gap-6">
+            <div className="flex flex-wrap items-center gap-3">
                 <button
                     type="button"
                     onClick={handleCreateProduct}
                     disabled={isBusy}
-                    className="h-[90px] px-10 rounded-[30px] border-[3px] border-[#3E93B3] flex items-center gap-4 text-2xl md:text-4xl font-semibold disabled:opacity-60"
+                    className="h-10 px-5 rounded-full bg-primary text-primary-foreground text-sm font-semibold inline-flex items-center gap-2 disabled:opacity-60 shadow-sm"
                 >
-                    <CirclePlus className="h-9 w-9" />
+                    <CirclePlus className="h-4 w-4" />
                     <span>{t("admin_add_product", {}, "Add product")}</span>
                 </button>
 
-                <div className="h-[90px] px-8 rounded-[30px] border-[3px] border-[#3E93B3] flex items-center justify-between gap-6">
-                    <div className="flex items-center gap-5 text-lg md:text-3xl">
-                        <Bell className="h-7 w-7 text-[#5D6070]" />
-                        <span>{t("admin_products_chose", { count: selectedCount }, "{count} chose")}</span>
-                        <div className="flex items-center gap-3">
+                <div className="flex-1 min-w-0 h-10 px-4 rounded-xl border bg-card flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 text-sm">
+                        <Bell className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="text-muted-foreground whitespace-nowrap">
+                            {t("admin_products_chose", { count: selectedCount }, "{count} chose")}
+                        </span>
+                        <div className="flex items-center gap-1.5">
                             <Checkbox
                                 checked={allOnPageSelected}
                                 onCheckedChange={(value) => toggleSelectAllCurrentPage(Boolean(value))}
+                                className="h-4 w-4"
                             />
-                            <span>{t("admin_select_all_page", {}, "Select all page")}</span>
+                            <span className="text-xs text-muted-foreground hidden sm:inline">
+                                {t("admin_select_all_page", {}, "Select all page")}
+                            </span>
                         </div>
                         {selectedCount > 0 && (
                             <button
                                 type="button"
-                                onClick={() => {
-                                    const discountId = askValue(
-                                        t("admin_discount_id_prompt", {}, "Discount ID"),
-                                        ""
-                                    );
-                                    if (!discountId) return;
-                                    applyDiscountMutation.mutate({ discountId, productIds: selectedIds });
-                                }}
+                                onClick={() => { setDiscountIdInput(""); setDiscountDialogOpen(true); }}
                                 disabled={isBusy}
-                                className="h-12 px-5 rounded-full bg-[#3E93B3] text-white flex items-center gap-3 text-base md:text-xl font-semibold disabled:opacity-60"
+                                className="h-7 px-3 rounded-full bg-primary text-primary-foreground inline-flex items-center gap-1 text-xs font-medium disabled:opacity-60"
                             >
-                                {t("admin_apply_discount", {}, "Apply Discount")}
-                                <X className="h-5 w-5" />
+                                {t("admin_apply_discount", {}, "Apply")}
+                                <X className="h-3 w-3" />
                             </button>
                         )}
                     </div>
-                    <span className="text-lg md:text-3xl">1</span>
                 </div>
             </div>
 
             {productQuery.isLoading ? (
-                <div className="py-20 text-center text-xl text-[#556070]">
-                    {t("admin_loading_products", {}, "Loading products...")}
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {Array.from({ length: 8 }).map((_, i) => (
+                        <div key={i} className="bg-card rounded-2xl border overflow-hidden">
+                            <Skeleton className="aspect-square w-full rounded-none" />
+                            <div className="p-3 space-y-2">
+                                <Skeleton className="h-4 w-3/4" />
+                                <Skeleton className="h-3 w-1/2" />
+                                <Skeleton className="h-3 w-1/4" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : products.length === 0 ? (
+                <div className="text-center py-16 text-muted-foreground">
+                    <p className="text-sm">{t("admin_no_products_found", {}, "No products found")}</p>
                 </div>
             ) : (
-                <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-8">
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {products.map((product) => {
                         const id = String(product.productId);
+                        const firstImage = product.variants?.[0]?.images?.[0];
                         return (
                             <ProductTile
                                 key={id}
-                                id={id}
                                 name={product.name}
                                 price={product.displayPrice ?? 0}
                                 rating={Math.max(1, Math.round(product.averageRating ?? 4))}
+                                description={product.description}
+                                image={firstImage}
+                                status={product.status}
                                 selected={selectedIds.includes(id)}
                                 menuOpen={menuOpenFor === id}
                                 onToggle={() => toggleProduct(id)}
@@ -578,46 +631,110 @@ export default function AdminProductsClient() {
                 </div>
             )}
 
-            <div className="flex justify-center pt-2">
-                <Pagination>
-                    <PaginationContent>
-                        <PaginationItem>
-                            <PaginationPrevious
-                                href="#"
-                                onClick={(event) => {
-                                    event.preventDefault();
-                                    setPage((prev) => Math.max(prev - 1, 0));
-                                }}
-                            />
-                        </PaginationItem>
-                        {Array.from({ length: Math.max(totalPages, 3) })
-                            .slice(0, 3)
-                            .map((_, index) => (
+            {totalPages > 1 && (
+                <div className="flex justify-center pt-2">
+                    <Pagination>
+                        <PaginationContent>
+                            <PaginationItem>
+                                <PaginationPrevious
+                                    href="#"
+                                    onClick={(e) => { e.preventDefault(); handlePageChange(page - 1); }}
+                                    className={page === 0 ? "pointer-events-none opacity-50" : ""}
+                                />
+                            </PaginationItem>
+                            {paginationItems.map((item, index) => (
                                 <PaginationItem key={index}>
-                                    <PaginationLink
-                                        href="#"
-                                        isActive={page === index}
-                                        onClick={(event) => {
-                                            event.preventDefault();
-                                            setPage(index);
-                                        }}
-                                    >
-                                        {index + 1}
-                                    </PaginationLink>
+                                    {item === "..." ? (
+                                        <PaginationEllipsis />
+                                    ) : (
+                                        <PaginationLink
+                                            href="#"
+                                            isActive={page === item - 1}
+                                            onClick={(e) => { e.preventDefault(); handlePageChange(item - 1); }}
+                                        >
+                                            {item}
+                                        </PaginationLink>
+                                    )}
                                 </PaginationItem>
                             ))}
-                        <PaginationItem>
-                            <PaginationNext
-                                href="#"
-                                onClick={(event) => {
-                                    event.preventDefault();
-                                    setPage((prev) => Math.min(prev + 1, Math.max(totalPages - 1, 0)));
-                                }}
-                            />
-                        </PaginationItem>
-                    </PaginationContent>
-                </Pagination>
-            </div>
+                            <PaginationItem>
+                                <PaginationNext
+                                    href="#"
+                                    onClick={(e) => { e.preventDefault(); handlePageChange(page + 1); }}
+                                    className={page === totalPages - 1 ? "pointer-events-none opacity-50" : ""}
+                                />
+                            </PaginationItem>
+                        </PaginationContent>
+                    </Pagination>
+                </div>
+            )}
+
+            <Dialog open={discountDialogOpen} onOpenChange={setDiscountDialogOpen}>
+                <DialogContent className="sm:max-w-sm">
+                    <DialogHeader>
+                        <DialogTitle>{t("admin_discount_id_prompt", {}, "Discount ID")}</DialogTitle>
+                    </DialogHeader>
+                    <Input
+                        value={discountIdInput}
+                        onChange={(e) => setDiscountIdInput(e.target.value)}
+                        placeholder={t("admin_discount_id_prompt", {}, "Discount ID")}
+                        className="rounded-xl"
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter" && discountIdInput.trim()) {
+                                applyDiscountMutation.mutate({ discountId: discountIdInput.trim(), productIds: selectedIds });
+                                setDiscountDialogOpen(false);
+                                setDiscountIdInput("");
+                            }
+                        }}
+                    />
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button variant="outline" onClick={() => setDiscountDialogOpen(false)} className="rounded-xl">
+                            {t("cancel", {}, "Cancel")}
+                        </Button>
+                        <Button
+                            onClick={() => {
+                                if (discountIdInput.trim()) {
+                                    applyDiscountMutation.mutate({ discountId: discountIdInput.trim(), productIds: selectedIds });
+                                }
+                                setDiscountDialogOpen(false);
+                                setDiscountIdInput("");
+                            }}
+                            disabled={!discountIdInput.trim() || isBusy}
+                            className="rounded-xl"
+                        >
+                            {t("confirm", {}, "Confirm")}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <ProductFormDialog
+                open={dialogOpen}
+                onOpenChange={setDialogOpen}
+                mode={dialogMode}
+                product={dialogProduct}
+                brands={brands}
+                categories={categories}
+                onSubmit={handleDialogSubmit}
+                isPending={
+                    createProductMutation.isPending ||
+                    updateProductMutation.isPending ||
+                    addVariantMutation.isPending
+                }
+            />
+
+            <ConfirmDialog
+                open={deleteConfirm !== null}
+                onOpenChange={(open) => { if (!open) setDeleteConfirm(null); }}
+                onConfirm={() => {
+                    if (deleteConfirm) deleteProductMutation.mutate(deleteConfirm);
+                    setDeleteConfirm(null);
+                }}
+                title={t("admin_confirm_delete_item", { name: products.find(p => String(p.productId) === deleteConfirm)?.name ?? "" }, "Archive this product?")}
+                confirmText={t("confirm", {}, "Confirm")}
+                cancelText={t("cancel", {}, "Cancel")}
+                variant="destructive"
+            />
         </div>
     );
 }

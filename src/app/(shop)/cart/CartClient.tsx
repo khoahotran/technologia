@@ -1,7 +1,8 @@
 "use client";
 
 import { Loader2, Tag, Ticket } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { CartItem } from "@/components/features/cart/CartItem";
@@ -21,6 +22,7 @@ import { cn } from "@/utils";
 
 export default function CartClient() {
     const { t } = useLanguage();
+    const searchParams = useSearchParams();
     const { cart, isLoading, isError, increase, decrease, remove } = useCart();
 
     const items = useMemo(() => cart?.cartItems ?? [], [cart]);
@@ -31,6 +33,19 @@ export default function CartClient() {
         hasUserSelection ? selectedIds : items.map((item) => item.cartItemId),
         [hasUserSelection, selectedIds, items]
     );
+
+    // Handle focusProduct param: auto-select the bought product
+    const focusApplied = useRef(false);
+    useEffect(() => {
+        const focusProductId = searchParams.get("focusProduct");
+        if (focusApplied.current || !focusProductId || items.length === 0) return;
+        const matchedItem = items.find((item) => item.productId === focusProductId);
+        if (matchedItem) {
+            setHasUserSelection(true);
+            setSelectedIds([matchedItem.cartItemId]);
+            focusApplied.current = true;
+        }
+    }, [searchParams, items]);
 
     // Discount state
     const [promoCode, setPromoCode] = useState("");
@@ -123,10 +138,15 @@ export default function CartClient() {
     };
 
     const toggleItem = (id: string) => {
-        setHasUserSelection(true);
-        setSelectedIds((prev) =>
-            prev.includes(id) ? prev.filter((itemId) => itemId !== id) : [...prev, id]
-        );
+        const allIds = items.map((item) => item.cartItemId);
+        if (!hasUserSelection) {
+            setHasUserSelection(true);
+            setSelectedIds(allIds.filter((itemId) => itemId !== id));
+        } else {
+            setSelectedIds((prev) =>
+                prev.includes(id) ? prev.filter((itemId) => itemId !== id) : [...prev, id]
+            );
+        }
     };
 
     const toggleAll = (checked: boolean) => {
@@ -302,11 +322,11 @@ export default function CartClient() {
                                                 )}
                                             </div>
                                             {/* <p className="text-xs text-muted-foreground line-clamp-2">{discount.description || discount.name}</p> */}
-                                            {discount.minOrderValue && discount.minOrderValue > 0 && (
+                                            {/* {discount.minOrderValue && discount.minOrderValue > 0 && (
                                                 <p className="text-[11px] text-muted-foreground/70 mt-1">
                                                     {t('min_order_value', {}, "Min order:")} {new Intl.NumberFormat().format(discount.minOrderValue)} VND
                                                 </p>
-                                            )}
+                                            )} */}
                                         </button>
                                     ))}
                                 </div>

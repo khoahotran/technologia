@@ -1,34 +1,43 @@
 "use client";
 
+import { useQueries } from "@tanstack/react-query";
 import { Package, PackageCheck, PackageX, Truck } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 
 import { OrderCategory } from "@/components/features/orders/OrderCard";
+import { productKeys } from "@/constants/query-keys";
 import { useAuth } from "@/features/auth/hooks";
 import { useOrders } from "@/features/orders/hooks";
 import { isCreatedOrder } from "@/features/orders/presentation";
+import { getProductById } from "@/features/products/api";
 import { useLanguage } from "@/providers/language.provider";
 import { toErrorMessage } from "@/utils/error-message";
 
-function toOrderCardItems(order: { items: unknown[] }) {
-    return order.items.slice(0, 2).map((item, index) => {
-        if (typeof item !== "object" || item === null) {
-            return { quantity: 1, name: `Item ${index + 1}` };
-        }
-
-        const quantity =
-            "quantity" in item && typeof item.quantity === "number" ? item.quantity : 1;
-        const name =
-            "name" in item && typeof item.name === "string"
-                ? item.name
-                : "productId" in item && typeof item.productId === "string"
-                    ? item.productId
-                    : `Item ${index + 1}`;
-
-        return { quantity, name };
+function extractProductIds(orders: Array<{ items: unknown[] }>): string[] {
+    const ids = new Set<string>();
+    orders.forEach((order) => {
+        order.items.slice(0, 2).forEach((item) => {
+            if (typeof item === "object" && item !== null) {
+                const r = item as Record<string, unknown>;
+                if (typeof r["productId"] === "string") ids.add(r["productId"]);
+            }
+        });
     });
+    return [...ids];
+}
+
+function buildItemName(item: unknown, index: number, productMap: Map<string, string>): string {
+    if (typeof item !== "object" || item === null) return `Item ${index + 1}`;
+    const r = item as Record<string, unknown>;
+    if ("name" in r && typeof r["name"] === "string") return r["name"] as string;
+    if ("productName" in r && typeof r["productName"] === "string") return r["productName"] as string;
+    if ("productId" in r && typeof r["productId"] === "string") {
+        const pid = r["productId"] as string;
+        return productMap.get(pid) ?? pid;
+    }
+    return `Item ${index + 1}`;
 }
 
 export default function OrdersClient() {
@@ -88,6 +97,39 @@ export default function OrdersClient() {
         [awaitingPaymentSource, createdSource, shippingSource, deliveredSource, canceledSource]
     );
 
+    // Fetch product names for order items
+    const allProductIds = useMemo(
+        () => extractProductIds([...awaitingPaymentSource, ...createdSource, ...shippingSource, ...deliveredSource, ...canceledSource]),
+        [awaitingPaymentSource, createdSource, shippingSource, deliveredSource, canceledSource]
+    );
+
+    const productQueries = useQueries({
+        queries: allProductIds.map((pid) => ({
+            queryKey: productKeys.detail(pid),
+            queryFn: () => getProductById(pid),
+            enabled: !!pid,
+        })),
+    });
+
+    const productMap = useMemo(() => {
+        const map = new Map<string, string>();
+        productQueries.forEach((q, i) => {
+            const pid = allProductIds[i];
+            if (q.data && pid) map.set(pid, q.data.name);
+        });
+        return map;
+    }, [productQueries, allProductIds]);
+
+    const toOrderCardItems = useCallback(
+        (order: { items: unknown[] }) =>
+            order.items.slice(0, 2).map((item, index) => ({
+                quantity: (typeof item === "object" && item !== null && "quantity" in item && typeof (item as Record<string, unknown>)["quantity"] === "number")
+                    ? (item as Record<string, unknown>)["quantity"] as number : 1,
+                name: buildItemName(item, index, productMap),
+            })),
+        [productMap]
+    );
+
     const createdOrders = useMemo(
         () =>
             [...awaitingPaymentSource, ...createdSource]
@@ -97,7 +139,7 @@ export default function OrdersClient() {
                     items: toOrderCardItems(order),
                     status: order.deliveryStatus,
                 })),
-        [awaitingPaymentSource, createdSource]
+        [awaitingPaymentSource, createdSource, toOrderCardItems]
     );
 
     const shippingOrders = useMemo(
@@ -109,7 +151,7 @@ export default function OrdersClient() {
                     items: toOrderCardItems(order),
                     status: order.deliveryStatus,
                 })),
-        [shippingSource]
+        [shippingSource, toOrderCardItems]
     );
 
     const deliveredOrders = useMemo(
@@ -121,7 +163,7 @@ export default function OrdersClient() {
                     items: toOrderCardItems(order),
                     status: order.deliveryStatus,
                 })),
-        [deliveredSource]
+        [deliveredSource, toOrderCardItems]
     );
 
     const canceledOrders = useMemo(
@@ -133,7 +175,7 @@ export default function OrdersClient() {
                     items: toOrderCardItems(order),
                     status: order.deliveryStatus,
                 })),
-        [canceledSource]
+        [canceledSource, toOrderCardItems]
     );
 
     if (isLoading) {

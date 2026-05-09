@@ -8,24 +8,19 @@
  * - Thanh Main Bar: Logo, Ô tìm kiếm và các hành động (Giỏ hàng, Tài khoản).
  * - Tích hợp logic Xác thực (Auth) để hiển thị trạng thái đăng nhập.
  */
-import { Mail, Phone, Search, ShoppingBag, ShoppingCart, User } from "lucide-react"
+import { ChevronDown, Mail, Phone, Search, ShoppingBag, ShoppingCart, User } from "lucide-react"
 import Link from "next/link"
-import { useRouter, useSearchParams } from "next/navigation"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { Suspense, useEffect, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { CONTACT_INFO } from "@/constants/contact"
 import { useAuth } from "@/features/auth/hooks"
 import { useAuthStore } from "@/features/auth/store"
+import { useCart } from "@/features/cart/hooks"
 import { useLanguage } from "@/providers/language.provider"
+import { cn } from "@/utils"
 
 interface HeaderProps {
   /** 
@@ -98,7 +93,7 @@ function AccountButton() {
                 {user?.username || t('header_user', {}, "User")}
               </p>
               <p className="text-xs text-gray-500 truncate">
-                {user?.email || "Member"}
+                {user?.email || t('header_member', {}, "Member")}
               </p>
             </div>
 
@@ -118,6 +113,16 @@ function AccountButton() {
               >
                 <span className="font-medium">{t('header_my_orders', {}, "My Orders")}</span>
               </Link>
+
+              {user?.role === "ADMIN" && (
+                <Link
+                  href="/admin/home"
+                  onClick={() => setIsOpen(false)}
+                  className="w-full px-4 py-2 text-sm text-primary hover:bg-primary/5 transition-colors flex items-center gap-2 border-t border-gray-50 mt-1"
+                >
+                  <span className="font-bold">{t('header_admin_dashboard', {}, "Admin Dashboard")}</span>
+                </Link>
+              )}
             </div>
 
             <div className="border-t border-gray-50 pt-1">
@@ -198,6 +203,18 @@ function SearchBox() {
  */
 export default function Header({ variant = "default" }: HeaderProps) {
   const { t, locale, setLocale } = useLanguage();
+  const { user } = useAuth();
+  const { cart } = useCart();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  // Redirect Admin to /admin/home if they land on /
+  useEffect(() => {
+    if (user?.role === "ADMIN" && (pathname === "/" || pathname === "/vi" || pathname === "/en")) {
+      router.push("/admin/home");
+    }
+  }, [user, pathname, router]);
+
   return (
     <header className="w-full flex flex-col bg-white sticky top-0 z-50 shadow-sm">
       {/* 1. Thanh Top Bar (Thông tin phụ) - Chỉ hiện ở variant default */}
@@ -231,15 +248,31 @@ export default function Header({ variant = "default" }: HeaderProps) {
                 {t('header_about_us', {}, "About Us")}
               </Link>
 
-              <Select value={locale} onValueChange={(val) => setLocale(val as 'vi' | 'en')} modal={false}>
-                <SelectTrigger className="h-8 border-none bg-transparent hover:bg-black/5 focus:ring-0 focus:ring-offset-0 px-2 gap-1 uppercase font-semibold">
-                  <SelectValue placeholder={locale.toUpperCase()} />
-                </SelectTrigger>
-                <SelectContent align="end">
-                  <SelectItem value="vi">VN</SelectItem>
-                  <SelectItem value="en">EN</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="relative group">
+                <button className="h-8 flex items-center gap-1 px-2 uppercase font-semibold hover:bg-black/5 rounded-lg transition-colors text-sm">
+                  {locale} <ChevronDown className="h-3 w-3 opacity-50" />
+                </button>
+                <div className="absolute right-0 mt-1 w-20 bg-white rounded-lg shadow-lg border border-gray-100 py-1 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                  <button
+                    onClick={() => setLocale('vi')}
+                    className={cn(
+                      "w-full text-left px-3 py-1.5 text-xs hover:bg-gray-50 transition-colors",
+                      locale === 'vi' ? "font-bold text-primary" : "text-gray-600"
+                    )}
+                  >
+                    VN
+                  </button>
+                  <button
+                    onClick={() => setLocale('en')}
+                    className={cn(
+                      "w-full text-left px-3 py-1.5 text-xs hover:bg-gray-50 transition-colors",
+                      locale === 'en' ? "font-bold text-primary" : "text-gray-600"
+                    )}
+                  >
+                    EN
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -269,6 +302,11 @@ export default function Header({ variant = "default" }: HeaderProps) {
               <div className="flex items-center gap-6 w-auto md:w-1/6 justify-end">
                 <Link href="/cart" className="relative cursor-pointer group" aria-label={t('header_cart_aria', {}, "Open shopping cart")}>
                   <ShoppingCart className="h-6 w-6 text-gray-700 group-hover:text-primary transition-colors" />
+                  {(cart?.totalItems ?? 0) > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 bg-primary text-primary-foreground text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1 leading-none shadow-sm">
+                      {cart!.totalItems! > 99 ? "99+" : cart!.totalItems}
+                    </span>
+                  )}
                 </Link>
 
                 {/* Nút đăng nhập/tài khoản */}

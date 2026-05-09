@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { useCreatePayment, useGetOrderIdBySagaId } from "@/features/orders/hooks";
-import { useCancelPayment, useSimulatePayment } from "@/features/orders/hooks";
+import { useCancelPayment, useSimulatePayment, usePaymentQrCode } from "@/features/orders/hooks";
 import { useLanguage } from "@/providers/language.provider";
 import { toErrorMessage } from "@/utils/error-message";
 
@@ -26,6 +26,7 @@ export default function OrderProcessingPage() {
     const createPayment = useCreatePayment();
     const simulatePayment = useSimulatePayment();
     const cancelPayment = useCancelPayment();
+    const { data: qrData, isLoading: isLoadingQr } = usePaymentQrCode(paymentId || "", Boolean(paymentId));
 
     const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -64,10 +65,21 @@ export default function OrderProcessingPage() {
         };
     }, [startPolling]);
 
+    // Handle final redirection for COD or when simulation is skipped
     useEffect(() => {
-        if (orderId && isNonCod && !paymentId) {
+        if (orderId && !isNonCod) {
+            // Short delay to let the user see the "Finalizing" state
+            const timer = setTimeout(() => {
+                router.push(`/orders/${orderId}`);
+            }, 1500);
+            return () => clearTimeout(timer);
+        }
+    }, [orderId, isNonCod, router]);
+
+    useEffect(() => {
+        if (orderId && isNonCod && !paymentId && !createPayment.isPending) {
             createPayment.mutate(
-                { orderId, sagaId: sagaId!, paymentMethod },
+                { orderId, sagaId: sagaId! },
                 {
                     onSuccess: (newPaymentId) => {
                         setPaymentId(newPaymentId);
@@ -78,13 +90,13 @@ export default function OrderProcessingPage() {
                 }
             );
         }
-    }, [orderId, isNonCod, paymentId, sagaId, paymentMethod, createPayment]);
+    }, [orderId, isNonCod, paymentId, sagaId, createPayment.isPending]);
 
     const handlePaymentSuccess = async () => {
         if (!orderId || !paymentId) return;
         setSimulating(true);
         try {
-            await simulatePayment.mutateAsync({ orderId, paymentId });
+            await simulatePayment.mutateAsync({ orderId, paymentId, sagaId: sagaId! });
             router.push(`/orders/${orderId}`);
         } catch (err) {
             setError(toErrorMessage(err, "Payment simulation failed"));
@@ -96,7 +108,7 @@ export default function OrderProcessingPage() {
         if (!orderId || !paymentId) return;
         setSimulating(true);
         try {
-            await cancelPayment.mutateAsync({ orderId, paymentId });
+            await cancelPayment.mutateAsync({ orderId, paymentId, sagaId: sagaId! });
             router.push(`/orders/${orderId}`);
         } catch (err) {
             setError(toErrorMessage(err, "Payment cancellation failed"));
@@ -146,36 +158,69 @@ export default function OrderProcessingPage() {
 
     if (orderId && isNonCod && paymentId) {
         return (
-            <div className="flex flex-col items-center justify-center h-screen bg-[#F9F8FE] px-4">
-                <div className="relative mb-6">
-                    <div className="w-20 h-20 rounded-full bg-[#8AB0C3] flex items-center justify-center text-white text-3xl">
-                        💳
+            <div className="flex flex-col items-center justify-center min-h-screen bg-[#F9F8FE] px-4 py-12">
+                <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 max-w-md w-full flex flex-col items-center">
+                    <div className="relative mb-6">
+                        <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center text-primary text-4xl">
+                            💳
+                        </div>
                     </div>
-                </div>
 
-                <h2 className="text-xl font-semibold text-gray-800 mb-2 text-center">
-                    {t('payment_simulation_title', {}, "Payment Simulation")}
-                </h2>
-                <p className="text-sm text-gray-500 mb-8 text-center max-w-sm">
-                    {t('payment_simulation_desc', {}, "This is a simulated payment environment. Choose an outcome to proceed.")}
-                </p>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2 text-center">
+                        {t('payment_simulation_title', {}, "Payment Simulation")}
+                    </h2>
+                    <p className="text-sm text-gray-500 mb-8 text-center">
+                        {t('payment_simulation_desc', {}, "Please scan the QR code below or choose an outcome to simulate the payment.")}
+                    </p>
 
-                <div className="flex gap-4">
-                    <Button
-                        onClick={handlePaymentSuccess}
-                        disabled={simulating}
-                        className="bg-green-600 hover:bg-green-700 text-white font-semibold min-w-40"
-                    >
-                        {t('payment_success', {}, "Payment Successful")}
-                    </Button>
-                    <Button
-                        onClick={handlePaymentCancel}
-                        disabled={simulating}
-                        variant="destructive"
-                        className="font-semibold min-w-40"
-                    >
-                        {t('payment_failed', {}, "Payment Failed")}
-                    </Button>
+                    <div className="bg-white p-6 rounded-2xl border-2 border-primary/20 shadow-inner mb-8">
+                        {isLoadingQr ? (
+                            <div className="w-48 h-48 flex items-center justify-center bg-gray-50 rounded-lg">
+                                <span className="text-sm text-gray-400 animate-pulse">{t('loading', {}, "Loading...")}</span>
+                            </div>
+                        ) : qrData?.qrCode ? (
+                            /* eslint-disable-next-line @next/next/no-img-element */
+                            <img
+                                src={
+                                    qrData.qrCode.startsWith('http') || qrData.qrCode.startsWith('data:image')
+                                        ? qrData.qrCode
+                                        : `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData.qrCode)}`
+                                }
+                                alt="Payment QR Code"
+                                className="w-48 h-48 object-contain"
+                            />
+                        ) : (
+                            <div className="w-48 h-48 flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed">
+                                <span className="text-xs text-gray-400 text-center px-4">
+                                    {t('qr_failed', {}, "Could not load QR code from server")}
+                                </span>
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 w-full">
+                        <Button
+                            onClick={handlePaymentSuccess}
+                            disabled={simulating}
+                            className="bg-green-600 hover:bg-green-700 text-white font-bold h-12 rounded-xl transition-all active:scale-95"
+                        >
+                            {t('payment_success', {}, "Success")}
+                        </Button>
+                        <Button
+                            onClick={handlePaymentCancel}
+                            disabled={simulating}
+                            variant="destructive"
+                            className="font-bold h-12 rounded-xl transition-all active:scale-95"
+                        >
+                            {t('payment_failed', {}, "Cancel")}
+                        </Button>
+                    </div>
+
+                    {qrData?.expiredAt && (
+                        <p className="mt-6 text-xs text-muted-foreground italic">
+                            {t('qr_expired_at', { time: new Date(qrData.expiredAt).toLocaleTimeString() }, `Expires at ${new Date(qrData.expiredAt).toLocaleTimeString()}`)}
+                        </p>
+                    )}
                 </div>
             </div>
         );

@@ -61,11 +61,11 @@ const getAccessToken = () =>
 const getRefreshToken = () =>
   useAuthStore.getState().session?.refreshToken ?? authStorage.getRefreshToken();
 
-const clearAuthState = () => {
+const clearAuthState = (shouldRedirect = true) => {
   authStorage.clearTokens();
   useAuthStore.getState().clearSession();
   clearAutoRefresh();
-  if (!isServer && !window.location.pathname.startsWith("/login")) {
+  if (shouldRedirect && !isServer && !window.location.pathname.startsWith("/login")) {
     window.location.href = "/login";
   }
 };
@@ -175,7 +175,8 @@ api.interceptors.response.use(
 
       // If we reach here, either it's an auth route, already retried, or refresh failed
       if (status === 401 || (status === 403 && !isAuthRoute)) {
-        clearAuthState();
+        const shouldRedirect = config.headers?.["x-no-redirect"] !== "true";
+        clearAuthState(shouldRedirect);
         if (isAuthRoute) {
           throw new AppError(message, 401, code, data);
         }

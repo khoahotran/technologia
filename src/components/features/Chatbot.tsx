@@ -164,13 +164,13 @@ export function Chatbot() {
         <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-[max(1rem,env(safe-area-inset-right))] z-50 flex flex-col items-end gap-2 pointer-events-none">
             <Card
                 className={cn(
-                    "w-[calc(100vw-1rem)] max-w-[420px] sm:w-[380px] border-primary/20 shadow-2xl transition-all duration-300 py-0",
+                    "w-[calc(100vw-1rem)] max-w-[420px] sm:w-[380px] border-primary/20 shadow-2xl transition-all duration-300 py-0 gap-0",
                     showChatWindow
                         ? "pointer-events-auto translate-y-0 opacity-100"
                         : "pointer-events-none translate-y-4 opacity-0 invisible"
                 )}
             >
-                <CardHeader className="rounded-t-lg bg-primary px-4 py-3 text-primary-foreground">
+                <CardHeader className="rounded-t-2xl bg-primary px-4 py-3 text-primary-foreground">
                     <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2">
                             <MessageCircle className="h-5 w-5" />

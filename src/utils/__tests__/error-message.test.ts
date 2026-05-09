@@ -37,9 +37,9 @@ describe('toErrorMessage Utility', () => {
         })
 
         it('should return default fallback when not provided', () => {
-            expect(toErrorMessage('string error')).toBe('Request failed')
-            expect(toErrorMessage(123)).toBe('Request failed')
-            expect(toErrorMessage(null)).toBe('Request failed')
+            expect(toErrorMessage('string error')).toBe('err_request_failed')
+            expect(toErrorMessage(123)).toBe('err_request_failed')
+            expect(toErrorMessage(null)).toBe('err_request_failed')
         })
     })
 })

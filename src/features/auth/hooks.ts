@@ -2,11 +2,12 @@ import { useMutation } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
-import { useLanguage } from "@/providers/language.provider";
-import { toErrorMessage } from "@/utils/error-message";
 import { googleLogin, login, logout } from "./api";
 import { useAuthStore } from "./store";
 import type { AuthSession } from "./types";
+
+import { useLanguage } from "@/providers/language.provider";
+import { toErrorMessage } from "@/utils/error-message";
 
 export function useLogin() {
   const setSession = useAuthStore((state) => state.setSession);
@@ -24,8 +25,8 @@ export function useLogin() {
         router.push("/");
       }
     },
-    onError: (error: unknown) => {
-      toast.error(toErrorMessage(error, t('login_failed', {}, "Login failed")));
+    onError: (error) => {
+      toast.error(t(toErrorMessage(error, 'login_failed')));
     },
   });
 }
@@ -46,8 +47,8 @@ export function useGoogleLogin() {
         router.push("/");
       }
     },
-    onError: (error: unknown) => {
-      toast.error(toErrorMessage(error, t('google_login_failed', {}, "Google login failed")));
+    onError: (error) => {
+      toast.error(t(toErrorMessage(error, 'google_login_failed')));
     },
   });
 }

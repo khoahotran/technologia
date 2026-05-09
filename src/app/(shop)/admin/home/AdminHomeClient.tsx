@@ -1,9 +1,21 @@
 "use client";
 
-import { CirclePlus, PencilLine, Trash2 } from "lucide-react";
-import { useMemo } from "react";
+import { CirclePlus, PencilLine, Trash2, Tags, Building2 } from "lucide-react";
+import { useState, useMemo } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
     useBrands,
     useCategories,
@@ -16,95 +28,13 @@ import {
 } from "@/features/products/hooks";
 import { useLanguage } from "@/providers/language.provider";
 
-type NamedItem = {
-    id: string;
-    name: string;
-};
+type NamedItem = { id: string; name: string };
 
-function normalizeItems<
-    T extends { name: string; brandId?: number | string; categoryId?: number | string }
->(items: T[] | undefined, idField: "brandId" | "categoryId") {
-    if (!items) return [] as NamedItem[];
-    return items.map((item) => ({
-        id: String(item[idField]),
-        name: item.name,
-    }));
-}
-
-function ManagementColumn({
-    title,
-    addLabel,
-    items,
-    onAdd,
-    onEdit,
-    onDelete,
-    isBusy,
-}: {
-    title: string;
-    addLabel: string;
-    items: NamedItem[];
-    onAdd: () => void;
-    onEdit: (item: NamedItem) => void;
-    onDelete: (item: NamedItem) => void;
-    isBusy: boolean;
-}) {
-    return (
-        <section className="bg-[#F4F4F4] border border-[#8AB0C3] shadow-[0_8px_16px_rgba(0,0,0,0.2)] p-8 w-full max-w-[460px] h-[980px] overflow-auto">
-            <h2 className="text-4xl md:text-5xl font-bold text-[#1E1E1E]">{title}</h2>
-
-            <button
-                type="button"
-                className="w-full h-28 px-8 my-8 bg-white border border-[#9DA8B3] shadow-[0_4px_8px_rgba(0,0,0,0.15)] rounded-none flex items-center gap-4 text-2xl md:text-4xl font-semibold disabled:opacity-60"
-                onClick={onAdd}
-                disabled={isBusy}
-            >
-                <CirclePlus className="h-10 w-10" />
-                <span>{addLabel}</span>
-            </button>
-
-            <div className="space-y-5">
-                {items.map((item) => (
-                    <article
-                        key={item.id}
-                        className="h-28 px-8 bg-white border border-[#AAB3BC] shadow-[0_4px_8px_rgba(0,0,0,0.15)] flex items-center justify-between"
-                    >
-                        <p className="text-3xl md:text-4xl font-semibold text-[#1E1E1E] truncate pr-6">
-                            {item.name}
-                        </p>
-                        <div className="flex items-center gap-4">
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                className="h-10 w-10 text-[#4B5563]"
-                                onClick={() => onEdit(item)}
-                                disabled={isBusy}
-                            >
-                                <PencilLine className="h-6 w-6" />
-                            </Button>
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                className="h-10 w-10 text-[#4B5563]"
-                                onClick={() => onDelete(item)}
-                                disabled={isBusy}
-                            >
-                                <Trash2 className="h-6 w-6" />
-                            </Button>
-                        </div>
-                    </article>
-                ))}
-            </div>
-        </section>
-    );
-}
-
-function renameWithPrompt(itemLabel: string, defaultValue?: string) {
-    const nextValue = window.prompt(itemLabel, defaultValue ?? "");
-    if (nextValue === null) return null;
-    const trimmed = nextValue.trim();
-    return trimmed.length > 0 ? trimmed : null;
+function normalizeItems<T extends { name: string; brandId?: number | string; categoryId?: number | string }>(
+    items: T[] | undefined, idField: "brandId" | "categoryId"
+): NamedItem[] {
+    if (!items) return [];
+    return items.map((item) => ({ id: String(item[idField]), name: item.name }));
 }
 
 function toNumericId(id: string) {
@@ -127,92 +57,209 @@ export default function AdminHomeClient() {
     const categories = useMemo(() => normalizeItems(categoryData, "categoryId"), [categoryData]);
 
     const isBusy =
-        createBrandMutation.isPending ||
-        updateBrandMutation.isPending ||
-        deleteBrandMutation.isPending ||
-        createCategoryMutation.isPending ||
-        updateCategoryMutation.isPending ||
-        deleteCategoryMutation.isPending;
+        createBrandMutation.isPending || updateBrandMutation.isPending ||
+        deleteBrandMutation.isPending || createCategoryMutation.isPending ||
+        updateCategoryMutation.isPending || deleteCategoryMutation.isPending;
 
-    const handleAdd = (type: "brand" | "category") => {
-        const nextName = renameWithPrompt(
-            type === "brand"
-                ? t("admin_enter_new_brand_name", {}, "Enter new brand name")
-                : t("admin_enter_new_category_name", {}, "Enter new category name")
-        );
-        if (!nextName) return;
+    const [dialogMode, setDialogMode] = useState<"add" | "edit" | null>(null);
+    const [dialogType, setDialogType] = useState<"brand" | "category">("category");
+    const [dialogItem, setDialogItem] = useState<NamedItem | null>(null);
+    const [dialogValue, setDialogValue] = useState("");
+    const [deleteConfirm, setDeleteConfirm] = useState<{ type: "brand" | "category"; id: string; name: string } | null>(null);
 
-        if (type === "brand") {
-            createBrandMutation.mutate({ name: nextName });
-            return;
-        }
-        createCategoryMutation.mutate({ name: nextName });
+    const openDialog = (mode: "add" | "edit", type: "brand" | "category", item?: NamedItem) => {
+        setDialogMode(mode);
+        setDialogType(type);
+        setDialogItem(item ?? null);
+        setDialogValue(item?.name ?? "");
     };
 
-    const handleEdit = (type: "brand" | "category", item: NamedItem) => {
-        const nextName = renameWithPrompt(
-            type === "brand"
-                ? t("admin_edit_brand_name", {}, "Edit brand name")
-                : t("admin_edit_category_name", {}, "Edit category name"),
-            item.name
-        );
-        if (!nextName) return;
+    const closeDialog = () => {
+        setDialogMode(null);
+        setDialogValue("");
+        setDialogItem(null);
+    };
 
-        const numericId = toNumericId(item.id);
-        if (numericId === null) return;
+    const handleDialogConfirm = () => {
+        const name = dialogValue.trim();
+        if (!name) return;
 
-        if (type === "brand") {
-            updateBrandMutation.mutate({ brandId: numericId, payload: { name: nextName } });
-            return;
+        if (dialogMode === "add") {
+            if (dialogType === "brand") {
+                createBrandMutation.mutate({ name });
+            } else {
+                createCategoryMutation.mutate({ name });
+            }
+        } else if (dialogMode === "edit" && dialogItem) {
+            const numericId = toNumericId(dialogItem.id);
+            if (numericId === null) return;
+            if (dialogType === "brand") {
+                updateBrandMutation.mutate({ brandId: numericId, payload: { name } });
+            } else {
+                updateCategoryMutation.mutate({ categoryId: numericId, payload: { name } });
+            }
         }
-        updateCategoryMutation.mutate({ categoryId: numericId, payload: { name: nextName } });
+        closeDialog();
     };
 
     const handleDelete = (type: "brand" | "category", item: NamedItem) => {
-        if (!window.confirm(t("admin_confirm_delete_item", { name: item.name }, "Delete {name}?"))) {
-            return;
-        }
+        setDeleteConfirm({ type, id: item.id, name: item.name });
+    };
 
-        const numericId = toNumericId(item.id);
+    const confirmDelete = () => {
+        if (!deleteConfirm) return;
+        const numericId = toNumericId(deleteConfirm.id);
         if (numericId === null) return;
-
-        if (type === "brand") {
+        if (deleteConfirm.type === "brand") {
             deleteBrandMutation.mutate(numericId);
-            return;
+        } else {
+            deleteCategoryMutation.mutate(numericId);
         }
-        deleteCategoryMutation.mutate(numericId);
+        setDeleteConfirm(null);
     };
 
     if (loadingBrands || loadingCategories) {
         return (
-            <div className="py-20 text-center text-xl text-[#556070]">
-                {t("admin_loading_management_data", {}, "Loading management data...")}
+            <div className="container mx-auto px-4 py-8">
+                <div className="grid md:grid-cols-2 gap-6">
+                    {[1, 2].map((col) => (
+                        <Card key={col}>
+                            <CardHeader><Skeleton className="h-6 w-32" /></CardHeader>
+                            <CardContent className="space-y-3">
+                                {[1, 2, 3].map((i) => (
+                                    <Skeleton key={i} className="h-14 w-full rounded-xl" />
+                                ))}
+                            </CardContent>
+                        </Card>
+                    ))}
+                </div>
             </div>
         );
     }
 
+    const renderColumn = (title: string, addLabel: string, items: NamedItem[], type: "brand" | "category") => (
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between gap-4">
+                <CardTitle className="text-lg font-bold">{title}</CardTitle>
+                <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">{items.length}</span>
+            </CardHeader>
+            <CardContent className="space-y-2">
+                <Button
+                    variant="outline"
+                    className="w-full h-11 rounded-xl border-dashed gap-2 text-sm font-medium"
+                    onClick={() => openDialog("add", type)}
+                    disabled={isBusy}
+                >
+                    <CirclePlus className="h-4 w-4" />
+                    {addLabel}
+                </Button>
+                {items.length === 0 && (
+                    <p className="text-sm text-muted-foreground text-center py-6">
+                        {t("admin_no_items", {}, "No items yet")}
+                    </p>
+                )}
+                {items.map((item) => (
+                    <div
+                        key={item.id}
+                        className="flex items-center justify-between p-3 rounded-xl bg-muted/50 border border-border/50 hover:bg-accent/30 transition-colors"
+                    >
+                        <div className="flex items-center gap-2 min-w-0">
+                            {type === "category" ? (
+                                <Tags className="h-4 w-4 shrink-0 text-primary" />
+                            ) : (
+                                <Building2 className="h-4 w-4 shrink-0 text-primary" />
+                            )}
+                            <span className="text-sm font-medium truncate">{item.name}</span>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                            <Button
+                                variant="ghost"
+                                size="icon-sm"
+                                onClick={() => openDialog("edit", type, item)}
+                                disabled={isBusy}
+                            >
+                                <PencilLine className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="icon-sm"
+                                onClick={() => handleDelete(type, item)}
+                                disabled={isBusy}
+                                className="text-destructive hover:text-destructive"
+                            >
+                                <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                        </div>
+                    </div>
+                ))}
+            </CardContent>
+        </Card>
+    );
+
+    const dialogTitle =
+        dialogMode === "add"
+            ? dialogType === "brand"
+                ? t("admin_add_brand", {}, "Add brand")
+                : t("admin_add_category", {}, "Add category")
+            : dialogType === "brand"
+                ? t("admin_edit_brand", {}, "Edit brand")
+                : t("admin_edit_category", {}, "Edit category");
+
     return (
-        <div className="container mx-auto px-4 py-12">
-            <div className="grid xl:grid-cols-2 gap-12 justify-items-center">
-                <ManagementColumn
-                    title={t("admin_categories", {}, "Categories")}
-                    addLabel={t("admin_add_category", {}, "Add category")}
-                    items={categories}
-                    onAdd={() => handleAdd("category")}
-                    onEdit={(item) => handleEdit("category", item)}
-                    onDelete={(item) => handleDelete("category", item)}
-                    isBusy={isBusy}
-                />
-                <ManagementColumn
-                    title={t("admin_brands", {}, "Brands")}
-                    addLabel={t("admin_add_brand", {}, "Add brand")}
-                    items={brands}
-                    onAdd={() => handleAdd("brand")}
-                    onEdit={(item) => handleEdit("brand", item)}
-                    onDelete={(item) => handleDelete("brand", item)}
-                    isBusy={isBusy}
-                />
+        <div className="container mx-auto px-4 py-6">
+            <div className="grid md:grid-cols-2 gap-6">
+                {renderColumn(
+                    t("admin_categories", {}, "Categories"),
+                    t("admin_add_category", {}, "Add category"),
+                    categories,
+                    "category"
+                )}
+                {renderColumn(
+                    t("admin_brands", {}, "Brands"),
+                    t("admin_add_brand", {}, "Add brand"),
+                    brands,
+                    "brand"
+                )}
             </div>
+
+            <Dialog open={dialogMode !== null} onOpenChange={(open) => { if (!open) closeDialog(); }}>
+                <DialogContent className="sm:max-w-md rounded-2xl">
+                    <DialogHeader>
+                        <DialogTitle>{dialogTitle}</DialogTitle>
+                        <DialogDescription>
+                            {dialogType === "brand"
+                                ? t("admin_enter_brand_name_desc", {}, "Enter the name for the brand")
+                                : t("admin_enter_category_name_desc", {}, "Enter the name for the category")}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <Input
+                        value={dialogValue}
+                        onChange={(e) => setDialogValue(e.target.value)}
+                        placeholder={dialogType === "brand" ? t("admin_brand_name", {}, "Brand name") : t("admin_category_name", {}, "Category name")}
+                        className="rounded-xl"
+                        autoFocus
+                        onKeyDown={(e) => { if (e.key === "Enter") handleDialogConfirm(); }}
+                    />
+                    <DialogFooter className="gap-2 sm:gap-0">
+                        <Button variant="outline" onClick={closeDialog} className="rounded-xl">
+                            {t("cancel", {}, "Cancel")}
+                        </Button>
+                        <Button onClick={handleDialogConfirm} disabled={!dialogValue.trim() || isBusy} className="rounded-xl">
+                            {dialogMode === "add" ? t("add", {}, "Add") : t("save", {}, "Save")}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <ConfirmDialog
+                open={deleteConfirm !== null}
+                onOpenChange={(open) => { if (!open) setDeleteConfirm(null); }}
+                onConfirm={confirmDelete}
+                title={t("admin_confirm_delete_item", { name: deleteConfirm?.name ?? "" }, "Delete this item?")}
+                confirmText={t("confirm", {}, "Confirm")}
+                cancelText={t("cancel", {}, "Cancel")}
+                variant="destructive"
+            />
         </div>
     );
 }
