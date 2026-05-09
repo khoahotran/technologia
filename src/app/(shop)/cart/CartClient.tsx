@@ -1,6 +1,7 @@
 "use client";
 
 import { Loader2, Tag, Ticket } from "lucide-react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -14,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { calculateCartPrice } from "@/features/cart/api";
 import { useCart } from "@/features/cart/hooks";
 import { CountPriceResponse } from "@/features/cart/types";
-import { getAvailableDiscounts, getDiscountByCode, getUserDiscounts } from "@/features/discounts/api";
+import { getDiscountByCode, getUserDiscounts } from "@/features/discounts/api";
 import { DiscountResponse } from "@/features/discounts/types";
 import { useLanguage } from "@/providers/language.provider";
 import { useOrderFlowStore } from "@/store/order-flow.store";
@@ -57,17 +58,8 @@ export default function CartClient() {
     useEffect(() => {
         const fetchDiscounts = async () => {
             try {
-                const [publicDiscounts, userDiscounts] = await Promise.all([
-                    getAvailableDiscounts(),
-                    getUserDiscounts().catch(() => [] as DiscountResponse[]),
-                ]);
-                const merged = [...publicDiscounts];
-                for (const ud of userDiscounts) {
-                    if (!merged.some(d => d.discountId === ud.discountId)) {
-                        merged.push(ud);
-                    }
-                }
-                setAvailableDiscounts(merged);
+                const userDiscounts = await getUserDiscounts().catch(() => [] as DiscountResponse[]);
+                setAvailableDiscounts(userDiscounts);
             } catch (error) {
                 console.error("Failed to fetch discounts", error);
             }
@@ -100,7 +92,7 @@ export default function CartClient() {
         };
 
         fetchPrice();
-    }, [effectiveSelectedIds, appliedDiscount]);
+    }, [effectiveSelectedIds, appliedDiscount, items]);
 
     const clientSideTotal = useMemo(
         () =>
@@ -238,8 +230,13 @@ export default function CartClient() {
                                 />
                             ))}
                             {items.length === 0 && (
-                                <div className="bg-card p-8 rounded-lg border border-border text-center text-muted-foreground">
-                                    {t('cart_empty', {}, "Your cart is empty. Start adding products from the product list.")}
+                                <div className="bg-card p-12 rounded-xl border border-dashed border-border text-center text-muted-foreground flex flex-col items-center gap-6">
+                                    <p className="text-lg italic font-medium">
+                                        {t('cart_empty', {}, "Giỏ hàng của bạn đang cảm thấy 'cô đơn' quá... Đi 'hẹn hò' với vài sản phẩm xịn xò ngay thôi!")}
+                                    </p>
+                                    <Button asChild className="rounded-full px-8 h-12 text-base shadow-lg transition-transform hover:scale-105 active:scale-95">
+                                        <Link href="/products">{t('go_shopping', {}, "Đến cửa hàng ngay")}</Link>
+                                    </Button>
                                 </div>
                             )}
                         </div>

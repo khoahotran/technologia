@@ -50,7 +50,7 @@ export default function ShippingClient() {
     const [paymentAccountId, setPaymentAccountId] = useState("");
     const [showAddPaymentDialog, setShowAddPaymentDialog] = useState(false);
     const [checkoutData, setCheckoutData] = useState<CheckoutPreviewResponse | CheckoutRecalculateResponse | null>(null);
-    const recalculatedSessionRef = useRef<string | null>(null);
+    const lastRecalculatedRef = useRef<string | null>(null);
 
     const { data: addresses = [] } = useAddresses();
     const { data: paymentAccounts = [], refetch: refetchPaymentAccounts } = usePaymentAccounts();
@@ -118,10 +118,11 @@ export default function ShippingClient() {
         }
     }, [selectedCartItems, checkoutSessionId, voucherCodeParam]);
 
-    // Auto-Recalculate
+    // Auto-Recalculate whenever address or voucher changes
     useEffect(() => {
-        if (checkoutSessionId && activeAddress && recalculatedSessionRef.current !== checkoutSessionId) {
-            recalculatedSessionRef.current = checkoutSessionId;
+        const recalculateKey = `${checkoutSessionId}-${activeAddress?.addressId}-${voucherCodeParam}`;
+        if (checkoutSessionId && activeAddress && lastRecalculatedRef.current !== recalculateKey) {
+            lastRecalculatedRef.current = recalculateKey;
             recalculateCheckout.mutate({
                 checkoutSessionId,
                 addressId: activeAddress.addressId,

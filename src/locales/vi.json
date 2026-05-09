@@ -81,7 +81,8 @@
     "select_all": "Chọn tất cả",
     "remove": "XÓA",
     "removed_selected": "Đã xóa các mục đã chọn",
-    "cart_empty": "Giỏ hàng của bạn đang trống. Hãy bắt đầu thêm sản phẩm từ danh sách sản phẩm.",
+    "cart_empty": "Giỏ hàng của bạn đang cảm thấy 'cô đơn' quá... Đi 'hẹn hò' với vài sản phẩm xịn xò ngay thôi!",
+    "go_shopping": "Đến cửa hàng ngay",
     "promo_mocked": "Hỗ trợ mã khuyến mãi được giả lập",
     "list_of_orders": "Danh sách đơn hàng",
     "no_orders": "Bạn chưa có đơn hàng nào.",
@@ -159,7 +160,7 @@
     "qr_failed": "Không thể tải mã QR từ máy chủ",
     "payment_success": "Thành công",
     "payment_failed": "Hủy",
-    "qr_expired_at": "Hết hạn lúc {time}",
+    "qr_expired_at": "Hết hạn lúc {time} (GMT+7)",
     "order_processing_wait": "Vui lòng không đóng trang này trong khi chúng tôi xử lý đơn hàng của bạn",
     "select_address_first": "Vui lòng tạo/chọn địa chỉ giao hàng trước",
     "no_items_selected": "Chưa chọn sản phẩm nào",
@@ -625,5 +626,6 @@
     "admin_nav_home_management": "QUẢN LÝ TRANG CHỦ",
     "admin_nav_product_management": "QUẢN LÝ SẢN PHẨM",
     "admin_nav_order_management": "QUẢN LÝ ĐƠN HÀNG",
-    "admin_nav_reporting_management": "QUẢN LÝ BÁO CÁO"
+    "admin_nav_reporting_management": "QUẢN LÝ BÁO CÁO",
+    "cart_price_reference_note": "Giá trị này chỉ mang tính chất tham khảo. Tổng tiền chính xác sẽ được tính tại bước thanh toán."
 }

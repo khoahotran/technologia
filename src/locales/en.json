@@ -62,7 +62,8 @@
     "select_all": "Select All",
     "remove": "REMOVE",
     "removed_selected": "Removed selected items",
-    "cart_empty": "Your cart is empty. Start adding products from the product list.",
+    "cart_empty": "Your cart is feeling a bit lonely... Go find some awesome products to keep it company!",
+    "go_shopping": "Shop now",
     "promo_mocked": "Promo code support is mocked",
     "list_of_orders": "List Of Orders",
     "no_orders": "You have no orders yet.",
@@ -140,7 +141,7 @@
     "qr_failed": "Could not load QR code from server",
     "payment_success": "Success",
     "payment_failed": "Cancel",
-    "qr_expired_at": "Expires at {time}",
+    "qr_expired_at": "Expires at {time} (GMT+0)",
     "order_processing_wait": "Please do not close this page while we process your order",
     "select_address_first": "Please create/select a shipping address first",
     "no_items_selected": "No cart items selected",
@@ -622,5 +623,6 @@
     "admin_nav_home_management": "HOME MANAGEMENT",
     "admin_nav_product_management": "PRODUCT MANAGEMENT",
     "admin_nav_order_management": "ORDER MANAGEMENT",
-    "admin_nav_reporting_management": "REPORTING MANAGEMENT"
+    "admin_nav_reporting_management": "REPORTING MANAGEMENT",
+    "cart_price_reference_note": "This value is for reference only. The exact total will be calculated at checkout."
 }

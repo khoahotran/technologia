@@ -2,6 +2,7 @@
 
 import { MessageCircle, Minus, Send, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -216,7 +217,26 @@ export function Chatbot() {
                                         : "mr-auto rounded-bl-md border bg-card text-card-foreground"
                                 )}
                             >
-                                <p>{message.text}</p>
+                                <div className="markdown-content">
+                                    {message.sender === "bot" ? (
+                                        <ReactMarkdown
+                                            components={{
+                                                p: ({ ...props }) => <p className="mb-2 last:mb-0" {...props} />,
+                                                ul: ({ ...props }) => <ul className="list-disc ml-4 mb-2" {...props} />,
+                                                ol: ({ ...props }) => <ol className="list-decimal ml-4 mb-2" {...props} />,
+                                                li: ({ ...props }) => <li className="mb-1" {...props} />,
+                                                strong: ({ ...props }) => <strong className="font-bold" {...props} />,
+                                                code: ({ ...props }) => (
+                                                    <code className="bg-muted px-1 py-0.5 rounded text-xs font-mono" {...props} />
+                                                ),
+                                            }}
+                                        >
+                                            {message.text}
+                                        </ReactMarkdown>
+                                    ) : (
+                                        <p>{message.text}</p>
+                                    )}
+                                </div>
                             </div>
                         ))}
 
