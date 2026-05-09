@@ -2,14 +2,17 @@ import type {
     AdminActionLogListResponse,
     AdminActionLogQueryParams,
     AdminActionLogResponse,
+    CreateDeliveryLogRequest,
     CreateMonthlyRevenueReportRequest,
     CreateTopSellingProductsReportRequest,
+    DeliveryLogResponse,
     ReportListResponse,
     ReportQueryParams,
     ReportResponse,
+    UpdateOrderDeliveryStatusRequest,
 } from "./types";
 
-import { get, post } from "@/api/client";
+import { del, get, patch, post, put } from "@/api/client";
 import type { ApiResponse, PaginatedResponse } from "@/types/api.types";
 
 export async function createMonthlyRevenueReport(
@@ -68,4 +71,32 @@ export async function getAdminActionLogs(
 export async function getAdminActionLogById(logId: string): Promise<AdminActionLogResponse> {
     const response = await get<ApiResponse<AdminActionLogResponse>>(`/api/admins/action-logs/by-id/${logId}`);
     return response.data;
+}
+
+export async function getDeliveryLogs(orderId: string): Promise<DeliveryLogResponse[]> {
+    const response = await get<ApiResponse<DeliveryLogResponse[]>>(`/api/delivery-logs/order/${orderId}`);
+    return response.data;
+}
+
+export async function getLatestDeliveryLog(orderId: string): Promise<DeliveryLogResponse | null> {
+    const response = await get<ApiResponse<DeliveryLogResponse>>(`/api/delivery-logs/latest/${orderId}`);
+    return response.data ?? null;
+}
+
+export async function createDeliveryLog(orderId: string, payload: CreateDeliveryLogRequest): Promise<DeliveryLogResponse> {
+    const response = await post<ApiResponse<DeliveryLogResponse>>(`/api/orders/admin/${orderId}/create-delivery-log`, payload);
+    return response.data;
+}
+
+export async function updateDeliveryLog(deliveryLogId: string, payload: CreateDeliveryLogRequest): Promise<DeliveryLogResponse> {
+    const response = await put<ApiResponse<DeliveryLogResponse>>(`/api/orders/admin/${deliveryLogId}/update-delivery-log`, payload);
+    return response.data;
+}
+
+export async function deleteDeliveryLog(deliveryLogId: string): Promise<void> {
+    await del<ApiResponse<null>>(`/api/orders/admin/${deliveryLogId}/delete-delivery-log`);
+}
+
+export async function updateOrderDeliveryStatus(orderId: string, payload: UpdateOrderDeliveryStatusRequest): Promise<void> {
+    await patch(`/api/orders/admin/${orderId}/status`, { newStatus: payload.deliveryStatus });
 }

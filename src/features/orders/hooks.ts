@@ -3,6 +3,7 @@ import { useCallback } from "react";
 import { toast } from "sonner";
 
 import {
+    cancelOrder,
     cancelPayment,
     confirmCheckout,
     createPayment,
@@ -14,6 +15,7 @@ import {
     getOrderFeedbacks,
     getOrderIdBySagaId,
     getOrders,
+    getPaymentQrCode,
     getProductFeedbacks,
     initCheckoutPreview,
     recalculateCheckout,
@@ -33,6 +35,7 @@ import type {
     ProductFeedbackParams,
     RecalculateCheckoutRequest,
     SubmitFeedbackRequest,
+    CancelOrderRequest,
 } from "./types";
 
 import { checkoutKeys } from "@/constants/query-keys";
@@ -113,7 +116,7 @@ export function useConfirmCheckout() {
         mutationFn: (payload: ConfirmCheckoutRequest) => confirmCheckout(payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: checkoutKeys.orders() });
-            queryClient.invalidateQueries({ queryKey: ["cart"] });
+            queryClient.invalidateQueries({ queryKey: ["cart"], refetchType: "all" });
         },
     });
 }
@@ -142,22 +145,47 @@ export function useGetOrderIdBySagaId() {
 
 export function useCreatePayment() {
     return useMutation({
-        mutationFn: ({ orderId, sagaId, paymentMethod }: { orderId: string; sagaId: string; paymentMethod: string }) =>
-            createPayment(orderId, sagaId, paymentMethod),
+        mutationFn: ({ orderId, sagaId }: { orderId: string; sagaId: string }) =>
+            createPayment(orderId, sagaId),
+    });
+}
+
+export function usePaymentQrCode(paymentId: string, enabled = true) {
+    return useQuery({
+        queryKey: ["payment-qr", paymentId],
+        queryFn: () => getPaymentQrCode(paymentId),
+        enabled: Boolean(paymentId) && enabled,
     });
 }
 
 export function useSimulatePayment() {
     return useMutation({
-        mutationFn: ({ orderId, paymentId }: { orderId: string; paymentId: string }) =>
-            simulatePayment(orderId, paymentId),
+        mutationFn: ({ orderId, paymentId, sagaId }: { orderId: string; paymentId: string; sagaId: string }) =>
+            simulatePayment(orderId, paymentId, sagaId),
     });
 }
 
 export function useCancelPayment() {
     return useMutation({
-        mutationFn: ({ orderId, paymentId }: { orderId: string; paymentId: string }) =>
-            cancelPayment(orderId, paymentId),
+        mutationFn: ({ orderId, paymentId, sagaId }: { orderId: string; paymentId: string; sagaId: string }) =>
+            cancelPayment(orderId, paymentId, sagaId),
+    });
+}
+
+export function useCancelOrder() {
+    const queryClient = useQueryClient();
+    const { t } = useLanguage();
+
+    return useMutation({
+        mutationFn: (payload: CancelOrderRequest) => cancelOrder(payload),
+        onSuccess: (_: void, variables) => {
+            queryClient.invalidateQueries({ queryKey: checkoutKeys.all });
+            queryClient.resetQueries({ queryKey: checkoutKeys.orders(), exact: false });
+            toast.success(t('order_canceled_success', {}, "Order canceled successfully"));
+        },
+        onError: (error) => {
+            toast.error(t(toErrorMessage(error, 'failed_cancel_order')));
+        },
     });
 }
 
@@ -169,13 +197,11 @@ export function useUpdateOrderStatus() {
         mutationFn: ({ orderId, deliveryStatus }: { orderId: string; deliveryStatus: AdminUpdateOrderStatus }) =>
             updateOrderStatus(orderId, deliveryStatus),
         onSuccess: (_: void, variables) => {
-            queryClient.invalidateQueries({ queryKey: checkoutKeys.order(variables.orderId) });
-            queryClient.invalidateQueries({ queryKey: [...checkoutKeys.all, "admin-order", variables.orderId] });
-            queryClient.invalidateQueries({ queryKey: checkoutKeys.orders() });
-            queryClient.invalidateQueries({ queryKey: [...checkoutKeys.all, "delivery-logs", variables.orderId] });
+            queryClient.invalidateQueries({ queryKey: checkoutKeys.all });
+            queryClient.resetQueries({ queryKey: checkoutKeys.orders(), exact: false });
         },
         onError: (error) => {
-            toast.error(toErrorMessage(error, t('admin_failed_update_order_status', {}, "Unable to update order status")));
+            toast.error(t(toErrorMessage(error, 'admin_failed_update_order_status')));
         },
     });
 }
@@ -205,7 +231,7 @@ export function useSubmitOrderFeedback() {
             toast.success(t('feedback_submitted_success', {}, "Feedback submitted successfully"));
         },
         onError: (error) => {
-            toast.error(toErrorMessage(error, t('failed_submit_feedback', {}, "Unable to submit feedback")));
+            toast.error(t(toErrorMessage(error, 'failed_submit_feedback')));
         },
     });
 }

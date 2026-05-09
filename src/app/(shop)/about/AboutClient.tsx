@@ -242,7 +242,7 @@ function ContactForm() {
                 company: "",
                 message: ""
             });
-        } catch (error: any) {
+        } catch (error: unknown) {
             toast.error(toErrorMessage(error, t('about_contact_error', {}, "Failed to send message. Please try again later.")));
         } finally {
             setIsSubmitting(false);

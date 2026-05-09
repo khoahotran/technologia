@@ -1,61 +1,66 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { BarChart3, ExternalLink, ListChecks, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
     Pagination,
     PaginationContent,
+    PaginationEllipsis,
     PaginationItem,
     PaginationLink,
     PaginationNext,
     PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
     useAdminActionLog,
     useAdminActionLogs,
     useAdminReports,
-    useCreateMonthlyRevenueReport,
-    useCreateTopSellingProductsReport,
 } from "@/features/admin/hooks";
 import type { ReportResponse, ReportType } from "@/features/admin/types";
+import { truncateId } from "@/features/orders/presentation";
 import { useLanguage } from "@/providers/language.provider";
 
-const monthRevenueSeed = [
-    { month: "JANUARY", revenue: 260_000_000 },
-    { month: "FEBRUARY", revenue: 230_000_000 },
-    { month: "MARCH", revenue: 180_000_000 },
-    { month: "APRIL", revenue: 250_000_000 },
-    { month: "MAY", revenue: 180_000_000 },
-    { month: "JUNE", revenue: 110_000_000 },
-    { month: "JULY", revenue: 220_000_000 },
-    { month: "AUGUST", revenue: 80_000_000 },
-    { month: "SEPTEMBER", revenue: 140_000_000 },
-    { month: "OCTOBER", revenue: 45_000_000 },
-    { month: "NOVEMBER", revenue: 82_000_000 },
-    { month: "DECEMBER", revenue: 135_000_000 },
-] as const;
-
 const reportTypeOptions: Array<{ value: "all" | ReportType; label: string }> = [
-    { value: "all", label: "All" },
-    { value: "MONTHLY_REVENUE", label: "Monthly Revenue" },
-    { value: "TOP_SELLING_PRODUCTS", label: "Top Selling Products" },
+    { value: "all", label: "all" },
+    { value: "MONTHLY_REVENUE", label: "monthly_revenue" },
+    { value: "TOP_SELLING_PRODUCTS", label: "top_selling_products" },
 ];
 
-type TableRow = {
-    key: string;
-    [field: string]: string;
-};
+function getBadgeVariant(type: string | undefined): "info" | "success" | "default" {
+    if (type === "MONTHLY_REVENUE") return "info";
+    if (type === "TOP_SELLING_PRODUCTS") return "success";
+    return "default";
+}
+
+type TableRow = { key: string;[field: string]: string };
 type TableColumn = { key: string; label: string };
+
+function getPaginationItems(current: number, last: number): (number | "...")[] {
+    const items: (number | "...")[] = [];
+    if (last <= 7) {
+        for (let i = 1; i <= last; i++) items.push(i);
+    } else {
+        items.push(1);
+        if (current > 3) items.push("...");
+        const start = Math.max(2, current - 1);
+        const end = Math.min(last - 1, current + 1);
+        for (let i = start; i <= end; i++) items.push(i);
+        if (current < last - 2) items.push("...");
+        items.push(last);
+    }
+    return items;
+}
 
 function ReportTable({
     title,
     rows,
     columns,
-    stripedClass,
-    accentClass,
     page,
     totalPages,
     onPageChange,
@@ -69,8 +74,6 @@ function ReportTable({
     title: string;
     rows: TableRow[];
     columns: TableColumn[];
-    stripedClass: string;
-    accentClass: string;
     page: number;
     totalPages: number;
     onPageChange: (nextPage: number) => void;
@@ -82,126 +85,153 @@ function ReportTable({
     onSizeChange: (value: number) => void;
 }) {
     const { t } = useLanguage();
+    const paginationItems = useMemo(() => getPaginationItems(page + 1, totalPages), [page, totalPages]);
 
     return (
-        <section className="bg-[#F8F8F8] rounded-xl p-8">
-            <h3 className="text-3xl md:text-4xl font-semibold text-[#3B4F66] text-center mb-6">{title}</h3>
-            <div className="grid md:grid-cols-[1fr_auto_auto] gap-4 mb-4">
-                <div className="relative">
-                    <Input
-                        value={search}
-                        onChange={(event) => onSearchChange(event.target.value)}
-                        placeholder={t("admin_search_here", {}, "Search Here")}
-                        className="h-[52px] pr-10 text-lg"
-                    />
-                    <Search className="h-5 w-5 absolute right-3 top-1/2 -translate-y-1/2 text-[#5E6A75]" />
+        <Card>
+            <CardHeader>
+                <CardTitle className="text-base font-semibold">{title}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+                <div className="flex flex-wrap items-center gap-2">
+                    <div className="relative flex-1 min-w-[200px]">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            value={search}
+                            onChange={(e) => onSearchChange(e.target.value)}
+                            placeholder={t("admin_search_here", {}, "Search Here")}
+                            className="h-9 pl-9 text-sm rounded-xl"
+                        />
+                    </div>
+                    <Select value={sortBy} onValueChange={onSortByChange}>
+                        <SelectTrigger className="h-9 min-w-32 text-sm rounded-xl">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="createdAt">{t("admin_created_date", {}, "Created Date")}</SelectItem>
+                            <SelectItem value="name">{t("admin_name", {}, "Name")}</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <Select value={String(size)} onValueChange={(v) => onSizeChange(Number(v))}>
+                        <SelectTrigger className="h-9 min-w-20 text-sm rounded-xl">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="10">10</SelectItem>
+                            <SelectItem value="20">20</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
-                <Select value={sortBy} onValueChange={onSortByChange}>
-                    <SelectTrigger className="h-[52px] min-w-48 text-base md:text-lg">
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="createdAt">{t("admin_created_date", {}, "Created Date")}</SelectItem>
-                        <SelectItem value="name">{t("admin_name", {}, "Name")}</SelectItem>
-                    </SelectContent>
-                </Select>
-                <Select value={String(size)} onValueChange={(value) => onSizeChange(Number(value))}>
-                    <SelectTrigger className="h-[52px] min-w-24 text-base md:text-lg">
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="10">10</SelectItem>
-                        <SelectItem value="20">20</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
 
-            <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm md:text-lg">
-                    <thead>
-                        <tr className="border-b border-[#ADC4D3]">
-                            {columns.map((column) => (
-                                <th key={column.key} className="py-3 px-3 capitalize font-medium">
-                                    {column.label}
-                                </th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {rows.map((row, index) => (
-                            <tr key={row["key"]} className={index % 2 === 0 ? stripedClass : "bg-transparent"}>
-                                {columns.map((column) => (
-                                    <td key={column.key} className="py-3 px-3 border-r border-[#ADC4D3]/60 last:border-r-0">
-                                        {row[column.key]}
-                                    </td>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left text-sm">
+                        <thead>
+                            <tr className="border-b border-border">
+                                {columns.map((col) => (
+                                    <th key={col.key} className="py-2.5 px-3 font-medium text-muted-foreground text-xs uppercase tracking-wider whitespace-nowrap">
+                                        {col.label}
+                                    </th>
                                 ))}
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody>
+                            {rows.length === 0 ? (
+                                <tr>
+                                    <td colSpan={columns.length} className="py-8 text-center text-muted-foreground text-sm">
+                                        {t("admin_no_reports", {}, "No reports found")}
+                                    </td>
+                                </tr>
+                            ) : (
+                                rows.map((row, i) => (
+                                    <tr key={row.key} className={`transition-colors hover:bg-accent/50 ${i % 2 === 0 ? "bg-muted/30" : ""}`}>
+                                        {columns.map((col) => (
+                                            <td key={col.key} className="py-2.5 px-3 border-r border-border/30 last:border-r-0 whitespace-nowrap">
+                                                {col.key === "reportType" ? (
+                                                    <Badge variant={getBadgeVariant(row[col.key])} className="rounded-full text-[10px] font-medium">
+                                                        {row[col.key] === "MONTHLY_REVENUE"
+                                                            ? t("monthly_revenue", {}, "Revenue")
+                                                            : t("top_selling_products", {}, "Top selling")}
+                                                    </Badge>
+                                                ) : col.key === "action" ? (
+                                                    <a
+                                                        href={row[col.key]}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="inline-flex items-center gap-1 text-primary hover:underline text-xs font-medium"
+                                                    >
+                                                        <ExternalLink className="h-3 w-3" />
+                                                        {t("admin_download", {}, "Download")}
+                                                    </a>
+                                                ) : (
+                                                    <span className={col.key === "id" ? "font-mono text-xs text-muted-foreground" : ""}>
+                                                        {row[col.key]}
+                                                    </span>
+                                                )}
+                                            </td>
+                                        ))}
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
 
-            <div className="flex justify-center mt-8">
-                <Pagination>
-                    <PaginationContent>
-                        <PaginationItem>
-                            <PaginationPrevious
-                                href="#"
-                                className={accentClass}
-                                onClick={(event) => {
-                                    event.preventDefault();
-                                    onPageChange(Math.max(page - 1, 0));
-                                }}
-                            />
-                        </PaginationItem>
-                        {[0, 1, 2].map((offset) => {
-                            const nextPage = Math.min(Math.max(page + offset - 1, 0), Math.max(totalPages - 1, 0));
-                            return (
-                                <PaginationItem key={nextPage}>
-                                    <PaginationLink
+                {totalPages > 1 && (
+                    <div className="flex justify-center pt-1">
+                        <Pagination>
+                            <PaginationContent>
+                                <PaginationItem>
+                                    <PaginationPrevious
                                         href="#"
-                                        className={accentClass}
-                                        isActive={nextPage === page}
-                                        onClick={(event) => {
-                                            event.preventDefault();
-                                            onPageChange(nextPage);
-                                        }}
-                                    >
-                                        {nextPage + 1}
-                                    </PaginationLink>
+                                        onClick={(e) => { e.preventDefault(); onPageChange(Math.max(page - 1, 0)); }}
+                                        className={page === 0 ? "pointer-events-none opacity-50" : ""}
+                                    />
                                 </PaginationItem>
-                            );
-                        })}
-                        <PaginationItem>
-                            <PaginationNext
-                                href="#"
-                                className={accentClass}
-                                onClick={(event) => {
-                                    event.preventDefault();
-                                    onPageChange(Math.min(page + 1, Math.max(totalPages - 1, 0)));
-                                }}
-                            />
-                        </PaginationItem>
-                    </PaginationContent>
-                </Pagination>
-            </div>
-        </section>
+                                {paginationItems.map((item, idx) => (
+                                    <PaginationItem key={idx}>
+                                        {item === "..." ? (
+                                            <PaginationEllipsis />
+                                        ) : (
+                                            <PaginationLink
+                                                href="#"
+                                                isActive={page === item - 1}
+                                                onClick={(e) => { e.preventDefault(); onPageChange(item - 1); }}
+                                            >
+                                                {item}
+                                            </PaginationLink>
+                                        )}
+                                    </PaginationItem>
+                                ))}
+                                <PaginationItem>
+                                    <PaginationNext
+                                        href="#"
+                                        onClick={(e) => { e.preventDefault(); onPageChange(Math.min(page + 1, totalPages - 1)); }}
+                                        className={page === totalPages - 1 ? "pointer-events-none opacity-50" : ""}
+                                    />
+                                </PaginationItem>
+                            </PaginationContent>
+                        </Pagination>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
     );
 }
 
-function toReportRows(reports: ReportResponse[]): TableRow[] {
-    return reports.map((report) => ({
-        key: report.reportId,
-        id: report.reportId,
-        name: report.name,
-        createdDate: new Date(report.createdAt).toLocaleDateString("vi-VN"),
-        reportType: report.reportType,
-        action: report.link,
+function toReportRows(reports: ReportResponse[], locale: string): TableRow[] {
+    const dateLocale = locale === "vi" ? "vi-VN" : "en-US";
+    return reports.map((r) => ({
+        key: r.reportId,
+        id: truncateId(r.reportId),
+        name: r.name,
+        createdDate: new Date(r.createdAt).toLocaleDateString(dateLocale),
+        reportType: r.reportType,
+        action: r.link,
     }));
 }
 
 export default function AdminReportsClient() {
-    const { t } = useLanguage();
+    const { t, locale } = useLanguage();
     const [page, setPage] = useState(0);
     const [size, setSize] = useState(10);
     const [sortBy, setSortBy] = useState("createdAt");
@@ -210,8 +240,6 @@ export default function AdminReportsClient() {
     const [reportTypeFilter, setReportTypeFilter] = useState<"all" | ReportType>("all");
     const [selectedActionLogId, setSelectedActionLogId] = useState("");
 
-    const createMonthlyRevenueMutation = useCreateMonthlyRevenueReport();
-    const createTopSellingMutation = useCreateTopSellingProductsReport();
     const reportParams = {
         page,
         size,
@@ -230,210 +258,247 @@ export default function AdminReportsClient() {
 
     const reports = useMemo(() => reportQuery.data?.items ?? [], [reportQuery.data?.items]);
     const filteredReports = useMemo(() => {
-        const normalizedKeyword = keyword.trim().toLowerCase();
-        if (!normalizedKeyword) return reports;
-        return reports.filter(
-            (report) =>
-                report.name.toLowerCase().includes(normalizedKeyword) ||
-                report.reportId.toLowerCase().includes(normalizedKeyword)
-        );
+        const nk = keyword.trim().toLowerCase();
+        return !nk ? reports : reports.filter((r) => r.name.toLowerCase().includes(nk) || r.reportId.toLowerCase().includes(nk));
     }, [keyword, reports]);
-    const reportRows = toReportRows(filteredReports);
-    const topSellingRows = reports
-        .filter((report) => report.reportType === "TOP_SELLING_PRODUCTS")
-        .slice(0, 10);
+    const reportRows = useMemo(() => toReportRows(filteredReports, locale), [filteredReports, locale]);
+    const topSellingReports = reports.filter((r) => r.reportType === "TOP_SELLING_PRODUCTS").slice(0, 10);
 
-    const monthRevenue = monthRevenueSeed.map((item) => ({
-        month: item.month,
-        value: Math.round(item.revenue / 1_000_000),
-    }));
-    const maxRevenue = Math.max(...monthRevenue.map((item) => item.value), 1);
+    const actionLogRows = useMemo(() => (actionLogQuery.data?.items ?? []).map((r) => ({
+        key: r.adminActionLogId,
+        id: truncateId(r.adminActionLogId),
+        action: r.action,
+        createdDate: new Date(r.createdAt).toLocaleDateString(locale === "vi" ? "vi-VN" : "en-US"),
+        entityType: r.entityType,
+        note: r.note,
+    })), [actionLogQuery.data?.items, locale]);
 
-    const actionLogRows = (actionLogQuery.data?.items ?? []).map((row) => ({
-        key: row.adminActionLogId,
-        id: row.adminActionLogId,
-        action: row.action,
-        createdDate: new Date(row.createdAt).toLocaleDateString("vi-VN"),
-        entityType: row.entityType,
-        note: row.note,
-    }));
+    const dateLocale = locale === "vi" ? "vi-VN" : "en-US";
+    const isLoading = reportQuery.isLoading || actionLogQuery.isLoading;
 
     return (
-        <div className="container mx-auto px-4 py-10 space-y-10">
-            <h1 className="text-center text-4xl md:text-5xl font-bold tracking-tight">
-                {t("admin_reporting_management", {}, "REPORTING MANAGEMENT")}
-            </h1>
+        <div className="container mx-auto px-4 py-6 space-y-5">
+            <div className="text-center space-y-1">
+                <h1 className="text-xl font-bold flex items-center justify-center gap-2">
+                    <BarChart3 className="h-5 w-5 text-primary" />
+                    {t("admin_reporting_management", {}, "Reporting Management")}
+                </h1>
+                <p className="text-xs text-muted-foreground">
+                    {t("admin_reports_subtitle", {}, "View and manage system reports")}
+                </p>
+            </div>
 
-            <div className="flex flex-wrap justify-center gap-3">
-                <button
-                    type="button"
-                    className="h-11 px-4 rounded-full bg-[#3E93B3] text-white text-sm font-semibold disabled:opacity-60"
-                    onClick={() => createMonthlyRevenueMutation.mutate({ reportItems: [...monthRevenueSeed] })}
-                    disabled={createMonthlyRevenueMutation.isPending}
-                >
-                    {t("admin_create_monthly_revenue_report", {}, "Create monthly revenue report")}
-                </button>
-                <button
-                    type="button"
-                    className="h-11 px-4 rounded-full bg-[#3E93B3] text-white text-sm font-semibold disabled:opacity-60"
-                    onClick={() =>
-                        createTopSellingMutation.mutate({
-                            reportItems: topSellingRows.slice(0, 5).map((item, index) => ({
-                                productId: `${item.reportId}-${index}`,
-                                productName: item.name,
-                                totalSold: 100 - index * 5,
-                            })),
-                        })
-                    }
-                    disabled={createTopSellingMutation.isPending}
-                >
-                    {t("admin_create_top_selling_report", {}, "Create top selling report")}
-                </button>
-                <Select value={reportTypeFilter} onValueChange={(value) => setReportTypeFilter(value as "all" | ReportType)}>
-                    <SelectTrigger className="h-11 min-w-52">
+            <div className="flex flex-wrap items-center justify-center gap-2">
+                <Select value={reportTypeFilter} onValueChange={(v) => setReportTypeFilter(v as "all" | ReportType)}>
+                    <SelectTrigger className="h-9 min-w-36 text-sm rounded-xl">
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                        {reportTypeOptions.map((option) => (
-                            <SelectItem key={option.value} value={option.value}>
-                                {option.label}
+                        {reportTypeOptions.map((o) => (
+                            <SelectItem key={o.value} value={o.value}>
+                                {t(o.label)}
                             </SelectItem>
                         ))}
                     </SelectContent>
                 </Select>
             </div>
 
-            <section className="grid lg:grid-cols-2 gap-8">
-                <div className="bg-[#F8F8F8] rounded-xl p-8">
-                    <h2 className="text-3xl md:text-4xl font-semibold text-[#3B4F66] text-center mb-6">
-                        {t("admin_top_selling_products", {}, "Top-selling products")}
-                    </h2>
-                    <table className="w-full text-lg md:text-2xl">
-                        <thead>
-                            <tr className="text-left">
-                                <th className="py-2">{t("admin_product_name", {}, "Product name")}</th>
-                                <th className="py-2 text-right">{t("admin_total_quantity_sold", {}, "Total quantity sold")}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {topSellingRows.slice(0, 10).map((report, index) => (
-                                <tr key={report.reportId}>
-                                    <td className="py-3 truncate max-w-[300px]">{report.name}</td>
-                                    <td className="py-3 text-right">{100 - index * 5}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-
-                <div className="bg-[#F8F8F8] rounded-xl p-8">
-                    <h2 className="text-3xl md:text-4xl font-semibold text-[#3B4F66] text-center mb-6">
-                        {t("admin_revenue_last_12_months", {}, "Revenue of the last 12 months")}
-                    </h2>
-                    <div className="space-y-4">
-                        {monthRevenue.map((row) => (
-                            <div key={row.month} className="grid grid-cols-[120px_1fr_auto] items-center gap-3 text-base md:text-xl">
-                                <span>{row.month}</span>
-                                <div className="h-7 bg-[#EDF2F5] relative">
-                                    <div
-                                        className="h-7 bg-[#8DB6E7]"
-                                        style={{ width: `${(row.value / maxRevenue) * 100}%` }}
-                                    />
-                                </div>
-                                <span>{row.value}</span>
+            {/* <section className="grid lg:grid-cols-2 gap-4">
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                            <TrendingUp className="h-4 w-4 text-primary" />
+                            {t("admin_top_selling_products", {}, "Top-selling products")}
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {isLoading ? (
+                            <div className="space-y-2">
+                                {[1, 2, 3].map((i) => <Skeleton key={i} className="h-8 w-full rounded-lg" />)}
                             </div>
-                        ))}
-                    </div>
-                    <p className="text-right mt-4 text-base md:text-lg text-[#5E6A75]">
-                        {t("admin_millions_vnd", {}, "Millions VND")}
-                    </p>
-                </div>
-            </section>
-
-            <ReportTable
-                title={t("admin_list_of_reports", {}, "List of reports")}
-                rows={reportRows}
-                columns={[
-                    { key: "id", label: "id" },
-                    { key: "name", label: t("admin_report_name", {}, "Report name") },
-                    { key: "createdDate", label: t("admin_created_date", {}, "Created Date") },
-                    { key: "reportType", label: t("admin_report_type", {}, "Report Type") },
-                    { key: "action", label: t("admin_download", {}, "Download") },
-                ]}
-                stripedClass="bg-[#C8DAE9]"
-                accentClass="text-[#3E93B3] border-[#3E93B3]"
-                page={page}
-                totalPages={reportQuery.data?.totalPages ?? 1}
-                onPageChange={setPage}
-                search={keyword}
-                onSearchChange={setKeyword}
-                sortBy={sortBy}
-                onSortByChange={setSortBy}
-                size={size}
-                onSizeChange={(value) => {
-                    setPage(0);
-                    setSize(value);
-                }}
-            />
-
-            <section className="bg-[#F8F8F8] rounded-xl p-8">
-                <h3 className="text-3xl md:text-4xl font-semibold text-[#3B4F66] text-center mb-6">
-                    {t("admin_action_logs", {}, "Admin action logs")}
-                </h3>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left text-sm md:text-lg">
-                        <thead>
-                            <tr className="border-b border-[#CBB48E]">
-                                <th className="py-3 px-3">id</th>
-                                <th className="py-3 px-3">{t("admin_action", {}, "Action")}</th>
-                                <th className="py-3 px-3">{t("admin_created_date", {}, "Created Date")}</th>
-                                <th className="py-3 px-3">{t("admin_entity_type", {}, "Entity Type")}</th>
-                                <th className="py-3 px-3">{t("admin_note", {}, "Note")}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {actionLogRows.length === 0 && (
-                                <tr>
-                                    <td className="py-4 px-3 text-center text-muted-foreground" colSpan={5}>
-                                        {t("admin_no_action_logs", {}, "No action logs found")}
-                                    </td>
-                                </tr>
-                            )}
-                            {actionLogRows.map((row, index) => (
-                                <tr key={row.key} className={index % 2 === 0 ? "bg-[#EED8B7]" : "bg-transparent"}>
-                                    <td className="py-3 px-3">
-                                        <button
-                                            type="button"
-                                            className="text-left underline-offset-2 hover:underline"
-                                            onClick={() => setSelectedActionLogId(row.id)}
-                                        >
-                                            {row.id}
-                                        </button>
-                                    </td>
-                                    <td className="py-3 px-3">{row.action}</td>
-                                    <td className="py-3 px-3">{row.createdDate}</td>
-                                    <td className="py-3 px-3">{row.entityType}</td>
-                                    <td className="py-3 px-3">{row.note}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-                {selectedActionLogId && (
-                    <div className="mt-4 rounded-lg border border-border bg-background p-3 text-sm">
-                        {actionLogDetailQuery.isLoading ? (
-                            <p>{t("loading", {}, "Loading...")}</p>
-                        ) : actionLogDetailQuery.data ? (
-                            <p>
-                                {t("admin_action_log_detail", {}, "Detail")}: {actionLogDetailQuery.data.action} -{" "}
-                                {actionLogDetailQuery.data.note}
-                            </p>
+                        ) : topSellingReports.length === 0 ? (
+                            <div className="text-center py-8 text-muted-foreground">
+                                <ClipboardList className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                                <p className="text-sm">{t("admin_no_data", {}, "No data. Generate a report to see results.")}</p>
+                            </div>
                         ) : (
-                            <p>{t("order_not_found", {}, "Not found")}</p>
+                            <div className="divide-y">
+                                {topSellingReports.map((r, i) => (
+                                    <div key={r.reportId} className="flex items-center justify-between py-2.5 text-sm">
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <span className="text-xs font-semibold text-muted-foreground w-5 shrink-0 text-right">
+                                                {String(i + 1).padStart(2, "0")}
+                                            </span>
+                                            <span className="truncate font-medium">{r.name}</span>
+                                        </div>
+                                        <span className="text-xs text-muted-foreground shrink-0 ml-3">
+                                            {new Date(r.createdAt).toLocaleDateString(dateLocale)}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
                         )}
-                    </div>
-                )}
-            </section>
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                            <FileText className="h-4 w-4 text-primary" />
+                            {t("admin_revenue_last_12_months", {}, "Revenue of the last 12 months")}
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-center py-8 text-muted-foreground">
+                            <BarChart3 className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                            <p className="text-sm">{t("admin_no_data", {}, "No data. Generate a report to see results.")}</p>
+                        </div>
+                    </CardContent>
+                </Card>
+            </section> */}
+
+            {isLoading ? (
+                <Card>
+                    <CardHeader><Skeleton className="h-5 w-40" /></CardHeader>
+                    <CardContent className="space-y-3">
+                        {[1, 2, 3].map((i) => <Skeleton key={i} className="h-10 w-full rounded-lg" />)}
+                    </CardContent>
+                </Card>
+            ) : (
+                <ReportTable
+                    title={t("admin_list_of_reports", {}, "List of reports")}
+                    rows={reportRows}
+                    columns={[
+                        { key: "id", label: t("admin_order_id", {}, "ID") },
+                        { key: "name", label: t("admin_report_name", {}, "Report name") },
+                        { key: "createdDate", label: t("admin_created_date", {}, "Created Date") },
+                        { key: "reportType", label: t("admin_report_type", {}, "Report Type") },
+                        { key: "action", label: t("admin_download", {}, "Download") },
+                    ]}
+                    page={page}
+                    totalPages={reportQuery.data?.totalPages ?? 1}
+                    onPageChange={setPage}
+                    search={keyword}
+                    onSearchChange={setKeyword}
+                    sortBy={sortBy}
+                    onSortByChange={setSortBy}
+                    size={size}
+                    onSizeChange={(v) => { setPage(0); setSize(v); }}
+                />
+            )}
+
+            <Card>
+                <CardHeader>
+                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                        <ListChecks className="h-4 w-4 text-primary" />
+                        {t("admin_action_logs", {}, "Admin action logs")}
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                    {actionLogQuery.isLoading ? (
+                        <div className="space-y-2">
+                            {[1, 2, 3].map((i) => <Skeleton key={i} className="h-10 w-full rounded-lg" />)}
+                        </div>
+                    ) : (
+                        <>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left text-sm">
+                                    <thead>
+                                        <tr className="border-b border-border">
+                                            <th className="py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{t("admin_order_id", {}, "ID")}</th>
+                                            <th className="py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{t("admin_action", {}, "Action")}</th>
+                                            <th className="py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{t("admin_created_date", {}, "Created Date")}</th>
+                                            <th className="py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{t("admin_entity_type", {}, "Entity Type")}</th>
+                                            <th className="py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{t("admin_note", {}, "Note")}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {actionLogRows.length === 0 ? (
+                                            <tr>
+                                                <td colSpan={5} className="py-8 text-center text-muted-foreground text-sm">
+                                                    {t("admin_no_action_logs", {}, "No action logs found")}
+                                                </td>
+                                            </tr>
+                                        ) : (
+                                            actionLogRows.map((row, i) => (
+                                                <tr key={row.key} className={`transition-colors hover:bg-accent/50 ${i % 2 === 0 ? "bg-muted/30" : ""}`}>
+                                                    <td className="py-2.5 px-3">
+                                                        <button
+                                                            type="button"
+                                                            className="text-left font-mono text-xs underline-offset-2 hover:underline text-muted-foreground hover:text-foreground transition-colors"
+                                                            onClick={() => setSelectedActionLogId(row.key)}
+                                                        >
+                                                            {row.id}
+                                                        </button>
+                                                    </td>
+                                                    <td className="py-2.5 px-3">{row.action}</td>
+                                                    <td className="py-2.5 px-3 text-muted-foreground">{row.createdDate}</td>
+                                                    <td className="py-2.5 px-3">
+                                                        <Badge variant="outline" className="rounded-full text-[10px] font-normal">
+                                                            {row.entityType}
+                                                        </Badge>
+                                                    </td>
+                                                    <td className="py-2.5 px-3 text-muted-foreground truncate max-w-[200px]">{row.note}</td>
+                                                </tr>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {actionLogQuery.data && actionLogQuery.data.totalPages > 1 && (
+                                <div className="flex justify-center pt-1">
+                                    <Pagination>
+                                        <PaginationContent>
+                                            <PaginationItem>
+                                                <PaginationPrevious
+                                                    href="#"
+                                                    onClick={(e) => { e.preventDefault(); }}
+                                                    className="pointer-events-none opacity-50"
+                                                />
+                                            </PaginationItem>
+                                            <PaginationItem>
+                                                <PaginationLink href="#" isActive>1</PaginationLink>
+                                            </PaginationItem>
+                                            <PaginationItem>
+                                                <PaginationNext
+                                                    href="#"
+                                                    onClick={(e) => { e.preventDefault(); }}
+                                                    className="pointer-events-none opacity-50"
+                                                />
+                                            </PaginationItem>
+                                        </PaginationContent>
+                                    </Pagination>
+                                </div>
+                            )}
+                        </>
+                    )}
+
+                    {selectedActionLogId && (
+                        <div className="mt-3 rounded-xl border bg-muted/50 p-4 text-sm">
+                            {actionLogDetailQuery.isLoading ? (
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                    <Skeleton className="h-4 w-4 rounded-full" />
+                                    <span>{t("loading", {}, "Loading...")}</span>
+                                </div>
+                            ) : actionLogDetailQuery.data ? (
+                                <div className="space-y-1">
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-medium text-foreground">{t("admin_action_log_detail", {}, "Detail")}:</span>
+                                        <Badge variant="secondary" className="rounded-full text-[10px]">{actionLogDetailQuery.data.action}</Badge>
+                                    </div>
+                                    <p className="text-muted-foreground pl-0">{actionLogDetailQuery.data.note}</p>
+                                    <p className="text-xs text-muted-foreground pl-0">
+                                        {new Date(actionLogDetailQuery.data.createdAt).toLocaleString(dateLocale)}
+                                    </p>
+                                </div>
+                            ) : (
+                                <p className="text-muted-foreground">{t("order_not_found", {}, "Not found")}</p>
+                            )}
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
         </div>
     );
 }

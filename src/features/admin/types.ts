@@ -85,3 +85,20 @@ export interface AdminActionLogListResponse {
     totalItems: number;
     totalPages: number;
 }
+
+export interface DeliveryLogResponse {
+    deliveryLogId: string;
+    orderId: string;
+    status: string;
+    message: string;
+    createdAt: string;
+}
+
+export interface CreateDeliveryLogRequest {
+    stepStatus: string;
+    message: string;
+}
+
+export interface UpdateOrderDeliveryStatusRequest {
+    deliveryStatus: string;
+}

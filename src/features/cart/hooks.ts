@@ -15,7 +15,23 @@ export function useCart() {
 
   const query = useQuery({
     queryKey: cartQueryKey,
-    queryFn: getCart,
+    queryFn: async () => {
+      try {
+        return await getCart();
+      } catch (error: any) {
+        if (error?.statusCode === 401 || error?.statusCode === 403) {
+          return {
+            cartId: "",
+            customerId: "",
+            cartItems: [],
+            totalItems: 0,
+            pageSize: 20,
+            currentPage: 0,
+          } as Cart;
+        }
+        throw error;
+      }
+    },
   });
 
   const addMutation = useMutation({
@@ -35,7 +51,7 @@ export function useCart() {
       if (context?.previousCart) {
         queryClient.setQueryData(cartQueryKey, context.previousCart);
       }
-      toast.error(toErrorMessage(_error, t("cart_error", {}, "An error occurred")));
+      toast.error(t(toErrorMessage(_error, "err_cart_error")));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: cartQueryKey });
@@ -64,7 +80,7 @@ export function useCart() {
       if (context?.previousCart) {
         queryClient.setQueryData(cartQueryKey, context.previousCart);
       }
-      toast.error(toErrorMessage(_error, t("cart_error", {}, "An error occurred")));
+      toast.error(t(toErrorMessage(_error, "err_cart_error")));
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: cartQueryKey }),
   });
@@ -90,7 +106,7 @@ export function useCart() {
       if (context?.previousCart) {
         queryClient.setQueryData(cartQueryKey, context.previousCart);
       }
-      toast.error(toErrorMessage(_error, t("cart_error", {}, "An error occurred")));
+      toast.error(t(toErrorMessage(_error, "err_cart_error")));
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: cartQueryKey }),
   });
@@ -114,7 +130,7 @@ export function useCart() {
       if (context?.previousCart) {
         queryClient.setQueryData(cartQueryKey, context.previousCart);
       }
-      toast.error(toErrorMessage(_error, t("cart_error", {}, "An error occurred")));
+      toast.error(t(toErrorMessage(_error, "err_cart_error")));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: cartQueryKey });
@@ -126,6 +142,7 @@ export function useCart() {
     ...query,
     cart: query.data,
     addToCart: addMutation.mutate,
+    addToCartAsync: addMutation.mutateAsync,
     isAdding: addMutation.isPending,
     increase: increaseMutation.mutate,
     decrease: decreaseMutation.mutate,

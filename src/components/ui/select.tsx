@@ -15,10 +15,10 @@ import { cn } from "@/utils/cn"
 
 /** Gốc của Select, quản lý trạng thái đóng/mở và giá trị được chọn */
 function Select({
-  modal,
+  // modal,
   ...props
 }: React.ComponentProps<typeof SelectPrimitive.Root> & { modal?: boolean }) {
-  return <SelectPrimitive.Root data-slot="select" {...props} {...({ modal } as any)} />
+  return <SelectPrimitive.Root data-slot="select" {...props} />
 }
 
 /** Nhóm các mục chọn lại với nhau (không bắt buộc) */

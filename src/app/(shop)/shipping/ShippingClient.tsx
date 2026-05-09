@@ -1,23 +1,16 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ChevronDown, Landmark, Wallet, Banknote } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { AppError } from "@/api/client";
 import { AddPaymentAccountDialog } from "@/components/features/checkout/AddPaymentAccountDialog";
 import { PaymentMethodList } from "@/components/features/checkout/PaymentMethodList";
 import { Button } from "@/components/ui/button";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { notifyPurchase } from "@/features/ai/api";
@@ -34,6 +27,7 @@ import {
     useConfirmCheckout,
     useRecalculateCheckout,
 } from "@/features/orders/hooks";
+import type { CheckoutPreviewResponse, CheckoutRecalculateResponse } from "@/features/orders/types";
 import { useLanguage } from "@/providers/language.provider";
 import { useAuthStore } from "@/store/auth.store";
 import { useOrderFlowStore } from "@/store/order-flow.store";
@@ -54,13 +48,15 @@ export default function ShippingClient() {
 
     const [paymentMethod, setPaymentMethod] = useState<"COD" | "BANK_ACCOUNT" | "E_WALLET">("COD");
     const [paymentAccountId, setPaymentAccountId] = useState("");
-    const [showQRModal, setShowQRModal] = useState(false);
     const [showAddPaymentDialog, setShowAddPaymentDialog] = useState(false);
+    const [checkoutData, setCheckoutData] = useState<CheckoutPreviewResponse | CheckoutRecalculateResponse | null>(null);
+    const recalculatedSessionRef = useRef<string | null>(null);
+
     const { data: addresses = [] } = useAddresses();
     const { data: paymentAccounts = [], refetch: refetchPaymentAccounts } = usePaymentAccounts();
     const createPaymentAccount = useCreatePaymentAccount();
     const setDefaultPaymentAccount = useSetDefaultPaymentAccount();
-    const { cart, isLoading, isError, error: cartError, refetch } = useCart();
+    const { cart, isLoading: isLoadingCart, isError, error: cartError, refetch } = useCart();
     const { session } = useAuthStore();
     const customerId = session?.user.userId;
     const checkoutPreview = useCheckoutPreview();
@@ -84,6 +80,7 @@ export default function ShippingClient() {
             storedSelectedCartItemIds.some((id, index) => id !== selectedIds[index]);
 
         if (hasDifferentSelection) {
+            console.log("⚠️ selectedIds mismatch, resetting checkoutSessionId");
             setCheckoutSessionId(null);
         }
     }, [selectedIds, setCheckoutSessionId, storedSelectedCartItemIds]);
@@ -105,21 +102,44 @@ export default function ShippingClient() {
         return addresses.find((address) => address.isDefault);
     }, [addressId, addresses]);
 
-    const localSubtotal = useMemo(
-        () =>
-            selectedCartItems.reduce(
-                (sum, item) =>
-                    sum + (item.priceAfterDiscount ?? item.price ?? 0) * item.currentQuantity,
-                0
-            ),
-        [selectedCartItems]
-    );
+    // Initial Preview
+    useEffect(() => {
+        if (selectedCartItems.length > 0 && !checkoutSessionId && !checkoutPreview.isPending) {
+            checkoutPreview.mutate({
+                cartItemIds: selectedCartItems.map(item => item.cartItemId),
+                voucherCode: voucherCodeParam,
+            }, {
+                onSuccess: (data) => {
+                    console.log("📦 Preview response:", { voucherDiscount: data.voucherDiscount, shippingDiscount: data.shippingDiscount, totalPrice: data.totalPrice });
+                    setCheckoutSessionId(data.checkoutSessionId);
+                    setCheckoutData(data);
+                }
+            });
+        }
+    }, [selectedCartItems, checkoutSessionId, voucherCodeParam]);
 
-    const subtotal = localSubtotal;
-    // NOTE: Shipping fee endpoint is not documented in latest backend docs.
-    // We keep subtotal-only preview on this step and rely on checkout preview/recalculate on order submit.
-    const shipping = 0;
-    const total = subtotal + shipping;
+    // Auto-Recalculate
+    useEffect(() => {
+        if (checkoutSessionId && activeAddress && recalculatedSessionRef.current !== checkoutSessionId) {
+            recalculatedSessionRef.current = checkoutSessionId;
+            recalculateCheckout.mutate({
+                checkoutSessionId,
+                addressId: activeAddress.addressId,
+                voucherCode: voucherCodeParam,
+            }, {
+                onSuccess: (data) => {
+                    console.log("🔄 Recalculate response:", { voucherDiscount: data.voucherDiscount, shippingDiscount: data.shippingDiscount, totalPrice: data.totalPrice });
+                    setCheckoutData(data);
+                }
+            });
+        }
+    }, [activeAddress, voucherCodeParam, checkoutSessionId]);
+
+
+    const subtotal = checkoutData?.subTotal ?? 0;
+    const shipping = checkoutData?.shippingFee ?? 0;
+    const discount = (checkoutData?.voucherDiscount ?? 0) + (checkoutData?.shippingDiscount ?? 0);
+    const total = checkoutData?.totalPrice ?? (subtotal + shipping - discount);
 
     const bankAccounts = useMemo(
         () =>
@@ -163,6 +183,8 @@ export default function ShippingClient() {
         [paymentAccounts]
     );
 
+    const queryClient = useQueryClient();
+
     const executeOrder = async () => {
         try {
             let sessionId = checkoutSessionId;
@@ -183,10 +205,12 @@ export default function ShippingClient() {
             });
 
             const sagaId = await confirmCheckout.mutateAsync({
-                checkoutSessionId: sessionId,
+                checkoutSessionId: sessionId!,
                 paymentMethod,
                 paymentAccountId: paymentMethod === "COD" ? undefined : paymentAccountId,
             });
+
+            queryClient.refetchQueries({ queryKey: ["cart"] });
 
             if (customerId) {
                 const uniqueVariants = new Map<string, number>();
@@ -232,15 +256,10 @@ export default function ShippingClient() {
         setSelectedCartItemIds(selectedCartItems.map((item) => item.cartItemId));
         setSelectedAddressId(activeAddress.addressId);
 
-        if (paymentMethod !== "COD") {
-            setShowQRModal(true);
-            return;
-        }
-
         await executeOrder();
     };
 
-    if (isLoading) {
+    if (isLoadingCart || checkoutPreview.isPending) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center">
                 <p className="text-muted-foreground">{t('loading_checkout', {}, "Loading checkout...")}</p>
@@ -376,6 +395,14 @@ export default function ShippingClient() {
                                         {t('price_vnd', { price: new Intl.NumberFormat(currentLocale).format(shipping) }, `${new Intl.NumberFormat(currentLocale).format(shipping)} VND`)}
                                     </span>
                                 </div>
+                                {discount > 0 && (
+                                    <div className="flex justify-between text-sm text-green-600">
+                                        <span>{t('discount', {}, "Discount")}</span>
+                                        <span>
+                                            -{t('price_vnd', { price: new Intl.NumberFormat(currentLocale).format(discount) }, `${new Intl.NumberFormat(currentLocale).format(discount)} VND`)}
+                                        </span>
+                                    </div>
+                                )}
                                 <div className="flex justify-between text-base font-bold pt-2 border-t border-border">
                                     <span className="text-gray-900">{t('order_total', {}, "Order total")}</span>
                                     <span className="text-[#3E93B3]">
@@ -474,46 +501,6 @@ export default function ShippingClient() {
                     </div>
                 </div>
             </div>
-
-            <Dialog open={showQRModal} onOpenChange={setShowQRModal}>
-                <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                        <DialogTitle>{t('payment_qr_title', {}, "Scan QR to Pay")}</DialogTitle>
-                        <DialogDescription>
-                            {t('payment_qr_description', {}, "Please scan the QR code below to complete your payment.")}
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="flex flex-col items-center justify-center space-y-4 py-6">
-                        <div className="bg-white p-4 rounded-xl border-2 border-primary/20 shadow-sm">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img 
-                                src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PAYMENT_FOR_ORDER_${total}`} 
-                                alt="Payment QR Code"
-                                className="w-48 h-48"
-                            />
-                        </div>
-                        <div className="text-center space-y-1">
-                            <p className="text-sm text-muted-foreground">{t('amount_to_pay', {}, "Amount to pay:")}</p>
-                            <p className="text-2xl font-bold text-primary">
-                                {t('price_vnd', { price: new Intl.NumberFormat(currentLocale).format(total) }, `${new Intl.NumberFormat(currentLocale).format(total)} VND`)}
-                            </p>
-                        </div>
-                    </div>
-                    <DialogFooter className="sm:justify-center">
-                        <Button
-                            type="button"
-                            className="w-full bg-secondary hover:bg-secondary/90 text-secondary-foreground font-semibold"
-                            onClick={async () => {
-                                setShowQRModal(false);
-                                await executeOrder();
-                            }}
-                            disabled={checkoutPreview.isPending || recalculateCheckout.isPending || confirmCheckout.isPending}
-                        >
-                            {t('i_have_paid', {}, "I have paid successfully")}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
 
             <AddPaymentAccountDialog
                 open={showAddPaymentDialog}

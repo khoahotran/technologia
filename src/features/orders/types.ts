@@ -13,6 +13,7 @@ export const DeliveryStatusSchema = z.enum([
 export type DeliveryStatus = z.infer<typeof DeliveryStatusSchema>;
 
 export const AdminUpdateOrderStatusSchema = z.enum([
+    "AWAITING_CONFIRM",
     "PENDING",
     "ON_SHIPPING",
     "DELIVERED",
@@ -37,6 +38,7 @@ export const OrderSchema = z.object({
     customerId: z.string(),
     updatedAt: z.string(),
     items: z.array(OrderItemResponseSchema),
+    sagaId: z.string().optional().nullable(),
 });
 
 export type Order = z.infer<typeof OrderSchema>;
@@ -178,3 +180,10 @@ export const ProductFeedbackParamsSchema = z.object({
 });
 
 export type ProductFeedbackParams = z.infer<typeof ProductFeedbackParamsSchema>;
+
+export const CancelOrderRequestSchema = z.object({
+    orderId: z.string(),
+    sagaId: z.string(),
+});
+
+export type CancelOrderRequest = z.infer<typeof CancelOrderRequestSchema>;

@@ -1,5 +1,5 @@
-import type { Address, CreateAddress, CreatePaymentAccount, PaymentAccountResponse } from './types';
 import { AddressSchema, CreatePaymentAccountSchema, PaymentAccountResponseSchema } from './types';
+import type { Address, CreateAddress, CreatePaymentAccount, PaymentAccountResponse } from './types';
 
 import { get, post, del, patch } from '@/api/client';
 import type { ApiResponse } from '@/types/api.types';
@@ -54,4 +54,9 @@ export async function createPaymentAccount(data: CreatePaymentAccount): Promise<
 
 export async function deletePaymentAccount(id: string): Promise<void> {
     await del(`/api/payment-accounts/${id}`);
+}
+
+export async function getPaymentAccountById(id: string): Promise<PaymentAccountResponse> {
+    const response = await get<ApiResponse<PaymentAccountResponse>>(`/api/payment-accounts/${id}`);
+    return PaymentAccountResponseSchema.parse(response.data);
 }

@@ -18,6 +18,7 @@ import {
     type ProductFeedbackParams,
     type RecalculateCheckoutRequest,
     type SubmitFeedbackRequest,
+    type CancelOrderRequest,
 } from "./types";
 
 import { del, get, patch, post, put } from "@/api/client";
@@ -127,21 +128,25 @@ export async function updateOrderStatus(orderId: string, deliveryStatus: AdminUp
     });
 }
 
-export async function createPayment(orderId: string, sagaId: string, paymentMethod: string): Promise<string> {
+export async function createPayment(orderId: string, sagaId: string): Promise<string> {
     const response = await post<ApiResponse<{ paymentId: string }>>("/api/payments", {
         orderId,
         sagaId,
-        paymentMethod,
     });
     return response.data.paymentId;
 }
 
-export async function simulatePayment(orderId: string, paymentId: string): Promise<void> {
-    await post("/api/payments/simulate", { orderId, paymentId });
+export async function simulatePayment(orderId: string, paymentId: string, sagaId: string): Promise<void> {
+    await post("/api/payments/simulate", { orderId, paymentId, sagaId });
 }
 
-export async function cancelPayment(orderId: string, paymentId: string): Promise<void> {
-    await post("/api/payments/simulate/cancel", { orderId, paymentId });
+export async function getPaymentQrCode(paymentId: string): Promise<{ qrCode: string; expiredAt: string }> {
+    const response = await get<ApiResponse<{ qrCode: string; expiredAt: string }>>(`/api/payments/${paymentId}/qr`);
+    return response.data;
+}
+
+export async function cancelPayment(orderId: string, paymentId: string, sagaId: string): Promise<void> {
+    await post("/api/payments/simulate/cancel", { orderId, paymentId, sagaId });
 }
 
 export async function submitOrderFeedback(payload: SubmitFeedbackRequest): Promise<Order> {
@@ -190,4 +195,8 @@ export async function getProductFeedbacks(params: ProductFeedbackParams): Promis
         ...response,
         data: response.data.map((item) => OrderFeedbackSchema.parse(item)),
     };
+}
+
+export async function cancelOrder(payload: CancelOrderRequest): Promise<void> {
+    await post("/api/sagas/cancel-order", payload);
 }

@@ -1,16 +1,19 @@
 "use client";
 
+import { useQueries } from "@tanstack/react-query";
 import { ArrowLeft, Star } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { productKeys } from "@/constants/query-keys";
 import { useOrder, useOrderFeedbacks, useSubmitOrderFeedback, useUpdateOrderFeedback } from "@/features/orders/hooks";
-import { canGiveFeedback, formatOrderStatusLabel } from "@/features/orders/presentation";
+import { canGiveFeedback, formatOrderStatusLabel, truncateId } from "@/features/orders/presentation";
+import { getProductById } from "@/features/products/api";
 import { useLanguage } from "@/providers/language.provider";
-import { useOrderFlowStore } from "@/store/order-flow.store";
 import { toErrorMessage } from "@/utils/error-message";
 
 type FeedbackItem = {
@@ -18,41 +21,28 @@ type FeedbackItem = {
     label: string;
     quantity: number;
     orderItemId: string | null;
+    productId: string | null;
+    variantId: string | null;
 };
 
 function toFeedbackItem(item: unknown, index: number): FeedbackItem {
     const fallbackKey = `item-${index + 1}`;
-    const fallbackLabel = `Product ${index + 1}`;
-
     if (typeof item !== "object" || item === null) {
-        return {
-            key: fallbackKey,
-            label: fallbackLabel,
-            quantity: 1,
-            orderItemId: null,
-        };
+        return { key: fallbackKey, label: `Product ${index + 1}`, quantity: 1, orderItemId: null, productId: null, variantId: null };
     }
-
-    const itemRecord = item as Record<string, unknown>;
-    const productId = typeof itemRecord["productId"] === "string" ? itemRecord["productId"] : null;
-    const orderItemId = typeof itemRecord["orderItemId"] === "string" ? itemRecord["orderItemId"] : null;
-    const variantId = typeof itemRecord["variantId"] === "string" ? itemRecord["variantId"] : null;
-    const name =
-        typeof itemRecord["name"] === "string"
-            ? itemRecord["name"]
-            : typeof itemRecord["productName"] === "string"
-                ? itemRecord["productName"]
-                : productId ?? fallbackLabel;
-    const quantity =
-        typeof itemRecord["quantity"] === "number" && itemRecord["quantity"] > 0
-            ? itemRecord["quantity"]
-            : 1;
-
+    const r = item as Record<string, unknown>;
+    const productId = typeof r["productId"] === "string" ? r["productId"] : null;
+    const orderItemId = typeof r["orderItemId"] === "string" ? r["orderItemId"] : null;
+    const variantId = typeof r["variantId"] === "string" ? r["variantId"] : null;
+    const name = typeof r["name"] === "string" ? r["name"] : typeof r["productName"] === "string" ? r["productName"] : productId ?? `Product ${index + 1}`;
+    const quantity = typeof r["quantity"] === "number" && r["quantity"] > 0 ? r["quantity"] : 1;
     return {
         key: `${productId ?? fallbackKey}-${variantId ?? "default"}`,
         label: name,
         quantity,
         orderItemId,
+        productId,
+        variantId,
     };
 }
 
@@ -62,9 +52,9 @@ export default function GiveFeedbackClient({ id }: { id: string }) {
     const feedbackQuery = useOrderFeedbacks(id, Boolean(id));
     const submitFeedback = useSubmitOrderFeedback();
     const updateFeedback = useUpdateOrderFeedback();
-    const feedbackDrafts = useOrderFlowStore((state) => state.feedbackDrafts);
-    const setFeedbackDraft = useOrderFlowStore((state) => state.setFeedbackDraft);
-    const clearFeedbackDrafts = useOrderFlowStore((state) => state.clearFeedbackDrafts);
+
+    const [localRatings, setLocalRatings] = useState<Record<string, number>>({});
+    const [localComments, setLocalComments] = useState<Record<string, string>>({});
 
     const feedbackItems = useMemo(() => {
         if (!order) return [];
@@ -84,11 +74,42 @@ export default function GiveFeedbackClient({ id }: { id: string }) {
             if (!item.orderItemId) return;
             const existing = existingFeedbackByOrderItemId.get(item.orderItemId);
             if (!existing) return;
-            if (!feedbackDrafts[item.key]) {
-                setFeedbackDraft(item.key, existing);
+            if (!(item.key in localRatings)) {
+                setLocalRatings((prev) => ({ ...prev, [item.key]: existing.rating }));
+                setLocalComments((prev) => ({ ...prev, [item.key]: existing.comment }));
             }
         });
-    }, [existingFeedbackByOrderItemId, feedbackDrafts, feedbackItems, setFeedbackDraft]);
+    }, [existingFeedbackByOrderItemId, feedbackItems, localRatings]);
+
+    const hasFeedback = feedbackQuery.data && feedbackQuery.data.length > 0;
+
+    const productIds = useMemo(() => {
+        const ids = new Set<string>();
+        feedbackItems.forEach((item) => { if (item.productId) ids.add(item.productId); });
+        return [...ids];
+    }, [feedbackItems]);
+
+    const productQueries = useQueries({
+        queries: productIds.map((pid) => ({
+            queryKey: productKeys.detail(pid),
+            queryFn: () => getProductById(pid),
+            enabled: !!pid,
+        })),
+    });
+
+    const productMap = useMemo(() => {
+        const map = new Map<string, { name: string; image: string }>();
+        productQueries.forEach((q, i) => {
+            const pid = productIds[i];
+            if (q.data && pid) {
+                map.set(pid, {
+                    name: q.data.name,
+                    image: q.data.variants?.[0]?.images?.[0] || "",
+                });
+            }
+        });
+        return map;
+    }, [productQueries, productIds]);
 
     if (isLoading) {
         return <div className="flex justify-center p-8">{t("loading", {}, "Loading...")}</div>;
@@ -108,33 +129,39 @@ export default function GiveFeedbackClient({ id }: { id: string }) {
         );
     }
 
-    const disabled =
-        !canGiveFeedback(order) || submitFeedback.isPending || updateFeedback.isPending || feedbackQuery.isLoading;
+    if (!canGiveFeedback(order)) {
+        return (
+            <div className="min-h-screen bg-[#F4F1F3]">
+                <div className="container mx-auto px-4 py-8 space-y-6">
+                    <Link href={`/orders/${id}`} className="inline-flex items-center gap-2 text-[#1E1E1E] hover:text-[#0D6E97]">
+                        <ArrowLeft className="h-4 w-4" />
+                        <span className="font-semibold">{t("back_to_tracking", {}, "Back to tracking order")}</span>
+                    </Link>
+                    <div className="bg-white rounded-xl border border-[#D3E4F4] p-8 text-center">
+                        <h1 className="text-3xl font-bold text-[#1E1E1E]">{t("give_feedback_title", {}, "Give Feedback")}</h1>
+                        <p className="text-[#556070] mt-4">{t("feedback_unavailable", {}, "Feedback is only available for delivered orders.")}</p>
+                        <p className="text-[#0D6E97] font-semibold mt-2">[{formatOrderStatusLabel(order.deliveryStatus, t)}]</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    const getRating = (key: string) => localRatings[key] ?? existingFeedbackByOrderItemId.get(feedbackItems.find((f) => f.key === key)?.orderItemId ?? "")?.rating ?? 5;
+    const getComment = (key: string) => localComments[key] ?? existingFeedbackByOrderItemId.get(feedbackItems.find((f) => f.key === key)?.orderItemId ?? "")?.comment ?? "";
+
+    const isPending = submitFeedback.isPending || updateFeedback.isPending || feedbackQuery.isLoading;
 
     const handleSubmit = () => {
-        if (!canGiveFeedback(order)) {
-            toast.error(t("feedback_unavailable", {}, "Feedback is only available for delivered orders."));
-            return;
-        }
-
-        const payloadItems = feedbackItems.map((item) => {
-            const draft = feedbackDrafts[item.key] ?? { rating: 5, comment: "" };
-            return {
-                orderItemId: item.orderItemId,
-                rating: draft.rating,
-                comment: draft.comment.trim(),
-            };
-        });
+        const payloadItems = feedbackItems.map((item) => ({
+            orderItemId: item.orderItemId,
+            rating: getRating(item.key),
+            comment: getComment(item.key).trim(),
+        }));
 
         const hasMissingOrderItemId = payloadItems.some((item) => !item.orderItemId);
         if (hasMissingOrderItemId) {
-            toast.error(
-                t(
-                    "feedback_missing_order_item_id",
-                    {},
-                    "Cannot submit feedback because order item id is missing from backend response."
-                )
-            );
+            toast.error(t("feedback_missing_order_item_id", {}, "Cannot submit feedback because order item id is missing from backend response."));
             return;
         }
 
@@ -155,22 +182,14 @@ export default function GiveFeedbackClient({ id }: { id: string }) {
 
         Promise.all([
             toCreate.length > 0
-                ? submitFeedback.mutateAsync({
-                      orderId: order.orderId,
-                      items: toCreate,
-                  })
+                ? submitFeedback.mutateAsync({ orderId: order.orderId, items: toCreate })
                 : Promise.resolve(),
-            ...toUpdate.map((item) =>
-                updateFeedback.mutateAsync({
-                    orderItemId: item.orderItemId,
-                    rating: item.rating,
-                    comment: item.comment,
-                })
-            ),
+            ...toUpdate.map((item) => updateFeedback.mutateAsync({ orderItemId: item.orderItemId, rating: item.rating, comment: item.comment })),
         ])
             .then(() => {
                 toast.success(t("feedback_saved", {}, "Feedback saved successfully"));
-                clearFeedbackDrafts();
+                setLocalRatings({});
+                setLocalComments({});
             })
             .catch((submitError: unknown) => {
                 toast.error(toErrorMessage(submitError, t("unable_save_feedback", {}, "Unable to save feedback")));
@@ -190,25 +209,42 @@ export default function GiveFeedbackClient({ id }: { id: string }) {
                 <div className="bg-white rounded-xl border border-[#D3E4F4] p-8">
                     <div className="space-y-2 mb-8">
                         <h3 className="text-xl font-semibold text-[#1E1E1E]">{t("order_id_label", {}, "Order ID")}</h3>
-                        <p className="text-3xl font-bold text-[#1E1E1E]">#{order.orderId}</p>
+                        <p className="text-3xl font-bold text-[#1E1E1E]">#{truncateId(order.orderId, 6)}</p>
                         <div className="space-y-1 py-2">
-                            {feedbackItems.map((item) => (
-                                <div key={`summary-${item.key}`} className="flex items-center gap-3 text-[#1E1E1E]">
-                                    <span className="w-10 text-right">{item.quantity}x</span>
-                                    <span>{item.label}</span>
-                                </div>
-                            ))}
+                            {feedbackItems.map((item) => {
+                                const prod = item.productId ? productMap.get(item.productId) : null;
+                                return (
+                                    <div key={`summary-${item.key}`} className="flex items-center gap-3 text-[#1E1E1E]">
+                                        {prod?.image ? (
+                                            <div className="relative w-8 h-8 rounded-lg overflow-hidden bg-muted shrink-0">
+                                                <Image src={prod.image} alt="" fill className="object-contain p-0.5" />
+                                            </div>
+                                        ) : null}
+                                        <span className="w-10 text-right shrink-0">{item.quantity}x</span>
+                                        <span className="truncate">{prod?.name ?? item.label}</span>
+                                    </div>
+                                );
+                            })}
                         </div>
                         <p className="text-lg font-semibold text-[#0D6E97]">[{formatOrderStatusLabel(order.deliveryStatus, t)}]</p>
                     </div>
 
                     <div className="grid md:grid-cols-2 gap-8 border-t border-[#D3E4F4] pt-8">
                         {feedbackItems.map((item) => {
-                            const draft = feedbackDrafts[item.key] ?? { rating: 5, comment: "" };
+                            const rating = getRating(item.key);
+                            const comment = getComment(item.key);
+                            const prod = item.productId ? productMap.get(item.productId) : null;
 
                             return (
                                 <div key={item.key} className="space-y-4">
-                                    <h4 className="text-2xl font-semibold text-[#1E1E1E]">{item.label}</h4>
+                                    <div className="flex items-center gap-3">
+                                        {prod?.image ? (
+                                            <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-muted shrink-0">
+                                                <Image src={prod.image} alt="" fill className="object-contain p-1" />
+                                            </div>
+                                        ) : null}
+                                        <h4 className="text-2xl font-semibold text-[#1E1E1E]">{prod?.name ?? item.label}</h4>
+                                    </div>
                                     <div>
                                         <p className="text-lg font-semibold text-[#1E1E1E] mb-2">{t("rating_label", {}, "Rating")}</p>
                                         <div className="flex gap-2">
@@ -216,18 +252,13 @@ export default function GiveFeedbackClient({ id }: { id: string }) {
                                                 <button
                                                     key={`${item.key}-${star}`}
                                                     type="button"
-                                                    className="transition-colors"
-                                                    onClick={() =>
-                                                        setFeedbackDraft(item.key, {
-                                                            ...draft,
-                                                            rating: star,
-                                                        })
-                                                    }
-                                                    disabled={disabled}
+                                                    className="transition-colors hover:scale-110"
+                                                    onClick={() => setLocalRatings((prev) => ({ ...prev, [item.key]: star }))}
+                                                    disabled={isPending}
                                                 >
                                                     <Star
                                                         className={`h-8 w-8 ${
-                                                            star <= draft.rating
+                                                            star <= rating
                                                                 ? "fill-[#3E93B3] text-[#3E93B3]"
                                                                 : "fill-transparent text-[#D3D9E0]"
                                                         }`}
@@ -240,20 +271,13 @@ export default function GiveFeedbackClient({ id }: { id: string }) {
                                     <div>
                                         <p className="text-lg font-semibold text-[#1E1E1E] mb-2">{t("comment_label", {}, "Comment")}</p>
                                         <Textarea
-                                            value={draft.comment}
+                                            value={comment}
                                             onChange={(event) =>
-                                                setFeedbackDraft(item.key, {
-                                                    ...draft,
-                                                    comment: event.target.value,
-                                                })
+                                                setLocalComments((prev) => ({ ...prev, [item.key]: event.target.value }))
                                             }
                                             className="min-h-[170px] bg-[#F9F8FE] border-[#8AB0C3]"
-                                            placeholder={t(
-                                                "share_experience_placeholder",
-                                                {},
-                                                "Share your experience with this order..."
-                                            )}
-                                            disabled={disabled}
+                                            placeholder={t("share_experience_placeholder", {}, "Share your experience with this order...")}
+                                            disabled={isPending}
                                         />
                                     </div>
                                 </div>
@@ -261,14 +285,20 @@ export default function GiveFeedbackClient({ id }: { id: string }) {
                         })}
                     </div>
 
+                    {hasFeedback ? (
+                        <p className="text-center text-sm text-[#556070] mt-4">
+                            {t("feedback_edit_note", {}, "You have already submitted feedback. You can edit it below.")}
+                        </p>
+                    ) : null}
+
                     <div className="flex justify-center mt-8">
                         <Button
                             type="button"
                             onClick={handleSubmit}
-                            disabled={disabled}
+                            disabled={isPending}
                             className="w-72 h-12 bg-[#8AB0C3] hover:bg-[#769BAD] text-white font-semibold disabled:bg-[#BFC7CF]"
                         >
-                            {t("add_feedback_btn", {}, "Add feedback")}
+                            {hasFeedback ? t("update_feedback_btn", {}, "Update feedback") : t("add_feedback_btn", {}, "Add feedback")}
                         </Button>
                     </div>
                 </div>

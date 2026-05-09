@@ -5,9 +5,11 @@ import { del, get, patch, post } from "@/api/client";
 import type { ApiResponse } from "@/types";
 
 export async function getCart(): Promise<Cart> {
-  const response = await get<ApiResponse<Cart>>("/api/carts");
+  const response = await get<ApiResponse<Cart>>("/api/carts", {
+    headers: { "x-no-redirect": "true" },
+  });
   // The backend might return the cart object directly or wrapped in a 'map' property (from Vert.x JsonObject)
-  const cartData = (response.data as any).map || response.data;
+  const cartData = (response.data as Record<string, unknown>)['map'] || response.data;
   return CartSchema.parse(cartData);
 }
 

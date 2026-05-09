@@ -26,10 +26,10 @@ describe('Cart Store', () => {
 
             const items = useCartStore.getState().items
             expect(items).toHaveLength(1)
-            expect(items[0].productId).toBe('prod-1')
-            expect(items[0].productName).toBe('iPhone 15')
-            expect(items[0].price).toBe(25000000)
-            expect(items[0].quantity).toBe(1)
+            expect(items[0]!.productId).toBe('prod-1')
+            expect(items[0]!.productName).toBe('iPhone 15')
+            expect(items[0]!.price).toBe(25000000)
+            expect(items[0]!.quantity).toBe(1)
         })
 
         it('should add item with custom quantity', () => {
@@ -42,7 +42,7 @@ describe('Cart Store', () => {
             useCartStore.getState().addItem(product, 3)
 
             const items = useCartStore.getState().items
-            expect(items[0].quantity).toBe(3)
+            expect(items[0]!.quantity).toBe(3)
         })
 
         it('should increase quantity when adding existing item', () => {
@@ -57,7 +57,7 @@ describe('Cart Store', () => {
 
             const items = useCartStore.getState().items
             expect(items).toHaveLength(1)
-            expect(items[0].quantity).toBe(5)
+            expect(items[0]!.quantity).toBe(5)
         })
     })
 
@@ -94,7 +94,7 @@ describe('Cart Store', () => {
 
             const items = useCartStore.getState().items
             expect(items).toHaveLength(1)
-            expect(items[0].productId).toBe('prod-2')
+            expect(items[0]!.productId).toBe('prod-2')
         })
     })
 
@@ -110,7 +110,7 @@ describe('Cart Store', () => {
             useCartStore.getState().updateQuantity('prod-1', 5)
 
             const items = useCartStore.getState().items
-            expect(items[0].quantity).toBe(5)
+            expect(items[0]!.quantity).toBe(5)
         })
 
         it('should remove item when quantity is 0', () => {

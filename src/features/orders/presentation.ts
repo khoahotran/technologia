@@ -58,6 +58,10 @@ export function formatDeliveryLogStatusLabel(status: string, t?: Translator) {
     switch (status) {
         case "PENDING":
             return t ? t("order_status_pending", {}, "Pending") : "Pending";
+        case "ON_SHIPPING":
+            return t ? t("order_status_shipping", {}, "Shipping") : "Shipping";
+        case "DELIVERED":
+            return t ? t("order_status_delivered", {}, "Delivered") : "Delivered";
         case "COMPLETED":
             return t ? t("delivery_log_completed", {}, "Completed") : "Completed";
         case "COMPENSATING":
@@ -74,3 +78,22 @@ export function formatDeliveryLogStatusLabel(status: string, t?: Translator) {
 export function formatCurrencyVnd(value: number, locale: string) {
     return `${new Intl.NumberFormat(locale).format(value)} VND`;
 }
+
+export function truncateId(id: string, visibleChars = 8): string {
+    if (!id) return "";
+    return id.length > visibleChars ? `${id.slice(0, 4)}...${id.slice(-visibleChars)}` : id;
+}
+
+export const VALID_STATUS_TRANSITIONS: Record<DeliveryStatus, DeliveryStatus[]> = {
+    AWAITING_PAYMENT: ["AWAITING_CONFIRM", "CANCELED"],
+    AWAITING_CONFIRM: ["PENDING", "CANCELED"],
+    PENDING: ["ON_SHIPPING", "CANCELED"],
+    ON_SHIPPING: ["DELIVERED", "CANCELED"],
+    DELIVERED: [],
+    CANCELED: [],
+};
+
+export function getNextStatusOptions(currentStatus: DeliveryStatus): DeliveryStatus[] {
+    return VALID_STATUS_TRANSITIONS[currentStatus] || [];
+}
+

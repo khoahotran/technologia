@@ -1,9 +1,21 @@
 import { AppError } from "@/api/client";
 
-export function toErrorMessage(error: unknown, fallback = "Request failed") {
-    if (error instanceof AppError) return error.message;
-    if (error instanceof Error && error.message.trim()) return error.message;
-    return fallback;
+const ERROR_MAP: Record<string, string> = {
+    "Product is temporary out of stock!": "err_product_out_of_stock",
+};
+
+export function toErrorMessage(error: unknown, fallbackKey = "err_request_failed") {
+    if (error instanceof AppError) {
+        const mappedKey = ERROR_MAP[error.message];
+        if (mappedKey) return mappedKey;
+        return error.message;
+    }
+    if (error instanceof Error && error.message.trim()) {
+        const mappedKey = ERROR_MAP[error.message];
+        if (mappedKey) return mappedKey;
+        return error.message;
+    }
+    return fallbackKey;
 }
 
 export function isSessionExpiredError(error: unknown) {

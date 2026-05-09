@@ -1,11 +1,11 @@
 "use client";
 
 import {
-    Star,
-    ShoppingCartIcon,
+    ChevronRight,
     Eye,
     PackageCheck,
-    ChevronRight,
+    ShoppingCartIcon,
+    Star,
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -14,11 +14,14 @@ import { toast } from "sonner";
 
 import { AppError } from "@/api/client";
 import { Button } from "@/components/ui/button";
+import { toErrorMessage } from "@/utils/error-message";
 import { ProductCard } from "@/components/ui/product-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/features/auth/hooks";
 import { useCart } from "@/features/cart/hooks";
+import { useProductFeedbacks } from "@/features/orders/hooks";
 import {
+    useCategories,
     useProductDetail,
     useProducts
 } from "@/features/products/hooks";
@@ -42,13 +45,21 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
     const [showFullDesc, setShowFullDesc] = useState(false);
 
     const { data: product, isLoading, error } = useProductDetail(id);
-    const { addToCart, isAdding } = useCart();
+    const { addToCart, addToCartAsync, isAdding } = useCart();
+    const { data: categories } = useCategories();
 
     const { data: relatedData } = useProducts({
         size: 4,
         ...(product?.category ? { keyword: product.category } : {})
     });
     const relatedProducts = relatedData?.items ?? [];
+
+    const { data: feedbacksData } = useProductFeedbacks({
+        productId: id,
+        page: 0,
+        size: 20
+    });
+    const feedbacks = feedbacksData?.data ?? [];
 
     if (isLoading) return <ProductDetailSkeleton />;
 
@@ -70,29 +81,43 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
     const currentImage = (selectedImage?.productId === id && selectedImage.image) ? selectedImage.image : images[0] || "/placeholder.png";
     const displayPrice = product.displayPrice || 0;
     const originalPrice = displayPrice * 1.2;
-    const ratingCount = Math.floor((product.averageRating || 5) * 20);
-    const viewedCount = 10600;
+    // const ratingCount = Math.floor((product.averageRating || 5) * 20);
+    // const viewedCount = 10600;
+    const brandNameDisplay = product.brand || t('others', {}, "Others");
+    const categoryNameDisplay = product.category || "";
+    const matchedCategory = categories?.find((c) => c.name === categoryNameDisplay);
+    const categoryLink = matchedCategory
+        ? `/products?categoryId=${matchedCategory.categoryId}`
+        : categoryNameDisplay ? `/products?name=${encodeURIComponent(categoryNameDisplay)}` : "/products";
 
     const productProperties = [
-        { label: t('brand', {}, "Brand"), value: product.brandName || product.brand || t('others', {}, "Others") },
+        { label: t('brand', {}, "Brand"), value: brandNameDisplay },
         { label: t('sku', {}, "SKU"), value: product.productId.slice(0, 8).toUpperCase() },
-        { label: t('category', {}, "Category"), value: product.category || t('category', {}, "Category") },
+        { label: t('category', {}, "Category"), value: categoryNameDisplay },
         { label: t('stock', {}, "Stock"), value: formatNumber(product.totalStock || 0, currentLocale) },
     ];
 
+    const getVariantId = () => product?.variants?.[0]?.variantId || "";
+
     const handleAddToCart = () => {
         if (!product) return;
-        if (!isAuthenticated) {
-            router.push("/login");
-            return;
-        }
-        const variantId = product.variants?.[0]?.variantId || "";
-        if (!variantId) {
-            toast.error(t('no_variants', {}, "No variants available"));
-            return;
-        }
-
+        if (!isAuthenticated) { router.push("/login"); return; }
+        const variantId = getVariantId();
+        if (!variantId) { toast.error(t('no_variants', {}, "No variants available")); return; }
         addToCart({ productId: product.productId, variantId });
+    };
+
+    const handleBuyNow = async () => {
+        if (!product) return;
+        if (!isAuthenticated) { router.push("/login"); return; }
+        const variantId = getVariantId();
+        if (!variantId) { toast.error(t('no_variants', {}, "No variants available")); return; }
+        try {
+            await addToCartAsync({ productId: product.productId, variantId });
+            router.push(`/cart?focusProduct=${product.productId}`);
+        } catch (error) {
+            toast.error(t(toErrorMessage(error, 'add_to_cart_failed'), {}, "Failed to add to cart. Please try again."));
+        }
     };
 
     const tabs: { key: TabKey; label: string }[] = [
@@ -110,8 +135,8 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                 <div className="flex items-center gap-1 text-muted-foreground">
                     <button onClick={() => router.push("/")} className="transition-colors hover:text-primary">{t('home', {}, "Home")}</button>
                     <ChevronRight className="w-3.5 h-3.5" />
-                    <button onClick={() => router.push(`/products?category=${product.category || ""}`)} className="text-primary transition-colors hover:text-primary/80">
-                        {product.category || t('category', {}, "Category")}
+                    <button onClick={() => router.push(categoryLink)} className="text-primary transition-colors hover:text-primary/80">
+                        {categoryNameDisplay || t('category', {}, "Category")}
                     </button>
                     <ChevronRight className="w-3.5 h-3.5" />
                     <span className="font-medium text-foreground truncate max-w-[200px]">{product.name}</span>
@@ -148,7 +173,7 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                                         <Star key={i} className={`w-4 h-4 ${i < Math.round(product.averageRating || 4) ? "fill-current" : "text-gray-300"}`} />
                                     ))}
                                 </div>
-                                <span className="text-muted-foreground">({ratingCount})</span>
+                                {/* <span className="text-muted-foreground">({ratingCount})</span> */}
                             </div>
 
                             <div className="flex items-start justify-between">
@@ -159,12 +184,12 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                                 <div className="flex flex-col gap-1 text-sm text-muted-foreground">
                                     <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted rounded-full">
                                         <PackageCheck className="w-4 h-4 text-primary" />
-                                        <span className="text-sm font-medium text-foreground">{product.brandName || product.brand || t('official_store', {}, "Official Store")}</span>
+                                        <span className="text-sm font-medium text-foreground">{brandNameDisplay}</span>
                                     </div>
-                                    <div className="flex items-center gap-1.5">
+                                    {/* <div className="flex items-center gap-1.5">
                                         <Eye className="w-4 h-4 text-primary/70 shrink-0" />
                                         <span>{formatNumber(viewedCount, currentLocale)} {t('viewed', {}, "Viewed")}</span>
-                                    </div>
+                                    </div> */}
                                 </div>
                             </div>
 
@@ -188,11 +213,11 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                                     </button>
                                 </div>
                                 <Button
-                                    onClick={handleAddToCart}
+                                    onClick={handleBuyNow}
                                     disabled={isAdding}
                                     className="rounded-full bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-2.5 text-sm font-medium shadow-sm transition-colors disabled:opacity-50 flex items-center gap-2 w-full sm:w-auto min-h-11"
                                 >
-                                    {t('buy_now', {}, "Buy now")} <ChevronRight className="w-4 h-4" />
+                                    {t('buy_now', {}, "Mua ngay")} <ChevronRight className="w-4 h-4" />
                                 </Button>
                             </div>
                         </div>
@@ -207,11 +232,10 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                                 <button
                                     key={tab.key}
                                     onClick={() => setActiveTab(tab.key)}
-                                    className={`text-left px-4 py-4 text-sm font-medium transition-colors border-l-2 flex-1 lg:flex-none ${
-                                        activeTab === tab.key
-                                            ? "border-primary text-primary bg-accent"
-                                            : "border-transparent text-muted-foreground hover:text-primary hover:bg-muted/50"
-                                    }`}
+                                    className={`text-left px-4 py-4 text-sm font-medium transition-colors border-l-2 flex-1 lg:flex-none ${activeTab === tab.key
+                                        ? "border-primary text-primary bg-accent"
+                                        : "border-transparent text-muted-foreground hover:text-primary hover:bg-muted/50"
+                                        }`}
                                 >
                                     {tab.label}
                                 </button>
@@ -231,12 +255,54 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                                 </div>
                             )}
                             {activeTab === "specs" && (
-                                <div className="text-sm text-muted-foreground" dangerouslySetInnerHTML={{ __html: product.specsText || t('no_specs', {}, "No specifications available.") }} />
+                                <div className="space-y-6">
+                                    {product.variants?.[0] ? (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {[
+                                                { label: t('color', {}, "Color"), value: product.variants[0].color },
+                                                { label: t('storage', {}, "Storage"), value: product.variants[0].storage },
+                                                { label: t('stock', {}, "Stock"), value: product.variants[0].stock },
+                                            ].filter(s => s.value).map((spec, i) => (
+                                                <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-accent/30 border border-border/50">
+                                                    <span className="text-sm font-medium text-foreground">{spec.label}</span>
+                                                    <span className="text-sm text-muted-foreground">{spec.value}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="text-sm text-muted-foreground prose prose-sm max-w-none dark:prose-invert"
+                                            dangerouslySetInnerHTML={{ __html: product.specsText || t('no_specs', {}, "No specifications available.") }}
+                                        />
+                                    )}
+                                </div>
                             )}
                             {activeTab === "reviews" && (
-                                <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                                    <Star className="w-10 h-10 mb-2 opacity-20" />
-                                    <p>{t('no_reviews', {}, "No reviews yet.")}</p>
+                                <div className="space-y-6">
+                                    {feedbacks.length > 0 ? (
+                                        <div className="grid gap-6">
+                                            {feedbacks.map((fb, i) => (
+                                                <div key={i} className="flex flex-col gap-2 p-4 rounded-xl border border-border bg-card shadow-sm">
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-1 text-yellow-400">
+                                                            {[...Array(5)].map((_, starIdx) => (
+                                                                <Star key={starIdx} className={`w-3 h-3 ${starIdx < fb.rating ? "fill-current" : "text-gray-300"}`} />
+                                                            ))}
+                                                        </div>
+                                                        <span className="text-[10px] text-muted-foreground">{new Date(fb.createdAt).toLocaleDateString(currentLocale)}</span>
+                                                    </div>
+                                                    <p className="text-sm text-foreground">{fb.comment}</p>
+                                                    <div className="text-[10px] text-muted-foreground flex items-center gap-2">
+                                                        <span>Variant: {fb.variantId}</span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">
+                                            <Star className="w-10 h-10 mb-2 opacity-20" />
+                                            <p>{t('no_reviews', {}, "No reviews yet.")}</p>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>

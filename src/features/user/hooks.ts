@@ -24,7 +24,7 @@ export function useProfile() {
             toast.success(t('profile_updated', {}, 'Profile updated successfully'));
         },
         onError: (error: unknown) => {
-            toast.error(toErrorMessage(error, t('failed_update_profile', {}, 'Failed to update profile')));
+            toast.error(t(toErrorMessage(error, 'failed_update_profile')));
         },
     });
 
@@ -34,7 +34,7 @@ export function useProfile() {
             toast.success(t('password_changed', {}, 'Password changed successfully'));
         },
         onError: (error: unknown) => {
-            toast.error(toErrorMessage(error, t('failed_change_password', {}, 'Failed to change password')));
+            toast.error(t(toErrorMessage(error, 'failed_change_password')));
         },
     });
 
@@ -45,7 +45,7 @@ export function useProfile() {
             toast.success(t('avatar_updated', {}, 'Avatar updated successfully'));
         },
         onError: (error: unknown) => {
-            toast.error(toErrorMessage(error, t('failed_update_avatar', {}, 'Failed to update avatar')));
+            toast.error(t(toErrorMessage(error, 'failed_update_avatar')));
         },
     });
 

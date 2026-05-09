@@ -7,14 +7,15 @@ import { AddressForm } from '../AddressForm'
 import { PaymentMethodList } from '../PaymentMethodList'
 
 vi.mock('@/components/ui/button', () => {
-    const { forwardRef } = require('react')
-    return {
-        Button: forwardRef(({ children, onClick, type, disabled, ...props }: any, ref: any) => (
-            <button ref={ref} onClick={onClick} type={type} disabled={disabled} data-testid="button" {...props}>
+    const Button = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttributes<HTMLButtonElement>>(
+        ({ children, ...props }, ref) => (
+            <button ref={ref} data-testid="button" {...props}>
                 {children}
             </button>
-        )),
-    }
+        )
+    )
+    Button.displayName = 'Button'
+    return { Button }
 })
 
 vi.mock('@/components/ui/checkbox', () => ({
@@ -24,21 +25,23 @@ vi.mock('@/components/ui/checkbox', () => ({
 }))
 
 vi.mock('@/components/ui/input', () => {
-    const { forwardRef } = require('react')
-    return {
-        Input: forwardRef((props: any, ref: any) => (
+    const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
+        (props, ref) => (
             <input ref={ref} data-testid="input" {...props} />
-        )),
-    }
+        )
+    )
+    Input.displayName = 'Input'
+    return { Input }
 })
 
 vi.mock('@/components/ui/textarea', () => {
-    const { forwardRef } = require('react')
-    return {
-        Textarea: forwardRef((props: any, ref: any) => (
+    const Textarea = React.forwardRef<HTMLTextAreaElement, React.TextareaHTMLAttributes<HTMLTextAreaElement>>(
+        (props, ref) => (
             <textarea ref={ref} data-testid="textarea" {...props} />
-        )),
-    }
+        )
+    )
+    Textarea.displayName = 'Textarea'
+    return { Textarea }
 })
 
 vi.mock('@/providers/language.provider', () => ({
@@ -126,7 +129,7 @@ describe('PaymentMethodList Component', () => {
         renderWithQuery(<PaymentMethodList type="bank" methods={mockMethods} onUse={onUse} />)
         
         const useButtons = screen.getAllByText('Use account')
-        fireEvent.click(useButtons[0])
+        fireEvent.click(useButtons[0]!)
         
         expect(onUse).toHaveBeenCalledWith('1')
     })
