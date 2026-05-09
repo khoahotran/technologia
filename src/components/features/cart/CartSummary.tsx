@@ -35,11 +35,11 @@ export function CartSummary({
   const currentLocale = locale === 'vi' ? 'vi-VN' : 'en-US';
   return (
     <div className="bg-card p-4 sm:p-6 rounded-lg border border-border h-fit sticky top-20">
-      <h3 className="font-medium text-foreground mb-5 uppercase">{t('order_summary', {}, "ORDER SUMMARY")}</h3>
+      <h3 className="font-medium text-foreground mb-5 uppercase">{t('order_summary', {}, "TÓM TẮT ĐƠN HÀNG")}</h3>
 
       <div className="space-y-4 mb-8">
         <div className="flex items-center justify-between text-sm">
-          <span className="text-muted-foreground">{t('sub_total', {}, "Subtotal")}</span>
+          <span className="text-muted-foreground">{t('sub_total', {}, "Tạm tính")}</span>
           <span className="text-foreground font-medium">
             {t('price_vnd', { price: new Intl.NumberFormat(currentLocale).format(total + discountAmount) }, `${new Intl.NumberFormat(currentLocale).format(total + discountAmount)} ₫`)}
           </span>
@@ -61,6 +61,10 @@ export function CartSummary({
           </span>
         </div>
       </div>
+
+      <p className="text-[10px] text-muted-foreground/80 italic mb-4 leading-tight">
+        * {t('cart_price_reference_note', {}, "Giá trị này chỉ mang tính chất tham khảo. Tổng tiền chính xác sẽ được tính tại bước thanh toán.")}
+      </p>
 
       {/* Hiển thị số lượng mục đã chọn */}
       <p className="mb-4 text-sm text-muted-foreground">{t('selected_items', { count: itemCount }, `Selected ${itemCount} products`)}</p>

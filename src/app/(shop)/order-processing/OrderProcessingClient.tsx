@@ -10,7 +10,7 @@ import { useLanguage } from "@/providers/language.provider";
 import { toErrorMessage } from "@/utils/error-message";
 
 export default function OrderProcessingPage() {
-    const { t } = useLanguage();
+    const { t, locale } = useLanguage();
     const router = useRouter();
     const searchParams = useSearchParams();
     const sagaId = searchParams.get("sagaId");
@@ -218,7 +218,14 @@ export default function OrderProcessingPage() {
 
                     {qrData?.expiredAt && (
                         <p className="mt-6 text-xs text-muted-foreground italic">
-                            {t('qr_expired_at', { time: new Date(qrData.expiredAt).toLocaleTimeString() }, `Expires at ${new Date(qrData.expiredAt).toLocaleTimeString()}`)}
+                            {(() => {
+                                const date = new Date(qrData.expiredAt);
+                                const timeStr = locale === 'vi'
+                                    ? date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                                    : `${String(date.getUTCHours()).padStart(2, '0')}:${String(date.getUTCMinutes()).padStart(2, '0')}:${String(date.getUTCSeconds()).padStart(2, '0')}`;
+                                
+                                return t('qr_expired_at', { time: timeStr }, `Expires at ${timeStr}`);
+                            })()}
                         </p>
                     )}
                 </div>

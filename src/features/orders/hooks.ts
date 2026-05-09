@@ -178,9 +178,17 @@ export function useCancelOrder() {
 
     return useMutation({
         mutationFn: (payload: CancelOrderRequest) => cancelOrder(payload),
-        onSuccess: (_: void, variables) => {
-            queryClient.invalidateQueries({ queryKey: checkoutKeys.all });
-            queryClient.resetQueries({ queryKey: checkoutKeys.orders(), exact: false });
+        onSuccess: async (_, variables) => {
+            // 1. Invalidate all checkout-related queries
+            await queryClient.invalidateQueries({ queryKey: checkoutKeys.all });
+            
+            // 2. Specifically remove orders list from cache to force a fresh fetch 
+            // and show loading state instead of stale data when navigating back
+            queryClient.removeQueries({ queryKey: checkoutKeys.orders(), exact: false });
+            
+            // 3. Update the specific order in cache if it exists (Optimistic-like)
+            queryClient.invalidateQueries({ queryKey: checkoutKeys.order(variables.orderId) });
+
             toast.success(t('order_canceled_success', {}, "Order canceled successfully"));
         },
         onError: (error) => {
@@ -196,9 +204,10 @@ export function useUpdateOrderStatus() {
     return useMutation({
         mutationFn: ({ orderId, deliveryStatus }: { orderId: string; deliveryStatus: AdminUpdateOrderStatus }) =>
             updateOrderStatus(orderId, deliveryStatus),
-        onSuccess: (_: void, variables) => {
-            queryClient.invalidateQueries({ queryKey: checkoutKeys.all });
-            queryClient.resetQueries({ queryKey: checkoutKeys.orders(), exact: false });
+        onSuccess: async (_, variables) => {
+            await queryClient.invalidateQueries({ queryKey: checkoutKeys.all });
+            queryClient.removeQueries({ queryKey: checkoutKeys.orders(), exact: false });
+            queryClient.invalidateQueries({ queryKey: [...checkoutKeys.all, "admin-order", variables.orderId] });
         },
         onError: (error) => {
             toast.error(t(toErrorMessage(error, 'admin_failed_update_order_status')));

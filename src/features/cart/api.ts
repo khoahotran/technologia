@@ -35,6 +35,10 @@ export async function removeFromCart(itemId: string): Promise<void> {
   await del<ApiResponse<unknown>>(`/api/cart-items/delete/${itemId}`);
 }
 
+/**
+ * Calculate cart price for reference only.
+ * For actual checkout price, use recalculateCheckout API on the shipping page.
+ */
 export async function calculateCartPrice(data: CountPriceRequest): Promise<CountPriceResponse> {
   const response = await post<ApiResponse<CountPriceResponse>>("/api/carts/price", data);
   return CountPriceResponseSchema.parse(response.data);
