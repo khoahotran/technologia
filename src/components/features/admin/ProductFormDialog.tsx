@@ -26,11 +26,13 @@ import { useLanguage } from "@/providers/language.provider";
 export type ProductFormMode = "create" | "edit" | "add-variant";
 
 export interface ProductVariantEntry {
+    variantId?: string;
     variantCode: string;
     price: number;
     stock: number;
     storage: string;
     color: string;
+    images?: string[];
 }
 
 export interface ProductFormData {
@@ -84,7 +86,7 @@ export function ProductFormDialog({
         displayPrice: 0,
         brandId: undefined as number | undefined,
         categoryId: undefined as number | undefined,
-        status: "ACTIVE" as ProductStatus,
+        status: "AVAILABLE" as ProductStatus,
         variantCode: "",
         price: 0,
         stock: 0,
@@ -99,16 +101,28 @@ export function ProductFormDialog({
             setForm({
                 name: product.name ?? "",
                 description: product.description ?? "",
-                displayPrice: product.displayPrice ?? 0,
-                brandId: undefined,
-                categoryId: undefined,
-                status: (product.status as ProductStatus) ?? "ACTIVE",
+                displayPrice: product.displayPrice ?? (product as any).price ?? 0,
+                brandId: product.brandId ? Number(product.brandId) : brands.find((b) => String(b.name).trim().toLowerCase() === String(product.brandName ?? product.brand).trim().toLowerCase())?.brandId as number | undefined,
+                categoryId: product.categoryId ? Number(product.categoryId) : categories.find((c) => String(c.name).trim().toLowerCase() === String(product.category).trim().toLowerCase())?.categoryId as number | undefined,
+                status: (product.status as ProductStatus) ?? "AVAILABLE",
                 variantCode: "",
                 price: 0,
                 stock: 0,
                 storage: "",
                 color: "",
             });
+            setVariantRows((product.variants ?? []).map(v => {
+                const entry: ProductVariantEntry = {
+                    variantCode: (v as any).variantCode ?? `VAR-${Date.now()}`,
+                    price: v.price ?? 0,
+                    stock: v.stock ?? 0,
+                    storage: v.storage ?? "",
+                    color: v.color ?? "",
+                    images: v.images ?? [],
+                };
+                if (v.variantId) entry.variantId = v.variantId;
+                return entry;
+            }));
         } else if (mode === "create") {
             const initCode = `PROD-${Date.now()}`;
             setForm({
@@ -117,7 +131,7 @@ export function ProductFormDialog({
                 displayPrice: 0,
                 brandId: undefined,
                 categoryId: undefined,
-                status: "ACTIVE",
+                status: "DRAFT",
                 variantCode: "",
                 price: 0,
                 stock: 0,
@@ -138,7 +152,7 @@ export function ProductFormDialog({
                 displayPrice: 0,
                 brandId: undefined,
                 categoryId: undefined,
-                status: "ACTIVE",
+                status: "AVAILABLE",
                 variantCode: `VAR-${Date.now()}`,
                 price: product.displayPrice ?? 0,
                 stock: 0,
@@ -152,7 +166,7 @@ export function ProductFormDialog({
                 displayPrice: 0,
                 brandId: undefined,
                 categoryId: undefined,
-                status: "ACTIVE",
+                status: "AVAILABLE",
                 variantCode: "",
                 price: 0,
                 stock: 0,
@@ -207,6 +221,7 @@ export function ProductFormDialog({
                 description: form.description,
                 displayPrice: form.displayPrice,
                 status: form.status,
+                variants: variantRows,
             };
             if (form.brandId !== undefined) submitData.brandId = form.brandId;
             if (form.categoryId !== undefined) submitData.categoryId = form.categoryId;
@@ -236,27 +251,27 @@ export function ProductFormDialog({
                     {(mode === "create" || mode === "edit") && (
                         <>
                             <div className="grid gap-1.5">
-                                <Label>{t("admin_product_name", {}, "Product name")}</Label>
+                                <Label>{t("admin_product_name")}</Label>
                                 <Input
                                     value={form.name}
                                     onChange={(e) => update("name", e.target.value)}
-                                    placeholder={t("admin_product_name", {}, "Product name")}
+                                    placeholder={t("admin_product_name")}
                                     className="rounded-xl"
                                 />
                             </div>
 
                             <div className="grid gap-1.5">
-                                <Label>{t("description", {}, "Description")}</Label>
+                                <Label>{t("admin_description")}</Label>
                                 <Input
                                     value={form.description}
                                     onChange={(e) => update("description", e.target.value)}
-                                    placeholder={t("description", {}, "Description")}
+                                    placeholder={t("admin_description")}
                                     className="rounded-xl"
                                 />
                             </div>
 
                             <div className="grid gap-1.5">
-                                <Label>{t("admin_price", {}, "Price")}</Label>
+                                <Label>{t("admin_price")}</Label>
                                 <Input
                                     type="number"
                                     value={form.displayPrice}
@@ -306,21 +321,24 @@ export function ProductFormDialog({
                             </div>
 
                             <div className="grid gap-1.5">
-                                <Label>{t("status", {}, "Status")}</Label>
+                                <Label>{t("admin_status")}</Label>
                                 <Select value={form.status} onValueChange={(v) => update("status", v as ProductStatus)}>
                                     <SelectTrigger className="rounded-xl">
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="ACTIVE">{t("active", {}, "Active")}</SelectItem>
-                                        <SelectItem value="INACTIVE">{t("inactive", {}, "Inactive")}</SelectItem>
+                                        <SelectItem value="DRAFT">{t("product_status_draft")}</SelectItem>
+                                        <SelectItem value="PENDING_REVIEW">{t("product_status_pending_review")}</SelectItem>
+                                        <SelectItem value="AVAILABLE">{t("product_status_available")}</SelectItem>
+                                        <SelectItem value="OUT_OF_STOCK">{t("product_status_out_of_stock")}</SelectItem>
+                                        <SelectItem value="DISCONTINUED">{t("product_status_discontinued")}</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
                         </>
                     )}
 
-                    {mode === "create" && (
+                    {(mode === "create" || mode === "edit") && (
                         <>
                             <div className="border-t border-border pt-3">
                                 <p className="text-xs font-medium text-muted-foreground mb-3 uppercase tracking-wider">
@@ -384,7 +402,7 @@ export function ProductFormDialog({
                                             <Input
                                                 value={vr.storage}
                                                 onChange={(e) => updateVariantRow(idx, "storage", e.target.value)}
-                                                placeholder="128GB"
+                                                placeholder={t("admin_placeholder_storage", {}, "e.g. 128GB")}
                                                 className="rounded-xl"
                                             />
                                         </div>
@@ -397,6 +415,19 @@ export function ProductFormDialog({
                                             />
                                         </div>
                                     </div>
+
+                                    {vr.images && vr.images.length > 0 && (
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {vr.images.map((img, imgIdx) => (
+                                                <img
+                                                    key={imgIdx}
+                                                    src={img}
+                                                    alt=""
+                                                    className="w-10 h-10 rounded-md object-cover border"
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             ))}
 
@@ -457,7 +488,7 @@ export function ProductFormDialog({
                                     <Input
                                         value={form.storage}
                                         onChange={(e) => update("storage", e.target.value)}
-                                        placeholder="128GB"
+                                        placeholder={t("admin_placeholder_storage", {}, "e.g. 128GB")}
                                         className="rounded-xl"
                                     />
                                 </div>
@@ -476,14 +507,14 @@ export function ProductFormDialog({
 
                 <DialogFooter className="gap-2 sm:gap-0">
                     <Button variant="outline" onClick={() => onOpenChange(false)} className="rounded-xl">
-                        {t("cancel", {}, "Cancel")}
+                        {t("admin_cancel")}
                     </Button>
                     <Button
                         onClick={handleSubmit}
                         disabled={isPending || (mode === "create" && (!form.name || !form.brandId || !form.categoryId))}
                         className="rounded-xl"
                     >
-                        {mode === "create" ? t("admin_create", {}, "Create") : t("admin_save", {}, "Save")}
+                        {isPending ? t("saving") : (mode === "create" ? t("admin_create") : t("admin_save"))}
                     </Button>
                 </DialogFooter>
             </DialogContent>

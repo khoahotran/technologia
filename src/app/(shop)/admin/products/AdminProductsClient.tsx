@@ -38,8 +38,10 @@ import {
     useCategories,
     useCreateProductAdmin,
     useDeleteProductAdmin,
+    useDeleteProductVariantAdmin,
     useProducts,
     useUpdateProductAdmin,
+    useUpdateProductVariantAdmin,
 } from "@/features/products/hooks";
 import type { Brand, Category, Product, ProductStatus } from "@/features/products/types";
 import { useLanguage } from "@/providers/language.provider";
@@ -61,7 +63,6 @@ function getBrandId(product: Product, brands: Brand[], selectedBrandId: string) 
     if (directSelected !== null) return directSelected;
     const byName = brands.find((entry) => entry.name === (product.brandName ?? product.brand));
     if (byName) return Number(byName.brandId);
-    if (brands[0]) return Number(brands[0].brandId);
     return null;
 }
 
@@ -70,7 +71,6 @@ function getCategoryId(product: Product, categories: Category[], selectedCategor
     if (directSelected !== null) return directSelected;
     const byName = categories.find((entry) => entry.name === product.category);
     if (byName) return Number(byName.categoryId);
-    if (categories[0]) return Number(categories[0].categoryId);
     return null;
 }
 
@@ -111,18 +111,26 @@ function ProductTile({
                 <Checkbox checked={selected} onCheckedChange={onToggle} />
             </div>
 
-            {status && status === "NEW" && (
+            {status === "AVAILABLE" && (
                 <div className="absolute top-3 right-3 z-10">
                     <Badge variant="secondary" className="rounded-full px-2.5 text-[10px] font-semibold">
-                        {t("new", {}, "New")}
+                        {t("product_status_available", {}, "Available")}
                     </Badge>
                 </div>
             )}
 
-            {status === "INACTIVE" && (
+            {(status === "OUT_OF_STOCK" || status === "DISCONTINUED") && (
+                <div className="absolute top-3 right-3 z-10">
+                    <Badge variant="destructive" className="rounded-full px-2.5 text-[10px]">
+                        {t(`product_status_${status.toLowerCase()}`)}
+                    </Badge>
+                </div>
+            )}
+
+            {(status === "DRAFT" || status === "PENDING_REVIEW") && (
                 <div className="absolute top-3 right-3 z-10">
                     <Badge variant="outline" className="rounded-full px-2.5 text-[10px]">
-                        {t("inactive", {}, "Inactive")}
+                        {t(`product_status_${status.toLowerCase()}`)}
                     </Badge>
                 </div>
             )}
@@ -161,41 +169,42 @@ function ProductTile({
                     </div>
                     <div className="flex items-center justify-between">
                         <span className="text-sm font-bold text-primary">{currencyVnd(price, locale, t)}</span>
-                        <button
-                            type="button"
-                            onClick={(e) => { e.stopPropagation(); onToggleMenu(); }}
-                            className="h-7 w-7 rounded-full bg-muted hover:bg-accent text-muted-foreground hover:text-primary inline-flex items-center justify-center transition-colors"
-                        >
-                            <SlidersHorizontal className="h-3.5 w-3.5" />
-                        </button>
+                        <div className="relative">
+                            <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); onToggleMenu(); }}
+                                className="h-7 w-7 rounded-full bg-muted hover:bg-accent text-muted-foreground hover:text-primary inline-flex items-center justify-center transition-colors"
+                            >
+                                <SlidersHorizontal className="h-3.5 w-3.5" />
+                            </button>
+                            {menuOpen && (
+                                <>
+                                    <div className="fixed inset-0 z-20" onClick={onToggleMenu} />
+                                    <div className="absolute bottom-full right-0 mb-1 bg-popover border rounded-xl shadow-md z-30 min-w-32 py-1 overflow-hidden">
+                                        {(["view", "edit", "remove", "apply", "upload"] as const).map((action) => (
+                                            <button
+                                                key={action}
+                                                type="button"
+                                                className="w-full text-left px-3 py-1.5 text-sm hover:bg-accent transition-colors"
+                                                onClick={() => onAction(action)}
+                                            >
+                                                {t(
+                                                    `admin_action_${action}`,
+                                                    {},
+                                                    action === "view" ? "View" :
+                                                        action === "edit" ? "Edit" :
+                                                            action === "remove" ? "Archive" :
+                                                                action === "apply" ? "Apply" : "Upload image"
+                                                )}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
-
-            {menuOpen && (
-                <>
-                    <div className="fixed inset-0 z-20" onClick={onToggleMenu} />
-                    <div className="absolute bottom-full right-3 mb-1 bg-popover border rounded-xl shadow-md z-30 min-w-32 py-1 overflow-hidden">
-                        {(["view", "edit", "remove", "apply", "upload"] as const).map((action) => (
-                            <button
-                                key={action}
-                                type="button"
-                                className="w-full text-left px-3 py-1.5 text-sm hover:bg-accent transition-colors"
-                                onClick={() => onAction(action)}
-                            >
-                                {t(
-                                    `admin_action_${action}`,
-                                    {},
-                                    action === "view" ? "View" :
-                                        action === "edit" ? "Edit" :
-                                            action === "remove" ? "Archive" :
-                                                action === "apply" ? "Apply" : "Upload image"
-                                )}
-                            </button>
-                        ))}
-                    </div>
-                </>
-            )}
         </div>
     );
 }
@@ -239,6 +248,8 @@ export default function AdminProductsClient() {
     const createProductMutation = useCreateProductAdmin();
     const updateProductMutation = useUpdateProductAdmin();
     const deleteProductMutation = useDeleteProductAdmin();
+    const updateProductVariantMutation = useUpdateProductVariantAdmin();
+    const deleteProductVariantMutation = useDeleteProductVariantAdmin();
     const addVariantMutation = useAddProductVariantAdmin();
     const addVariantImageMutation = useAddVariantImageAdmin();
     const applyDiscountMutation = useApplyProductsToDiscountAdmin();
@@ -289,6 +300,8 @@ export default function AdminProductsClient() {
         createProductMutation.isPending ||
         updateProductMutation.isPending ||
         deleteProductMutation.isPending ||
+        updateProductVariantMutation.isPending ||
+        deleteProductVariantMutation.isPending ||
         addVariantMutation.isPending ||
         addVariantImageMutation.isPending ||
         applyDiscountMutation.isPending;
@@ -361,10 +374,10 @@ export default function AdminProductsClient() {
         setDialogOpen(true);
     };
 
-    const handleDialogSubmit = (data: ProductFormData) => {
+    const handleDialogSubmit = async (data: ProductFormData) => {
         if (dialogMode === "create") {
-            const selectedBrandId = toIdFromFilter(brandId) ?? (brands[0] ? Number(brands[0].brandId) : null);
-            const selectedCategoryId = toIdFromFilter(categoryId) ?? (categories[0] ? Number(categories[0].categoryId) : null);
+            const selectedBrandId = data.brandId ?? (brands[0] ? Number(brands[0].brandId) : null);
+            const selectedCategoryId = data.categoryId ?? (categories[0] ? Number(categories[0].categoryId) : null);
             if (selectedBrandId === null || selectedCategoryId === null) {
                 toast.error(t("admin_create_product_requires_brand_category", {}, "Brand and category are required"));
                 return;
@@ -381,29 +394,51 @@ export default function AdminProductsClient() {
                 name: data.name!,
                 description: data.description!,
                 displayPrice: data.displayPrice!,
-                brandId: selectedBrandId,
-                categoryId: selectedCategoryId,
-                status: data.status ?? "ACTIVE",
+                brandId: selectedBrandId!,
+                categoryId: selectedCategoryId!,
+                status: data.status ?? "DRAFT",
                 variants,
             });
+            setDialogOpen(false);
         } else if (dialogMode === "edit" && dialogProduct) {
-            const resolvedBrandId = getBrandId(dialogProduct, brands, brandId);
-            const resolvedCategoryId = getCategoryId(dialogProduct, categories, categoryId);
+            const resolvedBrandId = data.brandId ?? getBrandId(dialogProduct, brands, brandId);
+            const resolvedCategoryId = data.categoryId ?? getCategoryId(dialogProduct, categories, categoryId);
             if (resolvedBrandId === null || resolvedCategoryId === null) {
                 toast.error(t("admin_create_product_requires_brand_category", {}, "Brand and category are required"));
                 return;
             }
-            updateProductMutation.mutate({
-                productId: String(dialogProduct.productId),
-                payload: {
-                    name: data.name!,
-                    description: data.description!,
-                    displayPrice: data.displayPrice!,
-                    brandId: resolvedBrandId,
-                    categoryId: resolvedCategoryId,
-                    status: data.status ?? "ACTIVE",
-                },
-            });
+            const productId = String(dialogProduct.productId);
+            setDialogOpen(false);
+            try {
+                await updateProductMutation.mutateAsync({
+                    productId,
+                    payload: {
+                        name: data.name!,
+                        description: data.description!,
+                        displayPrice: data.displayPrice!,
+                        brandId: resolvedBrandId,
+                        categoryId: resolvedCategoryId,
+                        status: data.status ?? "DRAFT",
+                    },
+                });
+                for (const variant of (data.variants ?? [])) {
+                    if (variant.variantId) {
+                        await updateProductVariantMutation.mutateAsync({
+                            productId,
+                            variantId: variant.variantId,
+                            payload: {
+                                price: variant.price,
+                                stock: variant.stock,
+                                storage: variant.storage,
+                                color: variant.color,
+                                images: variant.images ?? [],
+                            },
+                        });
+                    }
+                }
+            } catch {
+                // Errors handled by mutation toasts
+            }
         } else if (dialogMode === "add-variant" && dialogProduct) {
             addVariantMutation.mutate({
                 productId: String(dialogProduct.productId),
@@ -416,10 +451,19 @@ export default function AdminProductsClient() {
                     images: [],
                 },
             });
+            setDialogOpen(false);
         }
-        setDialogOpen(false);
     };
 
+    const handleApplyDiscount = () => {
+        if (!discountIdInput.trim()) return;
+        applyDiscountMutation.mutate({
+            discountId: discountIdInput.trim(),
+            productVariantIds: selectedIds.map((id) => ({ productId: id, variantId: "" })),
+        });
+        setDiscountDialogOpen(false);
+        setDiscountIdInput("");
+    };
     const handlePageChange = (newPage: number) => {
         if (newPage >= 0 && newPage < totalPages) {
             setPage(newPage);
@@ -540,7 +584,7 @@ export default function AdminProductsClient() {
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="displayPrice">{t("admin_order_price", {}, "Price")}</SelectItem>
+                            <SelectItem value="displayPrice">{t("admin_price", {}, "Price")}</SelectItem>
                             <SelectItem value="createdAt">{t("admin_order_created_date", {}, "Created date")}</SelectItem>
                         </SelectContent>
                     </Select>
@@ -680,11 +724,7 @@ export default function AdminProductsClient() {
                         placeholder={t("admin_discount_id_prompt", {}, "Discount ID")}
                         className="rounded-xl"
                         onKeyDown={(e) => {
-                            if (e.key === "Enter" && discountIdInput.trim()) {
-                                applyDiscountMutation.mutate({ discountId: discountIdInput.trim(), productIds: selectedIds });
-                                setDiscountDialogOpen(false);
-                                setDiscountIdInput("");
-                            }
+                            if (e.key === "Enter") handleApplyDiscount();
                         }}
                     />
                     <DialogFooter className="gap-2 sm:gap-0">
@@ -692,13 +732,7 @@ export default function AdminProductsClient() {
                             {t("cancel", {}, "Cancel")}
                         </Button>
                         <Button
-                            onClick={() => {
-                                if (discountIdInput.trim()) {
-                                    applyDiscountMutation.mutate({ discountId: discountIdInput.trim(), productIds: selectedIds });
-                                }
-                                setDiscountDialogOpen(false);
-                                setDiscountIdInput("");
-                            }}
+                            onClick={handleApplyDiscount}
                             disabled={!discountIdInput.trim() || isBusy}
                             className="rounded-xl"
                         >
@@ -719,6 +753,7 @@ export default function AdminProductsClient() {
                 isPending={
                     createProductMutation.isPending ||
                     updateProductMutation.isPending ||
+                    updateProductVariantMutation.isPending ||
                     addVariantMutation.isPending
                 }
             />

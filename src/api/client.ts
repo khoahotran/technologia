@@ -151,7 +151,14 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 });
 
 api.interceptors.response.use(
-  (response) => response.data,
+  (response) => {
+    const payload = response.data as any;
+    // Some APIs return 200 OK but with status: 500 in the body
+    if (payload && typeof payload === "object" && payload.status !== undefined && payload.status !== 200) {
+      throw new AppError(payload.message || "Operation failed", payload.status, payload.code || "BUSINESS_ERROR", payload);
+    }
+    return payload;
+  },
   async (error: AxiosError) => {
     const status = error.response?.status ?? 500;
     const data = (error.response?.data ?? {}) as BackendErrorPayload;

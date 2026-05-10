@@ -11,6 +11,7 @@ import {
     deleteBrandAdmin,
     deleteCategoryAdmin,
     deleteProductAdmin,
+    deleteProductVariantAdmin,
     getBrands,
     getCategories,
     getProductById,
@@ -18,6 +19,7 @@ import {
     updateBrandAdmin,
     updateCategoryAdmin,
     updateProductAdmin,
+    updateProductVariantAdmin,
 } from "./api";
 import type {
     CreateBrandRequest,
@@ -26,6 +28,7 @@ import type {
     CreateProductVariantRequest,
     ProductSearchParams,
     UpdateProductRequest,
+    UpdateProductVariantRequest,
 } from "./types";
 
 import { productKeys } from "@/constants/query-keys";
@@ -220,11 +223,48 @@ export function useAddProductVariantAdmin() {
     });
 }
 
+export function useUpdateProductVariantAdmin() {
+    const queryClient = useQueryClient();
+    const { t } = useLanguage();
+    return useMutation({
+        mutationFn: ({ productId, variantId, payload }: { productId: string; variantId: string; payload: UpdateProductVariantRequest }) =>
+            updateProductVariantAdmin(productId, variantId, payload),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: productKeys.all });
+            toast.success(t('admin_variant_updated_success', {}, "Variant updated successfully"));
+        },
+        onError: (error: unknown) => {
+            toast.error(t(toErrorMessage(error, 'admin_failed_update_variant')));
+        },
+    });
+}
+
+export function useDeleteProductVariantAdmin() {
+    const queryClient = useQueryClient();
+    const { t } = useLanguage();
+    return useMutation({
+        mutationFn: ({ productId, variantId }: { productId: string; variantId: string }) =>
+            deleteProductVariantAdmin(productId, variantId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: productKeys.all });
+            toast.success(t('admin_variant_deleted_success', {}, "Variant deleted successfully"));
+        },
+        onError: (error: unknown) => {
+            toast.error(t(toErrorMessage(error, 'admin_failed_delete_variant')));
+        },
+    });
+}
+
 export function useApplyProductsToDiscountAdmin() {
     const { t } = useLanguage();
     return useMutation({
-        mutationFn: ({ discountId, productIds }: { discountId: string; productIds: string[] }) =>
-            applyProductsToDiscountAdmin(discountId, { productIds }),
+        mutationFn: (input: { discountId: string } & import("./types").ApplyProductsToDiscountRequest) => {
+            const payload: import("./types").ApplyProductsToDiscountRequest = {};
+            if (input.brandIds) payload.brandIds = input.brandIds;
+            if (input.categoryIds) payload.categoryIds = input.categoryIds;
+            if (input.productVariantIds) payload.productVariantIds = input.productVariantIds;
+            return applyProductsToDiscountAdmin(input.discountId, payload);
+        },
         onSuccess: () => {
             toast.success(t('admin_discount_applied_success', {}, "Discount applied successfully"));
         },

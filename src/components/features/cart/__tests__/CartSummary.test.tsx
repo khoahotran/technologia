@@ -53,7 +53,7 @@ describe('CartSummary Component', () => {
 
     it('should render order summary title', () => {
         render(<CartSummary {...mockProps} />)
-        expect(screen.getByText('ORDER SUMMARY')).toBeInTheDocument()
+        expect(screen.getByText('TÓM TẮT ĐƠN HÀNG')).toBeInTheDocument()
     })
 
     it('should render enabled checkout button when items selected', () => {

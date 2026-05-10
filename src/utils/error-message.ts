@@ -2,6 +2,8 @@ import { AppError } from "@/api/client";
 
 const ERROR_MAP: Record<string, string> = {
     "Product is temporary out of stock!": "err_product_out_of_stock",
+    "Category is exists!": "admin_category_exists",
+    "Brand is exists!": "admin_brand_exists",
 };
 
 export function toErrorMessage(error: unknown, fallbackKey = "err_request_failed") {

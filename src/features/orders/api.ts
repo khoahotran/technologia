@@ -63,7 +63,15 @@ export async function getAdminOrders(params?: OrderListParams): Promise<Paginate
         },
     });
 
-    const items = response.data.map((item) => OrderSchema.parse(item));
+    const items = response.data
+        .map((item) => {
+            const result = OrderSchema.safeParse(item);
+            if (!result.success) {
+                console.warn("[Orders] Skipping invalid admin order:", result.error.issues, item.orderId);
+            }
+            return result.success ? result.data : null;
+        })
+        .filter((item): item is Order => item !== null);
     return {
         pageNumber: response.page_number,
         pageSize: response.page_size,

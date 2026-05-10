@@ -242,10 +242,10 @@ export default function AdminHomeClient() {
                     />
                     <DialogFooter className="gap-2 sm:gap-0">
                         <Button variant="outline" onClick={closeDialog} className="rounded-xl">
-                            {t("cancel", {}, "Cancel")}
+                            {t("admin_cancel", {}, "Cancel")}
                         </Button>
                         <Button onClick={handleDialogConfirm} disabled={!dialogValue.trim() || isBusy} className="rounded-xl">
-                            {dialogMode === "add" ? t("add", {}, "Add") : t("save", {}, "Save")}
+                            {dialogMode === "add" ? t("admin_add", {}, "Add") : t("admin_save", {}, "Save")}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -256,8 +256,8 @@ export default function AdminHomeClient() {
                 onOpenChange={(open) => { if (!open) setDeleteConfirm(null); }}
                 onConfirm={confirmDelete}
                 title={t("admin_confirm_delete_item", { name: deleteConfirm?.name ?? "" }, "Delete this item?")}
-                confirmText={t("confirm", {}, "Confirm")}
-                cancelText={t("cancel", {}, "Cancel")}
+                confirmText={t("admin_confirm", {}, "Confirm")}
+                cancelText={t("admin_cancel", {}, "Cancel")}
                 variant="destructive"
             />
         </div>

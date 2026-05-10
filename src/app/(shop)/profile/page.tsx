@@ -35,6 +35,7 @@ export default function ProfilePage() {
     const [updateForm, setUpdateForm] = useState<UpdateProfile>({
         firstName: "",
         lastName: "",
+        email: "",
         phoneNumber: ""
     });
 
@@ -57,6 +58,7 @@ export default function ProfilePage() {
             setUpdateForm({
                 firstName: profile.firstName || "",
                 lastName: profile.lastName || "",
+                email: profile.email || "",
                 phoneNumber: profile.phoneNumber || ""
             });
         }
@@ -67,7 +69,6 @@ export default function ProfilePage() {
         try {
             await updateProfile({
                 ...updateForm,
-                email: profile?.email,
                 displayName: profile?.displayName ?? profile?.username,
             });
         } catch {
@@ -168,7 +169,15 @@ export default function ProfilePage() {
                                         <div className="space-y-2">
                                             <Label>{t('email', {}, "Email")}</Label>
                                             <Input
-                                                value={profile?.email || ""}
+                                                value={updateForm.email}
+                                                onChange={(e) => setUpdateForm({ ...updateForm, email: e.target.value })}
+                                            />
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label>{t('username', {}, "Username")}</Label>
+                                            <Input
+                                                value={profile?.username || ""}
                                                 disabled
                                             />
                                         </div>

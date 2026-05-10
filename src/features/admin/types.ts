@@ -45,9 +45,9 @@ export interface ReportQueryParams {
     size?: number;
     sortBy?: string;
     sortDirection?: "ASC" | "DESC";
-    fromDate?: string;
-    toDate?: string;
-    reportType?: ReportType;
+    fromDate?: string | undefined;
+    toDate?: string | undefined;
+    reportType?: ReportType | undefined;
 }
 
 export interface ReportListResponse {
@@ -72,10 +72,10 @@ export interface AdminActionLogQueryParams {
     size?: number;
     sortBy?: string;
     sortDirection?: "ASC" | "DESC";
-    adminId?: string;
-    action?: string;
-    fromDate?: string;
-    toDate?: string;
+    adminId?: string | undefined;
+    action?: string | undefined;
+    fromDate?: string | undefined;
+    toDate?: string | undefined;
 }
 
 export interface AdminActionLogListResponse {

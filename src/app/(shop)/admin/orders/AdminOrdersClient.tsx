@@ -29,13 +29,13 @@ import { productKeys } from "@/constants/query-keys";
 import { useLanguage } from "@/providers/language.provider";
 
 const statusFilters: Array<{ value: string; label: string }> = [
-    { value: "all", label: "all" },
-    { value: "AWAITING_PAYMENT", label: "awaiting_payment" },
-    { value: "AWAITING_CONFIRM", label: "awaiting_confirm" },
-    { value: "PENDING", label: "pending_shipment" },
-    { value: "ON_SHIPPING", label: "on_shipping" },
-    { value: "DELIVERED", label: "delivered" },
-    { value: "CANCELED", label: "canceled" },
+    { value: "all", label: "admin_status_all" },
+    { value: "AWAITING_PAYMENT", label: "admin_status_awaiting_payment" },
+    { value: "AWAITING_CONFIRM", label: "admin_status_awaiting_confirm" },
+    { value: "PENDING", label: "admin_status_pending_shipment" },
+    { value: "ON_SHIPPING", label: "admin_status_on_shipping" },
+    { value: "DELIVERED", label: "admin_status_delivered" },
+    { value: "CANCELED", label: "admin_status_canceled" },
 ];
 
 const stepStatusIcons: Record<string, typeof Circle> = {
@@ -139,7 +139,7 @@ export default function AdminOrdersClient() {
     const handleSaveEditLog = () => {
         if (!editingLogId || !editStatus.trim()) return;
         updateLogMutation.mutate(
-            { deliveryLogId: editingLogId, payload: { stepStatus: editStatus as never, message: editMessage } },
+            { deliveryLogId: editingLogId, orderId: selectedOrderId!, payload: { stepStatus: editStatus as never, message: editMessage } },
             { onSuccess: () => setEditingLogId(null) }
         );
     };
@@ -184,7 +184,7 @@ export default function AdminOrdersClient() {
                             <SelectContent>
                                 {statusFilters.map((f) => (
                                     <SelectItem key={f.value} value={f.value}>
-                                        {f.value === "all" ? t("admin_all", {}, "All") : t(`admin_status_${f.label}`)}
+                                        {t(f.label)}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -237,8 +237,9 @@ export default function AdminOrdersClient() {
                                                 </td>
                                                 <td className="py-2.5 px-3 text-muted-foreground text-xs">
                                                     {order["orderDate"]
-                                                        ? new Date(String(order["orderDate"])).toLocaleDateString(
-                                                            locale === "vi" ? "vi-VN" : "en-US"
+                                                        ? new Date(String(order["orderDate"]).includes('T') && !String(order["orderDate"]).includes('Z') && !String(order["orderDate"]).includes('+') ? `${order["orderDate"]}Z` : String(order["orderDate"])).toLocaleString(
+                                                            locale === "vi" ? "vi-VN" : "en-US",
+                                                            { timeZone: "Asia/Ho_Chi_Minh", hour12: false }
                                                         )
                                                         : "-"}
                                                 </td>
@@ -299,7 +300,7 @@ export default function AdminOrdersClient() {
                                         <span className="text-muted-foreground">{t("admin_order_id", {}, "Order ID")}:</span>
                                         <span className="font-mono text-xs">{truncateId(selectedOrder.orderId, 12)}</span>
                                         <span className="text-muted-foreground">{t("admin_date", {}, "Date")}:</span>
-                                        <span>{new Date(selectedOrder.orderDate).toLocaleDateString(locale === "vi" ? "vi-VN" : "en-US")}</span>
+                                        <span>{new Date(String(selectedOrder.orderDate).includes('Z') || String(selectedOrder.orderDate).includes('+') ? selectedOrder.orderDate : `${selectedOrder.orderDate}Z`).toLocaleString(locale === "vi" ? "vi-VN" : "en-US", { timeZone: "Asia/Ho_Chi_Minh", hour12: false })}</span>
                                         <span className="text-muted-foreground">{t("admin_status", {}, "Status")}:</span>
                                         <Badge
                                             variant={
@@ -426,11 +427,18 @@ export default function AdminOrdersClient() {
                                                 </div>
                                                 <div className="text-xs space-y-0.5">
                                                     <div className="flex items-center gap-2 flex-wrap">
-                                                        <Badge variant={log.status === "COMPLETED" ? "success" : log.status === "FAILED" ? "destructive" : log.status === "PENDING" ? "warning" : "default"} className="rounded-full text-[10px] font-medium">
+                                                        <Badge variant={
+                                                            ["COMPLETED", "1"].includes(String(log.status)) ? "success" :
+                                                            ["FAILED", "2"].includes(String(log.status)) ? "destructive" :
+                                                            ["PENDING", "0"].includes(String(log.status)) ? "warning" :
+                                                            ["COMPENSATING", "3"].includes(String(log.status)) ? "info" :
+                                                            ["COMPENSATED", "4"].includes(String(log.status)) ? "secondary" :
+                                                                "default"
+                                                        } className="rounded-full text-[10px] font-medium">
                                                             {formatDeliveryLogStatusLabel(log.status, t)}
                                                         </Badge>
                                                         <span className="text-muted-foreground">
-                                                            {new Date(log.createdAt).toLocaleString(locale === "vi" ? "vi-VN" : "en-US")}
+                                                            {new Date(log.createdAt.includes('T') && !log.createdAt.includes('Z') && !log.createdAt.includes('+') ? `${log.createdAt}Z` : log.createdAt).toLocaleString(locale === "vi" ? "vi-VN" : "en-US", { timeZone: "Asia/Ho_Chi_Minh" })}
                                                         </span>
                                                     </div>
                                                     {log.message && (
@@ -532,7 +540,9 @@ export default function AdminOrdersClient() {
                 open={deleteLogConfirm !== null}
                 onOpenChange={(open) => { if (!open) setDeleteLogConfirm(null); }}
                 onConfirm={() => {
-                    if (deleteLogConfirm) deleteLogMutation.mutate(deleteLogConfirm);
+                    if (deleteLogConfirm && selectedOrderId) {
+                        deleteLogMutation.mutate({ deliveryLogId: deleteLogConfirm, orderId: selectedOrderId });
+                    }
                     setDeleteLogConfirm(null);
                 }}
                 title={t("admin_confirm_delete_log", {}, "Delete this log entry?")}
