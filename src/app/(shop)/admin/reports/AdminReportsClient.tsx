@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, ChevronLeft, ChevronRight, Download, ExternalLink, FileText, ListChecks, Search, TrendingUp } from "lucide-react";
+import { ArrowDown, ArrowUp, BarChart3, ChevronLeft, ChevronRight, Download, ExternalLink, FileText, ListChecks, Search, TrendingUp } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -114,7 +114,7 @@ function ReportTable({
                         <Input
                             value={search}
                             onChange={(e) => onSearchChange(e.target.value)}
-                            placeholder={t("admin_search_here", {}, "Search Here")}
+                            placeholder={t("admin_search_here")}
                             className="h-9 pl-9 text-sm rounded-xl"
                         />
                     </div>
@@ -123,8 +123,8 @@ function ReportTable({
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="createdAt">{t("admin_created_date", {}, "Created Date")}</SelectItem>
-                            <SelectItem value="name">{t("admin_name", {}, "Name")}</SelectItem>
+                            <SelectItem value="createdAt">{t("admin_created_date")}</SelectItem>
+                            <SelectItem value="name">{t("admin_name")}</SelectItem>
                         </SelectContent>
                     </Select>
                     <Select value={String(size)} onValueChange={(v) => onSizeChange(Number(v))}>
@@ -153,7 +153,7 @@ function ReportTable({
                             {rows.length === 0 ? (
                                 <tr>
                                     <td colSpan={columns.length} className="py-8 text-center text-muted-foreground text-sm">
-                                        {t("admin_no_reports", {}, "No reports found")}
+                                        {t("admin_no_reports")}
                                     </td>
                                 </tr>
                             ) : (
@@ -164,8 +164,8 @@ function ReportTable({
                                                 {col.key === "reportType" ? (
                                                     <Badge variant={getBadgeVariant(row[col.key])} className="rounded-full text-[10px] font-medium">
                                                         {row[col.key] === "MONTHLY_REVENUE"
-                                                            ? t("monthly_revenue", {}, "Revenue")
-                                                            : t("top_selling_products", {}, "Top selling")}
+                                                            ? t("monthly_revenue")
+                                                            : t("top_selling_products")}
                                                     </Badge>
                                                 ) : col.key === "action" ? (
                                                     <a
@@ -175,7 +175,7 @@ function ReportTable({
                                                         className="inline-flex items-center gap-1 text-primary hover:underline text-xs font-medium"
                                                     >
                                                         <ExternalLink className="h-3 w-3" />
-                                                        {t("admin_download", {}, "Download")}
+                                                        {t("admin_download")}
                                                     </a>
                                                 ) : (
                                                     <span className={col.key === "id" ? "font-mono text-xs text-muted-foreground" : ""}>
@@ -232,31 +232,6 @@ function ReportTable({
                 )}
             </CardContent>
         </Card>
-    );
-}
-
-function MiniBarChart({ data, maxValue, colorClass = "bg-primary" }: { data: { label: string; value: number }[]; maxValue: number; colorClass?: string }) {
-    return (
-        <div className="flex items-end gap-1.5 h-32 w-full pt-4">
-            {data.map((d, i) => {
-                const height = maxValue > 0 ? (d.value / maxValue) * 100 : 0;
-                return (
-                    <div key={i} className="flex-1 flex flex-col items-center gap-1 group relative">
-                        <div
-                            className={`w-full rounded-t-sm transition-all duration-500 ease-out ${colorClass} group-hover:brightness-110`}
-                            style={{ height: `${Math.max(height, 2)}%`, minWidth: 8 }}
-                        >
-                            <div className="absolute -top-6 left-1/2 -translate-x-1/2 bg-popover border text-[10px] px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none shadow-sm z-10">
-                                {new Intl.NumberFormat().format(d.value)}
-                            </div>
-                        </div>
-                        <span className="text-[9px] text-muted-foreground font-medium truncate w-full text-center group-hover:text-foreground transition-colors">
-                            {d.label}
-                        </span>
-                    </div>
-                );
-            })}
-        </div>
     );
 }
 
@@ -401,8 +376,6 @@ export default function AdminReportsClient() {
             .slice(0, 10);
     }, [orders, productMap, productPriceMap]);
 
-    const maxRevenue = useMemo(() => Math.max(...revenueData.map(d => d.revenue), 1), [revenueData]);
-
     const handleCreateMonthlyReport = () => {
         createMonthlyReport.mutate({ reportItems: revenueData });
     };
@@ -444,10 +417,10 @@ export default function AdminReportsClient() {
             <div className="text-center space-y-1">
                 <h1 className="text-xl font-bold flex items-center justify-center gap-2">
                     <BarChart3 className="h-5 w-5 text-primary" />
-                    {t("admin_reporting_management", {}, "Reporting Management")}
+                    {t("admin_reporting_management")}
                 </h1>
                 <p className="text-xs text-muted-foreground">
-                    {t("admin_reports_subtitle", {}, "View and manage system reports")}
+                    {t("admin_reports_subtitle")}
                 </p>
             </div>
 
@@ -472,7 +445,7 @@ export default function AdminReportsClient() {
                         <div className="flex items-center justify-between">
                             <CardTitle className="text-sm font-bold flex items-center gap-2">
                                 <TrendingUp className="h-4 w-4 text-emerald-500" />
-                                {t("admin_top_selling_products", {}, "Top Selling Products")}
+                                {t("admin_top_selling_products")}
                             </CardTitle>
                             <Button
                                 size="sm"
@@ -482,7 +455,7 @@ export default function AdminReportsClient() {
                                 disabled={createTopSellingReport.isPending || topSellingData.length === 0}
                             >
                                 <Download className="h-3 w-3" />
-                                {t("admin_generate_report", {}, "Generate Report")}
+                                {t("admin_generate_report")}
                             </Button>
                         </div>
                     </CardHeader>
@@ -497,7 +470,7 @@ export default function AdminReportsClient() {
                         ) : topSellingData.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-10 text-muted-foreground opacity-50">
                                 <BarChart3 className="h-10 w-10 mb-2" />
-                                <p className="text-xs font-medium">{t("admin_no_data", {}, "No order data found")}</p>
+                                <p className="text-xs font-medium">{t("admin_no_data")}</p>
                             </div>
                         ) : (
                             <div className="overflow-x-auto">
@@ -543,7 +516,7 @@ export default function AdminReportsClient() {
                         <div className="flex items-center justify-between">
                             <CardTitle className="text-sm font-bold flex items-center gap-2">
                                 <FileText className="h-4 w-4 text-blue-500" />
-                                {t("admin_monthly_revenue", {}, "Monthly Revenue")}
+                                {t("admin_monthly_revenue")}
                             </CardTitle>
                             <div className="flex items-center gap-2">
                                 <div className="flex items-center border rounded-full px-1.5 h-7 bg-background/50">
@@ -572,7 +545,7 @@ export default function AdminReportsClient() {
                                     disabled={createMonthlyReport.isPending || orders.length === 0}
                                 >
                                     <Download className="h-3 w-3" />
-                                    {t("admin_generate_report", {}, "Generate Report")}
+{t("admin_generate_report")}
                                 </Button>
                             </div>
                         </div>
@@ -584,15 +557,38 @@ export default function AdminReportsClient() {
                             </div>
                         ) : (
                             <div className="space-y-4">
-                                <MiniBarChart
-                                    data={revenueData.map((d) => ({ label: monthLabels[MONTH_NAMES.indexOf(d.month)] ?? d.month.slice(0, 3), value: d.revenue }))}
-                                    maxValue={maxRevenue}
-                                    colorClass="bg-blue-500"
-                                />
+                                <div className="overflow-x-auto max-h-52 overflow-y-auto">
+                                    <table className="w-full text-left text-xs">
+                                        <thead>
+                                            <tr className="border-b border-border text-muted-foreground uppercase tracking-wider font-medium">
+                                                <th className="py-1.5 px-2">{t("admin_month")}</th>
+                                                <th className="py-1.5 px-2 text-right">{t("admin_revenue")}</th>
+                                                <th className="py-1.5 px-2 text-right w-16"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {revenueData.map((d, i) => {
+                                                const label = monthLabels[MONTH_NAMES.indexOf(d.month)] ?? d.month.slice(0, 3);
+                                                const prevRevenue = i > 0 ? revenueData[i - 1]!.revenue : d.revenue;
+                                                const diff = d.revenue - prevRevenue;
+                                                const trendIcon = i === 0 ? null : diff > 0 ? <ArrowUp className="h-3 w-3 text-emerald-500" /> : diff < 0 ? <ArrowDown className="h-3 w-3 text-red-500" /> : <span className="h-3 w-3 text-muted-foreground">–</span>;
+                                                return (
+                                                    <tr key={d.month} className={`border-b border-border/30 hover:bg-accent/50 transition-colors ${i % 2 === 0 ? "bg-muted/20" : ""}`}>
+                                                        <td className="py-1.5 px-2 font-medium">{label}</td>
+                                                        <td className={`py-1.5 px-2 text-right font-mono tabular-nums ${d.revenue > 0 ? "text-foreground" : "text-muted-foreground"}`}>
+                                                            {new Intl.NumberFormat().format(d.revenue)}
+                                                        </td>
+                                                        <td className="py-1.5 px-2 text-right">{trendIcon}</td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
                                 <div className="flex justify-between items-center pt-2 border-t border-border/30">
                                     <div className="flex flex-col">
                                         <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider">
-                                            {t("admin_total_year_revenue", {}, "Total Year Revenue")}
+                                            {t("admin_total_year_revenue")}
                                         </span>
                                         <span className="text-sm font-black text-primary">
                                             {new Intl.NumberFormat().format(revenueData.reduce((acc, curr) => acc + curr.revenue, 0))} VND
@@ -600,11 +596,11 @@ export default function AdminReportsClient() {
                                     </div>
                                     <div className="flex flex-col items-end gap-0.5">
                                         <span className="text-[10px] text-muted-foreground italic">
-                                            {orders.length} {t("admin_orders_analyzed", {}, "orders analyzed")}
+                                            {orders.length} {t("admin_orders_analyzed")}
                                         </span>
                                         {orders.length > 0 && revenueData.every(d => d.revenue === 0) && (
                                             <span className="text-[9px] text-destructive font-medium">
-                                                {t("admin_revenue_debug", {}, "Check console (F12) for revenue debug")}
+                                                {t("admin_revenue_debug")}
                                             </span>
                                         )}
                                     </div>
@@ -624,7 +620,7 @@ export default function AdminReportsClient() {
                 </Card>
             ) : (
                 <ReportTable
-                    title={t("admin_list_of_reports", {}, "List of reports")}
+                    title={t("admin_list_of_reports")}
                     rows={reportRows}
                     columns={[
                         { key: "id", label: t("admin_order_id") },
@@ -649,23 +645,23 @@ export default function AdminReportsClient() {
                 <CardHeader>
                     <CardTitle className="text-sm font-semibold flex items-center gap-2">
                         <ListChecks className="h-4 w-4 text-primary" />
-                        {t("admin_action_logs", {}, "Admin action logs")}
+                        {t("admin_action_logs")}
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="flex flex-wrap items-center gap-3 bg-muted/30 p-3 rounded-xl border border-border/50">
                         <div className="w-full sm:w-40">
                             <label className="text-[10px] font-bold text-muted-foreground uppercase ml-1 mb-1 block">
-                                {t("admin_entity_type", {}, "Action Type")}
+                                {t("admin_entity_type")}
                             </label>
                             <Select value={entityTypeFilter} onValueChange={(v) => { setEntityTypeFilter(v); }}>
                                 <SelectTrigger className="h-9 rounded-lg bg-background">
-                                    <SelectValue placeholder={t("admin_all", {}, "All")} />
+                                    <SelectValue placeholder={t("admin_all")} />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {entityTypeOptions.map((opt) => (
                                         <SelectItem key={opt.value} value={opt.value}>
-                                            {t(opt.label, {}, opt.label)}
+                                            {t(opt.label)}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>
@@ -675,7 +671,7 @@ export default function AdminReportsClient() {
                         <div className="flex-1 min-w-[200px] grid grid-cols-2 gap-2">
                             <div>
                                 <label className="text-[10px] font-bold text-muted-foreground uppercase ml-1 mb-1 block">
-                                    {t("from_date", {}, "From Date")}
+                                    {t("from_date")}
                                 </label>
                                 <Input
                                     type="date"
@@ -686,7 +682,7 @@ export default function AdminReportsClient() {
                             </div>
                             <div>
                                 <label className="text-[10px] font-bold text-muted-foreground uppercase ml-1 mb-1 block">
-                                    {t("to_date", {}, "To Date")}
+                                    {t("to_date")}
                                 </label>
                                 <Input
                                     type="date"
@@ -708,7 +704,7 @@ export default function AdminReportsClient() {
                                 }}
                                 className="h-8 text-xs rounded-lg"
                             >
-                                {t("admin_run", {}, "Run")}
+                                {t("admin_run")}
                             </Button>
                             {(entityTypeFilter !== "all" || fromDate || toDate) && (
                                 <Button 
@@ -725,7 +721,7 @@ export default function AdminReportsClient() {
                                     }}
                                     className="h-8 text-xs text-muted-foreground hover:text-foreground"
                                 >
-                                    {t("clear_filters", {}, "Clear")}
+                                    {t("clear_filters")}
                                 </Button>
                             )}
                         </div>
@@ -751,7 +747,7 @@ export default function AdminReportsClient() {
                                         {actionLogRows.length === 0 ? (
                                             <tr>
                                                 <td colSpan={5} className="py-8 text-center text-muted-foreground text-sm">
-                                                    {t("admin_no_action_logs", {}, "No action logs found")}
+                                                    {t("admin_no_action_logs")}
                                                 </td>
                                             </tr>
                                         ) : (
@@ -845,12 +841,12 @@ export default function AdminReportsClient() {
                             {actionLogDetailQuery.isLoading ? (
                                 <div className="flex items-center gap-2 text-muted-foreground">
                                     <Skeleton className="h-4 w-4 rounded-full" />
-                                    <span>{t("loading", {}, "Loading...")}</span>
+                                    <span>{t("loading")}</span>
                                 </div>
                             ) : actionLogDetailQuery.data ? (
                                 <div className="space-y-1">
                                     <div className="flex items-center gap-2">
-                                        <span className="font-medium text-foreground">{t("admin_action_log_detail", {}, "Detail")}:</span>
+                                        <span className="font-medium text-foreground">{t("admin_action_log_detail")}:</span>
                                         <Badge variant="secondary" className="rounded-full text-[10px]">{actionLogDetailQuery.data.action}</Badge>
                                     </div>
                                     <p className="text-muted-foreground pl-0">{actionLogDetailQuery.data.note}</p>
@@ -859,7 +855,7 @@ export default function AdminReportsClient() {
                                     </p>
                                 </div>
                             ) : (
-                                <p className="text-muted-foreground">{t("order_not_found", {}, "Not found")}</p>
+                                <p className="text-muted-foreground">{t("order_not_found")}</p>
                             )}
                         </div>
                     )}

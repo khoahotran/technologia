@@ -46,13 +46,13 @@ export async function getProductById(id: string | number): Promise<Product> {
 }
 
 export async function getBrands(): Promise<Brand[]> {
-    const response = await get<ApiResponse<Brand[]>>("/api/brands");
-    return response.data;
+    const response = await get<Brand[]>("/api/brands");
+    return response;
 }
 
 export async function getCategories(): Promise<Category[]> {
-    const response = await get<ApiResponse<Category[]>>("/api/categories");
-    return response.data;
+    const response = await get<Category[]>("/api/categories");
+    return response;
 }
 
 export async function createBrandAdmin(payload: CreateBrandRequest): Promise<Brand> {
