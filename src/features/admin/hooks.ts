@@ -162,7 +162,7 @@ export function useAdminDeleteDeliveryLog() {
     const { t } = useLanguage();
 
     return useMutation({
-        mutationFn: ({ deliveryLogId, orderId }: { deliveryLogId: string; orderId: string }) => deleteDeliveryLog(deliveryLogId),
+        mutationFn: ({ deliveryLogId, orderId: _orderId }: { deliveryLogId: string; orderId: string }) => deleteDeliveryLog(deliveryLogId),
         onSuccess: (_data, variables) => {
             queryClient.invalidateQueries({ queryKey: deliveryLogKeys.list(variables.orderId) });
             queryClient.invalidateQueries({ queryKey: deliveryLogKeys.latest(variables.orderId) });

@@ -152,6 +152,7 @@ api.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 
 api.interceptors.response.use(
   (response) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const payload = response.data as any;
     // Some APIs return 200 OK but with status: 500 in the body
     if (payload && typeof payload === "object" && payload.status !== undefined && payload.status !== 200) {

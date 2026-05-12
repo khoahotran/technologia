@@ -1,4 +1,3 @@
-import { vi } from 'vitest';
 
 export const mockApiResponse = <T>(data: T, status = 200, message = "Success") => ({
   status,

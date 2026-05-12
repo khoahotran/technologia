@@ -76,7 +76,7 @@ export function CartItem({
         <div className="md:col-span-6 space-y-1">
           <div className="flex justify-between items-start">
             <h3 className="font-bold text-foreground truncate pr-4">{title}</h3>
-            <span className="text-xs text-muted-foreground whitespace-nowrap">{displayProductCode}</span>
+            {/* <span className="text-xs text-muted-foreground whitespace-nowrap">{displayProductCode}</span> */}
           </div>
           {/* Giá tiền */}
           <p className="text-lg font-medium text-primary">

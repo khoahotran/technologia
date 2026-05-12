@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
+
 import { getAdminOrders, updateOrderStatus, getOrders, submitOrderFeedback, simulatePayment, getOrderIdBySagaId } from '../api';
+
 import * as client from '@/api/client';
-import { createMockOrder } from '@/test/factories';
 
 vi.mock('@/api/client', () => ({
   get: vi.fn(),

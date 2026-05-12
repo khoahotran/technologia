@@ -1,7 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
-import { getProducts, createBrandAdmin, updateBrandAdmin, createCategoryAdmin } from '../api';
+
+import { getProducts, createBrandAdmin, createCategoryAdmin } from '../api';
+
 import * as client from '@/api/client';
-import { createMockBrand, createMockCategory } from '@/test/factories';
+import { createMockBrand } from '@/test/factories';
 
 vi.mock('@/api/client', () => ({
   get: vi.fn(),

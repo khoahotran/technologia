@@ -10,11 +10,11 @@ export function AdminHeader() {
     const pathname = usePathname();
     const { t } = useLanguage();
     const adminTabs = [
-        { href: "/admin/home", label: t("admin_nav_home_management", {}, "HOME MANAGEMENT") },
-        { href: "/admin/products", label: t("admin_nav_product_management", {}, "PRODUCT MANAGEMENT") },
-        { href: "/admin/orders", label: t("admin_nav_order_management", {}, "ORDER MANAGEMENT") },
-        { href: "/admin/discounts", label: t("admin_nav_discount_management", {}, "DISCOUNT MANAGEMENT") },
-        { href: "/admin/reports", label: t("admin_nav_reporting_management", {}, "REPORTING MANAGEMENT") },
+        { href: "/admin/home", label: t("admin_nav_home_management") },
+        { href: "/admin/products", label: t("admin_nav_product_management") },
+        { href: "/admin/orders", label: t("admin_nav_order_management") },
+        { href: "/admin/discounts", label: t("admin_nav_discount_management") },
+        { href: "/admin/reports", label: t("admin_nav_reporting_management") },
     ];
 
     return (

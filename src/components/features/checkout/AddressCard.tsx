@@ -43,7 +43,7 @@ export function AddressCard({
         </div>
         {/* Nhãn Mặc định */}
         {isDefault && (
-          <span className="text-sm font-medium text-[#3E93B3]">{t('default', {}, "Default")}</span>
+          <span className="text-sm font-medium text-primary">{t('default', {}, "Default")}</span>
         )}
       </div>
 
@@ -63,14 +63,14 @@ export function AddressCard({
       <div className="flex gap-4 pt-2">
         <Button
           variant="secondary"
-          className="flex-1 bg-[#D3E4F4] hover:bg-[#C1D8EB] text-gray-700 font-medium"
+          className="flex-1 bg-accent hover:bg-[#C1D8EB] text-gray-700 font-medium"
           onClick={onUse}
         >
           {t('use_address', {}, "Use address")}
         </Button>
         <Button
           variant="secondary"
-          className="flex-1 bg-[#D3E4F4] hover:bg-[#C1D8EB] text-gray-700 font-medium"
+          className="flex-1 bg-accent hover:bg-[#C1D8EB] text-gray-700 font-medium"
           onClick={onSetDefault}
         >
           {t('set_as_default', {}, "Set as default")}

@@ -1,5 +1,3 @@
-import { del, get, post, put } from "@/api/client";
-import type { ApiResponse, PaginatedResponse } from "@/types/api.types";
 import type {
     CreateDiscountRequest,
     DiscountListResponse,
@@ -7,6 +5,9 @@ import type {
     DiscountPagedParams,
     UpdateProductDiscountRequest,
 } from "./admin-types";
+
+import { del, get, post, put } from "@/api/client";
+import type { ApiResponse, PaginatedResponse } from "@/types/api.types";
 
 function sanitizeParams(params: Record<string, unknown>): Record<string, unknown> {
     const clean: Record<string, unknown> = {};

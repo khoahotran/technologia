@@ -1,6 +1,6 @@
-import type { Product, Brand, Category } from "@/features/products/types";
-import type { Order, OrderFeedback } from "@/features/orders/types";
 import type { AuthSession } from "@/features/auth/types";
+import type { Order } from "@/features/orders/types";
+import type { Product, Brand, Category } from "@/features/products/types";
 
 export const createMockProduct = (overrides?: Partial<Product>): Product => ({
   productId: "prod-123",

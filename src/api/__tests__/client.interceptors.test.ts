@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import axios from 'axios';
+
 import api, { AppError, initAutoRefresh } from '../client';
-import { useAuthStore } from '@/features/auth/store';
+
 import { authStorage } from '@/utils/storage';
 
 // We need to mock the dependencies before importing the client if we want to catch the initialization

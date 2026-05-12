@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
-import { login, googleLogin, refreshAccessToken } from '../api';
+
+import { login } from '../api';
+
 import * as client from '@/api/client';
-import { LoginResponseSchema } from '../types';
 
 vi.mock('@/api/client', () => ({
   post: vi.fn(),

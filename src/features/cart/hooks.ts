@@ -18,6 +18,7 @@ export function useCart() {
     queryFn: async () => {
       try {
         return await getCart();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (error: any) {
         if (error?.statusCode === 401 || error?.statusCode === 403) {
           return {
