@@ -2,7 +2,7 @@
 
 import { Bell, CirclePlus, Search, SlidersHorizontal, Smartphone, Star, Tag, X } from "lucide-react";
 import Image from "next/image";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import type { ProductFormData, ProductFormMode } from "@/components/features/admin/ProductFormDialog";
@@ -31,22 +31,24 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-    useAddProductVariantAdmin,
     useAddVariantImageAdmin,
     useApplyProductsToDiscountAdmin,
     useBrands,
     useCategories,
     useCreateProductAdmin,
     useDeleteProductAdmin,
+    useDeleteProductVariantAdmin,
     useProducts,
     useUpdateProductAdmin,
+    useUpdateProductVariantAdmin,
 } from "@/features/products/hooks";
-import type { Brand, Category, Product, ProductStatus } from "@/features/products/types";
+import type { Brand, Category, Product } from "@/features/products/types";
 import { useLanguage } from "@/providers/language.provider";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function currencyVnd(value: number, locale: string, t?: (key: string, r?: any, d?: string) => string) {
     const formatted = new Intl.NumberFormat(locale === "vi" ? "vi-VN" : "en-US").format(value);
-    const unit = t ? t("currency_vnd", {}, "VND") : "VND";
+    const unit = t ? t("currency_vnd") : "VND";
     return `${formatted} ${unit}`;
 }
 
@@ -61,7 +63,6 @@ function getBrandId(product: Product, brands: Brand[], selectedBrandId: string) 
     if (directSelected !== null) return directSelected;
     const byName = brands.find((entry) => entry.name === (product.brandName ?? product.brand));
     if (byName) return Number(byName.brandId);
-    if (brands[0]) return Number(brands[0].brandId);
     return null;
 }
 
@@ -70,7 +71,6 @@ function getCategoryId(product: Product, categories: Category[], selectedCategor
     if (directSelected !== null) return directSelected;
     const byName = categories.find((entry) => entry.name === product.category);
     if (byName) return Number(byName.categoryId);
-    if (categories[0]) return Number(categories[0].categoryId);
     return null;
 }
 
@@ -111,18 +111,26 @@ function ProductTile({
                 <Checkbox checked={selected} onCheckedChange={onToggle} />
             </div>
 
-            {status && status === "NEW" && (
+            {status === "AVAILABLE" && (
                 <div className="absolute top-3 right-3 z-10">
-                    <Badge variant="secondary" className="rounded-full px-2.5 text-[10px] font-semibold">
-                        {t("new", {}, "New")}
+                    <Badge variant="secondary" className="rounded-full px-2.5 text-tiny font-semibold">
+                        {t("product_status_available")}
                     </Badge>
                 </div>
             )}
 
-            {status === "INACTIVE" && (
+            {(status === "OUT_OF_STOCK" || status === "DISCONTINUED") && (
                 <div className="absolute top-3 right-3 z-10">
-                    <Badge variant="outline" className="rounded-full px-2.5 text-[10px]">
-                        {t("inactive", {}, "Inactive")}
+                    <Badge variant="destructive" className="rounded-full px-2.5 text-tiny">
+                        {t(`product_status_${status.toLowerCase()}`)}
+                    </Badge>
+                </div>
+            )}
+
+            {(status === "DRAFT" || status === "PENDING_REVIEW") && (
+                <div className="absolute top-3 right-3 z-10">
+                    <Badge variant="outline" className="rounded-full px-2.5 text-tiny">
+                        {t(`product_status_${status.toLowerCase()}`)}
                     </Badge>
                 </div>
             )}
@@ -161,41 +169,36 @@ function ProductTile({
                     </div>
                     <div className="flex items-center justify-between">
                         <span className="text-sm font-bold text-primary">{currencyVnd(price, locale, t)}</span>
-                        <button
-                            type="button"
-                            onClick={(e) => { e.stopPropagation(); onToggleMenu(); }}
-                            className="h-7 w-7 rounded-full bg-muted hover:bg-accent text-muted-foreground hover:text-primary inline-flex items-center justify-center transition-colors"
-                        >
-                            <SlidersHorizontal className="h-3.5 w-3.5" />
-                        </button>
+                        <div className="relative">
+                            <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); onToggleMenu(); }}
+                                className="h-7 w-7 rounded-full bg-muted hover:bg-accent text-muted-foreground hover:text-primary inline-flex items-center justify-center transition-colors"
+                            >
+                                <SlidersHorizontal className="h-3.5 w-3.5" />
+                            </button>
+                            {menuOpen && (
+                                <>
+                                    <div className="fixed inset-0 z-20" onClick={onToggleMenu} />
+                                    <div className="absolute bottom-full right-0 mb-1 bg-popover border rounded-xl shadow-md z-30 min-w-32 py-1 overflow-hidden">
+                                        {/* {(["view", "edit", "remove", "apply", "upload"] as const).map((action) => ( */}
+                                        {(["view", "edit", "remove"] as const).map((action) => (
+                                            <button
+                                                key={action}
+                                                type="button"
+                                                className="w-full text-left px-3 py-1.5 text-sm hover:bg-accent transition-colors"
+                                                onClick={() => onAction(action)}
+                                            >
+                                                {t(`admin_action_${action}`)}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
-
-            {menuOpen && (
-                <>
-                    <div className="fixed inset-0 z-20" onClick={onToggleMenu} />
-                    <div className="absolute bottom-full right-3 mb-1 bg-popover border rounded-xl shadow-md z-30 min-w-32 py-1 overflow-hidden">
-                        {(["view", "edit", "remove", "apply", "upload"] as const).map((action) => (
-                            <button
-                                key={action}
-                                type="button"
-                                className="w-full text-left px-3 py-1.5 text-sm hover:bg-accent transition-colors"
-                                onClick={() => onAction(action)}
-                            >
-                                {t(
-                                    `admin_action_${action}`,
-                                    {},
-                                    action === "view" ? "View" :
-                                        action === "edit" ? "Edit" :
-                                            action === "remove" ? "Archive" :
-                                                action === "apply" ? "Apply" : "Upload image"
-                                )}
-                            </button>
-                        ))}
-                    </div>
-                </>
-            )}
         </div>
     );
 }
@@ -217,14 +220,15 @@ function getPaginationItems(current: number, last: number): (number | "...")[] {
 }
 
 export default function AdminProductsClient() {
-    const { t, locale } = useLanguage();
+    const { t } = useLanguage();
     const [page, setPage] = useState(0);
     const [search, setSearch] = useState("");
     const [categoryId, setCategoryId] = useState<string>("all");
     const [brandId, setBrandId] = useState<string>("all");
     const [minPrice, setMinPrice] = useState<string>("0");
     const [maxPrice, setMaxPrice] = useState<string>("100000000");
-    const [sortBy, setSortBy] = useState<string>("displayPrice");
+    const [sortBy, setSortBy] = useState<string>("created_at");
+    const [sortDirection, setSortDirection] = useState<"ASC" | "DESC">("DESC");
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
     const [menuOpenFor, setMenuOpenFor] = useState<string | null>(null);
     const [uploadTarget, setUploadTarget] = useState<{ productId: string; variantId: string } | null>(null);
@@ -234,12 +238,14 @@ export default function AdminProductsClient() {
     const [dialogProduct, setDialogProduct] = useState<Product | undefined>(undefined);
     const [discountDialogOpen, setDiscountDialogOpen] = useState(false);
     const [discountIdInput, setDiscountIdInput] = useState("");
+    const [discountProductId, setDiscountProductId] = useState<string | null>(null);
     const uploadInputRef = useRef<HTMLInputElement | null>(null);
 
     const createProductMutation = useCreateProductAdmin();
     const updateProductMutation = useUpdateProductAdmin();
     const deleteProductMutation = useDeleteProductAdmin();
-    const addVariantMutation = useAddProductVariantAdmin();
+    const updateProductVariantMutation = useUpdateProductVariantAdmin();
+    const deleteProductVariantMutation = useDeleteProductVariantAdmin();
     const addVariantImageMutation = useAddVariantImageAdmin();
     const applyDiscountMutation = useApplyProductsToDiscountAdmin();
 
@@ -254,7 +260,7 @@ export default function AdminProductsClient() {
         minPrice: Number(minPrice),
         maxPrice: Number(maxPrice),
         sortBy,
-        sortDirection: "DESC" as const,
+        sortDirection,
     };
 
     const definedParams = Object.fromEntries(
@@ -271,16 +277,16 @@ export default function AdminProductsClient() {
 
     const priceRanges = useMemo(
         () => [
-            { label: `0 ${t("currency_vnd", {}, "VND")}`, value: "0" },
-            { label: `100.000 ${t("currency_vnd", {}, "VND")}`, value: "100000" },
-            { label: `500.000 ${t("currency_vnd", {}, "VND")}`, value: "500000" },
-            { label: `1.000.000 ${t("currency_vnd", {}, "VND")}`, value: "1000000" },
-            { label: `3.000.000 ${t("currency_vnd", {}, "VND")}`, value: "3000000" },
-            { label: `5.000.000 ${t("currency_vnd", {}, "VND")}`, value: "5000000" },
-            { label: `10.000.000 ${t("currency_vnd", {}, "VND")}`, value: "10000000" },
-            { label: `20.000.000 ${t("currency_vnd", {}, "VND")}`, value: "20000000" },
-            { label: `50.000.000 ${t("currency_vnd", {}, "VND")}`, value: "50000000" },
-            { label: `100.000.000 ${t("currency_vnd", {}, "VND")}`, value: "100000000" },
+            { label: `0 ${t("currency_vnd")}`, value: "0" },
+            { label: `100.000 ${t("currency_vnd")}`, value: "100000" },
+            { label: `500.000 ${t("currency_vnd")}`, value: "500000" },
+            { label: `1.000.000 ${t("currency_vnd")}`, value: "1000000" },
+            { label: `3.000.000 ${t("currency_vnd")}`, value: "3000000" },
+            { label: `5.000.000 ${t("currency_vnd")}`, value: "5000000" },
+            { label: `10.000.000 ${t("currency_vnd")}`, value: "10000000" },
+            { label: `20.000.000 ${t("currency_vnd")}`, value: "20000000" },
+            { label: `50.000.000 ${t("currency_vnd")}`, value: "50000000" },
+            { label: `100.000.000 ${t("currency_vnd")}`, value: "100000000" },
         ],
         [t]
     );
@@ -289,9 +295,15 @@ export default function AdminProductsClient() {
         createProductMutation.isPending ||
         updateProductMutation.isPending ||
         deleteProductMutation.isPending ||
-        addVariantMutation.isPending ||
+        updateProductVariantMutation.isPending ||
+        deleteProductVariantMutation.isPending ||
         addVariantImageMutation.isPending ||
         applyDiscountMutation.isPending;
+
+    // Reset page when filters or sorting change
+    useEffect(() => {
+        setPage(0);
+    }, [search, categoryId, brandId, minPrice, maxPrice, sortBy, sortDirection]);
 
     const toggleProduct = (id: string) => {
         setSelectedIds((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
@@ -311,7 +323,7 @@ export default function AdminProductsClient() {
 
     const handleCreateProduct = () => {
         if (!brands.length || !categories.length) {
-            toast.error(t("admin_create_product_requires_brand_category", {}, "Brand and category are required"));
+            toast.error(t("admin_create_product_requires_brand_category"));
             return;
         }
         setDialogMode("create");
@@ -324,7 +336,7 @@ export default function AdminProductsClient() {
         const selectedProduct = products.find((item) => String(item.productId) === productId);
 
         if (!selectedProduct) {
-            toast.error(t("admin_product_not_found", {}, "Product not found"));
+            toast.error(t("admin_product_not_found"));
             return;
         }
 
@@ -339,16 +351,16 @@ export default function AdminProductsClient() {
         }
 
         if (action === "apply") {
-            setDialogMode("add-variant");
-            setDialogProduct(selectedProduct);
-            setDialogOpen(true);
+            setDiscountProductId(productId);
+            setDiscountIdInput("");
+            setDiscountDialogOpen(true);
             return;
         }
 
         if (action === "upload") {
             const firstVariant = selectedProduct.variants?.find((variant) => Boolean(variant.variantId));
             if (!firstVariant?.variantId) {
-                toast.error(t("admin_variant_missing_for_upload", {}, "No variant available for image upload"));
+                toast.error(t("admin_variant_missing_for_upload"));
                 return;
             }
             setUploadTarget({ productId, variantId: firstVariant.variantId });
@@ -361,12 +373,12 @@ export default function AdminProductsClient() {
         setDialogOpen(true);
     };
 
-    const handleDialogSubmit = (data: ProductFormData) => {
+    const handleDialogSubmit = async (data: ProductFormData) => {
         if (dialogMode === "create") {
-            const selectedBrandId = toIdFromFilter(brandId) ?? (brands[0] ? Number(brands[0].brandId) : null);
-            const selectedCategoryId = toIdFromFilter(categoryId) ?? (categories[0] ? Number(categories[0].categoryId) : null);
+            const selectedBrandId = data.brandId ?? (brands[0] ? Number(brands[0].brandId) : null);
+            const selectedCategoryId = data.categoryId ?? (categories[0] ? Number(categories[0].categoryId) : null);
             if (selectedBrandId === null || selectedCategoryId === null) {
-                toast.error(t("admin_create_product_requires_brand_category", {}, "Brand and category are required"));
+                toast.error(t("admin_create_product_requires_brand_category"));
                 return;
             }
             const variants = (data.variants ?? []).map((v) => ({
@@ -381,45 +393,65 @@ export default function AdminProductsClient() {
                 name: data.name!,
                 description: data.description!,
                 displayPrice: data.displayPrice!,
-                brandId: selectedBrandId,
-                categoryId: selectedCategoryId,
-                status: data.status ?? "ACTIVE",
+                brandId: selectedBrandId!,
+                categoryId: selectedCategoryId!,
+                status: data.status ?? "DRAFT",
                 variants,
             });
+            setDialogOpen(false);
         } else if (dialogMode === "edit" && dialogProduct) {
-            const resolvedBrandId = getBrandId(dialogProduct, brands, brandId);
-            const resolvedCategoryId = getCategoryId(dialogProduct, categories, categoryId);
+            const resolvedBrandId = data.brandId ?? getBrandId(dialogProduct, brands, brandId);
+            const resolvedCategoryId = data.categoryId ?? getCategoryId(dialogProduct, categories, categoryId);
             if (resolvedBrandId === null || resolvedCategoryId === null) {
-                toast.error(t("admin_create_product_requires_brand_category", {}, "Brand and category are required"));
+                toast.error(t("admin_create_product_requires_brand_category"));
                 return;
             }
-            updateProductMutation.mutate({
-                productId: String(dialogProduct.productId),
-                payload: {
-                    name: data.name!,
-                    description: data.description!,
-                    displayPrice: data.displayPrice!,
-                    brandId: resolvedBrandId,
-                    categoryId: resolvedCategoryId,
-                    status: data.status ?? "ACTIVE",
-                },
-            });
-        } else if (dialogMode === "add-variant" && dialogProduct) {
-            addVariantMutation.mutate({
-                productId: String(dialogProduct.productId),
-                payload: {
-                    variantCode: data.variantCode ?? `VAR-${Date.now()}`,
-                    price: data.price ?? 0,
-                    stock: data.stock ?? 0,
-                    storage: data.storage ?? "",
-                    color: data.color ?? "",
-                    images: [],
-                },
-            });
+            const productId = String(dialogProduct.productId);
+            setDialogOpen(false);
+            try {
+                await updateProductMutation.mutateAsync({
+                    productId,
+                    payload: {
+                        name: data.name!,
+                        description: data.description!,
+                        displayPrice: data.displayPrice!,
+                        brandId: resolvedBrandId,
+                        categoryId: resolvedCategoryId,
+                        status: data.status ?? "DRAFT",
+                    },
+                });
+                for (const variant of (data.variants ?? [])) {
+                    if (variant.variantId) {
+                        await updateProductVariantMutation.mutateAsync({
+                            productId,
+                            variantId: variant.variantId,
+                            payload: {
+                                price: variant.price,
+                                stock: variant.stock,
+                                storage: variant.storage,
+                                color: variant.color,
+                                images: variant.images ?? [],
+                            },
+                        });
+                    }
+                }
+            } catch {
+                // Errors handled by mutation toasts
+            }
         }
-        setDialogOpen(false);
     };
 
+    const handleApplyDiscount = () => {
+        if (!discountIdInput.trim()) return;
+        const ids = discountProductId ? [discountProductId] : selectedIds;
+        applyDiscountMutation.mutate({
+            discountId: discountIdInput.trim(),
+            productVariantIds: ids.map((id) => ({ productId: id, variantId: "" })),
+        });
+        setDiscountDialogOpen(false);
+        setDiscountIdInput("");
+        setDiscountProductId(null);
+    };
     const handlePageChange = (newPage: number) => {
         if (newPage >= 0 && newPage < totalPages) {
             setPage(newPage);
@@ -453,15 +485,15 @@ export default function AdminProductsClient() {
                 <Input
                     value={search}
                     onChange={(event) => setSearch(event.target.value)}
-                    placeholder={t("admin_search_here", {}, "Search here")}
+                    placeholder={t("admin_search_here")}
                     className="h-10 pl-9 rounded-xl text-sm bg-card"
                 />
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
                 <div>
-                    <p className="text-[10px] font-medium text-muted-foreground mb-1 uppercase tracking-wider">
-                        {t("admin_filter_category", {}, "Category")}
+                    <p className="text-tiny font-medium text-muted-foreground mb-1 uppercase tracking-wider">
+                        {t("admin_filter_category")}
                     </p>
                     <Select value={categoryId} onValueChange={setCategoryId}>
                         <SelectTrigger className="h-9 text-xs gap-1 px-2.5">
@@ -469,7 +501,7 @@ export default function AdminProductsClient() {
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="all">{t("admin_all", {}, "All")}</SelectItem>
+                            <SelectItem value="all">{t("admin_all")}</SelectItem>
                             {categories.map((category) => (
                                 <SelectItem key={String(category.categoryId)} value={String(category.categoryId)}>
                                     {category.name}
@@ -479,8 +511,8 @@ export default function AdminProductsClient() {
                     </Select>
                 </div>
                 <div>
-                    <p className="text-[10px] font-medium text-muted-foreground mb-1 uppercase tracking-wider">
-                        {t("admin_filter_brand", {}, "Brand")}
+                    <p className="text-tiny font-medium text-muted-foreground mb-1 uppercase tracking-wider">
+                        {t("admin_filter_brand")}
                     </p>
                     <Select value={brandId} onValueChange={setBrandId}>
                         <SelectTrigger className="h-9 text-xs gap-1 px-2.5">
@@ -488,7 +520,7 @@ export default function AdminProductsClient() {
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="all">{t("admin_all", {}, "All")}</SelectItem>
+                            <SelectItem value="all">{t("admin_all")}</SelectItem>
                             {brands.map((brand) => (
                                 <SelectItem key={String(brand.brandId)} value={String(brand.brandId)}>
                                     {brand.name}
@@ -498,8 +530,8 @@ export default function AdminProductsClient() {
                     </Select>
                 </div>
                 <div>
-                    <p className="text-[10px] font-medium text-muted-foreground mb-1 uppercase tracking-wider">
-                        {t("admin_filter_min_price", {}, "Min price")}
+                    <p className="text-tiny font-medium text-muted-foreground mb-1 uppercase tracking-wider">
+                        {t("admin_filter_min_price")}
                     </p>
                     <Select value={minPrice} onValueChange={setMinPrice}>
                         <SelectTrigger className="h-9 text-xs gap-1 px-2.5">
@@ -515,8 +547,8 @@ export default function AdminProductsClient() {
                     </Select>
                 </div>
                 <div>
-                    <p className="text-[10px] font-medium text-muted-foreground mb-1 uppercase tracking-wider">
-                        {t("admin_filter_max_price", {}, "Max price")}
+                    <p className="text-tiny font-medium text-muted-foreground mb-1 uppercase tracking-wider">
+                        {t("admin_filter_max_price")}
                     </p>
                     <Select value={maxPrice} onValueChange={setMaxPrice}>
                         <SelectTrigger className="h-9 text-xs gap-1 px-2.5">
@@ -532,16 +564,31 @@ export default function AdminProductsClient() {
                     </Select>
                 </div>
                 <div>
-                    <p className="text-[10px] font-medium text-muted-foreground mb-1 uppercase tracking-wider">
-                        {t("admin_filter_order", {}, "Order")}
+                    <p className="text-tiny font-medium text-muted-foreground mb-1 uppercase tracking-wider">
+                        {t("admin_filter_order")}
                     </p>
                     <Select value={sortBy} onValueChange={setSortBy}>
                         <SelectTrigger className="h-9 text-xs gap-1 px-2.5">
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="displayPrice">{t("admin_order_price", {}, "Price")}</SelectItem>
-                            <SelectItem value="createdAt">{t("admin_order_created_date", {}, "Created date")}</SelectItem>
+                            <SelectItem value="display_price">{t("admin_price")}</SelectItem>
+                            <SelectItem value="created_at">{t("admin_created_date")}</SelectItem>
+                            <SelectItem value="average_rating">{t("admin_rating")}</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div>
+                    <p className="text-tiny font-medium text-muted-foreground mb-1 uppercase tracking-wider">
+                        {t("admin_filter_direction")}
+                    </p>
+                    <Select value={sortDirection} onValueChange={(val: "ASC" | "DESC") => setSortDirection(val)}>
+                        <SelectTrigger className="h-9 text-xs gap-1 px-2.5">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="ASC">{t("admin_sort_asc")}</SelectItem>
+                            <SelectItem value="DESC">{t("admin_sort_desc")}</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -555,14 +602,14 @@ export default function AdminProductsClient() {
                     className="h-10 px-5 rounded-full bg-primary text-primary-foreground text-sm font-semibold inline-flex items-center gap-2 disabled:opacity-60 shadow-sm"
                 >
                     <CirclePlus className="h-4 w-4" />
-                    <span>{t("admin_add_product", {}, "Add product")}</span>
+                    <span>{t("admin_add_product")}</span>
                 </button>
 
                 <div className="flex-1 min-w-0 h-10 px-4 rounded-xl border bg-card flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 text-sm">
                         <Bell className="h-4 w-4 text-muted-foreground shrink-0" />
                         <span className="text-muted-foreground whitespace-nowrap">
-                            {t("admin_products_chose", { count: selectedCount }, "{count} chose")}
+                            {t("admin_products_chose", { count: selectedCount })}
                         </span>
                         <div className="flex items-center gap-1.5">
                             <Checkbox
@@ -571,7 +618,7 @@ export default function AdminProductsClient() {
                                 className="h-4 w-4"
                             />
                             <span className="text-xs text-muted-foreground hidden sm:inline">
-                                {t("admin_select_all_page", {}, "Select all page")}
+                                {t("admin_select_all_page")}
                             </span>
                         </div>
                         {selectedCount > 0 && (
@@ -581,7 +628,7 @@ export default function AdminProductsClient() {
                                 disabled={isBusy}
                                 className="h-7 px-3 rounded-full bg-primary text-primary-foreground inline-flex items-center gap-1 text-xs font-medium disabled:opacity-60"
                             >
-                                {t("admin_apply_discount", {}, "Apply")}
+                                {t("admin_apply_discount")}
                                 <X className="h-3 w-3" />
                             </button>
                         )}
@@ -604,7 +651,7 @@ export default function AdminProductsClient() {
                 </div>
             ) : products.length === 0 ? (
                 <div className="text-center py-16 text-muted-foreground">
-                    <p className="text-sm">{t("admin_no_products_found", {}, "No products found")}</p>
+                    <p className="text-sm">{t("admin_no_products_found")}</p>
                 </div>
             ) : (
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -669,40 +716,30 @@ export default function AdminProductsClient() {
                 </div>
             )}
 
-            <Dialog open={discountDialogOpen} onOpenChange={setDiscountDialogOpen}>
+            <Dialog open={discountDialogOpen} onOpenChange={(open) => { if (!open) setDiscountProductId(null); setDiscountDialogOpen(open); }}>
                 <DialogContent className="sm:max-w-sm">
                     <DialogHeader>
-                        <DialogTitle>{t("admin_discount_id_prompt", {}, "Discount ID")}</DialogTitle>
+                        <DialogTitle>{t("admin_discount_id_prompt")}</DialogTitle>
                     </DialogHeader>
                     <Input
                         value={discountIdInput}
                         onChange={(e) => setDiscountIdInput(e.target.value)}
-                        placeholder={t("admin_discount_id_prompt", {}, "Discount ID")}
+                        placeholder={t("admin_discount_id_prompt")}
                         className="rounded-xl"
                         onKeyDown={(e) => {
-                            if (e.key === "Enter" && discountIdInput.trim()) {
-                                applyDiscountMutation.mutate({ discountId: discountIdInput.trim(), productIds: selectedIds });
-                                setDiscountDialogOpen(false);
-                                setDiscountIdInput("");
-                            }
+                            if (e.key === "Enter") handleApplyDiscount();
                         }}
                     />
                     <DialogFooter className="gap-2 sm:gap-0">
                         <Button variant="outline" onClick={() => setDiscountDialogOpen(false)} className="rounded-xl">
-                            {t("cancel", {}, "Cancel")}
+                            {t("cancel")}
                         </Button>
                         <Button
-                            onClick={() => {
-                                if (discountIdInput.trim()) {
-                                    applyDiscountMutation.mutate({ discountId: discountIdInput.trim(), productIds: selectedIds });
-                                }
-                                setDiscountDialogOpen(false);
-                                setDiscountIdInput("");
-                            }}
+                            onClick={handleApplyDiscount}
                             disabled={!discountIdInput.trim() || isBusy}
                             className="rounded-xl"
                         >
-                            {t("confirm", {}, "Confirm")}
+                            {t("confirm")}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -719,8 +756,16 @@ export default function AdminProductsClient() {
                 isPending={
                     createProductMutation.isPending ||
                     updateProductMutation.isPending ||
-                    addVariantMutation.isPending
+                    updateProductVariantMutation.isPending
                 }
+                onVariantImageUpload={async (variantId, file) => {
+                    if (!dialogProduct) return;
+                    await addVariantImageMutation.mutateAsync({
+                        productId: String(dialogProduct.productId),
+                        variantId,
+                        image: file,
+                    });
+                }}
             />
 
             <ConfirmDialog
@@ -730,9 +775,9 @@ export default function AdminProductsClient() {
                     if (deleteConfirm) deleteProductMutation.mutate(deleteConfirm);
                     setDeleteConfirm(null);
                 }}
-                title={t("admin_confirm_delete_item", { name: products.find(p => String(p.productId) === deleteConfirm)?.name ?? "" }, "Archive this product?")}
-                confirmText={t("confirm", {}, "Confirm")}
-                cancelText={t("cancel", {}, "Cancel")}
+                title={t("admin_confirm_delete_item", { name: products.find(p => String(p.productId) === deleteConfirm)?.name ?? "" })}
+                confirmText={t("confirm")}
+                cancelText={t("cancel")}
                 variant="destructive"
             />
         </div>

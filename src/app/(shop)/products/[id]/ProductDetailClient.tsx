@@ -2,7 +2,6 @@
 
 import {
     ChevronRight,
-    Eye,
     PackageCheck,
     ShoppingCartIcon,
     Star,
@@ -14,7 +13,6 @@ import { toast } from "sonner";
 
 import { AppError } from "@/api/client";
 import { Button } from "@/components/ui/button";
-import { toErrorMessage } from "@/utils/error-message";
 import { ProductCard } from "@/components/ui/product-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/features/auth/hooks";
@@ -27,6 +25,7 @@ import {
 } from "@/features/products/hooks";
 import { Product } from "@/features/products/types";
 import { useLanguage } from "@/providers/language.provider";
+import { toErrorMessage } from "@/utils/error-message";
 import { formatCurrency, formatNumber } from "@/utils/format";
 
 interface ProductDetailClientProps {
@@ -225,7 +224,7 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                 </div>
 
                 {/* Tabs */}
-                <div className="bg-card rounded-2xl mt-4 shadow-sm overflow-hidden min-h-[300px]">
+                <div className="bg-card rounded-2xl mt-4 shadow-sm overflow-hidden min-h-banner-sm">
                     <div className="flex flex-col lg:flex-row h-full">
                         <div className="w-full lg:w-36 lg:border-r border-b lg:border-b-0 border-border flex lg:flex-col overflow-x-auto">
                             {tabs.map((tab) => (
@@ -288,10 +287,10 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                                                                 <Star key={starIdx} className={`w-3 h-3 ${starIdx < fb.rating ? "fill-current" : "text-gray-300"}`} />
                                                             ))}
                                                         </div>
-                                                        <span className="text-[10px] text-muted-foreground">{new Date(fb.createdAt).toLocaleDateString(currentLocale)}</span>
+                                                        <span className="text-tiny text-muted-foreground">{new Date(fb.createdAt).toLocaleDateString(currentLocale)}</span>
                                                     </div>
                                                     <p className="text-sm text-foreground">{fb.comment}</p>
-                                                    <div className="text-[10px] text-muted-foreground flex items-center gap-2">
+                                                    <div className="text-tiny text-muted-foreground flex items-center gap-2">
                                                         <span>Variant: {fb.variantId}</span>
                                                     </div>
                                                 </div>

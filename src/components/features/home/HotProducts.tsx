@@ -31,7 +31,7 @@ export function HotProducts() {
         {/* Loading Skeleton giả lập giao diện dạng lưới của danh sách sản phẩm */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {[...Array(8)].map((_, i) => (
-            <div key={i} className="h-[350px] bg-white animate-pulse rounded-lg"></div>
+            <div key={i} className="h-banner-md bg-white animate-pulse rounded-lg"></div>
           ))}
         </div>
       </section>

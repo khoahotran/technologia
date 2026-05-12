@@ -20,11 +20,11 @@ export function AddressForm() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">{t('first_name_label', {}, "First Name *")}</label>
-          <Input className="bg-[#F9F8FE] border-gray-200" />
+          <Input className="bg-background border-gray-200" />
         </div>
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">{t('last_name_label', {}, "Last Name *")}</label>
-          <Input className="bg-[#F9F8FE] border-gray-200" />
+          <Input className="bg-background border-gray-200" />
         </div>
       </div>
 
@@ -32,11 +32,11 @@ export function AddressForm() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">{t('phone_label', {}, "Phone Number *")}</label>
-          <Input className="bg-[#F9F8FE] border-gray-200" />
+          <Input className="bg-background border-gray-200" />
         </div>
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">{t('city_label', {}, "City/Province *")}</label>
-          <Input className="bg-[#F9F8FE] border-gray-200" />
+          <Input className="bg-background border-gray-200" />
         </div>
       </div>
 
@@ -44,11 +44,11 @@ export function AddressForm() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">{t('district_label', {}, "District")}</label>
-          <Input className="bg-[#F9F8FE] border-gray-200" />
+          <Input className="bg-background border-gray-200" />
         </div>
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">{t('ward_label', {}, "Ward/Commune *")}</label>
-          <Input className="bg-[#F9F8FE] border-gray-200" />
+          <Input className="bg-background border-gray-200" />
         </div>
       </div>
 
@@ -56,18 +56,18 @@ export function AddressForm() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">{t('street_label', {}, "Street Name *")}</label>
-          <Input className="bg-[#F9F8FE] border-gray-200" />
+          <Input className="bg-background border-gray-200" />
         </div>
         <div className="space-y-2">
           <label className="text-sm font-medium text-gray-700">{t('house_number_label', {}, "House Number *")}</label>
-          <Input className="bg-[#F9F8FE] border-gray-200" />
+          <Input className="bg-background border-gray-200" />
         </div>
       </div>
 
       {/* Khối Ghi chú bổ sung */}
       <div className="space-y-2">
         <label className="text-sm font-medium text-gray-700">{t('notes_label', {}, "Note")}</label>
-        <Textarea className="bg-[#F9F8FE] border-gray-200 min-h-[100px]" />
+        <Textarea className="bg-background border-gray-200 min-h-24" />
       </div>
 
       {/* Checkbox đặt làm mặc định */}
@@ -83,7 +83,7 @@ export function AddressForm() {
 
       {/* Nút Tạo mới */}
       <div className="flex justify-center pt-4">
-        <Button className="w-40 bg-[#8AB0C3] hover:bg-[#7A9EB0] text-white font-semibold">
+        <Button className="w-40 bg-secondary hover:bg-[#7A9EB0] text-white font-semibold">
           {t('create_address_btn', {}, "Create Address")}
         </Button>
       </div>

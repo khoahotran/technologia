@@ -62,7 +62,7 @@ export function CartSummary({
         </div>
       </div>
 
-      <p className="text-[10px] text-muted-foreground/80 italic mb-4 leading-tight">
+      <p className="text-tiny text-muted-foreground/80 italic mb-4 leading-tight">
         * {t('cart_price_reference_note', {}, "Giá trị này chỉ mang tính chất tham khảo. Tổng tiền chính xác sẽ được tính tại bước thanh toán.")}
       </p>
 

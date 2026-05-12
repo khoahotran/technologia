@@ -11,6 +11,7 @@ import {
     deleteBrandAdmin,
     deleteCategoryAdmin,
     deleteProductAdmin,
+    deleteProductVariantAdmin,
     getBrands,
     getCategories,
     getProductById,
@@ -18,6 +19,7 @@ import {
     updateBrandAdmin,
     updateCategoryAdmin,
     updateProductAdmin,
+    updateProductVariantAdmin,
 } from "./api";
 import type {
     CreateBrandRequest,
@@ -26,6 +28,7 @@ import type {
     CreateProductVariantRequest,
     ProductSearchParams,
     UpdateProductRequest,
+    UpdateProductVariantRequest,
 } from "./types";
 
 import { productKeys } from "@/constants/query-keys";
@@ -73,7 +76,7 @@ export function useCreateBrandAdmin() {
         mutationFn: (payload: CreateBrandRequest) => createBrandAdmin(payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["brands"] });
-            toast.success(t('admin_brand_created_success', {}, "Brand created successfully"));
+            toast.success(t('admin_brand_created_success'));
         },
         onError: (error: unknown) => {
             toast.error(t(toErrorMessage(error, 'admin_failed_create_brand')));
@@ -89,7 +92,7 @@ export function useUpdateBrandAdmin() {
             updateBrandAdmin(brandId, payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["brands"] });
-            toast.success(t('admin_brand_updated_success', {}, "Brand updated successfully"));
+            toast.success(t('admin_brand_updated_success'));
         },
         onError: (error: unknown) => {
             toast.error(t(toErrorMessage(error, 'admin_failed_update_brand')));
@@ -104,7 +107,7 @@ export function useDeleteBrandAdmin() {
         mutationFn: (brandId: number | string) => deleteBrandAdmin(brandId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["brands"] });
-            toast.success(t('admin_brand_deleted_success', {}, "Brand deleted successfully"));
+            toast.success(t('admin_brand_deleted_success'));
         },
         onError: (error: unknown) => {
             toast.error(t(toErrorMessage(error, 'admin_failed_delete_brand')));
@@ -119,7 +122,7 @@ export function useCreateCategoryAdmin() {
         mutationFn: (payload: CreateCategoryRequest) => createCategoryAdmin(payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["categories"] });
-            toast.success(t('admin_category_created_success', {}, "Category created successfully"));
+            toast.success(t('admin_category_created_success'));
         },
         onError: (error: unknown) => {
             toast.error(t(toErrorMessage(error, 'admin_failed_create_category')));
@@ -135,7 +138,7 @@ export function useUpdateCategoryAdmin() {
             updateCategoryAdmin(categoryId, payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["categories"] });
-            toast.success(t('admin_category_updated_success', {}, "Category updated successfully"));
+            toast.success(t('admin_category_updated_success'));
         },
         onError: (error: unknown) => {
             toast.error(t(toErrorMessage(error, 'admin_failed_update_category')));
@@ -150,7 +153,7 @@ export function useDeleteCategoryAdmin() {
         mutationFn: (categoryId: number | string) => deleteCategoryAdmin(categoryId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["categories"] });
-            toast.success(t('admin_category_deleted_success', {}, "Category deleted successfully"));
+            toast.success(t('admin_category_deleted_success'));
         },
         onError: (error: unknown) => {
             toast.error(t(toErrorMessage(error, 'admin_failed_delete_category')));
@@ -165,7 +168,7 @@ export function useCreateProductAdmin() {
         mutationFn: (payload: CreateProductRequest) => createProductAdmin(payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: productKeys.all });
-            toast.success(t('admin_product_created_success', {}, "Product created successfully"));
+            toast.success(t('admin_product_created_success'));
         },
         onError: (error: unknown) => {
             toast.error(t(toErrorMessage(error, 'admin_failed_create_product')));
@@ -181,7 +184,7 @@ export function useUpdateProductAdmin() {
             updateProductAdmin(productId, payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: productKeys.all });
-            toast.success(t('admin_product_updated_success', {}, "Product updated successfully"));
+            toast.success(t('admin_product_updated_success'));
         },
         onError: (error: unknown) => {
             toast.error(t(toErrorMessage(error, 'admin_failed_update_product')));
@@ -196,7 +199,7 @@ export function useDeleteProductAdmin() {
         mutationFn: (productId: string) => deleteProductAdmin(productId),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: productKeys.all });
-            toast.success(t('admin_product_deleted_success', {}, "Product deleted successfully"));
+            toast.success(t('admin_product_deleted_success'));
         },
         onError: (error: unknown) => {
             toast.error(t(toErrorMessage(error, 'admin_failed_delete_product')));
@@ -212,7 +215,7 @@ export function useAddProductVariantAdmin() {
             addProductVariantAdmin(productId, payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: productKeys.all });
-            toast.success(t('admin_product_variant_added_success', {}, "Product variant added successfully"));
+            toast.success(t('admin_product_variant_added_success'));
         },
         onError: (error: unknown) => {
             toast.error(t(toErrorMessage(error, 'admin_failed_add_variant')));
@@ -220,13 +223,50 @@ export function useAddProductVariantAdmin() {
     });
 }
 
+export function useUpdateProductVariantAdmin() {
+    const queryClient = useQueryClient();
+    const { t } = useLanguage();
+    return useMutation({
+        mutationFn: ({ productId, variantId, payload }: { productId: string; variantId: string; payload: UpdateProductVariantRequest }) =>
+            updateProductVariantAdmin(productId, variantId, payload),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: productKeys.all });
+            toast.success(t('admin_variant_updated_success'));
+        },
+        onError: (error: unknown) => {
+            toast.error(t(toErrorMessage(error, 'admin_failed_update_variant')));
+        },
+    });
+}
+
+export function useDeleteProductVariantAdmin() {
+    const queryClient = useQueryClient();
+    const { t } = useLanguage();
+    return useMutation({
+        mutationFn: ({ productId, variantId }: { productId: string; variantId: string }) =>
+            deleteProductVariantAdmin(productId, variantId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: productKeys.all });
+            toast.success(t('admin_variant_deleted_success'));
+        },
+        onError: (error: unknown) => {
+            toast.error(t(toErrorMessage(error, 'admin_failed_delete_variant')));
+        },
+    });
+}
+
 export function useApplyProductsToDiscountAdmin() {
     const { t } = useLanguage();
     return useMutation({
-        mutationFn: ({ discountId, productIds }: { discountId: string; productIds: string[] }) =>
-            applyProductsToDiscountAdmin(discountId, { productIds }),
+        mutationFn: (input: { discountId: string } & import("./types").ApplyProductsToDiscountRequest) => {
+            const payload: import("./types").ApplyProductsToDiscountRequest = {};
+            if (input.brandIds) payload.brandIds = input.brandIds;
+            if (input.categoryIds) payload.categoryIds = input.categoryIds;
+            if (input.productVariantIds) payload.productVariantIds = input.productVariantIds;
+            return applyProductsToDiscountAdmin(input.discountId, payload);
+        },
         onSuccess: () => {
-            toast.success(t('admin_discount_applied_success', {}, "Discount applied successfully"));
+            toast.success(t('admin_discount_applied_success'));
         },
         onError: (error: unknown) => {
             toast.error(t(toErrorMessage(error, 'admin_failed_apply_discount')));
@@ -242,7 +282,7 @@ export function useAddVariantImageAdmin() {
             addVariantImageAdmin(productId, variantId, image),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: productKeys.all });
-            toast.success(t('admin_variant_image_uploaded_success', {}, "Variant image uploaded successfully"));
+            toast.success(t('admin_variant_image_uploaded_success'));
         },
         onError: (error: unknown) => {
             toast.error(t(toErrorMessage(error, 'admin_failed_upload_image')));

@@ -46,15 +46,20 @@ export async function getProductById(id: string | number): Promise<Product> {
 }
 
 export async function getBrands(): Promise<Brand[]> {
-    return get<Brand[]>("/api/brands");
+    const response = await get<Brand[]>("/api/brands");
+    return response;
 }
 
 export async function getCategories(): Promise<Category[]> {
-    return get<Category[]>("/api/categories");
+    const response = await get<Category[]>("/api/categories");
+    return response;
 }
 
 export async function createBrandAdmin(payload: CreateBrandRequest): Promise<Brand> {
     const response = await post<ApiResponse<Brand>>("/api/brands/admin", payload);
+    if (response.status !== 200) {
+        throw new Error(response.message || "Brand already exists");
+    }
     return response.data;
 }
 
@@ -63,6 +68,9 @@ export async function updateBrandAdmin(
     payload: CreateBrandRequest
 ): Promise<Brand> {
     const response = await patch<ApiResponse<Brand>>(`/api/brands/admin/${brandId}`, payload);
+    if (response.status !== 200) {
+        throw new Error(response.message || "Brand already exists");
+    }
     return response.data;
 }
 
@@ -72,6 +80,9 @@ export async function deleteBrandAdmin(brandId: number | string): Promise<void> 
 
 export async function createCategoryAdmin(payload: CreateCategoryRequest): Promise<Category> {
     const response = await post<ApiResponse<Category>>("/api/categories/admin", payload);
+    if (response.status !== 200) {
+        throw new Error(response.message || "Category already exists");
+    }
     return response.data;
 }
 
@@ -80,6 +91,9 @@ export async function updateCategoryAdmin(
     payload: CreateCategoryRequest
 ): Promise<Category> {
     const response = await patch<ApiResponse<Category>>(`/api/categories/admin/${categoryId}`, payload);
+    if (response.status !== 200) {
+        throw new Error(response.message || "Category already exists");
+    }
     return response.data;
 }
 

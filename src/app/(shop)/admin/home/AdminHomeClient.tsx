@@ -56,6 +56,9 @@ export default function AdminHomeClient() {
     const brands = useMemo(() => normalizeItems(brandData, "brandId"), [brandData]);
     const categories = useMemo(() => normalizeItems(categoryData, "categoryId"), [categoryData]);
 
+    console.log("[AdminHome] brandData:", brandData, "categoriesData:", categoryData);
+    console.log("[AdminHome] brands:", brands, "categories:", categories);
+
     const isBusy =
         createBrandMutation.isPending || updateBrandMutation.isPending ||
         deleteBrandMutation.isPending || createCategoryMutation.isPending ||
@@ -155,7 +158,7 @@ export default function AdminHomeClient() {
                 </Button>
                 {items.length === 0 && (
                     <p className="text-sm text-muted-foreground text-center py-6">
-                        {t("admin_no_items", {}, "No items yet")}
+                        {t("admin_no_items")}
                     </p>
                 )}
                 {items.map((item) => (
@@ -199,24 +202,24 @@ export default function AdminHomeClient() {
     const dialogTitle =
         dialogMode === "add"
             ? dialogType === "brand"
-                ? t("admin_add_brand", {}, "Add brand")
-                : t("admin_add_category", {}, "Add category")
+                ? t("admin_add_brand")
+                : t("admin_add_category")
             : dialogType === "brand"
-                ? t("admin_edit_brand", {}, "Edit brand")
-                : t("admin_edit_category", {}, "Edit category");
+                ? t("admin_edit_brand")
+                : t("admin_edit_category");
 
     return (
         <div className="container mx-auto px-4 py-6">
             <div className="grid md:grid-cols-2 gap-6">
                 {renderColumn(
-                    t("admin_categories", {}, "Categories"),
-                    t("admin_add_category", {}, "Add category"),
+                    t("admin_categories"),
+                    t("admin_add_category"),
                     categories,
                     "category"
                 )}
                 {renderColumn(
-                    t("admin_brands", {}, "Brands"),
-                    t("admin_add_brand", {}, "Add brand"),
+                    t("admin_brands"),
+                    t("admin_add_brand"),
                     brands,
                     "brand"
                 )}
@@ -228,24 +231,24 @@ export default function AdminHomeClient() {
                         <DialogTitle>{dialogTitle}</DialogTitle>
                         <DialogDescription>
                             {dialogType === "brand"
-                                ? t("admin_enter_brand_name_desc", {}, "Enter the name for the brand")
-                                : t("admin_enter_category_name_desc", {}, "Enter the name for the category")}
+                                ? t("admin_enter_brand_name_desc")
+                                : t("admin_enter_category_name_desc")}
                         </DialogDescription>
                     </DialogHeader>
                     <Input
                         value={dialogValue}
                         onChange={(e) => setDialogValue(e.target.value)}
-                        placeholder={dialogType === "brand" ? t("admin_brand_name", {}, "Brand name") : t("admin_category_name", {}, "Category name")}
+                        placeholder={dialogType === "brand" ? t("admin_brand_name") : t("admin_category_name")}
                         className="rounded-xl"
                         autoFocus
                         onKeyDown={(e) => { if (e.key === "Enter") handleDialogConfirm(); }}
                     />
                     <DialogFooter className="gap-2 sm:gap-0">
                         <Button variant="outline" onClick={closeDialog} className="rounded-xl">
-                            {t("cancel", {}, "Cancel")}
+{t("admin_cancel")}
                         </Button>
                         <Button onClick={handleDialogConfirm} disabled={!dialogValue.trim() || isBusy} className="rounded-xl">
-                            {dialogMode === "add" ? t("add", {}, "Add") : t("save", {}, "Save")}
+                            {dialogMode === "add" ? t("admin_add") : t("admin_save")}
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -255,9 +258,9 @@ export default function AdminHomeClient() {
                 open={deleteConfirm !== null}
                 onOpenChange={(open) => { if (!open) setDeleteConfirm(null); }}
                 onConfirm={confirmDelete}
-                title={t("admin_confirm_delete_item", { name: deleteConfirm?.name ?? "" }, "Delete this item?")}
-                confirmText={t("confirm", {}, "Confirm")}
-                cancelText={t("cancel", {}, "Cancel")}
+                title={t("admin_confirm_delete_item", { name: deleteConfirm?.name ?? "" })}
+                confirmText={t("admin_confirm")}
+                cancelText={t("admin_cancel")}
                 variant="destructive"
             />
         </div>

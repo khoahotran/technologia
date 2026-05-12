@@ -27,7 +27,7 @@ export function canGiveFeedback(order: Order) {
     return order.deliveryStatus === "DELIVERED";
 }
 
-export function formatOrderStatusLabel(status: DeliveryStatus, t?: Translator) {
+export function formatOrderStatusLabel(status: DeliveryStatus | string, t?: Translator) {
     switch (status) {
         case "AWAITING_PAYMENT":
             return t ? t("order_status_awaiting_payment", {}, "Awaiting Payment") : "Awaiting Payment";
@@ -54,24 +54,30 @@ export function formatPaymentMethodLabel(paymentMethod: Order["paymentMethod"], 
     return t ? t("payment_method_cod", {}, "Cash on delivery") : "Cash on delivery";
 }
 
-export function formatDeliveryLogStatusLabel(status: string, t?: Translator) {
-    switch (status) {
+export function formatDeliveryLogStatusLabel(status: string | number, t?: Translator) {
+    const s = String(status);
+    switch (s) {
         case "PENDING":
+        case "0":
             return t ? t("order_status_pending", {}, "Pending") : "Pending";
+        case "COMPLETED":
+        case "1":
+            return t ? t("delivery_log_completed", {}, "Completed") : "Completed";
+        case "FAILED":
+        case "2":
+            return t ? t("delivery_log_failed", {}, "Failed") : "Failed";
+        case "COMPENSATING":
+        case "3":
+            return t ? t("delivery_log_compensating", {}, "Compensating") : "Compensating";
+        case "COMPENSATED":
+        case "4":
+            return t ? t("delivery_log_compensated", {}, "Compensated") : "Compensated";
         case "ON_SHIPPING":
             return t ? t("order_status_shipping", {}, "Shipping") : "Shipping";
         case "DELIVERED":
             return t ? t("order_status_delivered", {}, "Delivered") : "Delivered";
-        case "COMPLETED":
-            return t ? t("delivery_log_completed", {}, "Completed") : "Completed";
-        case "COMPENSATING":
-            return t ? t("delivery_log_compensating", {}, "Compensating") : "Compensating";
-        case "COMPENSATED":
-            return t ? t("delivery_log_compensated", {}, "Compensated") : "Compensated";
-        case "FAILED":
-            return t ? t("delivery_log_failed", {}, "Failed") : "Failed";
         default:
-            return status;
+            return s;
     }
 }
 

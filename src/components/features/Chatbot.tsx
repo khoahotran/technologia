@@ -247,7 +247,7 @@ export function Chatbot() {
                                     <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/60 [animation-delay:-0.15s]"></span>
                                     <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground/60"></span>
                                 </div>
-                                <p className="mt-1 text-[10px] text-muted-foreground animate-pulse">Lạc Lạc đang suy nghĩ...</p>
+                                <p className="mt-1 text-tiny text-muted-foreground animate-pulse">Lạc Lạc đang suy nghĩ...</p>
                             </div>
                         )}
                     </div>

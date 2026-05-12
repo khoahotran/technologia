@@ -69,7 +69,7 @@ export function FilterBar() {
           defaultValue={searchParams.get("minPrice") || "0"}
           onValueChange={(val) => updateFilter("minPrice", val)}
         >
-          <SelectTrigger className="w-[140px] bg-blue-100/50 border-none h-9 rounded-lg">
+          <SelectTrigger className="w-36 bg-blue-100/50 border-none h-9 rounded-lg">
             <SelectValue placeholder={t('select_price', {}, "Chọn giá")} />
           </SelectTrigger>
           <SelectContent>
@@ -91,7 +91,7 @@ export function FilterBar() {
           defaultValue={searchParams.get("maxPrice") || ""}
           onValueChange={(val) => updateFilter("maxPrice", val)}
         >
-          <SelectTrigger className="w-[140px] bg-blue-100/50 border-none h-9 rounded-lg">
+          <SelectTrigger className="w-36 bg-blue-100/50 border-none h-9 rounded-lg">
             <SelectValue placeholder={t('select_price', {}, "Chọn giá")} />
           </SelectTrigger>
           <SelectContent>
@@ -113,7 +113,7 @@ export function FilterBar() {
           defaultValue={searchParams.get("sort") || "price_asc"}
           onValueChange={(val) => updateFilter("sort", val)}
         >
-          <SelectTrigger className="w-[180px] bg-blue-100/50 border-none h-9 rounded-lg">
+          <SelectTrigger className="w-44 bg-blue-100/50 border-none h-9 rounded-lg">
             <SelectValue placeholder={t('select_sort', {}, "Sắp xếp")} />
           </SelectTrigger>
           <SelectContent>

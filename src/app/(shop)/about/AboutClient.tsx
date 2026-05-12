@@ -68,9 +68,9 @@ export default function AboutClient() {
     ]
 
     return (
-        <div className="min-h-screen bg-[#F9F8FE]">
+        <div className="min-h-screen bg-background">
             {/* Hero Section */}
-            <section className="bg-gradient-to-br from-[#3E93B3] to-[#8AB0C3] py-20 px-4">
+            <section className="bg-gradient-to-br from-primary to-secondary py-20 px-4">
                 <div className="container mx-auto text-center">
                     <div className="max-w-3xl mx-auto mb-8">
                         <div className="w-64 h-64 mx-auto mb-8 relative flex items-center justify-center">
@@ -95,14 +95,14 @@ export default function AboutClient() {
                         <div className="flex gap-4 justify-center">
                             <Button
                                 onClick={() => scrollToSection('values')}
-                                className="bg-white text-[#3E93B3] hover:bg-gray-100 font-semibold px-8"
+                                className="bg-white text-primary hover:bg-surface-muted font-semibold px-8"
                             >
                                 {t('footer_about_us', {}, "About Us")}
                             </Button>
                             <Button
                                 onClick={() => scrollToSection('contact')}
                                 variant="outline"
-                                className="border-white text-white  bg-[#3E93B3] hover:bg-white/10 font-semibold px-8"
+                                className="border-white text-white  bg-primary hover:bg-white/10 font-semibold px-8"
                             >
                                 {t('footer_contact_now', {}, "Contact Now")}
                             </Button>
@@ -170,23 +170,23 @@ export default function AboutClient() {
                         <div className="space-y-6">
                             <div className="flex gap-4">
                                 <a href={CONTACT_INFO.socials.facebook} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
-                                    <Facebook className="h-6 w-6 text-[#1877F2]" />
+                                    <Facebook className="h-6 w-6 text-facebook" />
                                 </a>
                                 <a href={CONTACT_INFO.socials.linkedin} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
-                                    <Linkedin className="h-6 w-6 text-[#0A66C2]" />
+                                    <Linkedin className="h-6 w-6 text-linkedin" />
                                 </a>
                                 <a href={CONTACT_INFO.socials.instagram} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
-                                    <Instagram className="h-6 w-6 text-[#E4405F]" />
+                                    <Instagram className="h-6 w-6 text-instagram" />
                                 </a>
                                 <a href={CONTACT_INFO.socials.youtube} target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-opacity">
-                                    <Youtube className="h-6 w-6 text-[#FF0000]" />
+                                    <Youtube className="h-6 w-6 text-youtube" />
                                 </a>
                                 <a href={`tel:${CONTACT_INFO.phone.value}`} className="hover:opacity-80 transition-opacity">
-                                    <Phone className="h-6 w-6 text-[#3E93B3]" />
+                                    <Phone className="h-6 w-6 text-primary" />
                                 </a>
                             </div>
                             {/* Map Placeholder or Visual Graphic */}
-                            <div className="bg-[#D3E4F4] rounded-2xl h-64 flex items-center justify-center border-2 border-white shadow-lg overflow-hidden relative group">
+                            <div className="bg-accent rounded-2xl h-64 flex items-center justify-center border-2 border-white shadow-lg overflow-hidden relative group">
                                 <Image
                                     src="https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=1000&auto=format&fit=crop"
                                     alt="Technologia Office"
@@ -194,7 +194,7 @@ export default function AboutClient() {
                                     className="object-cover opacity-60 group-hover:scale-110 transition-transform duration-700"
                                 />
                                 <div className="relative z-10 text-center bg-white/80 backdrop-blur-sm p-4 rounded-xl shadow-sm border border-white/50">
-                                    <p className="font-bold text-[#3E93B3] text-lg">Technologia HQ</p>
+                                    <p className="font-bold text-primary text-lg">Technologia HQ</p>
                                     <p className="text-xs text-gray-600">Ho Chi Minh City, Vietnam</p>
                                 </div>
                             </div>
@@ -299,7 +299,7 @@ function ContactForm() {
             <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full bg-[#3E93B3] hover:bg-[#2D7A96] text-white font-bold h-12 rounded-xl transition-all shadow-md"
+                className="w-full bg-primary hover:bg-primary-hover text-white font-bold h-12 rounded-xl transition-all shadow-md"
             >
                 {isSubmitting ? t('about_sending', {}, "Sending...") : t('about_send_btn', {}, "Send Message")}
             </Button>

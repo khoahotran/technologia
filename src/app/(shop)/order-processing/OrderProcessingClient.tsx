@@ -118,7 +118,7 @@ export default function OrderProcessingPage() {
 
     if (error) {
         return (
-            <div className="flex flex-col items-center justify-center h-screen bg-[#F9F8FE] px-4">
+            <div className="flex flex-col items-center justify-center h-screen bg-background px-4">
                 <div className="bg-white p-6 rounded-lg border border-red-200 text-center max-w-md">
                     <h2 className="text-lg font-semibold text-red-600 mb-2">
                         {t('order_error_title', {}, "Something went wrong")}
@@ -137,10 +137,10 @@ export default function OrderProcessingPage() {
 
     if (orderId && isNonCod && !paymentId) {
         return (
-            <div className="flex flex-col items-center justify-center h-screen bg-[#F9F8FE]">
+            <div className="flex flex-col items-center justify-center h-screen bg-background">
                 <div className="relative mb-6">
-                    <div className="w-16 h-16 rounded-full bg-[#8AB0C3] opacity-30 animate-ping absolute" />
-                    <div className="w-16 h-16 rounded-full bg-[#8AB0C3] flex items-center justify-center text-white text-xl font-bold">
+                    <div className="w-16 h-16 rounded-full bg-secondary opacity-30 animate-ping absolute" />
+                    <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center text-white text-xl font-bold">
                         💳
                     </div>
                 </div>
@@ -158,7 +158,7 @@ export default function OrderProcessingPage() {
 
     if (orderId && isNonCod && paymentId) {
         return (
-            <div className="flex flex-col items-center justify-center min-h-screen bg-[#F9F8FE] px-4 py-12">
+            <div className="flex flex-col items-center justify-center min-h-screen bg-background px-4 py-12">
                 <div className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 max-w-md w-full flex flex-col items-center">
                     <div className="relative mb-6">
                         <div className="w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center text-primary text-4xl">
@@ -202,7 +202,7 @@ export default function OrderProcessingPage() {
                         <Button
                             onClick={handlePaymentSuccess}
                             disabled={simulating}
-                            className="bg-green-600 hover:bg-green-700 text-white font-bold h-12 rounded-xl transition-all active:scale-95"
+                            className="bg-primary hover:bg-green-700 text-white font-bold h-12 rounded-xl transition-all active:scale-95"
                         >
                             {t('payment_success', {}, "Success")}
                         </Button>
@@ -210,7 +210,7 @@ export default function OrderProcessingPage() {
                             onClick={handlePaymentCancel}
                             disabled={simulating}
                             variant="destructive"
-                            className="font-bold h-12 rounded-xl transition-all active:scale-95"
+                            className="bg-destructive font-bold h-12 rounded-xl transition-all active:scale-95"
                         >
                             {t('payment_failed', {}, "Cancel")}
                         </Button>
@@ -234,10 +234,10 @@ export default function OrderProcessingPage() {
     }
 
     return (
-        <div className="flex flex-col items-center justify-center h-screen bg-[#F9F8FE]">
+        <div className="flex flex-col items-center justify-center h-screen bg-background">
             <div className="relative mb-6">
-                <div className="w-16 h-16 rounded-full bg-[#8AB0C3] opacity-30 animate-ping absolute" />
-                <div className="w-16 h-16 rounded-full bg-[#8AB0C3] flex items-center justify-center text-white text-xl font-bold">
+                <div className="w-16 h-16 rounded-full bg-secondary opacity-30 animate-ping absolute" />
+                <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center text-white text-xl font-bold">
                     🛒
                 </div>
             </div>
@@ -254,7 +254,7 @@ export default function OrderProcessingPage() {
 
             <div className="w-64 h-2 bg-gray-200 rounded-full overflow-hidden">
                 <div
-                    className="h-full bg-[#8AB0C3] transition-all duration-700"
+                    className="h-full bg-secondary transition-all duration-700"
                     style={{ width: `${(step + 1) * 25}%` }}
                 />
             </div>

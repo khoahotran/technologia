@@ -376,7 +376,7 @@ export default function ShippingClient() {
                                     <div key={item.cartItemId} className="flex justify-between text-sm">
                                         <span className="text-gray-600">{item.currentQuantity}x</span>
                                         <span className="flex-1 ml-4 text-gray-900">{item.name}</span>
-                                        <span className="font-medium text-[#3E93B3]">
+                                        <span className="font-medium text-primary">
                                             {t('price_vnd', { price: new Intl.NumberFormat(currentLocale).format(item.priceAfterDiscount ?? item.price ?? 0) }, `${new Intl.NumberFormat(currentLocale).format(item.priceAfterDiscount ?? item.price ?? 0)} VND`)}
                                         </span>
                                     </div>
@@ -406,7 +406,7 @@ export default function ShippingClient() {
                                 )}
                                 <div className="flex justify-between text-base font-bold pt-2 border-t border-border">
                                     <span className="text-gray-900">{t('order_total', {}, "Order total")}</span>
-                                    <span className="text-[#3E93B3]">
+                                    <span className="text-primary">
                                         {t('price_vnd', { price: new Intl.NumberFormat(currentLocale).format(total) }, `${new Intl.NumberFormat(currentLocale).format(total)} VND`)}
                                     </span>
                                 </div>

@@ -104,39 +104,20 @@ export default function OrderTrackingClient({ id }: { id: string }) {
         enabled: Boolean(order?.addressId),
     });
 
-    const fallbackTimeline = useMemo(() => {
-        if (!order) return [];
-        const normalizedStatus =
-            order.deliveryStatus === "CANCELED" ||
-                order.deliveryStatus === "AWAITING_PAYMENT" ||
-                order.deliveryStatus === "AWAITING_CONFIRM"
-                ? "PENDING"
-                : order.deliveryStatus;
-        const currentIndex = timelineOrder.indexOf(
-            normalizedStatus as (typeof timelineOrder)[number]
-        );
-        return timelineOrder.map((status, index) => ({
-            status,
-            completed: currentIndex >= index,
-            happenedAt: index === 0 ? order.orderDate : order.updatedAt,
-            message: "",
-        }));
-    }, [order]);
-
     const timeline = useMemo(() => {
-        if (deliveryLogsQuery.data && deliveryLogsQuery.data.length > 0) {
-            return [...deliveryLogsQuery.data]
-                .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-                .map((item) => ({
-                    status: item.status,
-                    completed: true,
-                    happenedAt: item.createdAt,
-                    message: item.message,
-                }));
+        if (!deliveryLogsQuery.data || deliveryLogsQuery.data.length === 0) {
+            return [];
         }
 
-        return fallbackTimeline;
-    }, [deliveryLogsQuery.data, fallbackTimeline]);
+        return [...deliveryLogsQuery.data]
+            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+            .map((item) => ({
+                status: item.status,
+                completed: true,
+                happenedAt: item.createdAt,
+                message: item.message,
+            }));
+    }, [deliveryLogsQuery.data]);
 
     if (isLoading) {
         return <div className="flex justify-center p-8">{t("loading", {}, "Loading...")}</div>;
@@ -149,7 +130,7 @@ export default function OrderTrackingClient({ id }: { id: string }) {
                 <p className="text-gray-600 mt-2">
                     {toErrorMessage(error, t("order_not_found_desc", {}, "We couldn't find the order you're looking for."))}
                 </p>
-                <Link href="/orders" className="inline-block mt-4 text-[#3E93B3] font-medium">
+                <Link href="/orders" className="inline-block mt-4 text-primary font-medium">
                     {t("back_to_orders", {}, "Back to list of orders")}
                 </Link>
             </div>
@@ -158,22 +139,22 @@ export default function OrderTrackingClient({ id }: { id: string }) {
 
     return (
         <>
-            <div className="min-h-screen bg-[#F4F1F3]">
+            <div className="min-h-screen bg-surface-muted">
                 <div className="container mx-auto px-4 py-8 space-y-6">
-                    <Link href="/orders" className="inline-flex items-center gap-2 text-[#1E1E1E] hover:text-[#0D6E97]">
+                    <Link href="/orders" className="inline-flex items-center gap-2 text-foreground hover:text-primary-strong">
                         <ArrowLeft className="h-4 w-4" />
                         <span className="font-semibold">{t("back_to_orders", {}, "Back to list of orders")}</span>
                     </Link>
 
                     <section className="bg-[#C3A57D] rounded-xl p-8 text-center">
                         <h1 className="text-4xl font-bold text-white">{t("track_your_order_title", {}, "Track Your Order")}</h1>
-                        <div className="max-w-3xl mx-auto mt-6 bg-[#F8F8FC] border border-[#8AB0C3] rounded-xl p-6 grid md:grid-cols-[1fr_auto] gap-4">
+                        <div className="max-w-3xl mx-auto mt-6 bg-background border border-secondary rounded-xl p-6 grid md:grid-cols-[1fr_auto] gap-4">
                             <div className="relative">
                                 <Input
                                     placeholder={t("order_id_placeholder", {}, "Order ID")}
                                     value={trackOrderInput}
                                     onChange={(event) => setTrackOrderInput(event.target.value)}
-                                    className="h-12 bg-white border-[#8AB0C3] pr-10"
+                                    className="h-12 bg-white border-secondary pr-10"
                                 />
                                 <button
                                     type="button"
@@ -185,7 +166,7 @@ export default function OrderTrackingClient({ id }: { id: string }) {
                             </div>
                             <Button
                                 type="button"
-                                className="h-12 px-8 bg-[#8AB0C3] hover:bg-[#769BAD] text-white font-semibold"
+                                className="h-12 px-8 bg-secondary hover:bg-[#769BAD] text-white font-semibold"
                                 onClick={() => {
                                     if (!trackOrderInput.trim()) {
                                         toast.error(t("order_id_required", {}, "Please enter order id"));
@@ -199,11 +180,11 @@ export default function OrderTrackingClient({ id }: { id: string }) {
                         </div>
                     </section>
 
-                    <section className="bg-white rounded-xl border border-[#D3E4F4] p-8">
+                    <section className="bg-white rounded-xl border border-accent p-8">
                         <div className="grid xl:grid-cols-2 gap-8">
                             <div className="space-y-5">
-                                <h2 className="text-lg font-semibold text-[#1E1E1E]">#{truncateId(order.orderId, 6)}</h2>
-                                <div className="space-y-3 border-y border-[#D3E4F4] py-4">
+                                <h2 className="text-lg font-semibold text-foreground">#{truncateId(order.orderId, 6)}</h2>
+                                <div className="space-y-3 border-y border-accent py-4">
                                     {order.items.map((item, index) => {
                                         const pid = toDisplayProductId(item);
                                         const prod = pid ? productMap.get(pid) : null;
@@ -216,23 +197,23 @@ export default function OrderTrackingClient({ id }: { id: string }) {
                                                 ) : (
                                                     <div className="w-10 h-10 rounded-lg bg-muted shrink-0" />
                                                 )}
-                                                <span className="text-[#556070]">{toDisplayItemQuantity(item)}x</span>
-                                                <span className="flex-1 text-[#1E1E1E] truncate">{prod?.name || `Item ${index + 1}`}</span>
+                                                <span className="text-muted-foreground">{toDisplayItemQuantity(item)}x</span>
+                                                <span className="flex-1 text-foreground truncate">{prod?.name || `Item ${index + 1}`}</span>
                                             </div>
                                         );
                                     })}
                                     <div className="flex justify-between text-lg font-semibold pt-2">
-                                        <span className="text-[#1E1E1E]">{t("order_total", {}, "Order total")}</span>
-                                        <span className="text-[#0D6E97]">{formatCurrencyVnd(order.totalAmount, currentLocale)}</span>
+                                        <span className="text-foreground">{t("order_total", {}, "Order total")}</span>
+                                        <span className="text-primary-strong">{formatCurrencyVnd(order.totalAmount, currentLocale)}</span>
                                     </div>
                                 </div>
 
-                                <p className="text-[#0D6E97] text-lg font-semibold">[{formatOrderStatusLabel(order.deliveryStatus, t)}]</p>
+                                <p className="text-primary-strong text-lg font-semibold">[{formatOrderStatusLabel(order.deliveryStatus, t)}]</p>
 
                                 <div className="flex flex-wrap gap-4 pt-2">
                                     {canGiveFeedback(order) ? (
                                         <Link href={`/orders/${order.orderId}/feedback`}>
-                                            <Button type="button" className="bg-[#8AB0C3] hover:bg-[#769BAD] text-white">
+                                            <Button type="button" className="bg-secondary hover:bg-[#769BAD] text-white">
                                                 {t("give_feedback_btn", {}, "Give feedback")}
                                             </Button>
                                         </Link>
@@ -268,17 +249,22 @@ export default function OrderTrackingClient({ id }: { id: string }) {
                                             {index < timeline.length - 1 && <div className="w-0.5 h-full min-h-8 bg-[#C8D5E0]" />}
                                         </div>
                                         <div>
-                                            <p className="font-semibold text-[#1E1E1E]">
+                                            <p className="font-semibold text-foreground">
                                                 {formatDeliveryLogStatusLabel(item.status, t)}
                                             </p>
-                                            {item.message ? <p className="text-sm text-[#556070] mt-1">{item.message}</p> : null}
+                                            {item.message ? <p className="text-sm text-muted-foreground mt-1">{item.message}</p> : null}
                                         </div>
-                                        <p className="text-sm text-[#556070]">{new Date(item.happenedAt).toLocaleString(currentLocale)}</p>
+                                        <p className="text-sm text-muted-foreground">{new Date(item.happenedAt).toLocaleString(currentLocale)}</p>
                                     </div>
                                 ))}
+                                {timeline.length === 0 && !deliveryLogsQuery.isError && (
+                                    <p className="text-muted-foreground text-center py-8 italic">
+                                        {t("no_delivery_logs", {}, "No tracking information available for this order yet.")}
+                                    </p>
+                                )}
                                 {deliveryLogsQuery.isError ? (
                                     <p className="text-sm text-[#9A6A23]">
-                                        {t("delivery_log_load_failed", {}, "Cannot load delivery logs, showing fallback timeline.")}
+                                        {t("delivery_log_load_failed", {}, "Cannot load delivery logs. Please try again later.")}
                                     </p>
                                 ) : null}
                             </div>
@@ -286,45 +272,45 @@ export default function OrderTrackingClient({ id }: { id: string }) {
                     </section>
 
                     <section className="grid lg:grid-cols-2 gap-6">
-                        <div className="bg-white rounded-xl border border-[#D3E4F4] p-6">
-                            <h3 className="text-2xl font-semibold text-[#1E1E1E] mb-4">
+                        <div className="bg-white rounded-xl border border-accent p-6">
+                            <h3 className="text-2xl font-semibold text-foreground mb-4">
                                 {t("shipping_address_title", {}, "Shipping Address")}
                             </h3>
                             {addressQuery.isLoading ? (
-                                <div className="flex items-center gap-2 text-[#556070]">
+                                <div className="flex items-center gap-2 text-muted-foreground">
                                     <Loader2 className="h-4 w-4 animate-spin" />
                                     <span className="text-sm">{t("loading", {}, "Loading...")}</span>
                                 </div>
                             ) : addressQuery.data ? (
                                 <div className="space-y-1">
-                                    <p className="text-[#1E1E1E] font-medium">{addressQuery.data.receiverName}</p>
-                                    <p className="text-[#556070]">{addressQuery.data.receiverPhoneNumber}</p>
-                                    <p className="text-[#556070] text-sm">
+                                    <p className="text-foreground font-medium">{addressQuery.data.receiverName}</p>
+                                    <p className="text-muted-foreground">{addressQuery.data.receiverPhoneNumber}</p>
+                                    <p className="text-muted-foreground text-sm">
                                         {[addressQuery.data.no, addressQuery.data.street, addressQuery.data.ward, addressQuery.data.province].filter(Boolean).join(", ")}
                                     </p>
                                 </div>
                             ) : (
-                                <p className="text-sm text-[#556070]">{t("address_not_found", {}, "Address not found")}</p>
+                                <p className="text-sm text-muted-foreground">{t("address_not_found", {}, "Address not found")}</p>
                             )}
                         </div>
 
-                        <div className="bg-white rounded-xl border border-[#D3E4F4] p-6">
-                            <h3 className="text-2xl font-semibold text-[#1E1E1E] mb-4">{t("payment_info_title", {}, "Payment Info")}</h3>
-                            <p className="text-[#1E1E1E] font-semibold mt-1">{formatPaymentMethodLabel(order.paymentMethod, t)}</p>
+                        <div className="bg-white rounded-xl border border-accent p-6">
+                            <h3 className="text-2xl font-semibold text-foreground mb-4">{t("payment_info_title", {}, "Payment Info")}</h3>
+                            <p className="text-foreground font-semibold mt-1">{formatPaymentMethodLabel(order.paymentMethod, t)}</p>
                             {order.paymentAccountId && order.paymentMethod !== "COD" ? (
                                 paymentAccountQuery.isLoading ? (
-                                    <div className="flex items-center gap-2 text-[#556070] mt-2">
+                                    <div className="flex items-center gap-2 text-muted-foreground mt-2">
                                         <Loader2 className="h-4 w-4 animate-spin" />
                                         <span className="text-sm">{t("loading", {}, "Loading...")}</span>
                                     </div>
                                 ) : paymentAccountQuery.data ? (
                                     <div className="space-y-1 mt-2">
-                                        <p className="text-sm text-[#1E1E1E] font-medium">{paymentAccountQuery.data.bankName}</p>
-                                        <p className="text-sm text-[#556070]">{paymentAccountQuery.data.holderName}</p>
-                                        <p className="text-sm text-[#556070]">****{paymentAccountQuery.data.accountNumber.slice(-4)}</p>
+                                        <p className="text-sm text-foreground font-medium">{paymentAccountQuery.data.bankName}</p>
+                                        <p className="text-sm text-muted-foreground">{paymentAccountQuery.data.holderName}</p>
+                                        <p className="text-sm text-muted-foreground">****{paymentAccountQuery.data.accountNumber.slice(-4)}</p>
                                     </div>
                                 ) : (
-                                    <p className="text-sm text-[#556070] mt-2">
+                                    <p className="text-sm text-muted-foreground mt-2">
                                         {t("payment_account_id_label", {}, "Account")}: {truncateId(order.paymentAccountId, 6)}
                                     </p>
                                 )

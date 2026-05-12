@@ -28,17 +28,23 @@ export default function ForgotPasswordClient() {
         } catch (err: unknown) {
             console.error(err);
             const message = err instanceof Error ? err.message : 'Unknown error';
-            setError(message || t('failed_send_reset_email', {}, "Failed to send reset email. Please try again."));
+            if (message.includes('not found')) {
+                setError(t('user_not_found'));
+            } else if (message.includes('invalid email')) {
+                setError(t('invalid_email'));
+            } else {
+                setError(t('failed_send_reset_email'));
+            }
         }
 
         setLoading(false)
     }
 
     return (
-        <div className="min-h-screen bg-[#3A8DA8] flex items-center justify-center p-4 relative overflow-hidden">
+        <div className="min-h-screen bg-primary-hover flex items-center justify-center p-4 relative overflow-hidden">
             {/* Trang trí sóng phía dưới (Aesthetic waves) */}
             <div className="absolute bottom-0 left-0 w-full overflow-hidden leading-none z-0 pointer-events-none">
-                <svg className="relative block w-[200%] h-[150px] md:h-[300px] text-white/10" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+                <svg className="relative block w-[200%] h-[150px] md:h-banner-sm text-white/10" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
                     <path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5,73.84-4.36,147.54,16.88,218.2,52.03,35.33,17.57,67,40.63,101.4,59.34,32.7,17.77,66.8,32.22,102.6,38.86,36.5,6.77,73.9,5.2,110.8,0,33.5-4.7,66-15.6,97.2-31.5,30.3-15.5,58.6-35.3,86-57.5L1200,0Z" fill="currentColor"></path>
                 </svg>
             </div>
@@ -50,7 +56,7 @@ export default function ForgotPasswordClient() {
 
             <div className="w-full max-w-2xl bg-white rounded-sm shadow-2xl p-6 md:p-12 space-y-10 z-10 relative">
                 <div className="text-center space-y-4">
-                    <h2 className="text-3xl font-bold text-[#4A5568] uppercase tracking-wider">
+                    <h2 className="text-3xl font-bold text-muted-foreground uppercase tracking-wider">
                         {t('forgot_password_title_upper', {}, "FORGOT PASSWORD")}
                     </h2>
                     <p className="text-gray-500 text-lg max-w-md mx-auto leading-relaxed">
@@ -63,7 +69,7 @@ export default function ForgotPasswordClient() {
                         <div className="p-4 bg-green-50 text-green-700 rounded-lg border border-green-100 italic">
                             {t('reset_link_sent', { email }, `Check your email! We have sent a password reset link to ${email}.`)}
                         </div>
-                        <Link href="/login" className="inline-block text-[#3A8DA8] hover:underline font-semibold text-lg">
+                        <Link href="/login" className="inline-block text-primary-hover hover:underline font-semibold text-lg">
                             {t('back_to_login', {}, "Back to Login")}
                         </Link>
                     </div>
@@ -90,7 +96,7 @@ export default function ForgotPasswordClient() {
                         <div className="flex flex-col items-center gap-6">
                             <Button 
                                 type="submit" 
-                                className="w-full h-12 text-lg font-bold bg-[#8EB2C3] hover:bg-[#7DA1B2] text-gray-800 rounded-sm shadow-md transition-all active:scale-[0.98]" 
+                                className="w-full h-12 text-lg font-bold bg-secondary hover:bg-[#7DA1B2] text-gray-800 rounded-sm shadow-md transition-all active:scale-[0.98]" 
                                 disabled={loading}
                             >
                                 {loading ? (
@@ -103,7 +109,7 @@ export default function ForgotPasswordClient() {
                                 )}
                             </Button>
 
-                            <Link href="/login" className="inline-flex items-center text-sm text-gray-400 hover:text-[#3A8DA8] transition-colors group">
+                            <Link href="/login" className="inline-flex items-center text-sm text-gray-400 hover:text-primary-hover transition-colors group">
                                 <ArrowLeft className="w-4 h-4 mr-1 group-hover:-translate-x-1 transition-transform" />
                                 {t('back_to_login', {}, "Back to Login")}
                             </Link>

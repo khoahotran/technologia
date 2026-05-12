@@ -189,7 +189,7 @@ export default function OrdersClient() {
                 <p className="text-sm text-gray-600 mt-2">
                     {toErrorMessage(error, t("cannot_load_orders", {}, "Cannot load orders"))}
                 </p>
-                <Link href="/cart" className="inline-block mt-4 text-[#3E93B3] font-medium">
+                <Link href="/cart" className="inline-block mt-4 text-primary font-medium">
                     {t("back_to_cart", {}, "Back to cart")}
                 </Link>
             </div>
@@ -197,16 +197,16 @@ export default function OrdersClient() {
     }
 
     return (
-        <div className="min-h-screen bg-[#F4F1F3]">
+        <div className="min-h-screen bg-surface-muted">
             <div className="container mx-auto px-4 py-10">
-                <h1 className="text-5xl font-bold text-[#1E1E1E] text-center mb-10">
+                <h1 className="text-5xl font-bold text-foreground text-center mb-10">
                     {t("list_of_orders", {}, "List Of Orders")}
                 </h1>
 
                 {orders.length === 0 ? (
-                    <div className="max-w-xl mx-auto bg-white p-8 rounded-xl border border-[#D3E4F4] text-center">
+                    <div className="max-w-xl mx-auto bg-white p-8 rounded-xl border border-accent text-center">
                         <p className="text-gray-600">{t("no_orders", {}, "You have no orders yet.")}</p>
-                        <Link href="/products" className="inline-block mt-4 text-[#3E93B3] font-medium">
+                        <Link href="/products" className="inline-block mt-4 text-primary font-medium">
                             {t("start_shopping", {}, "Start shopping")}
                         </Link>
                     </div>
@@ -214,25 +214,25 @@ export default function OrdersClient() {
                     <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-8">
                         <OrderCategory
                             title={t("created_orders", {}, "Created Orders")}
-                            icon={<Package className="h-10 w-10 text-[#0D6E97]" />}
+                            icon={<Package className="h-10 w-10 text-primary-strong" />}
                             count={createdOrders.length}
                             orders={createdOrders}
                         />
                         <OrderCategory
                             title={t("shipping_orders", {}, "Paid and on shipping")}
-                            icon={<Truck className="h-10 w-10 text-[#0D6E97]" />}
+                            icon={<Truck className="h-10 w-10 text-primary-strong" />}
                             count={shippingOrders.length}
                             orders={shippingOrders}
                         />
                         <OrderCategory
                             title={t("delivered_orders", {}, "Delivered Orders")}
-                            icon={<PackageCheck className="h-10 w-10 text-[#0D6E97]" />}
+                            icon={<PackageCheck className="h-10 w-10 text-primary-strong" />}
                             count={deliveredOrders.length}
                             orders={deliveredOrders}
                         />
                         <OrderCategory
                             title={t("cancelled_orders", {}, "Cancelled Orders")}
-                            icon={<PackageX className="h-10 w-10 text-[#0D6E97]" />}
+                            icon={<PackageX className="h-10 w-10 text-primary-strong" />}
                             count={canceledOrders.length}
                             orders={canceledOrders}
                         />

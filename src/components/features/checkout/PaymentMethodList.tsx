@@ -52,7 +52,7 @@ export function PaymentMethodList({
       {/* Tiêu đề danh sách */}
       <div className="flex items-center justify-between">
         <h3 className="font-bold text-gray-900">{title}</h3>
-        <Info className="h-5 w-5 text-[#3E93B3]" />
+        <Info className="h-5 w-5 text-primary" />
       </div>
 
       {/* Danh sách các Thẻ */}

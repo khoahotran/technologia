@@ -94,7 +94,7 @@ export default function CreateAddressClient() {
     };
 
     return (
-        <div className="min-h-screen bg-[#F9F8FE]">
+        <div className="min-h-screen bg-background">
             <div className="container mx-auto px-4 py-8">
                 <div className="max-w-4xl mx-auto">
                     <Link
@@ -111,22 +111,22 @@ export default function CreateAddressClient() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-gray-700">{t('firstname_label', {}, "Firstname *")}</label>
-                                <Input value={form.firstName} onChange={(e) => setField("firstName", e.target.value)} className="bg-[#F9F8FE] border-gray-200" />
+                                <Input value={form.firstName} onChange={(e) => setField("firstName", e.target.value)} className="bg-background border-gray-200" />
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-gray-700">{t('lastname_label', {}, "Last name *")}</label>
-                                <Input value={form.lastName} onChange={(e) => setField("lastName", e.target.value)} className="bg-[#F9F8FE] border-gray-200" />
+                                <Input value={form.lastName} onChange={(e) => setField("lastName", e.target.value)} className="bg-background border-gray-200" />
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-gray-700">{t('phone_label', {}, "Phone Number *")}</label>
-                                <Input value={form.phone} onChange={(e) => setField("phone", e.target.value)} className="bg-[#F9F8FE] border-gray-200" />
+                                <Input value={form.phone} onChange={(e) => setField("phone", e.target.value)} className="bg-background border-gray-200" />
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-gray-700">{t('province_label', {}, "Province *")}</label>
-                                <select value={selectedProvinceId} onChange={handleProvinceChange} className="bg-[#F9F8FE] border border-gray-200 w-full h-10 rounded-md px-2">
+                                <select value={selectedProvinceId} onChange={handleProvinceChange} className="bg-background border border-gray-200 w-full h-10 rounded-md px-2">
                                     <option value="">Chọn tỉnh/thành</option>
                                     {PROVINCES.map((p) => (
                                         <option key={p.idProvince} value={p.idProvince}>
@@ -140,11 +140,11 @@ export default function CreateAddressClient() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-gray-700">{t('city_label_optional', {}, "City (Old Address)")}</label>
-                                <Input value={form.city} onChange={(e) => setField("city", e.target.value)} className="bg-[#F9F8FE] border-gray-200" />
+                                <Input value={form.city} onChange={(e) => setField("city", e.target.value)} className="bg-background border-gray-200" />
                             </div>
                             <div className="space-y-2">
                             <label className="text-sm font-medium text-gray-700">{t('ward_label_required', {}, "Ward *")}</label>
-                            <select value={form.ward} onChange={(e) => setField("ward", e.target.value)} className="bg-[#F9F8FE] border border-gray-200 w-full h-10 rounded-md px-2" disabled={!selectedProvinceId}>
+                            <select value={form.ward} onChange={(e) => setField("ward", e.target.value)} className="bg-background border border-gray-200 w-full h-10 rounded-md px-2" disabled={!selectedProvinceId}>
                                 <option value="">Chọn phường/xã</option>
                                 {filteredDistricts.map((d) => (
                                     <option key={d.idCommune} value={d.name}>
@@ -158,17 +158,17 @@ export default function CreateAddressClient() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-gray-700">{t('street_label_required', {}, "Street *")}</label>
-                                <Input value={form.street} onChange={(e) => setField("street", e.target.value)} className="bg-[#F9F8FE] border-gray-200" />
+                                <Input value={form.street} onChange={(e) => setField("street", e.target.value)} className="bg-background border-gray-200" />
                             </div>
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-gray-700">{t('no_label', {}, "No *")}</label>
-                                <Input value={form.number} onChange={(e) => setField("number", e.target.value)} className="bg-[#F9F8FE] border-gray-200" />
+                                <Input value={form.number} onChange={(e) => setField("number", e.target.value)} className="bg-background border-gray-200" />
                             </div>
                         </div>
 
                         <div className="space-y-2">
                             <label className="text-sm font-medium text-gray-700">{t('notes_label', {}, "Note")}</label>
-                            <Textarea value={form.note} onChange={(e) => setField("note", e.target.value)} className="bg-[#F9F8FE] border-gray-200 min-h-[100px]" />
+                            <Textarea value={form.note} onChange={(e) => setField("note", e.target.value)} className="bg-background border-gray-200 min-h-24" />
                         </div>
 
                         <div className="flex items-center space-x-2 cursor-pointer">
@@ -183,7 +183,7 @@ export default function CreateAddressClient() {
                         </div>
 
                         <div className="flex justify-center pt-4">
-                            <Button type="button" onClick={handleSubmit} className="w-64 h-12 bg-[#8AB0C3] hover:bg-[#7A9EB0] text-white font-semibold text-base">
+                            <Button type="button" onClick={handleSubmit} className="w-64 h-12 bg-secondary hover:bg-[#7A9EB0] text-white font-semibold text-base">
                                 {t('save_address_btn', {}, "Save address")}
                             </Button>
                         </div>

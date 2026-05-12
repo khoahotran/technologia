@@ -19,9 +19,9 @@ interface StatCardProps {
   iconColor?: string
 }
 
-export function StatCard({ value, label, icon: Icon, iconColor = "text-[#3E93B3]" }: StatCardProps) {
+export function StatCard({ value, label, icon: Icon, iconColor = "text-primary" }: StatCardProps) {
   return (
-    <div className="bg-[#D3E4F4] rounded-2xl p-6 min-w-[200px] flex-shrink-0">
+    <div className="bg-accent rounded-2xl p-6 min-w-[200px] flex-shrink-0">
       <div className="flex items-start justify-between mb-4">
         <h3 className="text-3xl font-bold text-gray-900">{value}</h3>
         <div className={cn("p-2 bg-white/50 rounded-lg", iconColor)}>

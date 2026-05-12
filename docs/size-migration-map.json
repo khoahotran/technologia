@@ -1,0 +1,70 @@
+{
+  "replacements": [
+    {
+      "source": "text-[10px]",
+      "target": "text-tiny",
+      "intent": "Badge and secondary legal text",
+      "confidence": "HIGH"
+    },
+    {
+      "source": "text-[9px]",
+      "target": "text-tiny",
+      "intent": "Sub-secondary text",
+      "confidence": "HIGH"
+    },
+    {
+      "source": "rounded-[32px]",
+      "target": "rounded-4xl",
+      "intent": "Extra large radius for banners",
+      "confidence": "MEDIUM"
+    },
+    {
+      "source": "rounded-[4px]",
+      "target": "rounded-sm",
+      "intent": "Small radius for controls",
+      "confidence": "HIGH"
+    },
+    {
+      "source": "h-[400px]",
+      "target": "h-banner-lg",
+      "intent": "Standard large banner height",
+      "confidence": "MEDIUM"
+    },
+    {
+      "source": "h-[350px]",
+      "target": "h-banner-md",
+      "intent": "Standard medium banner height",
+      "confidence": "MEDIUM"
+    },
+    {
+      "source": "h-[300px]",
+      "target": "h-banner-sm",
+      "intent": "Standard small banner height",
+      "confidence": "MEDIUM"
+    },
+    {
+      "source": "w-[140px]",
+      "target": "w-36",
+      "intent": "Standard fixed width element (144px is w-36)",
+      "confidence": "HIGH"
+    },
+    {
+      "source": "w-[180px]",
+      "target": "w-44",
+      "intent": "Standard fixed width element (176px is w-44)",
+      "confidence": "HIGH"
+    },
+    {
+      "source": "min-h-[100px]",
+      "target": "min-h-24",
+      "intent": "Standard minimum height (96px is h-24)",
+      "confidence": "HIGH"
+    },
+    {
+      "source": "max-h-[60vh]",
+      "target": "max-h-sheet-viewport",
+      "intent": "Viewport-relative height for dialogs",
+      "confidence": "MEDIUM"
+    }
+  ]
+}

@@ -122,7 +122,7 @@ export default function GiveFeedbackClient({ id }: { id: string }) {
                 <p className="text-sm text-gray-600 mt-2">
                     {toErrorMessage(error, t("order_not_found", {}, "Order not found"))}
                 </p>
-                <Link href="/orders" className="inline-block mt-4 text-[#3E93B3] font-medium">
+                <Link href="/orders" className="inline-block mt-4 text-primary font-medium">
                     {t("back_to_orders", {}, "Back to list of orders")}
                 </Link>
             </div>
@@ -131,16 +131,16 @@ export default function GiveFeedbackClient({ id }: { id: string }) {
 
     if (!canGiveFeedback(order)) {
         return (
-            <div className="min-h-screen bg-[#F4F1F3]">
+            <div className="min-h-screen bg-surface-muted">
                 <div className="container mx-auto px-4 py-8 space-y-6">
-                    <Link href={`/orders/${id}`} className="inline-flex items-center gap-2 text-[#1E1E1E] hover:text-[#0D6E97]">
+                    <Link href={`/orders/${id}`} className="inline-flex items-center gap-2 text-foreground hover:text-primary-strong">
                         <ArrowLeft className="h-4 w-4" />
                         <span className="font-semibold">{t("back_to_tracking", {}, "Back to tracking order")}</span>
                     </Link>
-                    <div className="bg-white rounded-xl border border-[#D3E4F4] p-8 text-center">
-                        <h1 className="text-3xl font-bold text-[#1E1E1E]">{t("give_feedback_title", {}, "Give Feedback")}</h1>
-                        <p className="text-[#556070] mt-4">{t("feedback_unavailable", {}, "Feedback is only available for delivered orders.")}</p>
-                        <p className="text-[#0D6E97] font-semibold mt-2">[{formatOrderStatusLabel(order.deliveryStatus, t)}]</p>
+                    <div className="bg-white rounded-xl border border-accent p-8 text-center">
+                        <h1 className="text-3xl font-bold text-foreground">{t("give_feedback_title", {}, "Give Feedback")}</h1>
+                        <p className="text-muted-foreground mt-4">{t("feedback_unavailable", {}, "Feedback is only available for delivered orders.")}</p>
+                        <p className="text-primary-strong font-semibold mt-2">[{formatOrderStatusLabel(order.deliveryStatus, t)}]</p>
                     </div>
                 </div>
             </div>
@@ -197,24 +197,24 @@ export default function GiveFeedbackClient({ id }: { id: string }) {
     };
 
     return (
-        <div className="min-h-screen bg-[#F4F1F3]">
+        <div className="min-h-screen bg-surface-muted">
             <div className="container mx-auto px-4 py-8 space-y-6">
-                <Link href={`/orders/${id}`} className="inline-flex items-center gap-2 text-[#1E1E1E] hover:text-[#0D6E97]">
+                <Link href={`/orders/${id}`} className="inline-flex items-center gap-2 text-foreground hover:text-primary-strong">
                     <ArrowLeft className="h-4 w-4" />
                     <span className="font-semibold">{t("back_to_tracking", {}, "Back to tracking order")}</span>
                 </Link>
 
-                <h1 className="text-5xl font-bold text-[#1E1E1E] text-center">{t("give_feedback_title", {}, "Give Feedback")}</h1>
+                <h1 className="text-5xl font-bold text-foreground text-center">{t("give_feedback_title", {}, "Give Feedback")}</h1>
 
-                <div className="bg-white rounded-xl border border-[#D3E4F4] p-8">
+                <div className="bg-white rounded-xl border border-accent p-8">
                     <div className="space-y-2 mb-8">
-                        <h3 className="text-xl font-semibold text-[#1E1E1E]">{t("order_id_label", {}, "Order ID")}</h3>
-                        <p className="text-3xl font-bold text-[#1E1E1E]">#{truncateId(order.orderId, 6)}</p>
+                        <h3 className="text-xl font-semibold text-foreground">{t("order_id_label", {}, "Order ID")}</h3>
+                        <p className="text-3xl font-bold text-foreground">#{truncateId(order.orderId, 6)}</p>
                         <div className="space-y-1 py-2">
                             {feedbackItems.map((item) => {
                                 const prod = item.productId ? productMap.get(item.productId) : null;
                                 return (
-                                    <div key={`summary-${item.key}`} className="flex items-center gap-3 text-[#1E1E1E]">
+                                    <div key={`summary-${item.key}`} className="flex items-center gap-3 text-foreground">
                                         {prod?.image ? (
                                             <div className="relative w-8 h-8 rounded-lg overflow-hidden bg-muted shrink-0">
                                                 <Image src={prod.image} alt="" fill className="object-contain p-0.5" />
@@ -226,10 +226,10 @@ export default function GiveFeedbackClient({ id }: { id: string }) {
                                 );
                             })}
                         </div>
-                        <p className="text-lg font-semibold text-[#0D6E97]">[{formatOrderStatusLabel(order.deliveryStatus, t)}]</p>
+                        <p className="text-lg font-semibold text-primary-strong">[{formatOrderStatusLabel(order.deliveryStatus, t)}]</p>
                     </div>
 
-                    <div className="grid md:grid-cols-2 gap-8 border-t border-[#D3E4F4] pt-8">
+                    <div className="grid md:grid-cols-2 gap-8 border-t border-accent pt-8">
                         {feedbackItems.map((item) => {
                             const rating = getRating(item.key);
                             const comment = getComment(item.key);
@@ -243,10 +243,10 @@ export default function GiveFeedbackClient({ id }: { id: string }) {
                                                 <Image src={prod.image} alt="" fill className="object-contain p-1" />
                                             </div>
                                         ) : null}
-                                        <h4 className="text-2xl font-semibold text-[#1E1E1E]">{prod?.name ?? item.label}</h4>
+                                        <h4 className="text-2xl font-semibold text-foreground">{prod?.name ?? item.label}</h4>
                                     </div>
                                     <div>
-                                        <p className="text-lg font-semibold text-[#1E1E1E] mb-2">{t("rating_label", {}, "Rating")}</p>
+                                        <p className="text-lg font-semibold text-foreground mb-2">{t("rating_label", {}, "Rating")}</p>
                                         <div className="flex gap-2">
                                             {[1, 2, 3, 4, 5].map((star) => (
                                                 <button
@@ -259,7 +259,7 @@ export default function GiveFeedbackClient({ id }: { id: string }) {
                                                     <Star
                                                         className={`h-8 w-8 ${
                                                             star <= rating
-                                                                ? "fill-[#3E93B3] text-[#3E93B3]"
+                                                                ? "fill-[#3E93B3] text-primary"
                                                                 : "fill-transparent text-[#D3D9E0]"
                                                         }`}
                                                     />
@@ -269,13 +269,13 @@ export default function GiveFeedbackClient({ id }: { id: string }) {
                                     </div>
 
                                     <div>
-                                        <p className="text-lg font-semibold text-[#1E1E1E] mb-2">{t("comment_label", {}, "Comment")}</p>
+                                        <p className="text-lg font-semibold text-foreground mb-2">{t("comment_label", {}, "Comment")}</p>
                                         <Textarea
                                             value={comment}
                                             onChange={(event) =>
                                                 setLocalComments((prev) => ({ ...prev, [item.key]: event.target.value }))
                                             }
-                                            className="min-h-[170px] bg-[#F9F8FE] border-[#8AB0C3]"
+                                            className="min-h-[170px] bg-background border-secondary"
                                             placeholder={t("share_experience_placeholder", {}, "Share your experience with this order...")}
                                             disabled={isPending}
                                         />
@@ -286,7 +286,7 @@ export default function GiveFeedbackClient({ id }: { id: string }) {
                     </div>
 
                     {hasFeedback ? (
-                        <p className="text-center text-sm text-[#556070] mt-4">
+                        <p className="text-center text-sm text-muted-foreground mt-4">
                             {t("feedback_edit_note", {}, "You have already submitted feedback. You can edit it below.")}
                         </p>
                     ) : null}
@@ -296,7 +296,7 @@ export default function GiveFeedbackClient({ id }: { id: string }) {
                             type="button"
                             onClick={handleSubmit}
                             disabled={isPending}
-                            className="w-72 h-12 bg-[#8AB0C3] hover:bg-[#769BAD] text-white font-semibold disabled:bg-[#BFC7CF]"
+                            className="w-72 h-12 bg-secondary hover:bg-[#769BAD] text-white font-semibold disabled:bg-[#BFC7CF]"
                         >
                             {hasFeedback ? t("update_feedback_btn", {}, "Update feedback") : t("add_feedback_btn", {}, "Add feedback")}
                         </Button>

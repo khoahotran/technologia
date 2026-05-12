@@ -144,10 +144,11 @@ export function useAdminUpdateDeliveryLog() {
     const { t } = useLanguage();
 
     return useMutation({
-        mutationFn: ({ deliveryLogId, payload }: { deliveryLogId: string; payload: CreateDeliveryLogRequest }) =>
+        mutationFn: ({ deliveryLogId, payload }: { deliveryLogId: string; orderId: string; payload: CreateDeliveryLogRequest }) =>
             updateDeliveryLog(deliveryLogId, payload),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: deliveryLogKeys.all });
+        onSuccess: (_data, variables) => {
+            queryClient.invalidateQueries({ queryKey: deliveryLogKeys.list(variables.orderId) });
+            queryClient.invalidateQueries({ queryKey: deliveryLogKeys.latest(variables.orderId) });
             toast.success(t('admin_delivery_log_updated', {}, "Delivery log updated"));
         },
         onError: (error: unknown) => {
@@ -161,9 +162,10 @@ export function useAdminDeleteDeliveryLog() {
     const { t } = useLanguage();
 
     return useMutation({
-        mutationFn: (deliveryLogId: string) => deleteDeliveryLog(deliveryLogId),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: deliveryLogKeys.all });
+        mutationFn: ({ deliveryLogId, orderId: _orderId }: { deliveryLogId: string; orderId: string }) => deleteDeliveryLog(deliveryLogId),
+        onSuccess: (_data, variables) => {
+            queryClient.invalidateQueries({ queryKey: deliveryLogKeys.list(variables.orderId) });
+            queryClient.invalidateQueries({ queryKey: deliveryLogKeys.latest(variables.orderId) });
             toast.success(t('admin_delivery_log_deleted', {}, "Delivery log deleted"));
         },
         onError: (error: unknown) => {

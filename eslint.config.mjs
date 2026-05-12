@@ -5,6 +5,7 @@ import reactPlugin from "eslint-plugin-react";
 import hooksPlugin from "eslint-plugin-react-hooks";
 import unusedImports from "eslint-plugin-unused-imports";
 import importPlugin from "eslint-plugin-import";
+import globals from "globals";
 
 export default tseslint.config(
   js.configs.recommended,
@@ -28,10 +29,15 @@ export default tseslint.config(
       ...nextPlugin.configs["core-web-vitals"].rules,
       ...reactPlugin.configs.recommended.rules,
       ...hooksPlugin.configs.recommended.rules,
+      "react-hooks/set-state-in-effect": "warn",
       "react/react-in-jsx-scope": "off",
+      "no-unused-vars": "off",
       "@typescript-eslint/no-unused-vars": [
         "error",
-        { argsIgnorePattern: "^_" },
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+        },
       ],
       "unused-imports/no-unused-imports": "error",
       "import/order": [
@@ -43,6 +49,29 @@ export default tseslint.config(
       ],
       "no-console": ["warn", { allow: ["warn", "error"] }],
       "no-restricted-imports": ["error", { patterns: ["../..*", "../../..*"] }],
+    },
+  },
+  {
+    files: ["scripts/**/*.mjs", "scripts/**/*.js"],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+    rules: {
+      "no-console": "off",
+      "no-unused-vars": "warn",
+      "@typescript-eslint/no-unused-vars": "warn",
+    },
+  },
+  {
+    files: ["**/*.test.ts", "**/*.test.tsx", "**/__tests__/**"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        { argsIgnorePattern: "^_" },
+      ],
     },
   },
   {

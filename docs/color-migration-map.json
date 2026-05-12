@@ -1,0 +1,95 @@
+{
+  "replacements": [
+    {
+      "source": "#F9F8FE",
+      "target": "background",
+      "intent": "Main background color",
+      "confidence": "HIGH"
+    },
+    {
+      "source": "#F8F8FC",
+      "target": "background",
+      "intent": "Near-white background",
+      "confidence": "HIGH"
+    },
+    {
+      "source": "#F8FAFC",
+      "target": "surface-muted",
+      "intent": "Subtle surface background",
+      "confidence": "HIGH"
+    },
+    {
+      "source": "#3E93B3",
+      "target": "primary",
+      "intent": "Brand primary color",
+      "confidence": "HIGH"
+    },
+    {
+      "source": "#3A8DA8",
+      "target": "primary-hover",
+      "intent": "Primary interactive state",
+      "confidence": "HIGH"
+    },
+    {
+      "source": "#0D6E97",
+      "target": "primary-strong",
+      "intent": "Primary bold/emphasis",
+      "confidence": "HIGH"
+    },
+    {
+      "source": "#8AB0C3",
+      "target": "secondary",
+      "intent": "Brand secondary color",
+      "confidence": "HIGH"
+    },
+    {
+      "source": "#D3E4F4",
+      "target": "accent",
+      "intent": "Accent background / primary soft",
+      "confidence": "HIGH"
+    },
+    {
+      "source": "#556070",
+      "target": "muted-foreground",
+      "intent": "Secondary/Muted text",
+      "confidence": "HIGH"
+    },
+    {
+      "source": "#4A5568",
+      "target": "muted-foreground",
+      "intent": "Secondary/Muted text",
+      "confidence": "HIGH"
+    },
+    {
+      "source": "#1E1E1E",
+      "target": "foreground",
+      "intent": "Main text color",
+      "confidence": "HIGH"
+    },
+    {
+      "source": "#D3E4F4",
+      "target": "border-soft",
+      "intent": "Subtle borders",
+      "context": "border",
+      "confidence": "MEDIUM"
+    },
+    {
+      "source": "#1877F2",
+      "target": "facebook",
+      "intent": "Brand color: Facebook",
+      "confidence": "HIGH"
+    },
+    {
+      "source": "#FF0000",
+      "target": "youtube",
+      "intent": "Brand color: YouTube",
+      "confidence": "HIGH"
+    },
+    {
+      "source": "#0A66C2",
+      "target": "linkedin",
+      "intent": "Brand color: LinkedIn",
+      "confidence": "HIGH"
+    }
+  ]
+}

@@ -27,8 +27,10 @@ export const ProductSchema = z.object({
     status: z.string(),
     variants: z.array(ProductVariantSchema).optional(),
     specsText: z.string().optional(),
+    brandId: z.union([z.string(), z.number()]).transform(Number).optional(),
     brand: z.string().optional(),
     brandName: z.string().optional(),
+    categoryId: z.union([z.string(), z.number()]).transform(Number).optional(),
     category: z.string().optional(),
     createdAt: z.string().optional(),
     updatedAt: z.string().optional(),
@@ -79,7 +81,7 @@ export interface ProductSearchParams {
     brandId?: number | string | undefined;
 }
 
-export type ProductStatus = "ACTIVE" | "INACTIVE";
+export type ProductStatus = "DRAFT" | "PENDING_REVIEW" | "AVAILABLE" | "OUT_OF_STOCK" | "DISCONTINUED";
 
 export interface CreateBrandRequest {
     name: string;
@@ -126,5 +128,7 @@ export interface UpdateProductVariantRequest {
 }
 
 export interface ApplyProductsToDiscountRequest {
-    productIds: string[];
+    brandIds?: number[];
+    categoryIds?: number[];
+    productVariantIds?: { productId: string; variantId: string }[];
 }

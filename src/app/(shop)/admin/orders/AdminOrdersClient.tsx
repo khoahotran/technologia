@@ -1,18 +1,20 @@
 "use client";
 
+import { useQueries } from "@tanstack/react-query";
 import { CheckCircle2, Circle, Clock, ListTodo, Package, PackageCheck, Plus, Search, Truck, XCircle } from "lucide-react";
 import Image from "next/image";
 import { useMemo, useState } from "react";
-import { useQueries } from "@tanstack/react-query";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
+import { productKeys } from "@/constants/query-keys";
 import {
     useAdminCreateDeliveryLog,
     useAdminDeleteDeliveryLog,
@@ -25,17 +27,16 @@ import { formatDeliveryLogStatusLabel, formatOrderStatusLabel, truncateId } from
 import type { DeliveryStatus } from "@/features/orders/types";
 import { getProductById } from "@/features/products/api";
 import type { Product } from "@/features/products/types";
-import { productKeys } from "@/constants/query-keys";
 import { useLanguage } from "@/providers/language.provider";
 
 const statusFilters: Array<{ value: string; label: string }> = [
-    { value: "all", label: "all" },
-    { value: "AWAITING_PAYMENT", label: "awaiting_payment" },
-    { value: "AWAITING_CONFIRM", label: "awaiting_confirm" },
-    { value: "PENDING", label: "pending_shipment" },
-    { value: "ON_SHIPPING", label: "on_shipping" },
-    { value: "DELIVERED", label: "delivered" },
-    { value: "CANCELED", label: "canceled" },
+    { value: "all", label: "admin_status_all" },
+    { value: "AWAITING_PAYMENT", label: "admin_status_awaiting_payment" },
+    { value: "AWAITING_CONFIRM", label: "admin_status_awaiting_confirm" },
+    { value: "PENDING", label: "admin_status_pending_shipment" },
+    { value: "ON_SHIPPING", label: "admin_status_on_shipping" },
+    { value: "DELIVERED", label: "admin_status_delivered" },
+    { value: "CANCELED", label: "admin_status_canceled" },
 ];
 
 const stepStatusIcons: Record<string, typeof Circle> = {
@@ -139,7 +140,7 @@ export default function AdminOrdersClient() {
     const handleSaveEditLog = () => {
         if (!editingLogId || !editStatus.trim()) return;
         updateLogMutation.mutate(
-            { deliveryLogId: editingLogId, payload: { stepStatus: editStatus as never, message: editMessage } },
+            { deliveryLogId: editingLogId, orderId: selectedOrderId!, payload: { stepStatus: editStatus as never, message: editMessage } },
             { onSuccess: () => setEditingLogId(null) }
         );
     };
@@ -184,7 +185,7 @@ export default function AdminOrdersClient() {
                             <SelectContent>
                                 {statusFilters.map((f) => (
                                     <SelectItem key={f.value} value={f.value}>
-                                        {f.value === "all" ? t("admin_all", {}, "All") : t(`admin_status_${f.label}`)}
+                                        {t(f.label)}
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -237,8 +238,9 @@ export default function AdminOrdersClient() {
                                                 </td>
                                                 <td className="py-2.5 px-3 text-muted-foreground text-xs">
                                                     {order["orderDate"]
-                                                        ? new Date(String(order["orderDate"])).toLocaleDateString(
-                                                            locale === "vi" ? "vi-VN" : "en-US"
+                                                        ? new Date(String(order["orderDate"]).includes('T') && !String(order["orderDate"]).includes('Z') && !String(order["orderDate"]).includes('+') ? `${order["orderDate"]}Z` : String(order["orderDate"])).toLocaleString(
+                                                            locale === "vi" ? "vi-VN" : "en-US",
+                                                            { timeZone: "Asia/Ho_Chi_Minh", hour12: false }
                                                         )
                                                         : "-"}
                                                 </td>
@@ -254,7 +256,7 @@ export default function AdminOrdersClient() {
                                                                         status === "PENDING" ? "warning" :
                                                                             "default"
                                                         }
-                                                        className="rounded-full text-[10px] font-medium"
+                                                        className="rounded-full text-tiny font-medium"
                                                     >
                                                         {formatOrderStatusLabel(status as DeliveryStatus, t)}
                                                     </Badge>
@@ -264,7 +266,8 @@ export default function AdminOrdersClient() {
                                                         variant="ghost"
                                                         size="sm"
                                                         className="h-7 text-xs rounded-lg"
-                                                        onClick={(e) => { e.stopPropagation(); setSelectedOrderId(oid); }}
+                                                        onClick={(e) => { e.stopPropagation(); setSelectedOrderId(oid); setShowAddForm(false); setEditingLogId(null); }}
+
                                                     >
                                                         {t("admin_view", {}, "View")}
                                                     </Button>
@@ -279,260 +282,336 @@ export default function AdminOrdersClient() {
                 </CardContent>
             </Card>
 
-            {selectedOrderId && (
-                <div className="grid lg:grid-cols-2 gap-5">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                                <Package className="h-4 w-4 text-primary" />
-                                {t("admin_order_detail", {}, "Order Detail")}
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
-                            {adminOrderQuery.isLoading ? (
-                                <div className="space-y-2">
-                                    {[1, 2, 3].map((i) => <Skeleton key={i} className="h-8 w-full rounded-lg" />)}
-                                </div>
-                            ) : selectedOrder ? (
-                                <>
-                                    <div className="grid grid-cols-2 gap-2 text-sm">
-                                        <span className="text-muted-foreground">{t("admin_order_id", {}, "Order ID")}:</span>
-                                        <span className="font-mono text-xs">{truncateId(selectedOrder.orderId, 12)}</span>
-                                        <span className="text-muted-foreground">{t("admin_date", {}, "Date")}:</span>
-                                        <span>{new Date(selectedOrder.orderDate).toLocaleDateString(locale === "vi" ? "vi-VN" : "en-US")}</span>
-                                        <span className="text-muted-foreground">{t("admin_status", {}, "Status")}:</span>
-                                        <Badge
-                                            variant={
-                                                selectedOrder.deliveryStatus === "DELIVERED" ? "success" :
-                                                    selectedOrder.deliveryStatus === "CANCELED" ? "destructive" :
-                                                        selectedOrder.deliveryStatus === "ON_SHIPPING" ? "info" :
-                                                            selectedOrder.deliveryStatus === "PENDING" ? "warning" :
-                                                                "default"
-                                            }
-                                            className="rounded-full text-[10px] font-medium w-fit"
-                                        >
-                                            {formatOrderStatusLabel(selectedOrder.deliveryStatus, t)}
-                                        </Badge>
-                                        <span className="text-muted-foreground">{t("admin_total", {}, "Total")}:</span>
-                                        <span className="font-semibold">
-                                            {new Intl.NumberFormat(locale === "vi" ? "vi-VN" : "en-US").format(selectedOrder.totalAmount)} {t("currency_vnd", {}, "VND")}
-                                        </span>
-                                    </div>
+            <Dialog open={!!selectedOrderId} onOpenChange={(open) => !open && setSelectedOrderId(null)}>
+                <DialogContent className="w-full max-w-7xl max-h-[95vh] overflow-y-auto p-4 md:p-8 bg-slate-50/50">
+                    <DialogHeader className="mb-4">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div>
+                                <DialogTitle className="text-2xl font-bold tracking-tight">
+                                    {t("admin_order_detail", {}, "Order Detail")}
+                                </DialogTitle>
+                                <p className="text-sm text-muted-foreground mt-1 font-mono uppercase">
+                                    ID: {selectedOrderId}
+                                </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                {selectedOrder && (
+                                    <Badge
+                                        variant={
+                                            selectedOrder.deliveryStatus === "DELIVERED" ? "success" :
+                                                selectedOrder.deliveryStatus === "CANCELED" ? "destructive" :
+                                                    selectedOrder.deliveryStatus === "ON_SHIPPING" ? "info" :
+                                                        selectedOrder.deliveryStatus === "PENDING" ? "warning" :
+                                                            "default"
+                                        }
+                                        className="h-9 px-4 rounded-full text-sm font-semibold shadow-sm"
+                                    >
+                                        {formatOrderStatusLabel(selectedOrder.deliveryStatus, t)}
+                                    </Badge>
+                                )}
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setSelectedOrderId(null)}
+                                    className="h-9 w-9 p-0 rounded-full md:hidden"
+                                >
+                                    <XCircle className="h-5 w-5" />
+                                </Button>
+                            </div>
+                        </div>
+                    </DialogHeader>
 
-                                    {selectedOrder.items && selectedOrder.items.length > 0 && (
-                                        <div>
-                                            <p className="text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">
-                                                {t("admin_items", {}, "Items")}
-                                            </p>
-                                            <div className="space-y-1">
-                                                {(selectedOrder.items as Array<Record<string, unknown>>).map((item, idx) => {
+                    {selectedOrder ? (
+                        <div className="space-y-8">
+                            {/* Quick Stats Header */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-1">
+                                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">{t("admin_date", {}, "Date")}</p>
+                                    <p className="font-semibold text-slate-900">
+                                        {new Date(String(selectedOrder.orderDate).includes('Z') || String(selectedOrder.orderDate).includes('+') ? selectedOrder.orderDate : `${selectedOrder.orderDate}Z`).toLocaleString(locale === "vi" ? "vi-VN" : "en-US", { timeZone: "Asia/Ho_Chi_Minh", dateStyle: "medium", timeStyle: "short" })}
+                                    </p>
+                                </div>
+                                <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-1">
+                                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">{t("admin_total", {}, "Total Amount")}</p>
+                                    <p className="text-xl font-bold text-primary">
+                                        {new Intl.NumberFormat(locale === "vi" ? "vi-VN" : "en-US").format(selectedOrder.totalAmount)} <span className="text-sm font-normal text-muted-foreground">{t("currency_vnd", {}, "VND")}</span>
+                                    </p>
+                                </div>
+                                <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-1">
+                                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">{t("admin_items_count", {}, "Items Count")}</p>
+                                    <p className="text-xl font-bold text-slate-900">
+                                        {selectedOrder.items?.length ?? 0} <span className="text-sm font-normal text-muted-foreground">{t("admin_items", {}, "Items")}</span>
+                                    </p>
+                                </div>
+                                <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-1">
+                                    <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">{t("admin_payment_method", {}, "Payment")}</p>
+                                    <p className="font-semibold text-slate-900 flex items-center gap-1.5">
+                                        <Clock className="h-4 w-4 text-amber-500" />
+                                        {t("admin_cod", {}, "COD")}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="grid lg:grid-cols-3 gap-8">
+                                {/* Main Content Column: Items & Actions */}
+                                <div className="lg:col-span-2 space-y-6">
+                                    {/* Items List */}
+                                    <Card className="border-none shadow-sm rounded-2xl overflow-hidden">
+                                        <CardHeader className="bg-slate-50 border-b border-slate-100 px-6 py-4">
+                                            <CardTitle className="text-base font-bold flex items-center gap-2">
+                                                <Package className="h-5 w-5 text-primary" />
+                                                {t("admin_order_items", {}, "Order Items")}
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="p-0">
+                                            <div className="divide-y divide-slate-100">
+                                                {selectedOrder.items && (selectedOrder.items as Array<Record<string, unknown>>).map((item, idx) => {
                                                     const pid = String(item["productId"] ?? "");
                                                     const prod = productMap.get(pid);
                                                     const imageUrl = prod?.variants?.[0]?.images?.[0];
                                                     const displayName = String(item['name'] ?? prod?.name ?? pid ?? `Item ${idx + 1}`);
                                                     return (
-                                                        <div key={idx} className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 rounded-lg px-2.5 py-1.5">
-                                                            {imageUrl && (
-                                                                <div className="relative w-8 h-8 shrink-0 rounded-md overflow-hidden bg-muted">
+                                                        <div key={idx} className="flex items-center gap-4 px-6 py-4 hover:bg-slate-50/50 transition-colors">
+                                                            <div className="relative w-16 h-16 shrink-0 rounded-xl overflow-hidden bg-slate-100 border border-slate-200">
+                                                                {imageUrl ? (
                                                                     <Image
                                                                         src={imageUrl}
                                                                         alt={displayName}
                                                                         fill
                                                                         className="object-cover"
-                                                                        sizes="32px"
+                                                                        sizes="64px"
                                                                     />
-                                                                </div>
-                                                            )}
-                                                            <span className="truncate flex-1">{displayName}</span>
-                                                            <span className="shrink-0">x{item['quantity'] as number}</span>
+                                                                ) : (
+                                                                    <div className="w-full h-full flex items-center justify-center text-slate-300">
+                                                                        <Package className="h-8 w-8" />
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="font-semibold text-slate-900 truncate">{displayName}</p>
+                                                                <p className="text-xs text-slate-500 font-mono mt-0.5">PID: {pid}</p>
+                                                            </div>
+                                                            <div className="text-right space-y-1">
+                                                                <p className="text-sm font-bold text-slate-900">x{item['quantity'] as number}</p>
+                                                                <p className="text-xs text-slate-500">
+                                                                    {new Intl.NumberFormat(locale === "vi" ? "vi-VN" : "en-US").format(Number(item['price'] ?? 0))}
+                                                                </p>
+                                                            </div>
                                                         </div>
                                                     );
                                                 })}
                                             </div>
-                                        </div>
-                                    )}
+                                        </CardContent>
+                                    </Card>
 
-                                    <div>
-                                        <p className="text-xs font-medium text-muted-foreground mb-1.5 uppercase tracking-wider">
-                                            {t("admin_update_status", {}, "Update Status")}
-                                        </p>
-                                        <div className="flex flex-wrap gap-1.5">
-                                            {getNextDeliveryStatuses(selectedOrder.deliveryStatus).map((next) => (
-                                                <Button
-                                                    key={next}
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="h-7 text-xs rounded-lg"
-                                                    onClick={() => handleStatusUpdate(next)}
-                                                    disabled={updateStatusMutation.isPending}
-                                                >
-                                                    {formatOrderStatusLabel(next as DeliveryStatus, t)}
-                                                </Button>
-                                            ))}
-                                            {getNextDeliveryStatuses(selectedOrder.deliveryStatus).length === 0 && (
-                                                <span className="text-xs text-muted-foreground">
-                                                    {t("admin_no_further_updates", {}, "No further updates available")}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                </>
-                            ) : (
-                                <p className="text-sm text-muted-foreground text-center py-4">
-                                    {t("order_not_found", {}, "Order not found")}
-                                </p>
-                            )}
-                        </CardContent>
-                    </Card>
-
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between gap-4">
-                            <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                                <ListTodo className="h-4 w-4 text-primary" />
-                                {t("admin_delivery_timeline", {}, "Delivery Timeline")}
-                            </CardTitle>
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                className="h-7 text-xs rounded-lg gap-1"
-                                onClick={() => setShowAddForm(!showAddForm)}
-                            >
-                                <Plus className="h-3 w-3" />
-                                {t("admin_add_log", {}, "Add")}
-                            </Button>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
-                            {deliveryLogsQuery.isLoading ? (
-                                <div className="space-y-3">
-                                    {[1, 2, 3].map((i) => <Skeleton key={i} className="h-12 w-full rounded-lg" />)}
-                                </div>
-                            ) : deliveryLogs.length === 0 ? (
-                                <p className="text-sm text-muted-foreground text-center py-6">
-                                    {t("admin_no_delivery_logs", {}, "No delivery logs yet")}
-                                </p>
-                            ) : (
-                                <div className="space-y-0 relative ml-2">
-                                    {deliveryLogs.map((log, idx) => {
-                                        const Icon = stepStatusIcons[log.status] ?? Circle;
-                                        const colorClass = stepStatusColors[log.status] ?? "text-muted-foreground";
-                                        const isLast = idx === deliveryLogs.length - 1;
-                                        return (
-                                            <div key={log.deliveryLogId} className="relative pb-4 pl-7">
-                                                {!isLast && (
-                                                    <div className="absolute left-[11px] top-[22px] bottom-0 w-px bg-border" />
-                                                )}
-                                                <div className={`absolute left-0 top-0.5 ${colorClass}`}>
-                                                    <Icon className="h-5 w-5" />
-                                                </div>
-                                                <div className="text-xs space-y-0.5">
-                                                    <div className="flex items-center gap-2 flex-wrap">
-                                                        <Badge variant={log.status === "COMPLETED" ? "success" : log.status === "FAILED" ? "destructive" : log.status === "PENDING" ? "warning" : "default"} className="rounded-full text-[10px] font-medium">
-                                                            {formatDeliveryLogStatusLabel(log.status, t)}
-                                                        </Badge>
-                                                        <span className="text-muted-foreground">
-                                                            {new Date(log.createdAt).toLocaleString(locale === "vi" ? "vi-VN" : "en-US")}
-                                                        </span>
-                                                    </div>
-                                                    {log.message && (
-                                                        <p className="text-muted-foreground">{log.message}</p>
-                                                    )}
-                                                    <div className="flex gap-1.5 mt-1">
-                                                        <button
-                                                            type="button"
-                                                            className="text-[10px] text-primary hover:underline"
-                                                            onClick={() => startEditLog(log)}
+                                    {/* Action Card: Status Update */}
+                                    <Card className="border-none shadow-sm rounded-2xl bg-gradient-to-br from-primary/5 to-transparent">
+                                        <CardHeader className="px-6 py-4">
+                                            <CardTitle className="text-base font-bold flex items-center gap-2">
+                                                <Truck className="h-5 w-5 text-primary" />
+                                                {t("admin_order_actions", {}, "Quick Actions")}
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="px-6 pb-6 pt-0">
+                                            <div className="space-y-4">
+                                                <p className="text-sm font-medium text-slate-600">
+                                                    {t("admin_update_status_instruction", {}, "Select next status for this order:")}
+                                                </p>
+                                                <div className="flex flex-wrap gap-3">
+                                                    {getNextDeliveryStatuses(selectedOrder.deliveryStatus).map((next) => (
+                                                        <Button
+                                                            key={next}
+                                                            variant="default"
+                                                            size="lg"
+                                                            className="h-11 px-6 rounded-xl font-semibold shadow-sm"
+                                                            onClick={() => handleStatusUpdate(next)}
+                                                            disabled={updateStatusMutation.isPending}
                                                         >
-                                                            {t("admin_edit", {}, "Edit")}
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            className="text-[10px] text-destructive hover:underline"
-                                                            onClick={() => setDeleteLogConfirm(log.deliveryLogId)}
-                                                        >
-                                                            {t("admin_delete", {}, "Delete")}
-                                                        </button>
-                                                    </div>
-
-                                                    {editingLogId === log.deliveryLogId && (
-                                                        <div className="mt-2 space-y-1.5 border border-border rounded-lg p-2 bg-muted/30">
-                                                            <Select value={editStatus} onValueChange={setEditStatus}>
-                                                                <SelectTrigger className="h-7 text-xs rounded-lg">
-                                                                    <SelectValue />
-                                                                </SelectTrigger>
-                                                                <SelectContent>
-                                                                    {["PENDING", "COMPLETED", "FAILED"].map((s) => (
-                                                                        <SelectItem key={s} value={s} className="text-xs">
-                                                                            {formatDeliveryLogStatusLabel(s, t)}
-                                                                        </SelectItem>
-                                                                    ))}
-                                                                </SelectContent>
-                                                            </Select>
-                                                            <Input
-                                                                value={editMessage}
-                                                                onChange={(e) => setEditMessage(e.target.value)}
-                                                                placeholder={t("admin_log_message", {}, "Message")}
-                                                                className="h-7 text-xs rounded-lg"
-                                                            />
-                                                            <div className="flex gap-1.5">
-                                                                <Button size="sm" className="h-7 text-xs rounded-lg" onClick={handleSaveEditLog} disabled={updateLogMutation.isPending}>
-                                                                    {t("admin_save", {}, "Save")}
-                                                                </Button>
-                                                                <Button size="sm" variant="outline" className="h-7 text-xs rounded-lg" onClick={() => setEditingLogId(null)}>
-                                                                    {t("cancel", {}, "Cancel")}
-                                                                </Button>
-                                                            </div>
+                                                            {formatOrderStatusLabel(next as DeliveryStatus, t)}
+                                                        </Button>
+                                                    ))}
+                                                    {getNextDeliveryStatuses(selectedOrder.deliveryStatus).length === 0 && (
+                                                        <div className="w-full p-4 rounded-xl bg-slate-100 text-slate-500 text-sm flex items-center justify-center gap-2 border border-slate-200 border-dashed">
+                                                            <CheckCircle2 className="h-4 w-4" />
+                                                            {t("admin_order_completed_no_updates", {}, "Order reached final state. No further updates.")}
                                                         </div>
                                                     )}
                                                 </div>
                                             </div>
-                                        );
-                                    })}
+                                        </CardContent>
+                                    </Card>
                                 </div>
-                            )}
 
-                            {showAddForm && (
-                                <div className="border border-border rounded-xl p-3 space-y-2 bg-muted/20">
-                                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                                        {t("admin_add_delivery_log", {}, "Add Delivery Log")}
-                                    </p>
-                                    <Select value={logStatus} onValueChange={setLogStatus}>
-                                        <SelectTrigger className="h-8 text-xs rounded-lg">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {["PENDING", "COMPLETED", "FAILED"].map((s) => (
-                                                <SelectItem key={s} value={s} className="text-xs">
-                                                    {formatDeliveryLogStatusLabel(s, t)}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <Textarea
-                                        value={logMessage}
-                                        onChange={(e) => setLogMessage(e.target.value)}
-                                        placeholder={t("admin_log_message_placeholder", {}, "e.g. Parcel arrived at Hanoi hub")}
-                                        className="min-h-[60px] text-sm rounded-lg"
-                                    />
-                                    <div className="flex gap-1.5">
-                                        <Button size="sm" className="h-8 text-xs rounded-lg" onClick={handleCreateLog} disabled={createLogMutation.isPending}>
-                                            {t("admin_create", {}, "Create")}
-                                        </Button>
-                                        <Button size="sm" variant="outline" className="h-8 text-xs rounded-lg" onClick={() => { setShowAddForm(false); setLogMessage(""); }}>
-                                            {t("cancel", {}, "Cancel")}
-                                        </Button>
-                                    </div>
+                                {/* Sidebar Column: Timeline */}
+                                <div className="space-y-6">
+                                    <Card className="border-none shadow-sm rounded-2xl">
+                                        <CardHeader className="px-6 py-4 border-b border-slate-50 flex flex-row items-center justify-between">
+                                            <CardTitle className="text-base font-bold flex items-center gap-2">
+                                                <ListTodo className="h-5 w-5 text-primary" />
+                                                {t("admin_delivery_timeline", {}, "Timeline")}
+                                            </CardTitle>
+                                            <Button
+                                                variant="secondary"
+                                                size="sm"
+                                                className="h-8 px-3 rounded-lg text-xs gap-1.5"
+                                                onClick={() => setShowAddForm(!showAddForm)}
+                                            >
+                                                <Plus className="h-3.5 w-3.5" />
+                                                {t("admin_add", {}, "Add")}
+                                            </Button>
+                                        </CardHeader>
+                                        <CardContent className="p-6">
+                                            <div className="space-y-6 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-100">
+                                                {deliveryLogs.length === 0 ? (
+                                                    <div className="text-center py-8 text-slate-400 space-y-2">
+                                                        <Clock className="h-8 w-8 mx-auto opacity-20" />
+                                                        <p className="text-sm italic">{t("admin_no_logs", {}, "No activity logs yet")}</p>
+                                                    </div>
+                                                ) : (
+                                                    deliveryLogs.map((log) => {
+                                                        const Icon = stepStatusIcons[log.status] ?? Circle;
+                                                        const colorClass = stepStatusColors[log.status] ?? "text-muted-foreground";
+                                                        return (
+                                                            <div key={log.deliveryLogId} className="relative pl-8 group">
+                                                                <div className={`absolute left-0 top-0.5 w-6 h-6 rounded-full bg-white border-2 border-white shadow-sm flex items-center justify-center z-10 ${colorClass}`}>
+                                                                    <Icon className="h-4 w-4" />
+                                                                </div>
+                                                                <div className="space-y-1.5">
+                                                                    <div className="flex flex-col">
+                                                                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                                                            {new Date(log.createdAt.includes('T') && !log.createdAt.includes('Z') && !log.createdAt.includes('+') ? `${log.createdAt}Z` : log.createdAt).toLocaleString(locale === "vi" ? "vi-VN" : "en-US", { timeZone: "Asia/Ho_Chi_Minh", hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })}
+                                                                        </span>
+                                                                        <div className="flex items-center gap-2">
+                                                                            <span className={`text-xs font-bold ${colorClass}`}>
+                                                                                {formatDeliveryLogStatusLabel(log.status, t)}
+                                                                            </span>
+                                                                        </div>
+                                                                    </div>
+                                                                    {log.message && (
+                                                                        <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-sm text-slate-600">
+                                                                            {log.message}
+                                                                        </div>
+                                                                    )}
+                                                                    <div className="flex gap-3 pt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                        <button
+                                                                            type="button"
+                                                                            className="text-[10px] font-bold text-primary uppercase hover:tracking-wider transition-all"
+                                                                            onClick={() => startEditLog(log)}
+                                                                        >
+                                                                            {t("admin_edit", {}, "Edit")}
+                                                                        </button>
+                                                                        <button
+                                                                            type="button"
+                                                                            className="text-[10px] font-bold text-destructive uppercase hover:tracking-wider transition-all"
+                                                                            onClick={() => setDeleteLogConfirm(log.deliveryLogId)}
+                                                                        >
+                                                                            {t("admin_delete", {}, "Delete")}
+                                                                        </button>
+                                                                    </div>
+
+                                                                    {editingLogId === log.deliveryLogId && (
+                                                                        <div className="mt-3 space-y-2 p-3 bg-white border border-slate-200 rounded-xl shadow-inner">
+                                                                            <Select value={editStatus} onValueChange={setEditStatus}>
+                                                                                <SelectTrigger className="h-9 rounded-lg">
+                                                                                    <SelectValue />
+                                                                                </SelectTrigger>
+                                                                                <SelectContent>
+                                                                                    {["PENDING", "COMPLETED", "FAILED"].map((s) => (
+                                                                                        <SelectItem key={s} value={s} className="text-sm">
+                                                                                            {formatDeliveryLogStatusLabel(s, t)}
+                                                                                        </SelectItem>
+                                                                                    ))}
+                                                                                </SelectContent>
+                                                                            </Select>
+                                                                            <Input
+                                                                                value={editMessage}
+                                                                                onChange={(e) => setEditMessage(e.target.value)}
+                                                                                placeholder={t("admin_log_message", {}, "Message")}
+                                                                                className="h-9 rounded-lg"
+                                                                            />
+                                                                            <div className="flex gap-2">
+                                                                                <Button size="sm" className="flex-1 rounded-lg" onClick={handleSaveEditLog} disabled={updateLogMutation.isPending}>
+                                                                                    {t("admin_save", {}, "Save")}
+                                                                                </Button>
+                                                                                <Button size="sm" variant="ghost" className="flex-1 rounded-lg" onClick={() => setEditingLogId(null)}>
+                                                                                    {t("cancel", {}, "Cancel")}
+                                                                                </Button>
+                                                                            </div>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })
+                                                )}
+                                            </div>
+
+                                            {showAddForm && (
+                                                <div className="mt-8 pt-6 border-t border-slate-100 space-y-4">
+                                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                                        <Plus className="h-3 w-3" />
+                                                        {t("admin_add_log_entry", {}, "New Log Entry")}
+                                                    </p>
+                                                    <div className="space-y-3">
+                                                        <Select value={logStatus} onValueChange={setLogStatus}>
+                                                            <SelectTrigger className="h-10 rounded-xl">
+                                                                <SelectValue />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                {["PENDING", "COMPLETED", "FAILED"].map((s) => (
+                                                                    <SelectItem key={s} value={s}>
+                                                                        {formatDeliveryLogStatusLabel(s, t)}
+                                                                    </SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                        <Textarea
+                                                            value={logMessage}
+                                                            onChange={(e) => setLogMessage(e.target.value)}
+                                                            placeholder={t("admin_log_placeholder", {}, "Enter event details...")}
+                                                            className="min-h-[100px] rounded-xl bg-slate-50 border-slate-200 focus:bg-white transition-colors"
+                                                        />
+                                                        <div className="flex gap-2">
+                                                            <Button className="flex-1 rounded-xl h-11" onClick={handleCreateLog} disabled={createLogMutation.isPending}>
+                                                                {t("admin_create", {}, "Add to Timeline")}
+                                                            </Button>
+                                                            <Button variant="ghost" className="rounded-xl h-11 px-6" onClick={() => { setShowAddForm(false); setLogMessage(""); }}>
+                                                                {t("cancel", {}, "Cancel")}
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </CardContent>
+                                    </Card>
                                 </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                </div>
-            )}
+                            </div>
+                        </div>
+                    ) : adminOrderQuery.isLoading ? (
+                        <div className="space-y-8 animate-pulse">
+                            <div className="h-20 bg-slate-100 rounded-2xl w-full" />
+                            <div className="grid lg:grid-cols-3 gap-8">
+                                <div className="lg:col-span-2 h-96 bg-slate-100 rounded-2xl" />
+                                <div className="h-96 bg-slate-100 rounded-2xl" />
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="py-20 text-center space-y-4">
+                            <Package className="h-16 w-16 mx-auto text-slate-200" />
+                            <p className="text-slate-500 font-medium">{t("order_not_found", {}, "Order not found or access denied")}</p>
+                            <Button onClick={() => setSelectedOrderId(null)}>{t("admin_back_to_list", {}, "Back to List")}</Button>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
 
             <ConfirmDialog
                 open={deleteLogConfirm !== null}
                 onOpenChange={(open) => { if (!open) setDeleteLogConfirm(null); }}
                 onConfirm={() => {
-                    if (deleteLogConfirm) deleteLogMutation.mutate(deleteLogConfirm);
+                    if (deleteLogConfirm && selectedOrderId) {
+                        deleteLogMutation.mutate({ deliveryLogId: deleteLogConfirm, orderId: selectedOrderId });
+                    }
                     setDeleteLogConfirm(null);
                 }}
                 title={t("admin_confirm_delete_log", {}, "Delete this log entry?")}
