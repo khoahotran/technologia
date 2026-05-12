@@ -55,8 +55,8 @@ export function Subscribe({ variant = "default", className }: SubscribeProps) {
     <section className={cn("container mx-auto px-4 py-12", className)}>
       <div
         className={cn(
-          "flex flex-col lg:flex-row items-center justify-between gap-8 bg-[#8AB0C3] p-8 md:p-12",
-          variant === "rounded" ? "rounded-[32px]" : "rounded-none"
+          "flex flex-col lg:flex-row items-center justify-between gap-8 bg-secondary p-8 md:p-12",
+          variant === "rounded" ? "rounded-4xl" : "rounded-none"
         )}
       >
         <div className="flex items-start gap-6 max-w-xl">

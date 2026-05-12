@@ -71,7 +71,7 @@ export default function Banner() {
 
   return (
     <section className="container mx-auto px-4 py-6">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-auto lg:h-[400px]">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-auto lg:h-banner-lg">
         {/* 1. Carousel Chính - Chiếm 2/3 bề rộng trên màn hình lớn */}
         <div className="lg:col-span-2 h-full">
           <Carousel
@@ -95,7 +95,7 @@ export default function Banner() {
                       {/* Overlay for readability */}
                       <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/40 to-transparent"></div>
 
-                      <CardContent className="flex flex-col justify-center h-[400px] p-12 relative z-10">
+                      <CardContent className="flex flex-col justify-center h-banner-lg p-12 relative z-10">
                         <div className="max-w-md space-y-4">
                           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 leading-tight">
                             {slide.title}

@@ -150,7 +150,7 @@ export default function RegisterClient() {
                             target="_blank"
                             rel="noopener noreferrer"
                             aria-label="Facebook"
-                            className="bg-[#1877F2] p-3 rounded-lg hover:opacity-80 transition-opacity"
+                            className="bg-facebook p-3 rounded-lg hover:opacity-80 transition-opacity"
                         >
                             <Facebook className="h-6 w-6" fill="white" />
                         </a>
@@ -159,7 +159,7 @@ export default function RegisterClient() {
                             target="_blank"
                             rel="noopener noreferrer"
                             aria-label="Youtube"
-                            className="bg-[#FF0000] p-3 rounded-lg hover:opacity-80 transition-opacity"
+                            className="bg-youtube p-3 rounded-lg hover:opacity-80 transition-opacity"
                         >
                             <Youtube className="h-6 w-6" fill="white" />
                         </a>
@@ -168,7 +168,7 @@ export default function RegisterClient() {
                             target="_blank"
                             rel="noopener noreferrer"
                             aria-label="Instagram"
-                            className="bg-gradient-to-br from-[#833AB4] via-[#FD1D1D] to-[#F77737] p-3 rounded-lg hover:opacity-80 transition-opacity"
+                            className="bg-gradient-to-br from-instagram-start via-instagram-middle to-instagram-end p-3 rounded-lg hover:opacity-80 transition-opacity"
                         >
                             <Instagram className="h-6 w-6" fill="white" />
                         </a>
@@ -177,7 +177,7 @@ export default function RegisterClient() {
                             target="_blank"
                             rel="noopener noreferrer"
                             aria-label="Linkedin"
-                            className="bg-[#0A66C2] p-3 rounded-lg hover:opacity-80 transition-opacity"
+                            className="bg-linkedin p-3 rounded-lg hover:opacity-80 transition-opacity"
                         >
                             <Linkedin className="h-6 w-6" fill="white" />
                         </a>

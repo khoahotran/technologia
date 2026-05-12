@@ -27,7 +27,7 @@ interface OrderCardProps {
 
 function getStatusColor(status: DeliveryStatus) {
     if (status === "DELIVERED") return "bg-[#EB8435] text-white";
-    return "bg-[#8AB0C3] text-white";
+    return "bg-secondary text-white";
 }
 
 export function OrderCard({ orderId, items, status, className, isAdmin }: OrderCardProps) {
@@ -47,7 +47,7 @@ export function OrderCard({ orderId, items, status, className, isAdmin }: OrderC
     };
 
     return (
-        <div className={cn("bg-white rounded-lg border border-[#D3E4F4] overflow-hidden flex flex-col", className)}>
+        <div className={cn("bg-white rounded-lg border border-accent overflow-hidden flex flex-col", className)}>
             <Link
                 href={isAdmin ? `/admin/orders?search=${orderId}` : `/orders/${orderId}`}
                 className={cn(
@@ -69,14 +69,14 @@ export function OrderCard({ orderId, items, status, className, isAdmin }: OrderC
             </div>
 
             {isAdmin && nextOptions.length > 0 && (
-                <div className="p-3 bg-gray-50 border-t border-[#D3E4F4] flex flex-wrap gap-2">
+                <div className="p-3 bg-gray-50 border-t border-accent flex flex-wrap gap-2">
                     {nextOptions.map((option) => (
                         <button
                             key={option}
                             onClick={() => handleUpdateStatus(option)}
                             disabled={updateStatusMutation.isPending}
                             className={cn(
-                                "text-[10px] font-bold px-2 py-1 rounded transition-colors uppercase",
+                                "text-tiny font-bold px-2 py-1 rounded transition-colors uppercase",
                                 option === "CANCELED"
                                     ? "bg-red-50 text-red-600 hover:bg-red-100 border border-red-200"
                                     : "bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-200"
@@ -118,14 +118,14 @@ export function OrderCategory({ title, icon, count, orders, isAdmin }: OrderCate
     return (
         <div className="space-y-4">
             <div className="flex flex-col items-center gap-3 text-center">
-                <div className="w-[110px] h-[110px] bg-[#EFF4F9] border border-[#8AB0C3] rounded-xl flex items-center justify-center">
+                <div className="w-[110px] h-[110px] bg-[#EFF4F9] border border-secondary rounded-xl flex items-center justify-center">
                     {icon}
                 </div>
                 <div>
-                    <h3 className="text-[28px] font-semibold text-[#1E1E1E] leading-tight">{title}</h3>
+                    <h3 className="text-[28px] font-semibold text-foreground leading-tight">{title}</h3>
                     {count !== undefined && (
                         <div className="flex items-center justify-center gap-2 mt-2">
-                            <span className="text-sm text-[#556070]">{t("orders_label", {}, "Orders")}</span>
+                            <span className="text-sm text-muted-foreground">{t("orders_label", {}, "Orders")}</span>
                             <span className="w-6 h-6 rounded-full bg-[#EB8435] text-white text-xs font-semibold flex items-center justify-center">
                                 {count}
                             </span>
@@ -147,7 +147,7 @@ export function OrderCategory({ title, icon, count, orders, isAdmin }: OrderCate
             </div>
 
             {/* {orders.length > 4 && (
-                <Link href="/orders" className="inline-block text-sm text-[#3E93B3] hover:underline font-medium">
+                <Link href="/orders" className="inline-block text-sm text-primary hover:underline font-medium">
                     {t("view_more", {}, "View more")}
                 </Link>
             )} */}

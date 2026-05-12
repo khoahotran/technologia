@@ -45,6 +45,7 @@ import {
 import type { Brand, Category, Product } from "@/features/products/types";
 import { useLanguage } from "@/providers/language.provider";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function currencyVnd(value: number, locale: string, t?: (key: string, r?: any, d?: string) => string) {
     const formatted = new Intl.NumberFormat(locale === "vi" ? "vi-VN" : "en-US").format(value);
     const unit = t ? t("currency_vnd") : "VND";
@@ -112,7 +113,7 @@ function ProductTile({
 
             {status === "AVAILABLE" && (
                 <div className="absolute top-3 right-3 z-10">
-                    <Badge variant="secondary" className="rounded-full px-2.5 text-[10px] font-semibold">
+                    <Badge variant="secondary" className="rounded-full px-2.5 text-tiny font-semibold">
                         {t("product_status_available")}
                     </Badge>
                 </div>
@@ -120,7 +121,7 @@ function ProductTile({
 
             {(status === "OUT_OF_STOCK" || status === "DISCONTINUED") && (
                 <div className="absolute top-3 right-3 z-10">
-                    <Badge variant="destructive" className="rounded-full px-2.5 text-[10px]">
+                    <Badge variant="destructive" className="rounded-full px-2.5 text-tiny">
                         {t(`product_status_${status.toLowerCase()}`)}
                     </Badge>
                 </div>
@@ -128,7 +129,7 @@ function ProductTile({
 
             {(status === "DRAFT" || status === "PENDING_REVIEW") && (
                 <div className="absolute top-3 right-3 z-10">
-                    <Badge variant="outline" className="rounded-full px-2.5 text-[10px]">
+                    <Badge variant="outline" className="rounded-full px-2.5 text-tiny">
                         {t(`product_status_${status.toLowerCase()}`)}
                     </Badge>
                 </div>
@@ -219,7 +220,7 @@ function getPaginationItems(current: number, last: number): (number | "...")[] {
 }
 
 export default function AdminProductsClient() {
-    const { t, locale } = useLanguage();
+    const { t } = useLanguage();
     const [page, setPage] = useState(0);
     const [search, setSearch] = useState("");
     const [categoryId, setCategoryId] = useState<string>("all");
@@ -485,7 +486,7 @@ export default function AdminProductsClient() {
 
             <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
                 <div>
-                    <p className="text-[10px] font-medium text-muted-foreground mb-1 uppercase tracking-wider">
+                    <p className="text-tiny font-medium text-muted-foreground mb-1 uppercase tracking-wider">
                         {t("admin_filter_category")}
                     </p>
                     <Select value={categoryId} onValueChange={setCategoryId}>
@@ -504,7 +505,7 @@ export default function AdminProductsClient() {
                     </Select>
                 </div>
                 <div>
-                    <p className="text-[10px] font-medium text-muted-foreground mb-1 uppercase tracking-wider">
+                    <p className="text-tiny font-medium text-muted-foreground mb-1 uppercase tracking-wider">
                         {t("admin_filter_brand")}
                     </p>
                     <Select value={brandId} onValueChange={setBrandId}>
@@ -523,7 +524,7 @@ export default function AdminProductsClient() {
                     </Select>
                 </div>
                 <div>
-                    <p className="text-[10px] font-medium text-muted-foreground mb-1 uppercase tracking-wider">
+                    <p className="text-tiny font-medium text-muted-foreground mb-1 uppercase tracking-wider">
                         {t("admin_filter_min_price")}
                     </p>
                     <Select value={minPrice} onValueChange={setMinPrice}>
@@ -540,7 +541,7 @@ export default function AdminProductsClient() {
                     </Select>
                 </div>
                 <div>
-                    <p className="text-[10px] font-medium text-muted-foreground mb-1 uppercase tracking-wider">
+                    <p className="text-tiny font-medium text-muted-foreground mb-1 uppercase tracking-wider">
                         {t("admin_filter_max_price")}
                     </p>
                     <Select value={maxPrice} onValueChange={setMaxPrice}>
@@ -557,7 +558,7 @@ export default function AdminProductsClient() {
                     </Select>
                 </div>
                 <div>
-                    <p className="text-[10px] font-medium text-muted-foreground mb-1 uppercase tracking-wider">
+                    <p className="text-tiny font-medium text-muted-foreground mb-1 uppercase tracking-wider">
                         {t("admin_filter_order")}
                     </p>
                     <Select value={sortBy} onValueChange={setSortBy}>

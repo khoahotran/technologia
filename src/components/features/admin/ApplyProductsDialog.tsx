@@ -94,7 +94,7 @@ export function ApplyProductsDialog({
                     </Button>
                 </div>
 
-                <div className="max-h-[300px] overflow-y-auto space-y-2">
+                <div className="max-h-banner-sm overflow-y-auto space-y-2">
                     {mode === "brands" ? (
                         brands.length === 0 ? (
                             <p className="text-sm text-muted-foreground text-center py-4">

@@ -303,7 +303,7 @@ export default function Header({ variant = "default" }: HeaderProps) {
                 <Link href="/cart" className="relative cursor-pointer group" aria-label={t('header_cart_aria', {}, "Open shopping cart")}>
                   <ShoppingCart className="h-6 w-6 text-gray-700 group-hover:text-primary transition-colors" />
                   {(cart?.totalItems ?? 0) > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 bg-primary text-primary-foreground text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1 leading-none shadow-sm">
+                    <span className="absolute -top-1.5 -right-1.5 bg-primary text-primary-foreground text-tiny font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1 leading-none shadow-sm">
                       {cart!.totalItems! > 99 ? "99+" : cart!.totalItems}
                     </span>
                   )}

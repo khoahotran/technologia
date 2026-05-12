@@ -44,7 +44,7 @@ export function TopProducts({ title, className }: TopProductsProps) {
           {/* Vùng xương hiển thị (Loading Skeleton) mô phỏng cấu trúc lưới dạng 4 cột */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-[300px] bg-gray-100 animate-pulse rounded-lg"></div>
+              <div key={i} className="h-banner-sm bg-gray-100 animate-pulse rounded-lg"></div>
             ))}
           </div>
         </div>

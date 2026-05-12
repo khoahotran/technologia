@@ -3,6 +3,11 @@
 import { CirclePlus, Percent, PencilLine, Tag, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import { ApplyProductsDialog } from "@/components/features/admin/ApplyProductsDialog";
+import { DiscountFormDialog } from "@/components/features/admin/DiscountFormDialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
     Pagination,
     PaginationContent,
@@ -12,12 +17,7 @@ import {
     PaginationNext,
     PaginationPrevious,
 } from "@/components/ui/pagination";
-import { Button } from "@/components/ui/button";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
-import { DiscountFormDialog } from "@/components/features/admin/DiscountFormDialog";
-import { ApplyProductsDialog } from "@/components/features/admin/ApplyProductsDialog";
 import {
     useCreateDiscountAdmin,
     useDeleteDiscountAdmin,
@@ -44,6 +44,7 @@ function getPaginationItems(current: number, last: number): (number | "...")[] {
     return items;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function formatCurrency(value: number, locale: string, t: (key: string, r?: any, d?: string) => string) {
     const formatted = new Intl.NumberFormat(locale === "vi" ? "vi-VN" : "en-US").format(value);
     return `${formatted} ${t("currency_vnd", {}, "VND")}`;
@@ -63,7 +64,7 @@ function formatDate(iso?: string, locale?: string): string {
 export default function DiscountClient() {
     const { t, locale } = useLanguage();
     const [page, setPage] = useState(0);
-    const [sortBy, setSortBy] = useState("createdAt");
+    const [sortBy, _setSortBy] = useState("createdAt");
     const size = 10;
 
     const params = { page, size, sortBy, sortDirection: "DESC" as const };
@@ -222,7 +223,7 @@ export default function DiscountClient() {
                                         <td className="py-3 px-4 text-center hidden sm:table-cell">
                                             <Badge
                                                 variant={discount.isActive ? "default" : "secondary"}
-                                                className="rounded-full text-[10px] px-2.5"
+                                                className="rounded-full text-tiny px-2.5"
                                             >
                                                 {discount.isActive
                                                     ? t("active", {}, "Active")

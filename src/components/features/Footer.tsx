@@ -97,13 +97,13 @@ export default function Footer() {
               {/* <div className="flex space-x-4 pt-2">
                 <div className="border rounded-md px-3 py-1.5 flex items-center space-x-2 cursor-pointer hover:bg-gray-50">
                   <div className="text-xs">
-                    <p className="text-[10px] leading-none text-gray-500">{t('footer_download_on', {}, "Download on")}</p>
+                    <p className="text-tiny leading-none text-gray-500">{t('footer_download_on', {}, "Download on")}</p>
                     <p className="font-semibold leading-tight text-gray-800">Google Play</p>
                   </div>
                 </div>
                 <div className="border rounded-md px-3 py-1.5 flex items-center space-x-2 cursor-pointer hover:bg-gray-50">
                   <div className="text-xs">
-                    <p className="text-[10px] leading-none text-gray-500">{t('footer_download_on', {}, "Download on")}</p>
+                    <p className="text-tiny leading-none text-gray-500">{t('footer_download_on', {}, "Download on")}</p>
                     <p className="font-semibold leading-tight text-gray-800">Amazon.com</p>
                   </div>
                 </div>

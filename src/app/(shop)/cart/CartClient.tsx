@@ -119,11 +119,11 @@ export default function CartClient() {
                 setAppliedDiscount(discount);
                 toast.success(t('promo_applied', { code: promoCode }, `Promo code ${promoCode} applied!`));
             } else {
-                toast.error(t('promo_invalid', {}, "Invalid promo code"));
+                toast.error(t('promo_invalid'));
                 setAppliedDiscount(null);
             }
         } catch {
-            toast.error(t('promo_error', {}, "Failed to verify promo code"));
+            toast.error(t('promo_error'));
         } finally {
             setIsCalculating(false);
         }
@@ -246,11 +246,11 @@ export default function CartClient() {
                         <div className="bg-card p-4 rounded-lg border border-border space-y-4">
                             <div className="flex items-center gap-2 text-foreground font-medium">
                                 <Ticket className="h-5 w-5 text-primary" />
-                                <span>{t('promo_code', {}, "Promo Code")}</span>
+                                <span>{t('promo_code')}</span>
                             </div>
                             <div className="flex gap-2">
                                 <Input
-                                    placeholder={t('enter_code', {}, "Enter code")}
+                                    placeholder={t('enter_code')}
                                     value={promoCode}
                                     onChange={(e) => setPromoCode(e.target.value)}
                                     className="min-h-11"
@@ -306,11 +306,11 @@ export default function CartClient() {
                                                     <span className="font-bold text-sm text-gray-900 group-hover:text-primary transition-colors truncate">
                                                         {discount.code}
                                                     </span>
-                                                    {discount.scope === "USER_SPECIFIC" && (
-                                                        <span className="text-[10px] font-semibold text-purple-600 bg-purple-100 px-1.5 py-0.5 rounded shrink-0">
+                                                    {/* {discount.scope === "USER_SPECIFIC" && (
+                                                        <span className="text-tiny font-semibold text-purple-600 bg-purple-100 px-1.5 py-0.5 rounded shrink-0">
                                                             {t('your_discount_badge', {}, "For you")}
                                                         </span>
-                                                    )}
+                                                    )} */}
                                                 </div>
                                                 {discount.discountValue > 0 && (
                                                     <span className="text-xs font-bold bg-primary/10 text-primary px-2 py-0.5 rounded shrink-0">

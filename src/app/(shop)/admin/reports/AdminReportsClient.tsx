@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowDown, ArrowUp, BarChart3, ChevronLeft, ChevronRight, Download, ExternalLink, FileText, ListChecks, Search, TrendingUp } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,7 +30,6 @@ import { useAdminOrders } from "@/features/orders/hooks";
 import { truncateId } from "@/features/orders/presentation";
 import { useProducts } from "@/features/products/hooks";
 import { useLanguage } from "@/providers/language.provider";
-import { useEffect } from "react";
 
 const reportTypeOptions: Array<{ value: "all" | ReportType; label: string }> = [
     { value: "all", label: "admin_status_all" },
@@ -40,11 +39,11 @@ const reportTypeOptions: Array<{ value: "all" | ReportType; label: string }> = [
 
 const entityTypeOptions = [
     { value: "all", label: "admin_status_all" },
-    { value: "ORDER", label: "admin_nav_order_management" },
-    { value: "PRODUCT", label: "admin_nav_product_management" },
+    { value: "ORDER", label: "admin_orders" },
+    { value: "PRODUCT", label: "admin_products" },
     { value: "CATEGORY", label: "admin_categories" },
     { value: "BRAND", label: "admin_brands" },
-    { value: "DISCOUNT", label: "admin_discount_management" },
+    { value: "DISCOUNT", label: "admin_discounts" },
 ];
 
 function getBadgeVariant(type: string | undefined): "info" | "success" | "default" {
@@ -162,7 +161,7 @@ function ReportTable({
                                         {columns.map((col) => (
                                             <td key={col.key} className="py-2.5 px-3 border-r border-border/30 last:border-r-0 whitespace-nowrap">
                                                 {col.key === "reportType" ? (
-                                                    <Badge variant={getBadgeVariant(row[col.key])} className="rounded-full text-[10px] font-medium">
+                                                    <Badge variant={getBadgeVariant(row[col.key])} className="rounded-full text-tiny font-medium">
                                                         {row[col.key] === "MONTHLY_REVENUE"
                                                             ? t("monthly_revenue")
                                                             : t("top_selling_products")}
@@ -262,7 +261,7 @@ export default function AdminReportsClient() {
     const [reportTypeFilter, setReportTypeFilter] = useState<"all" | ReportType>("all");
     const [selectedActionLogId, setSelectedActionLogId] = useState("");
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-    
+
     // Action Log Filters
     const [logPage, setLogPage] = useState(0);
     const [entityTypeFilter, setEntityTypeFilter] = useState<string>("all");
@@ -310,6 +309,7 @@ export default function AdminReportsClient() {
 
     const productPriceMap = useMemo(() => {
         const map = new Map<string, number>();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (productsQuery.data?.items ?? []).forEach(p => map.set(p.productId, p.displayPrice ?? (p as any).price ?? 0));
         return map;
     }, [productsQuery.data?.items]);
@@ -334,6 +334,7 @@ export default function AdminReportsClient() {
         if (ordersQuery.data) {
             const validOrders = orders.filter(o => o.orderDate && !isNaN(new Date(o.orderDate).getTime()));
             const yearOrders = validOrders.filter(o => new Date(o.orderDate).getFullYear() === selectedYear);
+            // eslint-disable-next-line no-console
             console.log("[Revenue Debug]", {
                 totalOrders: orders.length,
                 withOrderDate: validOrders.length,
@@ -354,6 +355,7 @@ export default function AdminReportsClient() {
     const topSellingData = useMemo(() => {
         const counts = new Map<string, { totalSold: number; totalAmount: number; name: string; image?: string }>();
         orders.forEach(o => {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (o.items as any[]).forEach(item => {
                 const pid = item.productId;
                 if (!pid) return;
@@ -406,9 +408,9 @@ export default function AdminReportsClient() {
 
     const monthLabels = useMemo(() =>
         locale === "vi"
-            ? ["T1","T2","T3","T4","T5","T6","T7","T8","T9","T10","T11","T12"]
-            : ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
-    , [locale]);
+            ? ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10", "T11", "T12"]
+            : ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+        , [locale]);
 
     const isLoading = reportQuery.isLoading || actionLogQuery.isLoading;
 
@@ -450,7 +452,7 @@ export default function AdminReportsClient() {
                             <Button
                                 size="sm"
                                 variant="secondary"
-                                className="h-7 text-[10px] gap-1.5 rounded-full px-3"
+                                className="h-7 text-tiny gap-1.5 rounded-full px-3"
                                 onClick={handleCreateTopSellingReport}
                                 disabled={createTopSellingReport.isPending || topSellingData.length === 0}
                             >
@@ -490,9 +492,10 @@ export default function AdminReportsClient() {
                                                 <td className="py-2 px-2 text-muted-foreground font-mono">{i + 1}</td>
                                                 <td className="py-2 px-2">
                                                     {d.image ? (
+                                                        // eslint-disable-next-line @next/next/no-img-element
                                                         <img src={d.image} alt="" className="w-8 h-8 rounded object-cover border" />
                                                     ) : (
-                                                        <div className="w-8 h-8 rounded bg-muted flex items-center justify-center text-muted-foreground text-[10px] font-bold border">
+                                                        <div className="w-8 h-8 rounded bg-muted flex items-center justify-center text-muted-foreground text-tiny font-bold border">
                                                             {(d.name ?? "?").charAt(0).toUpperCase()}
                                                         </div>
                                                     )}
@@ -527,7 +530,7 @@ export default function AdminReportsClient() {
                                     >
                                         <ChevronLeft className="h-3 w-3" />
                                     </button>
-                                    <span className="text-[10px] font-bold px-1 min-w-[34px] text-center">{selectedYear}</span>
+                                    <span className="text-tiny font-bold px-1 min-w-[34px] text-center">{selectedYear}</span>
                                     <button
                                         type="button"
                                         className="p-1 hover:text-primary transition-colors disabled:opacity-30"
@@ -540,12 +543,12 @@ export default function AdminReportsClient() {
                                 <Button
                                     size="sm"
                                     variant="secondary"
-                                    className="h-7 text-[10px] gap-1.5 rounded-full px-3"
+                                    className="h-7 text-tiny gap-1.5 rounded-full px-3"
                                     onClick={handleCreateMonthlyReport}
                                     disabled={createMonthlyReport.isPending || orders.length === 0}
                                 >
                                     <Download className="h-3 w-3" />
-{t("admin_generate_report")}
+                                    {t("admin_generate_report")}
                                 </Button>
                             </div>
                         </div>
@@ -587,7 +590,7 @@ export default function AdminReportsClient() {
                                 </div>
                                 <div className="flex justify-between items-center pt-2 border-t border-border/30">
                                     <div className="flex flex-col">
-                                        <span className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider">
+                                        <span className="text-tiny text-muted-foreground uppercase font-bold tracking-wider">
                                             {t("admin_total_year_revenue")}
                                         </span>
                                         <span className="text-sm font-black text-primary">
@@ -595,14 +598,14 @@ export default function AdminReportsClient() {
                                         </span>
                                     </div>
                                     <div className="flex flex-col items-end gap-0.5">
-                                        <span className="text-[10px] text-muted-foreground italic">
+                                        <span className="text-tiny text-muted-foreground italic">
                                             {orders.length} {t("admin_orders_analyzed")}
                                         </span>
-                                        {orders.length > 0 && revenueData.every(d => d.revenue === 0) && (
-                                            <span className="text-[9px] text-destructive font-medium">
+                                        {/* {orders.length > 0 && revenueData.every(d => d.revenue === 0) && (
+                                            <span className="text-tiny text-destructive font-medium">
                                                 {t("admin_revenue_debug")}
                                             </span>
-                                        )}
+                                        )} */}
                                     </div>
                                 </div>
                             </div>
@@ -651,7 +654,7 @@ export default function AdminReportsClient() {
                 <CardContent className="space-y-4">
                     <div className="flex flex-wrap items-center gap-3 bg-muted/30 p-3 rounded-xl border border-border/50">
                         <div className="w-full sm:w-40">
-                            <label className="text-[10px] font-bold text-muted-foreground uppercase ml-1 mb-1 block">
+                            <label className="text-tiny font-bold text-muted-foreground uppercase ml-1 mb-1 block">
                                 {t("admin_entity_type")}
                             </label>
                             <Select value={entityTypeFilter} onValueChange={(v) => { setEntityTypeFilter(v); }}>
@@ -670,7 +673,7 @@ export default function AdminReportsClient() {
 
                         <div className="flex-1 min-w-[200px] grid grid-cols-2 gap-2">
                             <div>
-                                <label className="text-[10px] font-bold text-muted-foreground uppercase ml-1 mb-1 block">
+                                <label className="text-tiny font-bold text-muted-foreground uppercase ml-1 mb-1 block">
                                     {t("from_date")}
                                 </label>
                                 <Input
@@ -681,7 +684,7 @@ export default function AdminReportsClient() {
                                 />
                             </div>
                             <div>
-                                <label className="text-[10px] font-bold text-muted-foreground uppercase ml-1 mb-1 block">
+                                <label className="text-tiny font-bold text-muted-foreground uppercase ml-1 mb-1 block">
                                     {t("to_date")}
                                 </label>
                                 <Input
@@ -694,8 +697,8 @@ export default function AdminReportsClient() {
                         </div>
 
                         <div className="flex items-end h-9 pt-5 gap-2">
-                            <Button 
-                                size="sm" 
+                            <Button
+                                size="sm"
                                 onClick={() => {
                                     setCommittedEntityType(entityTypeFilter);
                                     setCommittedFromDate(fromDate);
@@ -707,9 +710,9 @@ export default function AdminReportsClient() {
                                 {t("admin_run")}
                             </Button>
                             {(entityTypeFilter !== "all" || fromDate || toDate) && (
-                                <Button 
-                                    variant="ghost" 
-                                    size="sm" 
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
                                     onClick={() => {
                                         setEntityTypeFilter("all");
                                         setFromDate("");
@@ -765,7 +768,7 @@ export default function AdminReportsClient() {
                                                     <td className="py-2.5 px-3">{row.action}</td>
                                                     <td className="py-2.5 px-3 text-muted-foreground">{row.createdDate}</td>
                                                     <td className="py-2.5 px-3">
-                                                        <Badge variant="outline" className="rounded-full text-[10px] font-normal">
+                                                        <Badge variant="outline" className="rounded-full text-tiny font-normal">
                                                             {row.entityType}
                                                         </Badge>
                                                     </td>
@@ -794,8 +797,8 @@ export default function AdminReportsClient() {
                                             {[...Array(actionLogQuery.data.totalPages)].map((_, i) => {
                                                 // Simple pagination: show current, first, last, and neighbors
                                                 if (
-                                                    i === 0 || 
-                                                    i === actionLogQuery.data!.totalPages - 1 || 
+                                                    i === 0 ||
+                                                    i === actionLogQuery.data!.totalPages - 1 ||
                                                     (i >= logPage - 1 && i <= logPage + 1)
                                                 ) {
                                                     return (
@@ -847,7 +850,7 @@ export default function AdminReportsClient() {
                                 <div className="space-y-1">
                                     <div className="flex items-center gap-2">
                                         <span className="font-medium text-foreground">{t("admin_action_log_detail")}:</span>
-                                        <Badge variant="secondary" className="rounded-full text-[10px]">{actionLogDetailQuery.data.action}</Badge>
+                                        <Badge variant="secondary" className="rounded-full text-tiny">{actionLogDetailQuery.data.action}</Badge>
                                     </div>
                                     <p className="text-muted-foreground pl-0">{actionLogDetailQuery.data.note}</p>
                                     <p className="text-xs text-muted-foreground pl-0">

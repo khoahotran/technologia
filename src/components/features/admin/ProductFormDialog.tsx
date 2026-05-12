@@ -97,6 +97,7 @@ export function ProductFormDialog({
             setForm({
                 name: product.name ?? "",
                 description: product.description ?? "",
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 displayPrice: product.displayPrice ?? (product as any).price ?? 0,
                 brandId: product.brandId ? Number(product.brandId) : brands.find((b) => String(b.name).trim().toLowerCase() === String(product.brandName ?? product.brand).trim().toLowerCase())?.brandId as number | undefined,
                 categoryId: product.categoryId ? Number(product.categoryId) : categories.find((c) => String(c.name).trim().toLowerCase() === String(product.category).trim().toLowerCase())?.categoryId as number | undefined,
@@ -104,6 +105,7 @@ export function ProductFormDialog({
             });
             setVariantRows((product.variants ?? []).map(v => {
                 const entry: ProductVariantEntry = {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     variantCode: (v as any).variantCode ?? `VAR-${Date.now()}`,
                     price: v.price ?? 0,
                     stock: v.stock ?? 0,
@@ -401,6 +403,7 @@ export function ProductFormDialog({
                                             {vr.images.map((img, imgIdx) => (
                                                 <img
                                                     key={imgIdx}
+                                                     
                                                     src={img}
                                                     alt=""
                                                     className="w-full h-auto max-h-32 object-contain rounded-lg"
@@ -414,6 +417,7 @@ export function ProductFormDialog({
                                     ) : null}
                                     {vr.variantId && pendingUploads[vr.variantId] && (
                                         <div className="flex flex-wrap gap-2">
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
                                             <img
                                                 src={pendingUploads[vr.variantId]!.previewUrl}
                                                 alt="Preview"
