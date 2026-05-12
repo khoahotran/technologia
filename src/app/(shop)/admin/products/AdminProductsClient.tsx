@@ -2,7 +2,7 @@
 
 import { Bell, CirclePlus, Search, SlidersHorizontal, Smartphone, Star, Tag, X } from "lucide-react";
 import Image from "next/image";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import type { ProductFormData, ProductFormMode } from "@/components/features/admin/ProductFormDialog";
@@ -227,7 +227,8 @@ export default function AdminProductsClient() {
     const [brandId, setBrandId] = useState<string>("all");
     const [minPrice, setMinPrice] = useState<string>("0");
     const [maxPrice, setMaxPrice] = useState<string>("100000000");
-    const [sortBy, setSortBy] = useState<string>("displayPrice");
+    const [sortBy, setSortBy] = useState<string>("created_at");
+    const [sortDirection, setSortDirection] = useState<"ASC" | "DESC">("DESC");
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
     const [menuOpenFor, setMenuOpenFor] = useState<string | null>(null);
     const [uploadTarget, setUploadTarget] = useState<{ productId: string; variantId: string } | null>(null);
@@ -259,7 +260,7 @@ export default function AdminProductsClient() {
         minPrice: Number(minPrice),
         maxPrice: Number(maxPrice),
         sortBy,
-        sortDirection: "DESC" as const,
+        sortDirection,
     };
 
     const definedParams = Object.fromEntries(
@@ -298,6 +299,11 @@ export default function AdminProductsClient() {
         deleteProductVariantMutation.isPending ||
         addVariantImageMutation.isPending ||
         applyDiscountMutation.isPending;
+
+    // Reset page when filters or sorting change
+    useEffect(() => {
+        setPage(0);
+    }, [search, categoryId, brandId, minPrice, maxPrice, sortBy, sortDirection]);
 
     const toggleProduct = (id: string) => {
         setSelectedIds((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
@@ -484,7 +490,7 @@ export default function AdminProductsClient() {
                 />
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
                 <div>
                     <p className="text-tiny font-medium text-muted-foreground mb-1 uppercase tracking-wider">
                         {t("admin_filter_category")}
@@ -566,8 +572,23 @@ export default function AdminProductsClient() {
                             <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="displayPrice">{t("admin_price")}</SelectItem>
-                            <SelectItem value="createdAt">{t("admin_order_created_date")}</SelectItem>
+                            <SelectItem value="display_price">{t("admin_price")}</SelectItem>
+                            <SelectItem value="created_at">{t("admin_created_date")}</SelectItem>
+                            <SelectItem value="average_rating">{t("admin_rating")}</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div>
+                    <p className="text-tiny font-medium text-muted-foreground mb-1 uppercase tracking-wider">
+                        {t("admin_filter_direction")}
+                    </p>
+                    <Select value={sortDirection} onValueChange={(val: "ASC" | "DESC") => setSortDirection(val)}>
+                        <SelectTrigger className="h-9 text-xs gap-1 px-2.5">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="ASC">{t("admin_sort_asc")}</SelectItem>
+                            <SelectItem value="DESC">{t("admin_sort_desc")}</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>

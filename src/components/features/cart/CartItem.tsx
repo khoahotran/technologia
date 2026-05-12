@@ -25,7 +25,7 @@ interface CartItemProps {
   /** Đường dẫn ảnh sản phẩm */
   image: string
   /** Mã sản phẩm (SKU) */
-  productCode?: string
+  // productCode?: string
   /** Số lượng đang chọn mua */
   quantity: number
   /** Trạng thái mục này có đang được chọn để thanh toán hay không */
@@ -43,7 +43,7 @@ export function CartItem({
   title,
   price,
   image,
-  productCode,
+  // productCode,
   quantity,
   isSelected,
   onQuantityChange,
@@ -52,7 +52,7 @@ export function CartItem({
 }: CartItemProps) {
   const { t, locale } = useLanguage()
   const currentLocale = locale === 'vi' ? 'vi-VN' : 'en-US';
-  const displayProductCode = productCode || t('product_code', {}, "PRODUCT CODE")
+  // const displayProductCode = productCode || t('product_code', {}, "PRODUCT CODE")
 
   return (
     <div className="flex items-start gap-3 sm:gap-4 bg-card p-4 rounded-lg border border-border">

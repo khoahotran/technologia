@@ -6,14 +6,14 @@
  * Truy xuất danh sách sản phẩm và hiển thị dưới dạng Carousel (băng chuyền)
  * có tự động trượt, dùng để làm nổi bật các sản phẩm được đánh giá cao hoặc bán chạy.
  */
-import Autoplay from "embla-carousel-autoplay"
+import Autoplay from "embla-carousel-autoplay";
 
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
-} from "@/components/ui/carousel"
-import { ProductCard } from "@/components/ui/product-card"
+} from "@/components/ui/carousel";
+import { ProductCard } from "@/components/ui/product-card";
 import { useProducts } from "@/features/products/hooks";
 import { useLanguage } from "@/providers/language.provider";
 
@@ -33,7 +33,7 @@ export function TopProducts({ title, className }: TopProductsProps) {
   const formatter = new Intl.NumberFormat(currentLocale, { style: 'currency', currency: 'VND' });
   const displayTitle = title || t('top_products', {}, "Top Products");
   // Lấy danh sách 10 sản phẩm có đánh giá trung bình cao nhất
-  const { data, isLoading } = useProducts({ page: 0, size: 10, sortBy: "averageRating", sortDirection: "DESC" });
+  const { data, isLoading } = useProducts({ page: 0, size: 10, sortBy: "average_rating", sortDirection: "DESC" });
   const products = data?.items ?? [];
 
   if (isLoading) {
