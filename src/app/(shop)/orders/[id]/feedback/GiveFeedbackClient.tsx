@@ -4,6 +4,7 @@ import { useQueries } from "@tanstack/react-query";
 import { ArrowLeft, Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -48,6 +49,7 @@ function toFeedbackItem(item: unknown, index: number): FeedbackItem {
 
 export default function GiveFeedbackClient({ id }: { id: string }) {
     const { t } = useLanguage();
+    const router = useRouter();
     const { data: order, isLoading, isError, error } = useOrder(id);
     const feedbackQuery = useOrderFeedbacks(id, Boolean(id));
     const submitFeedback = useSubmitOrderFeedback();
@@ -70,16 +72,27 @@ export default function GiveFeedbackClient({ id }: { id: string }) {
     }, [feedbackQuery.data]);
 
     useEffect(() => {
+        if (feedbackItems.length === 0 || feedbackQuery.isLoading) return;
+
+        const initialRatings: Record<string, number> = {};
+        const initialComments: Record<string, string> = {};
+        let hasChanges = false;
+
         feedbackItems.forEach((item) => {
             if (!item.orderItemId) return;
             const existing = existingFeedbackByOrderItemId.get(item.orderItemId);
-            if (!existing) return;
-            if (!(item.key in localRatings)) {
-                setLocalRatings((prev) => ({ ...prev, [item.key]: existing.rating }));
-                setLocalComments((prev) => ({ ...prev, [item.key]: existing.comment }));
+            if (existing && !(item.key in localRatings)) {
+                initialRatings[item.key] = existing.rating;
+                initialComments[item.key] = existing.comment;
+                hasChanges = true;
             }
         });
-    }, [existingFeedbackByOrderItemId, feedbackItems, localRatings]);
+
+        if (hasChanges) {
+            setLocalRatings((prev) => ({ ...prev, ...initialRatings }));
+            setLocalComments((prev) => ({ ...prev, ...initialComments }));
+        }
+    }, [existingFeedbackByOrderItemId, feedbackItems, feedbackQuery.isLoading]);
 
     const hasFeedback = feedbackQuery.data && feedbackQuery.data.length > 0;
 
@@ -150,7 +163,8 @@ export default function GiveFeedbackClient({ id }: { id: string }) {
     const getRating = (key: string) => localRatings[key] ?? existingFeedbackByOrderItemId.get(feedbackItems.find((f) => f.key === key)?.orderItemId ?? "")?.rating ?? 5;
     const getComment = (key: string) => localComments[key] ?? existingFeedbackByOrderItemId.get(feedbackItems.find((f) => f.key === key)?.orderItemId ?? "")?.comment ?? "";
 
-    const isPending = submitFeedback.isPending || updateFeedback.isPending || feedbackQuery.isLoading;
+    const isPending = submitFeedback.isPending || updateFeedback.isPending;
+    const isSubmitting = isPending;
 
     const handleSubmit = () => {
         const payloadItems = feedbackItems.map((item) => ({
@@ -190,6 +204,7 @@ export default function GiveFeedbackClient({ id }: { id: string }) {
                 toast.success(t("feedback_saved", {}, "Feedback saved successfully"));
                 setLocalRatings({});
                 setLocalComments({});
+                router.push(`/orders/${id}`);
             })
             .catch((submitError: unknown) => {
                 toast.error(toErrorMessage(submitError, t("unable_save_feedback", {}, "Unable to save feedback")));
@@ -254,7 +269,8 @@ export default function GiveFeedbackClient({ id }: { id: string }) {
                                                     type="button"
                                                     className="transition-colors hover:scale-110"
                                                     onClick={() => setLocalRatings((prev) => ({ ...prev, [item.key]: star }))}
-                                                    disabled={isPending}
+                                                    disabled={isSubmitting}
+                                                    aria-label={t("rate_n_stars", { count: star }, `Rate ${star} stars`)}
                                                 >
                                                     <Star
                                                         className={`h-8 w-8 ${
@@ -295,7 +311,7 @@ export default function GiveFeedbackClient({ id }: { id: string }) {
                         <Button
                             type="button"
                             onClick={handleSubmit}
-                            disabled={isPending}
+                            disabled={isSubmitting}
                             className="w-72 h-12 bg-secondary hover:bg-[#769BAD] text-white font-semibold disabled:bg-[#BFC7CF]"
                         >
                             {hasFeedback ? t("update_feedback_btn", {}, "Update feedback") : t("add_feedback_btn", {}, "Add feedback")}

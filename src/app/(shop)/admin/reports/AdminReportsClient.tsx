@@ -680,7 +680,7 @@ export default function AdminReportsClient() {
                                     type="date"
                                     value={fromDate}
                                     onChange={(e) => { setFromDate(e.target.value); }}
-                                    className="h-9 rounded-lg bg-background"
+                                    className="h-9 rounded-lg bg-background [&::-webkit-calendar-picker-indicator]:invert"
                                 />
                             </div>
                             <div>
@@ -691,7 +691,7 @@ export default function AdminReportsClient() {
                                     type="date"
                                     value={toDate}
                                     onChange={(e) => { setToDate(e.target.value); }}
-                                    className="h-9 rounded-lg bg-background"
+                                    className="h-9 rounded-lg bg-background [&::-webkit-calendar-picker-indicator]:invert"
                                 />
                             </div>
                         </div>
