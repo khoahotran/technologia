@@ -14,6 +14,7 @@ import type {
 
 import { del, get, patch, post, put } from "@/api/client";
 import type { ApiResponse, PaginatedResponse } from "@/types/api.types";
+import { formatParamsWithDates } from "@/utils";
 
 export async function createMonthlyRevenueReport(
     payload: CreateMonthlyRevenueReportRequest
@@ -42,7 +43,7 @@ export async function getReportById(reportId: string): Promise<ReportResponse> {
 
 export async function getReports(params: ReportQueryParams = {}): Promise<ReportListResponse> {
     const response = await get<PaginatedResponse<ReportResponse>>("/api/admins/reports", {
-        params,
+        params: formatParamsWithDates(params),
     });
     return {
         items: response.data ?? [],
@@ -57,7 +58,7 @@ export async function getAdminActionLogs(
     params: AdminActionLogQueryParams = {}
 ): Promise<AdminActionLogListResponse> {
     const response = await get<PaginatedResponse<AdminActionLogResponse>>("/api/admins/action-logs/filter", {
-        params,
+        params: formatParamsWithDates(params),
     });
     return {
         items: response.data ?? [],
