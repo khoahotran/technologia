@@ -33,7 +33,7 @@ import type {
 
 import { productKeys } from "@/constants/query-keys";
 import { useLanguage } from "@/providers/language.provider";
-import { toErrorMessage } from "@/utils/error-message";
+import { toErrorMessage, isLinkedProductError } from "@/utils/error-message";
 
 export function useProducts(params: ProductSearchParams = {}) {
     return useQuery({
@@ -110,7 +110,11 @@ export function useDeleteBrandAdmin() {
             toast.success(t('admin_brand_deleted_success'));
         },
         onError: (error: unknown) => {
-            toast.error(t(toErrorMessage(error, 'admin_failed_delete_brand')));
+            if (isLinkedProductError(error)) {
+                toast.error(t('admin_brand_delete_linked_error'));
+            } else {
+                toast.error(t(toErrorMessage(error, 'admin_failed_delete_brand')));
+            }
         },
     });
 }
@@ -156,7 +160,11 @@ export function useDeleteCategoryAdmin() {
             toast.success(t('admin_category_deleted_success'));
         },
         onError: (error: unknown) => {
-            toast.error(t(toErrorMessage(error, 'admin_failed_delete_category')));
+            if (isLinkedProductError(error)) {
+                toast.error(t('admin_category_delete_linked_error'));
+            } else {
+                toast.error(t(toErrorMessage(error, 'admin_failed_delete_category')));
+            }
         },
     });
 }

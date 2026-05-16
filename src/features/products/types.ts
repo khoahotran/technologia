@@ -9,6 +9,7 @@ export const ProductVariantSchema = z.object({
     storage: z.string().optional(),
     stock: z.number(),
     price: z.number(),
+    priceAfterDiscount: z.number().optional(),
     images: z.array(z.string()),
 });
 

@@ -40,6 +40,7 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
     const { isAuthenticated } = useAuth();
     const router = useRouter();
     const [selectedImage, setSelectedImage] = useState<{ productId: string; image: string } | null>(null);
+    const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
     const [activeTab, setActiveTab] = useState<TabKey>("details");
     const [showFullDesc, setShowFullDesc] = useState(false);
 
@@ -76,12 +77,14 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
         );
     }
 
-    const images = product.variants?.[0]?.images?.length ? product.variants[0].images : ["/placeholder.png"];
+    const currentVariant = product.variants?.[selectedVariantIndex] || product.variants?.[0];
+    const images = currentVariant?.images?.length ? currentVariant.images : (product.variants?.[0]?.images || ["/placeholder.png"]);
     const currentImage = (selectedImage?.productId === id && selectedImage.image) ? selectedImage.image : images[0] || "/placeholder.png";
-    const displayPrice = product.displayPrice || 0;
-    const originalPrice = displayPrice * 1.2;
-    // const ratingCount = Math.floor((product.averageRating || 5) * 20);
-    // const viewedCount = 10600;
+
+    const displayPrice = currentVariant?.priceAfterDiscount ?? product.displayPrice ?? 0;
+    const originalPrice = currentVariant?.price ?? Number(product.displayPrice) * 1.2;
+    const hasDiscount = originalPrice > displayPrice;
+
     const brandNameDisplay = product.brand || t('others', {}, "Others");
     const categoryNameDisplay = product.category || "";
     const matchedCategory = categories?.find((c) => c.name === categoryNameDisplay);
@@ -91,12 +94,12 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
 
     const productProperties = [
         { label: t('brand', {}, "Brand"), value: brandNameDisplay },
-        { label: t('sku', {}, "SKU"), value: product.productId.slice(0, 8).toUpperCase() },
+        { label: t('sku', {}, "SKU"), value: currentVariant?.variantId || product.productId.slice(0, 8).toUpperCase() },
         { label: t('category', {}, "Category"), value: categoryNameDisplay },
-        { label: t('stock', {}, "Stock"), value: formatNumber(product.totalStock || 0, currentLocale) },
+        { label: t('stock', {}, "Stock"), value: formatNumber(currentVariant?.stock || product.totalStock || 0, currentLocale) },
     ];
 
-    const getVariantId = () => product?.variants?.[0]?.variantId || "";
+    const getVariantId = () => currentVariant?.variantId || "";
 
     const handleAddToCart = () => {
         if (!product) return;
@@ -177,8 +180,10 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
 
                             <div className="flex items-start justify-between">
                                 <div>
-                                    <div className="text-2xl lg:text-3xl font-bold text-foreground">{formatCurrency(displayPrice, 'VND', currentLocale)}</div>
-                                    <div className="text-sm text-muted-foreground line-through mt-0.5">{formatCurrency(originalPrice, 'VND', currentLocale)}</div>
+                                    <div className="text-2xl lg:text-3xl font-bold text-primary">{formatCurrency(displayPrice, 'VND', currentLocale)}</div>
+                                    {hasDiscount && (
+                                        <div className="text-sm text-muted-foreground line-through mt-0.5">{formatCurrency(originalPrice, 'VND', currentLocale)}</div>
+                                    )}
                                 </div>
                                 <div className="flex flex-col gap-1 text-sm text-muted-foreground">
                                     <div className="flex items-center gap-1.5 px-3 py-1.5 bg-muted rounded-full">
@@ -200,6 +205,34 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                                     </div>
                                 ))}
                             </div>
+
+                            {/* Variant Selector */}
+                            {product.variants && product.variants.length > 1 && (
+                                <div className="space-y-3 py-2">
+                                    <p className="text-sm font-semibold text-foreground uppercase tracking-wider">{t('select_variant', {}, "Select variant")}</p>
+                                    <div className="flex flex-wrap gap-2">
+                                        {product.variants.map((v, idx) => {
+                                            const label = [v.color, v.storage].filter(Boolean).join(" - ") || v.variantId;
+                                            const isSelected = selectedVariantIndex === idx;
+                                            return (
+                                                <button
+                                                    key={v.variantId || idx}
+                                                    onClick={() => {
+                                                        setSelectedVariantIndex(idx);
+                                                        if (v.images?.[0]) setSelectedImage({ productId: id, image: v.images[0] });
+                                                    }}
+                                                    className={`px-3 py-2 rounded-xl text-xs font-medium border-2 transition-all ${isSelected
+                                                            ? "border-primary bg-primary/5 text-primary shadow-sm"
+                                                            : "border-border bg-card text-muted-foreground hover:border-primary/40"
+                                                        }`}
+                                                >
+                                                    {label}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="space-y-3 pt-1">
                                 <div className="flex items-center gap-3">
@@ -255,12 +288,12 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                             )}
                             {activeTab === "specs" && (
                                 <div className="space-y-6">
-                                    {product.variants?.[0] ? (
+                                    {currentVariant ? (
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             {[
-                                                { label: t('color', {}, "Color"), value: product.variants[0].color },
-                                                { label: t('storage', {}, "Storage"), value: product.variants[0].storage },
-                                                { label: t('stock', {}, "Stock"), value: product.variants[0].stock },
+                                                { label: t('color', {}, "Color"), value: currentVariant.color },
+                                                { label: t('storage', {}, "Storage"), value: currentVariant.storage },
+                                                { label: t('stock', {}, "Stock"), value: currentVariant.stock },
                                             ].filter(s => s.value).map((spec, i) => (
                                                 <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-accent/30 border border-border/50">
                                                     <span className="text-sm font-medium text-foreground">{spec.label}</span>

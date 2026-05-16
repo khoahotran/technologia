@@ -73,7 +73,7 @@ export default function Footer() {
               <li><Link href="/orders" className="text-gray-600 hover:text-primary transition-colors text-sm">{t('footer_orders', {}, "Orders")}</Link></li>
               <li><Link href="/cart" className="text-gray-600 hover:text-primary transition-colors text-sm">{t('footer_cart', {}, "Cart")}</Link></li>
               <li><Link href="/terms" className="text-gray-600 hover:text-primary transition-colors text-sm">{t('footer_terms', {}, "Terms of Use")}</Link></li>
-              <li><Link href="/privacy" className="text-gray-600 hover:text-primary transition-colors text-sm">{t('footer_privacy', {}, "Privacy Policy")}</Link></li>
+              <li><Link href="/policy" className="text-gray-600 hover:text-primary transition-colors text-sm">{t('footer_policy', {}, "Purchase Policy")}</Link></li>
             </ul>
           </div>
 

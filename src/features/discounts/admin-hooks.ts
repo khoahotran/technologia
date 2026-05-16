@@ -8,6 +8,7 @@ import {
     getDiscountsPaged,
     updateDiscountAdmin,
 } from "./admin-api";
+import { getAllDiscounts } from "./api";
 import type {
     CreateDiscountRequest,
     DiscountPagedParams,
@@ -26,6 +27,13 @@ export function useDiscountsPaged(params: DiscountPagedParams) {
     return useQuery({
         queryKey: DISCOUNT_KEYS.paged(params),
         queryFn: () => getDiscountsPaged(params),
+    });
+}
+
+export function useAllDiscountsAdmin() {
+    return useQuery({
+        queryKey: DISCOUNT_KEYS.all,
+        queryFn: getAllDiscounts,
     });
 }
 

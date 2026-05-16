@@ -42,6 +42,7 @@ import {
     useUpdateProductAdmin,
     useUpdateProductVariantAdmin,
 } from "@/features/products/hooks";
+import { useAllDiscountsAdmin } from "@/features/discounts/admin-hooks";
 import type { Brand, Category, Product } from "@/features/products/types";
 import { useLanguage } from "@/providers/language.provider";
 
@@ -77,6 +78,7 @@ function getCategoryId(product: Product, categories: Category[], selectedCategor
 function ProductTile({
     name,
     price,
+    originalPrice,
     rating,
     description,
     image,
@@ -89,6 +91,7 @@ function ProductTile({
 }: {
     name: string;
     price: number;
+    originalPrice?: number;
     rating: number;
     description: string | undefined;
     image: string | undefined;
@@ -101,6 +104,7 @@ function ProductTile({
 }) {
     const { t, locale } = useLanguage();
     const [imgError, setImgError] = useState(false);
+    const hasDiscount = !!(originalPrice && originalPrice > price);
 
     return (
         <div
@@ -168,7 +172,14 @@ function ProductTile({
                         ))}
                     </div>
                     <div className="flex items-center justify-between">
-                        <span className="text-sm font-bold text-primary">{currencyVnd(price, locale, t)}</span>
+                        <div className="flex flex-col">
+                            {hasDiscount && (
+                                <span className="text-[10px] text-muted-foreground line-through decoration-muted-foreground/50">
+                                    {currencyVnd(originalPrice!, locale, t)}
+                                </span>
+                            )}
+                            <span className="text-sm font-bold text-primary">{currencyVnd(price, locale, t)}</span>
+                        </div>
                         <div className="relative">
                             <button
                                 type="button"
@@ -220,7 +231,7 @@ function getPaginationItems(current: number, last: number): (number | "...")[] {
 }
 
 export default function AdminProductsClient() {
-    const { t } = useLanguage();
+    const { t, locale } = useLanguage();
     const [page, setPage] = useState(0);
     const [search, setSearch] = useState("");
     const [categoryId, setCategoryId] = useState<string>("all");
@@ -248,6 +259,11 @@ export default function AdminProductsClient() {
     const deleteProductVariantMutation = useDeleteProductVariantAdmin();
     const addVariantImageMutation = useAddVariantImageAdmin();
     const applyDiscountMutation = useApplyProductsToDiscountAdmin();
+
+    const { data: allDiscounts } = useAllDiscountsAdmin();
+    const productSpecificDiscounts = useMemo(() => {
+        return allDiscounts?.filter(d => d.scope === "PRODUCT_SPECIFIC") || [];
+    }, [allDiscounts]);
 
     const { data: categories = [] } = useCategories();
     const { data: brands = [] } = useBrands();
@@ -442,11 +458,30 @@ export default function AdminProductsClient() {
     };
 
     const handleApplyDiscount = () => {
-        if (!discountIdInput.trim()) return;
+        if (!discountIdInput || discountIdInput === "none") return;
         const ids = discountProductId ? [discountProductId] : selectedIds;
+        
+        const productVariantIds: { productId: string; variantId: string }[] = [];
+        
+        ids.forEach(productId => {
+            const product = products.find(p => p.productId === productId);
+            if (product?.variants) {
+                product.variants.forEach(v => {
+                    if (v.variantId) {
+                        productVariantIds.push({ productId, variantId: v.variantId });
+                    }
+                });
+            }
+        });
+
+        if (productVariantIds.length === 0) {
+            toast.error(t("admin_error_no_variants_selected"));
+            return;
+        }
+
         applyDiscountMutation.mutate({
             discountId: discountIdInput.trim(),
-            productVariantIds: ids.map((id) => ({ productId: id, variantId: "" })),
+            productVariantIds,
         });
         setDiscountDialogOpen(false);
         setDiscountIdInput("");
@@ -622,15 +657,26 @@ export default function AdminProductsClient() {
                             </span>
                         </div>
                         {selectedCount > 0 && (
-                            <button
-                                type="button"
-                                onClick={() => { setDiscountIdInput(""); setDiscountDialogOpen(true); }}
-                                disabled={isBusy}
-                                className="h-7 px-3 rounded-full bg-primary text-primary-foreground inline-flex items-center gap-1 text-xs font-medium disabled:opacity-60"
-                            >
-                                {t("admin_apply_discount")}
-                                <X className="h-3 w-3" />
-                            </button>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setSelectedIds([])}
+                                    disabled={isBusy}
+                                    className="h-7 px-3 rounded-full bg-muted text-muted-foreground hover:bg-muted/80 inline-flex items-center gap-1 text-xs font-medium disabled:opacity-60 transition-colors"
+                                >
+                                    {t("admin_clear_selection")}
+                                    <X className="h-3 w-3" />
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => { setDiscountIdInput(""); setDiscountDialogOpen(true); }}
+                                    disabled={isBusy}
+                                    className="h-7 px-3 rounded-full bg-primary text-primary-foreground inline-flex items-center gap-1 text-xs font-medium disabled:opacity-60 transition-colors"
+                                >
+                                    {t("admin_apply_discount")}
+                                    <Tag className="h-3 w-3" />
+                                </button>
+                            </div>
                         )}
                     </div>
                 </div>
@@ -662,7 +708,8 @@ export default function AdminProductsClient() {
                             <ProductTile
                                 key={id}
                                 name={product.name}
-                                price={product.displayPrice ?? 0}
+                                price={product.variants?.[0]?.priceAfterDiscount ?? Number(product.displayPrice) ?? 0}
+                                originalPrice={product.variants?.[0]?.price ?? 0}
                                 rating={Math.max(1, Math.round(product.averageRating ?? 4))}
                                 description={product.description}
                                 image={firstImage}
@@ -716,27 +763,52 @@ export default function AdminProductsClient() {
                 </div>
             )}
 
-            <Dialog open={discountDialogOpen} onOpenChange={(open) => { if (!open) setDiscountProductId(null); setDiscountDialogOpen(open); }}>
+            <Dialog open={discountDialogOpen} onOpenChange={(open) => { 
+                if (!open) {
+                    setDiscountIdInput(""); 
+                    setDiscountProductId(null);
+                }
+                setDiscountDialogOpen(open); 
+            }}>
                 <DialogContent className="sm:max-w-sm">
                     <DialogHeader>
-                        <DialogTitle>{t("admin_discount_id_prompt")}</DialogTitle>
+                        <DialogTitle>{t("admin_select_discount_prompt")}</DialogTitle>
                     </DialogHeader>
-                    <Input
+                    
+                    <Select
                         value={discountIdInput}
-                        onChange={(e) => setDiscountIdInput(e.target.value)}
-                        placeholder={t("admin_discount_id_prompt")}
-                        className="rounded-xl"
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter") handleApplyDiscount();
-                        }}
-                    />
+                        onValueChange={setDiscountIdInput}
+                    >
+                        <SelectTrigger className="rounded-xl w-full">
+                            <SelectValue placeholder={t("admin_select_discount_placeholder")} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {productSpecificDiscounts.length === 0 ? (
+                                <SelectItem value="none" disabled>
+                                    {t("admin_no_discounts_available")}
+                                </SelectItem>
+                            ) : (
+                                productSpecificDiscounts.map((d) => (
+                                    <SelectItem key={d.discountId} value={d.discountId}>
+                                        <div className="flex flex-col items-start gap-0.5">
+                                            <span className="font-medium">{d.name}</span>
+                                            <span className="text-xs text-muted-foreground">
+                                                {t("discount_code")}: {d.code} - {d.type === "FIXED" ? currencyVnd(d.discountValue, locale, t) : `${d.discountValue}%`}
+                                            </span>
+                                        </div>
+                                    </SelectItem>
+                                ))
+                            )}
+                        </SelectContent>
+                    </Select>
+
                     <DialogFooter className="gap-2 sm:gap-0">
                         <Button variant="outline" onClick={() => setDiscountDialogOpen(false)} className="rounded-xl">
                             {t("cancel")}
                         </Button>
                         <Button
                             onClick={handleApplyDiscount}
-                            disabled={!discountIdInput.trim() || isBusy}
+                            disabled={!discountIdInput || discountIdInput === "none" || isBusy}
                             className="rounded-xl"
                         >
                             {t("confirm")}

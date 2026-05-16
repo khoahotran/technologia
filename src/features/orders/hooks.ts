@@ -19,6 +19,7 @@ import {
     getProductFeedbacks,
     initCheckoutPreview,
     recalculateCheckout,
+    receiveOrder,
     simulatePayment,
     submitOrderFeedback,
     updateOrderFeedback,
@@ -26,6 +27,7 @@ import {
 } from "./api";
 import type {
     AdminUpdateOrderStatus,
+    CancelOrderRequest,
     CheckoutPreviewRequest,
     ConfirmCheckoutRequest,
     DeliveryLog,
@@ -35,7 +37,6 @@ import type {
     ProductFeedbackParams,
     RecalculateCheckoutRequest,
     SubmitFeedbackRequest,
-    CancelOrderRequest,
 } from "./types";
 
 import { checkoutKeys } from "@/constants/query-keys";
@@ -181,11 +182,11 @@ export function useCancelOrder() {
         onSuccess: async (_, variables) => {
             // 1. Invalidate all checkout-related queries
             await queryClient.invalidateQueries({ queryKey: checkoutKeys.all });
-            
+
             // 2. Specifically remove orders list from cache to force a fresh fetch 
             // and show loading state instead of stale data when navigating back
             queryClient.removeQueries({ queryKey: checkoutKeys.orders(), exact: false });
-            
+
             // 3. Update the specific order in cache if it exists (Optimistic-like)
             queryClient.invalidateQueries({ queryKey: checkoutKeys.order(variables.orderId) });
 
@@ -241,6 +242,23 @@ export function useSubmitOrderFeedback() {
         },
         onError: (error) => {
             toast.error(t(toErrorMessage(error, 'failed_submit_feedback')));
+        },
+    });
+}
+
+export function useReceiveOrder() {
+    const queryClient = useQueryClient();
+    const { t } = useLanguage();
+
+    return useMutation({
+        mutationFn: (orderId: string) => receiveOrder(orderId),
+        onSuccess: async (_, orderId) => {
+            await queryClient.invalidateQueries({ queryKey: checkoutKeys.all });
+            queryClient.invalidateQueries({ queryKey: checkoutKeys.order(orderId) });
+            toast.success(t('order_received_success'));
+        },
+        onError: (error) => {
+            toast.error(t(toErrorMessage(error, 'failed_confirm_received')));
         },
     });
 }
