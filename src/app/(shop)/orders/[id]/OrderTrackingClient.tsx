@@ -12,11 +12,13 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { productKeys } from "@/constants/query-keys";
+import { notifyPurchase } from "@/features/ai/api";
 import { getAddressById, getPaymentAccountById } from "@/features/checkout/api";
 import { useCancelOrder, useDeliveryLogs, useOrder, useReceiveOrder } from "@/features/orders/hooks";
 import { canCancelOrder, canConfirmOrderReceived, canGiveFeedback, formatCurrencyVnd, formatDeliveryLogStatusLabel, formatOrderStatusLabel, formatPaymentMethodLabel, truncateId } from "@/features/orders/presentation";
 import { getProductById } from "@/features/products/api";
 import { useLanguage } from "@/providers/language.provider";
+import { useAuthStore } from "@/store/auth.store";
 import { useOrderFlowStore } from "@/store/order-flow.store";
 import { toErrorMessage } from "@/utils/error-message";
 
@@ -32,6 +34,13 @@ function toDisplayItemQuantity(item: unknown) {
 function toDisplayProductId(item: unknown): string | null {
     if (typeof item === "object" && item !== null && "productId" in item && typeof item.productId === "string") {
         return item.productId;
+    }
+    return null;
+}
+
+function toDisplayVariantId(item: unknown): string | null {
+    if (typeof item === "object" && item !== null && "variantId" in item && typeof item.variantId === "string") {
+        return item.variantId;
     }
     return null;
 }
@@ -240,7 +249,36 @@ export default function OrderTrackingClient({ id }: { id: string }) {
                                     {canConfirmOrderReceived(order.deliveryStatus) && (
                                         <Button
                                             type="button"
-                                            onClick={() => receiveOrderMutation.mutate(order.orderId)}
+                                            onClick={() => {
+                                                receiveOrderMutation.mutate(order.orderId, {
+                                                    onSuccess: () => {
+                                                        // Notify AI Agent about the purchase completion
+                                                        const { session } = useAuthStore.getState();
+                                                        const customerId = session?.user.userId;
+                                                        
+                                                        if (customerId && order.items.length > 0) {
+                                                            const uniqueVariants = new Map<string, number>();
+                                                            for (const item of order.items) {
+                                                                const variantId = toDisplayVariantId(item);
+                                                                if (variantId) {
+                                                                    const current = uniqueVariants.get(variantId) ?? 0;
+                                                                    uniqueVariants.set(variantId, current + toDisplayItemQuantity(item));
+                                                                }
+                                                            }
+
+                                                            Promise.allSettled(
+                                                                Array.from(uniqueVariants.entries()).map(([variantId, amount]) =>
+                                                                    notifyPurchase({
+                                                                        customerId,
+                                                                        variantId,
+                                                                        amount,
+                                                                    })
+                                                                )
+                                                            );
+                                                        }
+                                                    }
+                                                });
+                                            }}
                                             disabled={receiveOrderMutation.isPending}
                                             className="bg-primary hover:bg-primary/90 text-white"
                                         >

@@ -13,7 +13,6 @@ import { PaymentMethodList } from "@/components/features/checkout/PaymentMethodL
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { notifyPurchase } from "@/features/ai/api";
 import { useCart } from "@/features/cart/hooks";
 import {
     useAddresses,
@@ -212,24 +211,6 @@ export default function ShippingClient() {
             });
 
             queryClient.refetchQueries({ queryKey: ["cart"] });
-
-            if (customerId) {
-                const uniqueVariants = new Map<string, number>();
-                for (const item of selectedCartItems) {
-                    const current = uniqueVariants.get(item.variantId) ?? 0;
-                    uniqueVariants.set(item.variantId, current + item.currentQuantity);
-                }
-
-                Promise.allSettled(
-                    Array.from(uniqueVariants.entries()).map(([variantId, amount]) =>
-                        notifyPurchase({
-                            customerId,
-                            variantId,
-                            amount,
-                        })
-                    )
-                );
-            }
 
             clearCheckoutFlow();
             router.push(`/order-processing?sagaId=${sagaId}&paymentMethod=${paymentMethod}`);
