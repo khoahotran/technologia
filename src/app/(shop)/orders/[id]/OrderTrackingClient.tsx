@@ -13,8 +13,8 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { productKeys } from "@/constants/query-keys";
 import { getAddressById, getPaymentAccountById } from "@/features/checkout/api";
-import { useCancelOrder, useDeliveryLogs, useOrder } from "@/features/orders/hooks";
-import { canCancelOrder, canGiveFeedback, formatCurrencyVnd, formatDeliveryLogStatusLabel, formatOrderStatusLabel, formatPaymentMethodLabel, truncateId } from "@/features/orders/presentation";
+import { useCancelOrder, useDeliveryLogs, useOrder, useReceiveOrder } from "@/features/orders/hooks";
+import { canCancelOrder, canConfirmOrderReceived, canGiveFeedback, formatCurrencyVnd, formatDeliveryLogStatusLabel, formatOrderStatusLabel, formatPaymentMethodLabel, truncateId } from "@/features/orders/presentation";
 import { getProductById } from "@/features/products/api";
 import { useLanguage } from "@/providers/language.provider";
 import { useOrderFlowStore } from "@/store/order-flow.store";
@@ -45,6 +45,7 @@ export default function OrderTrackingClient({ id }: { id: string }) {
     const trackOrderInput = useOrderFlowStore((state) => state.trackOrderInput);
     const setTrackOrderInput = useOrderFlowStore((state) => state.setTrackOrderInput);
     const cancelOrderMutation = useCancelOrder();
+    const receiveOrderMutation = useReceiveOrder();
     const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
 
     // Fetch products for order items
@@ -233,6 +234,18 @@ export default function OrderTrackingClient({ id }: { id: string }) {
                                         >
                                             {cancelOrderMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                                             {t("cancel_order_btn", {}, "Cancel order")}
+                                        </Button>
+                                    )}
+
+                                    {canConfirmOrderReceived(order.deliveryStatus) && (
+                                        <Button
+                                            type="button"
+                                            onClick={() => receiveOrderMutation.mutate(order.orderId)}
+                                            disabled={receiveOrderMutation.isPending}
+                                            className="bg-primary hover:bg-primary/90 text-white"
+                                        >
+                                            {receiveOrderMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                                            {t("order_received_btn")}
                                         </Button>
                                     )}
                                 </div>

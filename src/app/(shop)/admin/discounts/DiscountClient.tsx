@@ -1,6 +1,6 @@
 "use client";
 
-import { CirclePlus, Percent, PencilLine, Tag, Trash2 } from "lucide-react";
+import { CirclePlus, PencilLine, Percent, Tag, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { ApplyProductsDialog } from "@/components/features/admin/ApplyProductsDialog";
@@ -19,13 +19,13 @@ import {
 } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+    useApplyProductsToDiscountAdmin,
     useCreateDiscountAdmin,
     useDeleteDiscountAdmin,
     useDiscountsPaged,
     useUpdateDiscountAdmin,
-    useApplyProductsToDiscountAdmin,
 } from "@/features/discounts/admin-hooks";
-import type { CreateDiscountRequest, DiscountResponse } from "@/features/discounts/admin-types";
+import type { CreateDiscountRequest, DiscountResponse, UpdateProductDiscountRequest } from "@/features/discounts/admin-types";
 import { useLanguage } from "@/providers/language.provider";
 
 function getPaginationItems(current: number, last: number): (number | "...")[] {
@@ -118,14 +118,11 @@ export default function DiscountClient() {
         setDeleteConfirm(null);
     };
 
-    const handleApply = (payload: { brandIds: number[]; categoryIds: number[] }) => {
+    const handleApply = (payload: UpdateProductDiscountRequest) => {
         if (!applyTarget) return;
         applyMutation.mutate({
             discountId: applyTarget.discountId,
-            payload: {
-                brandIds: payload.brandIds,
-                categoryIds: payload.categoryIds,
-            },
+            payload,
         });
         setApplyOpen(false);
         setApplyTarget(null);
@@ -240,7 +237,7 @@ export default function DiscountClient() {
                                                 >
                                                     <PencilLine className="h-3.5 w-3.5" />
                                                 </Button>
-                                                <Button
+                                                {discount.isActive && <Button
                                                     variant="ghost"
                                                     size="icon-sm"
                                                     onClick={() => {
@@ -250,7 +247,7 @@ export default function DiscountClient() {
                                                     disabled={isBusy}
                                                 >
                                                     <Tag className="h-3.5 w-3.5" />
-                                                </Button>
+                                                </Button>}
                                                 <Button
                                                     variant="ghost"
                                                     size="icon-sm"

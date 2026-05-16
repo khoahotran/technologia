@@ -41,6 +41,8 @@ interface ProductCardProps extends Omit<React.HTMLAttributes<HTMLDivElement>, "i
   onSelect?: (() => void) | undefined;
   /** Văn bản hiển thị trên huy hiệu (VD: "Giảm giá", "Mới") */
   badge?: string | undefined;
+  /** Giá cũ chưa giảm giá (Chuỗi đã được định dạng) */
+  originalPrice?: string | undefined;
   /** Sự kiện khi nhấn nút Thêm vào giỏ hàng */
   onAddToCart?: (() => void) | undefined;
 }
@@ -63,6 +65,7 @@ export function ProductCard({
   isSelected,
   onSelect,
   badge,
+  originalPrice,
   onAddToCart,
   ...props
 }: ProductCardProps) {
@@ -171,14 +174,16 @@ export function ProductCard({
             <div className="flex flex lg:flex-col items-end justify-between">
 
               {/* Price */}
-              <span
-                className="
-      text-xl font-bold text-primary
-      min-w-0 break-words
-    "
-              >
-                {price}
-              </span>
+              <div className="flex flex-col items-end">
+                {originalPrice && originalPrice !== price && (
+                  <span className="text-xs text-muted-foreground line-through decoration-muted-foreground/50">
+                    {originalPrice}
+                  </span>
+                )}
+                <span className="text-xl font-bold text-primary">
+                  {price}
+                </span>
+              </div>
 
               {variant === "default" && (
                 <div className="flex items-center gap-2 shrink-0">

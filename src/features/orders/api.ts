@@ -208,3 +208,7 @@ export async function getProductFeedbacks(params: ProductFeedbackParams): Promis
 export async function cancelOrder(payload: CancelOrderRequest): Promise<void> {
     await post("/api/sagas/cancel-order", payload);
 }
+
+export async function receiveOrder(orderId: string): Promise<void> {
+    await patch(`/api/orders/${orderId}/receive`);
+}

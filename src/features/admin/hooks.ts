@@ -74,7 +74,7 @@ export function useCreateMonthlyRevenueReport() {
         mutationFn: (payload: CreateMonthlyRevenueReportRequest) => createMonthlyRevenueReport(payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: adminReportKeys.all });
-            toast.success(t('admin_monthly_revenue_success', {}, "Monthly revenue report created"));
+            toast.success(t('admin_monthly_revenue_success'));
         },
         onError: (error: unknown) => {
             toast.error(t(toErrorMessage(error, 'admin_monthly_revenue_failed')));
@@ -91,7 +91,7 @@ export function useCreateTopSellingProductsReport() {
             createTopSellingProductsReport(payload),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: adminReportKeys.all });
-            toast.success(t('admin_top_selling_success', {}, "Top selling products report created"));
+            toast.success(t('admin_top_selling_success'));
         },
         onError: (error: unknown) => {
             toast.error(t(toErrorMessage(error, 'admin_top_selling_failed')));
@@ -131,7 +131,7 @@ export function useAdminCreateDeliveryLog() {
         onSuccess: (_data, variables) => {
             queryClient.invalidateQueries({ queryKey: deliveryLogKeys.list(variables.orderId) });
             queryClient.invalidateQueries({ queryKey: deliveryLogKeys.latest(variables.orderId) });
-            toast.success(t('admin_delivery_log_created', {}, "Delivery log created"));
+            toast.success(t('admin_delivery_log_created'));
         },
         onError: (error: unknown) => {
             toast.error(t(toErrorMessage(error, 'admin_delivery_log_create_failed')));
@@ -149,7 +149,7 @@ export function useAdminUpdateDeliveryLog() {
         onSuccess: (_data, variables) => {
             queryClient.invalidateQueries({ queryKey: deliveryLogKeys.list(variables.orderId) });
             queryClient.invalidateQueries({ queryKey: deliveryLogKeys.latest(variables.orderId) });
-            toast.success(t('admin_delivery_log_updated', {}, "Delivery log updated"));
+            toast.success(t('admin_delivery_log_updated'));
         },
         onError: (error: unknown) => {
             toast.error(t(toErrorMessage(error, 'admin_delivery_log_update_failed')));
@@ -166,7 +166,7 @@ export function useAdminDeleteDeliveryLog() {
         onSuccess: (_data, variables) => {
             queryClient.invalidateQueries({ queryKey: deliveryLogKeys.list(variables.orderId) });
             queryClient.invalidateQueries({ queryKey: deliveryLogKeys.latest(variables.orderId) });
-            toast.success(t('admin_delivery_log_deleted', {}, "Delivery log deleted"));
+            toast.success(t('admin_delivery_log_deleted'));
         },
         onError: (error: unknown) => {
             toast.error(t(toErrorMessage(error, 'admin_delivery_log_delete_failed')));
@@ -181,13 +181,44 @@ export function useAdminUpdateOrderDeliveryStatus() {
     return useMutation({
         mutationFn: ({ orderId, payload }: { orderId: string; payload: UpdateOrderDeliveryStatusRequest }) =>
             updateOrderDeliveryStatus(orderId, payload),
+        onMutate: async (newStatus) => {
+            // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+            await queryClient.cancelQueries({ queryKey: [...checkoutKeys.all, "admin-order", newStatus.orderId] });
+
+            // Snapshot the previous value
+            const previousOrder = queryClient.getQueryData([...checkoutKeys.all, "admin-order", newStatus.orderId]);
+
+            // Optimistically update to the new value
+            if (previousOrder) {
+                queryClient.setQueryData([...checkoutKeys.all, "admin-order", newStatus.orderId], {
+                    ...(previousOrder as Record<string, unknown>),
+                    deliveryStatus: newStatus.payload.deliveryStatus,
+                });
+            }
+
+            return { previousOrder };
+        },
         onSuccess: (_data, variables) => {
+            // Invalidate admin queries to sync with server
             queryClient.invalidateQueries({ queryKey: [...checkoutKeys.all, "admin-orders"] });
             queryClient.invalidateQueries({ queryKey: [...checkoutKeys.all, "admin-order", variables.orderId] });
             queryClient.invalidateQueries({ queryKey: deliveryLogKeys.list(variables.orderId) });
-            toast.success(t('admin_order_status_updated', {}, "Order status updated"));
+            queryClient.invalidateQueries({ queryKey: deliveryLogKeys.latest(variables.orderId) });
+
+            // Invalidate user queries
+            queryClient.invalidateQueries({ queryKey: checkoutKeys.orders() });
+            queryClient.invalidateQueries({ queryKey: checkoutKeys.order(variables.orderId) });
+
+            toast.success(t('admin_order_status_updated'));
         },
-        onError: (error: unknown) => {
+        onError: (error: unknown, variables, context) => {
+            // Rollback on error
+            if (context?.previousOrder) {
+                queryClient.setQueryData(
+                    [...checkoutKeys.all, "admin-order", variables.orderId],
+                    context.previousOrder
+                );
+            }
             toast.error(t(toErrorMessage(error, 'admin_order_status_update_failed')));
         },
     });

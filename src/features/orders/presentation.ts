@@ -6,6 +6,7 @@ export const DELIVERY_STATUS_ORDER: DeliveryStatus[] = [
     "PENDING",
     "ON_SHIPPING",
     "DELIVERED",
+    "RECEIVED",
     "CANCELED",
 ];
 
@@ -20,11 +21,11 @@ export function canCancelOrder(status: DeliveryStatus) {
 }
 
 export function canConfirmOrderReceived(status: DeliveryStatus) {
-    return status === "ON_SHIPPING";
+    return status === "DELIVERED";
 }
 
 export function canGiveFeedback(order: Order) {
-    return order.deliveryStatus === "DELIVERED";
+    return order.deliveryStatus === "RECEIVED";
 }
 
 export function formatOrderStatusLabel(status: DeliveryStatus | string, t?: Translator) {
@@ -36,11 +37,13 @@ export function formatOrderStatusLabel(status: DeliveryStatus | string, t?: Tran
         case "PENDING":
             return t ? t("order_status_pending", {}, "Pending") : "Pending";
         case "ON_SHIPPING":
-            return t ? t("order_status_shipping", {}, "Shipping") : "Shipping";
+            return t ? t("order_status_shipping") : "Shipping";
         case "DELIVERED":
-            return t ? t("order_status_delivered", {}, "Delivered") : "Delivered";
+            return t ? t("order_status_delivered") : "Delivered";
+        case "RECEIVED":
+            return t ? t("order_status_received") : "Received";
         case "CANCELED":
-            return t ? t("order_status_cancelled", {}, "Cancelled") : "Cancelled";
+            return t ? t("order_status_cancelled") : "Cancelled";
         default:
             return status;
     }
@@ -90,12 +93,14 @@ export function truncateId(id: string, visibleChars = 8): string {
     return id.length > visibleChars ? `${id.slice(0, 4)}...${id.slice(-visibleChars)}` : id;
 }
 
+// end user transitions and not admin updates
 export const VALID_STATUS_TRANSITIONS: Record<DeliveryStatus, DeliveryStatus[]> = {
     AWAITING_PAYMENT: ["AWAITING_CONFIRM", "CANCELED"],
     AWAITING_CONFIRM: ["PENDING", "CANCELED"],
     PENDING: ["ON_SHIPPING", "CANCELED"],
-    ON_SHIPPING: ["DELIVERED", "CANCELED"],
-    DELIVERED: [],
+    ON_SHIPPING: ["DELIVERED"],
+    DELIVERED: ["RECEIVED"],
+    RECEIVED: [],
     CANCELED: [],
 };
 

@@ -8,6 +8,7 @@ export const DeliveryStatusSchema = z.enum([
     "PENDING",
     "ON_SHIPPING",
     "DELIVERED",
+    "RECEIVED",
     "CANCELED",
 ]);
 export type DeliveryStatus = z.infer<typeof DeliveryStatusSchema>;
@@ -17,7 +18,6 @@ export const AdminUpdateOrderStatusSchema = z.enum([
     "PENDING",
     "ON_SHIPPING",
     "DELIVERED",
-    "CANCELED",
 ]);
 export type AdminUpdateOrderStatus = z.infer<typeof AdminUpdateOrderStatusSchema>;
 

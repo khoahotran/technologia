@@ -367,7 +367,10 @@ export function ProductListView() {
                                     key={product.productId}
                                     id={String(product.productId)}
                                     title={product.name}
-                                    price={product.displayPrice ? currencyFormat.format(product.displayPrice) : t('contact', {}, "Contact")}
+                                    price={product.variants?.[0]?.priceAfterDiscount 
+                                        ? currencyFormat.format(product.variants[0].priceAfterDiscount) 
+                                        : (product.displayPrice ? currencyFormat.format(product.displayPrice) : t('contact', {}, "Contact"))}
+                                    originalPrice={product.variants?.[0]?.price ? currencyFormat.format(product.variants[0].price) : undefined}
                                     rating={product.averageRating || 0}
                                     image={product.variants?.[0]?.images?.[0] || "https://placehold.co/400x400"}
                                     variant="default"
