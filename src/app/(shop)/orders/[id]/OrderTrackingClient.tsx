@@ -1,7 +1,7 @@
 "use client";
 
 import { useQueries, useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Circle, Loader2, Trash2 } from "lucide-react";
+import { ArrowLeft, Circle, Loader2, Star, Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { productKeys } from "@/constants/query-keys";
 import { notifyPurchase } from "@/features/ai/api";
 import { getAddressById, getPaymentAccountById } from "@/features/checkout/api";
-import { useCancelOrder, useDeliveryLogs, useOrder, useReceiveOrder } from "@/features/orders/hooks";
+import { useCancelOrder, useDeliveryLogs, useOrder, useOrderFeedbacks, useReceiveOrder } from "@/features/orders/hooks";
 import { canCancelOrder, canConfirmOrderReceived, canGiveFeedback, formatCurrencyVnd, formatDeliveryLogStatusLabel, formatOrderStatusLabel, formatPaymentMethodLabel, truncateId } from "@/features/orders/presentation";
 import { getProductById } from "@/features/products/api";
 import { useLanguage } from "@/providers/language.provider";
@@ -51,6 +51,8 @@ export default function OrderTrackingClient({ id }: { id: string }) {
     const router = useRouter();
     const { data: order, isLoading, isError, error } = useOrder(id);
     const deliveryLogsQuery = useDeliveryLogs(id, Boolean(id));
+    const { data: feedbacks } = useOrderFeedbacks(id, Boolean(id));
+    console.log("🚀 ~ OrderTrackingClient ~ feedbacks:", feedbacks)
     const trackOrderInput = useOrderFlowStore((state) => state.trackOrderInput);
     const setTrackOrderInput = useOrderFlowStore((state) => state.setTrackOrderInput);
     const cancelOrderMutation = useCancelOrder();
@@ -198,17 +200,45 @@ export default function OrderTrackingClient({ id }: { id: string }) {
                                     {order.items.map((item, index) => {
                                         const pid = toDisplayProductId(item);
                                         const prod = pid ? productMap.get(pid) : null;
+                                        const r = item as Record<string, unknown>;
+                                        const orderItemId = typeof r["orderItemId"] === "string" ? r["orderItemId"] : null;
+                                        console.log("🚀 ~ OrderTrackingClient ~ orderItemId:", orderItemId)
+                                        const itemFeedback = orderItemId ? feedbacks?.find((f) => f.orderItemId === orderItemId) : null;
+                                        console.log("🚀 ~ OrderTrackingClient ~ itemFeedback:", itemFeedback)
                                         return (
-                                            <div key={`${order.orderId}-${index}`} className="flex items-center gap-3 text-sm">
-                                                {prod?.image ? (
-                                                    <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-muted shrink-0">
-                                                        <Image src={prod.image} alt="" fill className="object-contain p-1" />
+                                            <div key={`${order.orderId}-${index}`} className="py-2 border-b border-gray-100 last:border-0 space-y-2">
+                                                <div className="flex items-center gap-3 text-sm">
+                                                    {prod?.image ? (
+                                                        <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-muted shrink-0">
+                                                            <Image src={prod.image} alt="" fill className="object-contain p-1" />
+                                                        </div>
+                                                    ) : (
+                                                        <div className="w-10 h-10 rounded-lg bg-muted shrink-0" />
+                                                    )}
+                                                    <span className="text-muted-foreground">{toDisplayItemQuantity(item)}x</span>
+                                                    <span className="flex-1 text-foreground truncate">{prod?.name || `Item ${index + 1}`}</span>
+                                                </div>
+                                                {itemFeedback && (
+                                                    <div className="ml-[52px] bg-slate-50 border border-slate-100 p-2.5 rounded-lg text-xs space-y-1">
+                                                        <div className="flex items-center gap-1.5">
+                                                            <span className="font-medium text-slate-700">{t("your_feedback", {}, "Your feedback")}:</span>
+                                                            <div className="flex gap-0.5">
+                                                                {[1, 2, 3, 4, 5].map((star) => (
+                                                                    <Star
+                                                                        key={star}
+                                                                        className={`h-3 w-3 ${star <= itemFeedback.rating
+                                                                                ? "fill-primary text-primary"
+                                                                                : "fill-transparent text-[#D3D9E0]"
+                                                                            }`}
+                                                                    />
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                        {itemFeedback.comment && (
+                                                            <p className="text-slate-600 italic">"{itemFeedback.comment}"</p>
+                                                        )}
                                                     </div>
-                                                ) : (
-                                                    <div className="w-10 h-10 rounded-lg bg-muted shrink-0" />
                                                 )}
-                                                <span className="text-muted-foreground">{toDisplayItemQuantity(item)}x</span>
-                                                <span className="flex-1 text-foreground truncate">{prod?.name || `Item ${index + 1}`}</span>
                                             </div>
                                         );
                                     })}
@@ -221,7 +251,11 @@ export default function OrderTrackingClient({ id }: { id: string }) {
                                 <p className="text-primary-strong text-lg font-semibold">[{formatOrderStatusLabel(order.deliveryStatus, t)}]</p>
 
                                 <div className="flex flex-wrap gap-4 pt-2">
-                                    {canGiveFeedback(order) ? (
+                                    {feedbacks && feedbacks.length > 0 ? (
+                                        <Button type="button" disabled className="bg-[#BFC7CF] text-white opacity-60 cursor-not-allowed">
+                                            {t("already_feedbacked_btn", {}, "Reviewed")}
+                                        </Button>
+                                    ) : canGiveFeedback(order) ? (
                                         <Link href={`/orders/${order.orderId}/feedback`}>
                                             <Button type="button" className="bg-secondary hover:bg-[#769BAD] text-white">
                                                 {t("give_feedback_btn", {}, "Give feedback")}
@@ -255,7 +289,7 @@ export default function OrderTrackingClient({ id }: { id: string }) {
                                                         // Notify AI Agent about the purchase completion
                                                         const { session } = useAuthStore.getState();
                                                         const customerId = session?.user.userId;
-                                                        
+
                                                         if (customerId && order.items.length > 0) {
                                                             const uniqueVariants = new Map<string, number>();
                                                             for (const item of order.items) {
