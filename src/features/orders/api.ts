@@ -1,15 +1,16 @@
 import {
-    CheckoutRecalculateResponseSchema,
+    AdminUpdateOrderStatusSchema,
     CheckoutPreviewResponseSchema,
+    CheckoutRecalculateResponseSchema,
     DeliveryLogSchema,
     OrderFeedbackSchema,
     OrderSchema,
-    AdminUpdateOrderStatusSchema,
+    type AdminUpdateOrderStatus,
+    type CancelOrderRequest,
     type CheckoutPreviewRequest,
     type CheckoutPreviewResponse,
     type CheckoutRecalculateResponse,
     type ConfirmCheckoutRequest,
-    type AdminUpdateOrderStatus,
     type DeliveryLog,
     type Order,
     type OrderFeedback,
@@ -18,7 +19,6 @@ import {
     type ProductFeedbackParams,
     type RecalculateCheckoutRequest,
     type SubmitFeedbackRequest,
-    type CancelOrderRequest,
 } from "./types";
 
 import { del, get, patch, post, put } from "@/api/client";
@@ -159,13 +159,17 @@ export async function cancelPayment(orderId: string, paymentId: string, sagaId: 
 
 export async function submitOrderFeedback(payload: SubmitFeedbackRequest): Promise<Order> {
     await Promise.all(
-        payload.items.map((item) =>
-            post("/api/orders/feedback", {
+        payload.items.map(async (item) => {
+            const res = await post<ApiResponse<unknown>>("/api/orders/feedback", {
                 orderItemId: item.orderItemId,
                 rating: item.rating,
                 comment: item.comment,
-            })
-        )
+            });
+            if (res && res.status && res.status !== 200) {
+                throw new Error(res.message || "Failed to submit feedback");
+            }
+            return res;
+        })
     );
 
     const existingOrder = await getOrderById(payload.orderId);
@@ -210,5 +214,5 @@ export async function cancelOrder(payload: CancelOrderRequest): Promise<void> {
 }
 
 export async function receiveOrder(orderId: string): Promise<void> {
-    await patch(`/api/orders/${orderId}/receive`);
+    await patch(`/api/orders/${orderId}/received`);
 }

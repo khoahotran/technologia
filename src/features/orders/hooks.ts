@@ -231,17 +231,12 @@ export function useDeleteOrderFeedback() {
 
 export function useSubmitOrderFeedback() {
     const queryClient = useQueryClient();
-    const { t } = useLanguage();
 
     return useMutation({
         mutationFn: (payload: SubmitFeedbackRequest) => submitOrderFeedback(payload),
         onSuccess: (updatedOrder: Order) => {
             queryClient.setQueryData(checkoutKeys.order(updatedOrder.orderId), updatedOrder);
             queryClient.invalidateQueries({ queryKey: checkoutKeys.orders() });
-            toast.success(t('feedback_submitted_success', {}, "Feedback submitted successfully"));
-        },
-        onError: (error) => {
-            toast.error(t(toErrorMessage(error, 'failed_submit_feedback')));
         },
     });
 }

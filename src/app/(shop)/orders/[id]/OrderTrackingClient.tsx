@@ -305,7 +305,7 @@ export default function OrderTrackingClient({ id }: { id: string }) {
                                             </p>
                                             {item.message ? <p className="text-sm text-muted-foreground mt-1">{item.message}</p> : null}
                                         </div>
-                                        <p className="text-sm text-muted-foreground">{new Date(item.happenedAt).toLocaleString(currentLocale)}</p>
+                                        <p className="text-sm text-muted-foreground">{new Date(String(item.happenedAt).includes('Z') || String(item.happenedAt).includes('+') ? item.happenedAt : `${item.happenedAt}Z`).toLocaleString(currentLocale)}</p>
                                     </div>
                                 ))}
                                 {timeline.length === 0 && !deliveryLogsQuery.isError && (
