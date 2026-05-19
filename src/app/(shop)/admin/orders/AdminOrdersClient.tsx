@@ -214,6 +214,9 @@ export default function AdminOrdersClient() {
                                             {t("admin_date", {}, "Date")}
                                         </th>
                                         <th className="py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                                            {t("admin_last_update", {}, locale === "vi" ? "Cập nhật cuối" : "Last Update")}
+                                        </th>
+                                        <th className="py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
                                             {t("admin_items", {}, "Items")}
                                         </th>
                                         <th className="py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
@@ -225,9 +228,11 @@ export default function AdminOrdersClient() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {orders.map((order: Record<string, unknown>, i: number) => {
-                                        const oid = String(order["orderId"]);
-                                        const status = order["deliveryStatus"] as string;
+                                    {orders.map((order, i: number) => {
+                                        const oid = String(order.orderId);
+                                        const status = order.deliveryStatus;
+                                        console.log("order.orderDate: ", order.orderDate);
+                                        
                                         return (
                                             <tr
                                                 key={oid}
@@ -239,15 +244,23 @@ export default function AdminOrdersClient() {
                                                     {truncateId(oid)}
                                                 </td>
                                                 <td className="py-2.5 px-3 text-muted-foreground text-xs">
-                                                    {order["orderDate"]
-                                                        ? new Date(String(order["orderDate"]).includes('T') && !String(order["orderDate"]).includes('Z') && !String(order["orderDate"]).includes('+') ? `${order["orderDate"]}Z` : String(order["orderDate"])).toLocaleString(
+                                                    {order.orderDate
+                                                        ? new Date(String(order.orderDate).includes('T') && !String(order.orderDate).includes('Z') && !String(order.orderDate).includes('+') ? `${order.orderDate}Z` : String(order.orderDate)).toLocaleDateString(
+                                                            locale === "vi" ? "vi-VN" : "en-US",
+                                                            { timeZone: "Asia/Ho_Chi_Minh" }
+                                                        )
+                                                        : "-"}
+                                                </td>
+                                                <td className="py-2.5 px-3 text-muted-foreground text-xs font-mono">
+                                                    {order.updatedAt
+                                                        ? new Date(String(order.updatedAt).includes('T') && !String(order.updatedAt).includes('Z') && !String(order.updatedAt).includes('+') ? `${order.updatedAt}Z` : String(order.updatedAt)).toLocaleString(
                                                             locale === "vi" ? "vi-VN" : "en-US",
                                                             { timeZone: "Asia/Ho_Chi_Minh", hour12: false }
                                                         )
                                                         : "-"}
                                                 </td>
                                                 <td className="py-2.5 px-3 text-muted-foreground text-xs">
-                                                    {Array.isArray(order["items"]) ? order["items"].length : 0}
+                                                    {Array.isArray(order.items) ? order.items.length : 0}
                                                 </td>
                                                 <td className="py-2.5 px-3">
                                                     <Badge

@@ -156,6 +156,7 @@ export function usePaymentQrCode(paymentId: string, enabled = true) {
         queryKey: ["payment-qr", paymentId],
         queryFn: () => getPaymentQrCode(paymentId),
         enabled: Boolean(paymentId) && enabled,
+        retry: 10,
     });
 }
 
