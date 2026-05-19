@@ -56,6 +56,7 @@ export default function OrdersClient() {
     const pendingQuery = useOrders({ page: 0, size: 20, status: "PENDING" });
     const shippingQuery = useOrders({ page: 0, size: 20, status: "ON_SHIPPING" });
     const deliveredQuery = useOrders({ page: 0, size: 20, status: "DELIVERED" });
+    const receivedQuery = useOrders({ page: 0, size: 20, status: "RECEIVED" });
     const canceledQuery = useOrders({ page: 0, size: 20, status: "CANCELED" });
 
     const isLoading =
@@ -64,6 +65,7 @@ export default function OrdersClient() {
         pendingQuery.isLoading ||
         shippingQuery.isLoading ||
         deliveredQuery.isLoading ||
+        receivedQuery.isLoading ||
         canceledQuery.isLoading;
     const isError =
         awaitingPaymentQuery.isError ||
@@ -71,6 +73,7 @@ export default function OrdersClient() {
         pendingQuery.isError ||
         shippingQuery.isError ||
         deliveredQuery.isError ||
+        receivedQuery.isError ||
         canceledQuery.isError;
     const error =
         awaitingPaymentQuery.error ||
@@ -78,6 +81,7 @@ export default function OrdersClient() {
         pendingQuery.error ||
         shippingQuery.error ||
         deliveredQuery.error ||
+        receivedQuery.error ||
         canceledQuery.error;
 
     const createdSource = useMemo(
@@ -89,7 +93,10 @@ export default function OrdersClient() {
         [awaitingPaymentQuery.data?.items]
     );
     const shippingSource = useMemo(() => shippingQuery.data?.items ?? [], [shippingQuery.data?.items]);
-    const deliveredSource = useMemo(() => deliveredQuery.data?.items ?? [], [deliveredQuery.data?.items]);
+    const deliveredSource = useMemo(
+        () => [...(deliveredQuery.data?.items ?? []), ...(receivedQuery.data?.items ?? [])],
+        [deliveredQuery.data?.items, receivedQuery.data?.items]
+    );
     const canceledSource = useMemo(() => canceledQuery.data?.items ?? [], [canceledQuery.data?.items]);
 
     const orders = useMemo(
@@ -157,7 +164,7 @@ export default function OrdersClient() {
     const deliveredOrders = useMemo(
         () =>
             deliveredSource
-                .filter((order) => order.deliveryStatus === "DELIVERED")
+                .filter((order) => order.deliveryStatus === "DELIVERED" || order.deliveryStatus === "RECEIVED")
                 .map((order) => ({
                     orderId: order.orderId,
                     items: toOrderCardItems(order),

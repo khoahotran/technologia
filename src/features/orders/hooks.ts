@@ -217,15 +217,23 @@ export function useUpdateOrderStatus() {
 }
 
 export function useUpdateOrderFeedback() {
+    const queryClient = useQueryClient();
     return useMutation({
         mutationFn: ({ orderItemId, rating, comment }: { orderItemId: string; rating: number; comment: string }) =>
             updateOrderFeedback(orderItemId, rating, comment),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: [...checkoutKeys.all, "order-feedbacks"] });
+        },
     });
 }
 
 export function useDeleteOrderFeedback() {
+    const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (orderItemId: string) => deleteOrderFeedback(orderItemId),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: [...checkoutKeys.all, "order-feedbacks"] });
+        },
     });
 }
 
@@ -237,6 +245,7 @@ export function useSubmitOrderFeedback() {
         onSuccess: (updatedOrder: Order) => {
             queryClient.setQueryData(checkoutKeys.order(updatedOrder.orderId), updatedOrder);
             queryClient.invalidateQueries({ queryKey: checkoutKeys.orders() });
+            queryClient.invalidateQueries({ queryKey: [...checkoutKeys.all, "order-feedbacks", updatedOrder.orderId] });
         },
     });
 }
