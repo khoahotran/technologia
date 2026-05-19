@@ -59,7 +59,7 @@ export function Chatbot() {
                     key,
                     {},
                     key === "chatbot_q1"
-                        ? "Đơn hàng của tôi ở đâu?"
+                        ? "Tư vấn cho tôi điện thoại RAM trên 6GB"
                         : key === "chatbot_q2"
                             ? "Chính sách đổi trả thế nào?"
                             : key === "chatbot_q3"
