@@ -70,7 +70,7 @@ export default function AboutClient() {
     return (
         <div className="min-h-screen bg-background">
             {/* Hero Section */}
-            <section className="bg-gradient-to-br from-primary to-secondary py-20 px-4">
+            <section className="bg-linear-to-br from-primary to-secondary py-20 px-4">
                 <div className="container mx-auto text-center">
                     <div className="max-w-3xl mx-auto mb-8">
                         <div className="w-64 h-64 mx-auto mb-8 relative flex items-center justify-center">
@@ -78,7 +78,7 @@ export default function AboutClient() {
                             <div className="absolute inset-0 bg-white/10 rounded-full blur-3xl animate-pulse"></div>
                             <div className="relative w-48 h-48 bg-white p-8 rounded-[3rem] shadow-2xl transform rotate-12 hover:rotate-0 transition-transform duration-500 flex items-center justify-center overflow-hidden border-4 border-white/50">
                                 <Image
-                                    src="/favicon.ico"
+                                    src="/favicon.webp"
                                     alt="Technologia Logo"
                                     width={120}
                                     height={120}

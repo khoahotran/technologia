@@ -10,6 +10,7 @@
  */
 import { ChevronDown, Mail, Phone, Search, ShoppingBag, ShoppingCart, User } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { Suspense, useEffect, useState } from "react"
 
@@ -284,8 +285,14 @@ export default function Header({ variant = "default" }: HeaderProps) {
         <div className="container mx-auto px-4 flex flex-wrap md:flex-nowrap items-center justify-between gap-y-4 gap-x-2 md:gap-6">
           {/* Vùng Logo */}
           <Link href="/" className="flex-none flex items-center gap-2 group order-1">
-            <div className="bg-primary text-white p-2 rounded-lg group-hover:bg-primary/90 transition-colors shrink-0">
-              <ShoppingBag className="h-6 w-6" />
+            <div className="relative w-10 h-10 shrink-0 overflow-hidden rounded-lg bg-white p-1 shadow-xs border border-gray-100 flex items-center justify-center">
+              <Image
+                src="/favicon.webp"
+                alt="Technologia Logo"
+                width={32}
+                height={32}
+                className="object-contain transform group-hover:scale-110 transition-transform duration-300"
+              />
             </div>
             <span className="text-xl font-bold text-gray-900 tracking-tight hidden sm:block">Technologia</span>
           </Link>
