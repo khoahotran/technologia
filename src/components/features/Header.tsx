@@ -182,17 +182,18 @@ function SearchBox() {
       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-primary transition-colors" />
       <Input
         placeholder={t('header_search_placeholder', {}, "Search for products, brands...")}
-        className="w-full pl-10 bg-gray-50 border-gray-200 focus-visible:bg-white focus-visible:ring-primary rounded-full h-11 transition-all"
+        className="w-full pl-10 pr-24 sm:pr-28 bg-gray-50 border-gray-200 focus-visible:bg-white focus-visible:ring-primary rounded-full h-11 transition-all"
         value={term}
         onChange={(e) => setTerm(e.target.value)}
         onKeyDown={handleKeyDown}
       />
       <Button
-        className="absolute right-1 top-1 rounded-full h-9 px-4"
+        className="absolute right-1 top-1 rounded-full h-9 px-3 sm:px-4"
         onClick={handleSearch}
         aria-label={t('header_search_aria', {}, "Search")}
       >
-        {t('header_search_btn', {}, "Search")}
+        <span className="hidden sm:inline">{t('header_search_btn', {}, "Search")}</span>
+        <Search className="h-4 w-4 sm:hidden" />
       </Button>
     </div>
   );
@@ -280,27 +281,27 @@ export default function Header({ variant = "default" }: HeaderProps) {
 
       {/* 2. Thanh Main Bar (Khu vực chính) */}
       <div className="py-4 border-b border-gray-100">
-        <div className="container mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="container mx-auto px-4 flex flex-wrap md:flex-nowrap items-center justify-between gap-y-4 gap-x-2 md:gap-6">
           {/* Vùng Logo */}
-          <Link href="/" className="md:w-1/6 flex items-center gap-2 group">
-            <div className="bg-primary text-white p-2 rounded-lg group-hover:bg-primary/90 transition-colors">
+          <Link href="/" className="flex-none flex items-center gap-2 group order-1">
+            <div className="bg-primary text-white p-2 rounded-lg group-hover:bg-primary/90 transition-colors shrink-0">
               <ShoppingBag className="h-6 w-6" />
             </div>
-            <span className="text-xl font-bold text-gray-900 tracking-tight">Technologia</span>
+            <span className="text-xl font-bold text-gray-900 tracking-tight hidden sm:block">Technologia</span>
           </Link>
 
           {variant === "default" && (
             <>
               {/* Vùng Ô tìm kiếm */}
-              <div className="flex-1 w-full max-w-2xl px-4">
+              <div className="w-full md:w-auto md:flex-1 max-w-2xl order-3 md:order-2">
                 <Suspense fallback={<div className="h-11 w-full bg-gray-50 rounded-full animate-pulse" />}>
                   <SearchBox />
                 </Suspense>
               </div>
 
               {/* Vùng Hành động (Giỏ hàng & Tài khoản) */}
-              <div className="flex items-center gap-6 w-auto md:w-1/6 justify-end">
-                <Link href="/cart" className="relative cursor-pointer group" aria-label={t('header_cart_aria', {}, "Open shopping cart")}>
+              <div className="flex-none flex items-center gap-4 md:gap-6 justify-end order-2 md:order-3">
+                <Link href="/cart" className="relative cursor-pointer group shrink-0" aria-label={t('header_cart_aria', {}, "Open shopping cart")}>
                   <ShoppingCart className="h-6 w-6 text-gray-700 group-hover:text-primary transition-colors" />
                   {(cart?.totalItems ?? 0) > 0 && (
                     <span className="absolute -top-1.5 -right-1.5 bg-primary text-primary-foreground text-tiny font-bold min-w-[18px] h-[18px] flex items-center justify-center rounded-full px-1 leading-none shadow-sm">

@@ -52,18 +52,18 @@ export default function AboutClient() {
     const team = [
         {
             name: "Trần Nguyễn Anh Khoa",
-            role: t('about_role_ceo', {}, "CEO & Founder"),
-            description: t('about_team_desc', {}, "I want Technologia to help everyone get the best technology products at the best prices."),
+            role: t('about_role_ceo', {}, "Co-Founder & CEO"),
+            description: (role: string) => t('about_team_desc_ceo', { name: "Trần Nguyễn Anh Khoa", role }, "As {role}, {name} guides Technologia to become a leading platform..."),
         },
         {
             name: "Phạm Quốc Toàn",
-            role: t('about_role_cto', {}, "CTO"),
-            description: t('about_team_desc', {}, "I want Technologia to help everyone get the best technology products at the best prices."),
+            role: t('about_role_cto', {}, "Co-Founder & CTO"),
+            description: (role: string) => t('about_team_desc_cto', { name: "Phạm Quốc Toàn", role }, "In the role of {role}, {name} is committed to building..."),
         },
         {
             name: "Nguyễn Ngọc Quế Chi",
-            role: t('about_role_marketing', {}, "Marketing Director"),
-            description: t('about_team_desc', {}, "I want Technologia to help everyone get the best technology products at the best prices."),
+            role: t('about_role_cmo', {}, "Co-Founder & CMO"),
+            description: (role: string) => t('about_team_desc_cmo', { name: "Nguyễn Ngọc Quế Chi", role }, "Taking on the {role} position, {name} desires to spread..."),
         },
     ]
 
@@ -152,7 +152,7 @@ export default function AboutClient() {
                                 key={index}
                                 name={member.name}
                                 role={member.role}
-                                description={member.description}
+                                description={member.description(member.role)}
                             />
                         ))}
                     </HorizontalScroll>

@@ -18,7 +18,7 @@ interface TeamMemberCardProps {
 
 export function TeamMemberCard({ name, role, description, imageUrl }: TeamMemberCardProps) {
   return (
-    <div className="bg-white rounded-2xl p-6 min-w-[280px] flex-shrink-0 border border-gray-100 shadow-sm">
+    <div className="bg-white rounded-2xl p-6 w-[300px] sm:w-[360px] md:w-[400px] shrink-0 border border-gray-100 shadow-sm">
       <div className="flex flex-col items-center text-center space-y-4">
         {/* Vùng chứa ảnh đại diện */}
         <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center">
