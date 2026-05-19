@@ -170,9 +170,16 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                             <h1 className="text-xl lg:text-2xl font-semibold text-foreground leading-snug">{product.name}</h1>
                             <div className="flex items-center gap-3 text-sm flex-wrap">
                                 <span className="text-muted-foreground">{t('sku', {}, "SKU")} {product.productId.slice(0, 7).toUpperCase()}</span>
-                                <div className="flex items-center gap-1 text-yellow-400">
+                                <div className="flex items-center gap-0.5">
                                     {[...Array(5)].map((_, i) => (
-                                        <Star key={i} className={`w-4 h-4 ${i < Math.round(product.averageRating || 4) ? "fill-current" : "text-gray-300"}`} />
+                                        <Star
+                                            key={i}
+                                            className={`w-4 h-4 ${
+                                                i < Math.round(product.averageRating || 4)
+                                                    ? "fill-primary text-primary"
+                                                    : "fill-transparent text-[#D3D9E0]"
+                                            }`}
+                                        />
                                     ))}
                                 </div>
                                 {/* <span className="text-muted-foreground">({ratingCount})</span> */}
@@ -315,16 +322,23 @@ export default function ProductDetailClient({ id }: ProductDetailClientProps) {
                                             {feedbacks.map((fb, i) => (
                                                 <div key={i} className="flex flex-col gap-2 p-4 rounded-xl border border-border bg-card shadow-sm">
                                                     <div className="flex items-center justify-between">
-                                                        <div className="flex items-center gap-1 text-yellow-400">
+                                                        <div className="flex items-center gap-0.5">
                                                             {[...Array(5)].map((_, starIdx) => (
-                                                                <Star key={starIdx} className={`w-3 h-3 ${starIdx < fb.rating ? "fill-current" : "text-gray-300"}`} />
+                                                                <Star
+                                                                    key={starIdx}
+                                                                    className={`w-3 h-3 ${
+                                                                        starIdx < fb.rating
+                                                                            ? "fill-primary text-primary"
+                                                                            : "fill-transparent text-[#D3D9E0]"
+                                                                    }`}
+                                                                />
                                                             ))}
                                                         </div>
                                                         <span className="text-tiny text-muted-foreground">{new Date(fb.createdAt).toLocaleDateString(currentLocale)}</span>
                                                     </div>
                                                     <p className="text-sm text-foreground">{fb.comment}</p>
                                                     <div className="text-tiny text-muted-foreground flex items-center gap-2">
-                                                        <span>Variant: {fb.variantId}</span>
+                                                        <span>{t("variant", {}, "Variant")}: {fb.variantId}</span>
                                                     </div>
                                                 </div>
                                             ))}
