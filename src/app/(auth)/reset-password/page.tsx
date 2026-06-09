@@ -1,5 +1,6 @@
-import { Loader2 } from "lucide-react"
 import { Suspense } from "react"
+
+import { FullLoading } from "@/components/shared/loading"
 
 import ResetPasswordClient from "./ResetPasswordClient"
 
@@ -10,7 +11,7 @@ export const metadata = {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin" /></div>}>
+    <Suspense fallback={<FullLoading className="min-h-screen" />}>
       <ResetPasswordClient />
     </Suspense>
   )

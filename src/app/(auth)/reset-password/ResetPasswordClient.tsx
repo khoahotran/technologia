@@ -1,6 +1,7 @@
 "use client"
 
-import { ArrowLeft, Loader2, Eye, EyeOff } from "lucide-react"
+import { ArrowLeft, Eye, EyeOff } from "lucide-react"
+import { SmallLoading } from "@/components/shared/loading"
 import Link from "next/link"
 import { useSearchParams, useRouter } from "next/navigation"
 import { useState } from "react"
@@ -136,7 +137,7 @@ export default function ResetPasswordClient() {
                         <Button type="submit" className="w-full h-11 text-lg" disabled={loading}>
                             {loading ? (
                                 <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    <SmallLoading className="mr-2 h-4 w-4" />
                                     {t('resetting', {}, "Resetting...")}
                                 </>
                             ) : (

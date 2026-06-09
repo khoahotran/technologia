@@ -1,6 +1,7 @@
 "use client";
 
-import { Loader2, Tag, Ticket } from "lucide-react";
+import { Tag, Ticket } from "lucide-react";
+import { SmallLoading } from "@/components/shared/loading";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -260,7 +261,7 @@ export default function CartClient() {
                                     disabled={isCalculating || !promoCode.trim()}
                                     className="min-h-11"
                                 >
-                                    {isCalculating ? <Loader2 className="h-4 w-4 animate-spin" /> : t('apply', {}, "Apply")}
+                                    {isCalculating ? <SmallLoading className="h-4 w-4" /> : t('apply', {}, "Apply")}
                                 </Button>
                             </div>
                             {appliedDiscount && (

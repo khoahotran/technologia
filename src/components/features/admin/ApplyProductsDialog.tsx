@@ -1,4 +1,5 @@
-import { Check, ChevronsUpDown, Loader2, Plus, Search, X } from "lucide-react";
+import { SmallLoading } from "@/components/shared/loading";
+import { Check, ChevronsUpDown, Plus, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -47,18 +48,18 @@ interface ApplyProductsDialogProps {
 /**
  * Component to pick a single product from a searchable list
  */
-function ProductPicker({ 
-    selectedProductId, 
-    onSelect 
-}: { 
-    selectedProductId: string; 
-    onSelect: (id: string, name: string) => void 
+function ProductPicker({
+    selectedProductId,
+    onSelect
+}: {
+    selectedProductId: string;
+    onSelect: (id: string, name: string) => void
 }) {
     const { t } = useLanguage();
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState("");
-    
-    const { data: productData, isLoading } = useProducts({ 
+
+    const { data: productData, isLoading } = useProducts({
         keyword: search.trim() || undefined,
         size: 5
     });
@@ -84,13 +85,13 @@ function ProductPicker({
             </PopoverTrigger>
             <PopoverContent className="w-[300px] p-0" align="start">
                 <Command shouldFilter={false}>
-                    <CommandInput 
-                        placeholder={t("admin_search_product")} 
+                    <CommandInput
+                        placeholder={t("admin_search_product")}
                         value={search}
                         onValueChange={setSearch}
                     />
                     <CommandList>
-                        {isLoading && <div className="p-4 flex justify-center"><Loader2 className="h-4 w-4 animate-spin" /></div>}
+                        {isLoading && <div className="p-4 flex justify-center"><SmallLoading className="h-4 w-4" /></div>}
                         {!isLoading && (!productData || productData.items.length === 0) && (
                             <CommandEmpty>{t("admin_no_products_found")}</CommandEmpty>
                         )}
@@ -124,14 +125,14 @@ function ProductPicker({
 /**
  * Component to pick multiple variants of a selected product
  */
-function VariantPicker({ 
-    productId, 
-    selectedVariantIds, 
-    onChange 
-}: { 
-    productId: string; 
-    selectedVariantIds: string[]; 
-    onChange: (ids: string[]) => void 
+function VariantPicker({
+    productId,
+    selectedVariantIds,
+    onChange
+}: {
+    productId: string;
+    selectedVariantIds: string[];
+    onChange: (ids: string[]) => void
 }) {
     const { t } = useLanguage();
     const { data: product, isLoading } = useProductDetail(productId);
@@ -159,12 +160,12 @@ function VariantPicker({
                 const label = `${v.color || ""} ${v.storage || ""}`.trim() || vId;
                 return (
                     <div key={vId} className="flex items-center gap-2 px-1">
-                        <Checkbox 
-                            id={`v-${vId}`} 
+                        <Checkbox
+                            id={`v-${vId}`}
                             checked={selectedVariantIds.includes(vId)}
                             onCheckedChange={() => toggleVariant(vId)}
                         />
-                        <label 
+                        <label
                             htmlFor={`v-${vId}`}
                             className="text-xs cursor-pointer select-none truncate flex-1"
                         >
@@ -232,7 +233,7 @@ export function ApplyProductsDialog({
         const payload: UpdateProductDiscountRequest = {};
         if (selectedBrandIds.length > 0) payload.brandIds = selectedBrandIds;
         if (selectedCategoryIds.length > 0) payload.categoryIds = selectedCategoryIds;
-        
+
         const allVariantEntries: { productId: string; variantId: string }[] = [];
         productSelections.forEach(selection => {
             selection.variantIds.forEach(vId => {
@@ -430,19 +431,19 @@ export function ApplyProductsDialog({
                                         >
                                             <X className="h-3 w-3" />
                                         </button>
-                                        
+
                                         <div className="space-y-1.5">
                                             <label className="text-[10px] font-bold text-muted-foreground uppercase px-1">
                                                 {t("admin_product")}
                                             </label>
-                                            <ProductPicker 
+                                            <ProductPicker
                                                 selectedProductId={selection.productId}
                                                 onSelect={(id, name) => updateProductSelection(index, { productId: id, productName: name, variantIds: [] })}
                                             />
                                         </div>
 
                                         {selection.productId && (
-                                            <VariantPicker 
+                                            <VariantPicker
                                                 productId={selection.productId}
                                                 selectedVariantIds={selection.variantIds}
                                                 onChange={(ids) => updateProductSelection(index, { variantIds: ids })}

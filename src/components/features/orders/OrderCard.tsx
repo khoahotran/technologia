@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
+import { SmallLoading } from "@/components/shared/loading";
 import Link from "next/link";
 import { useState } from "react";
 import type { ReactNode } from "react";
@@ -83,7 +83,7 @@ export function OrderCard({ orderId, items, status, className, isAdmin }: OrderC
                             )}
                         >
                             {updateStatusMutation.isPending && updateStatusMutation.variables?.deliveryStatus === option ? (
-                                <Loader2 className="h-3 w-3 animate-spin inline mr-1" />
+                                <SmallLoading className="h-3 w-3 inline mr-1" />
                             ) : null}
                             {formatOrderStatusLabel(option, t)}
                         </button>

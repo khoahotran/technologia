@@ -1,8 +1,10 @@
 "use client"
 
-import { ArrowLeft, Loader2 } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
+
+import { SmallLoading } from "@/components/shared/loading"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -101,7 +103,7 @@ export default function ForgotPasswordClient() {
                             >
                                 {loading ? (
                                     <>
-                                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                        <SmallLoading className="mr-2 h-5 w-5" />
                                         {t('sending_link', {}, "Sending...")}
                                     </>
                                 ) : (
