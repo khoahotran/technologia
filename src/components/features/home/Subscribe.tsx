@@ -6,7 +6,8 @@
  * Hiển thị một khối kêu gọi hành động (Call to Action) để người dùng
  * nhập email đăng ký nhận thông báo, khuyến mãi từ cửa hàng.
  */
-import { Mail, Loader2 } from "lucide-react"
+import { Mail } from "lucide-react"
+import { SmallLoading } from "@/components/shared/loading"
 import { useState } from "react"
 import { toast } from "sonner"
 
@@ -92,7 +93,7 @@ export function Subscribe({ variant = "default", className }: SubscribeProps) {
               disabled={isSubmitting || !email.trim()}
               className="absolute right-1.5 top-1.5 h-11 rounded-lg bg-[#5B6C8F] px-6 font-semibold text-white hover:bg-[#4A5975]"
             >
-              {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : t('subscribe_btn', {}, "SUBSCRIBE")}
+              {isSubmitting ? <SmallLoading className="h-4 w-4 text-white" /> : t('subscribe_btn', {}, "SUBSCRIBE")}
             </Button>
           </form>
         </div>

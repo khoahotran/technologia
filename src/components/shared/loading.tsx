@@ -42,8 +42,8 @@ export const FullLoading: React.FC<{
         className
       )}
     >
-      <Loader2 className="animate-spin w-12 h-12 text-gray-700" />
-      {message && <p className="mt-2 text-gray-700">{message}</p>}
+      <Loader2 className="animate-spin w-10 h-10 text-primary" />
+      {message && <p className="mt-2 text-muted-foreground font-medium text-sm">{message}</p>}
     </div>
   );
 };
@@ -57,7 +57,7 @@ export const SmallLoading: React.FC<{ className?: string }> = ({
   return (
     <Loader2
       className={cn(
-        "animate-spin w-5 h-5 text-gray-500 inline-block",
+        "animate-spin w-4 h-4 text-muted-foreground inline-block",
         className
       )}
     />

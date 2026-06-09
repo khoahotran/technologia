@@ -3,12 +3,16 @@ import type {
     AdminActionLogQueryParams,
     AdminActionLogResponse,
     CreateDeliveryLogRequest,
-    CreateMonthlyRevenueReportRequest,
-    CreateTopSellingProductsReportRequest,
+    CreateReportRequest,
+    CreateReportResponse,
     DeliveryLogResponse,
+    MonthlyProductRevenueEvent,
+    MonthlyRevenueQueryParams,
+    MonthlyRevenueResponse,
     ReportListResponse,
     ReportQueryParams,
     ReportResponse,
+    TopSellingProductResponse,
     UpdateOrderDeliveryStatusRequest,
 } from "./types";
 
@@ -16,25 +20,69 @@ import { del, get, patch, post, put } from "@/api/client";
 import type { ApiResponse, PaginatedResponse } from "@/types/api.types";
 import { formatParamsWithDates } from "@/utils";
 
-export async function createMonthlyRevenueReport(
-    payload: CreateMonthlyRevenueReportRequest
-): Promise<ReportResponse> {
-    const response = await post<ApiResponse<ReportResponse>>(
-        "/api/admins/reports/monthly-revenue",
-        payload
+// ─── Report Queries ──────────────────────────────────────────────────────────
+
+/**
+ * GET /api/orchestration/admin/report-details/monthly-revenue?from=YYYY-MM&to=YYYY-MM
+ * Returns revenue per month for the given range.
+ */
+export async function getMonthlyRevenue(
+    params: MonthlyRevenueQueryParams
+): Promise<MonthlyRevenueResponse[]> {
+    const response = await get<ApiResponse<MonthlyRevenueResponse[]>>(
+        "/api/orchestration/admin/report-details/monthly-revenue",
+        { params }
+    );
+    return response.data ?? [];
+}
+
+/**
+ * GET /api/orchestration/admin/report-details/product-revenue?month=YYYY-MM
+ * Returns product-level revenue breakdown for a single month.
+ */
+export async function getProductRevenueOfMonth(
+    month: string
+): Promise<MonthlyProductRevenueEvent> {
+    const response = await get<ApiResponse<MonthlyProductRevenueEvent>>(
+        "/api/orchestration/admin/report-details/product-revenue",
+        { params: { month } }
     );
     return response.data;
 }
 
-export async function createTopSellingProductsReport(
-    payload: CreateTopSellingProductsReportRequest
-): Promise<ReportResponse> {
-    const response = await post<ApiResponse<ReportResponse>>(
-        "/api/admins/reports/top-selling-products",
-        payload
+/**
+ * GET /api/orchestration/admin/report-details/top-selling-products?limit=N
+ * Returns the top N selling products (all-time or recent).
+ */
+export async function getTopSellingProducts(
+    limit = 10
+): Promise<TopSellingProductResponse[]> {
+    const response = await get<ApiResponse<TopSellingProductResponse[]>>(
+        "/api/orchestration/admin/report-details/top-selling-products" + `/${limit}`
+        // { params: { limit } }
+    );
+    return response.data ?? [];
+}
+
+// ─── Report Commands ─────────────────────────────────────────────────────────
+
+/**
+ * POST /api/orchestration/admin/report-details/create-report?from=YYYY-MM&to=YYYY-MM
+ * Async — returns a reportId immediately; the PDF is generated in the background.
+ * Poll GET /api/admins/reports/:reportId to check when it's ready (link is set).
+ */
+export async function createReport(
+    payload: CreateReportRequest
+): Promise<CreateReportResponse> {
+    const response = await post<ApiResponse<CreateReportResponse>>(
+        "/api/orchestration/admin/report-details/create-report",
+        undefined,
+        { params: { from: payload.from, to: payload.to } }
     );
     return response.data;
 }
+
+// ─── Report List (admin-service) ─────────────────────────────────────────────
 
 export async function getReportById(reportId: string): Promise<ReportResponse> {
     const response = await get<ApiResponse<ReportResponse>>(`/api/admins/reports/${reportId}`);
@@ -53,6 +101,8 @@ export async function getReports(params: ReportQueryParams = {}): Promise<Report
         totalPages: response.count_pages ?? 0,
     };
 }
+
+// ─── Action Logs ──────────────────────────────────────────────────────────────
 
 export async function getAdminActionLogs(
     params: AdminActionLogQueryParams = {}
@@ -73,6 +123,8 @@ export async function getAdminActionLogById(logId: string): Promise<AdminActionL
     const response = await get<ApiResponse<AdminActionLogResponse>>(`/api/admins/action-logs/by-id/${logId}`);
     return response.data;
 }
+
+// ─── Delivery Logs ────────────────────────────────────────────────────────────
 
 export async function getDeliveryLogs(orderId: string): Promise<DeliveryLogResponse[]> {
     const response = await get<ApiResponse<DeliveryLogResponse[]>>(`/api/delivery-logs/order/${orderId}`);

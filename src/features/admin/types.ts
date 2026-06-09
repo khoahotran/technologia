@@ -1,35 +1,65 @@
-export type ReportType = "MONTHLY_REVENUE" | "TOP_SELLING_PRODUCTS";
+// Report types — backend only supports MONTHLY_REVENUE now
+export type ReportType = "MONTHLY_REVENUE";
 
-export interface MonthlyRevenueItem {
-    month:
-        | "JANUARY"
-        | "FEBRUARY"
-        | "MARCH"
-        | "APRIL"
-        | "MAY"
-        | "JUNE"
-        | "JULY"
-        | "AUGUST"
-        | "SEPTEMBER"
-        | "OCTOBER"
-        | "NOVEMBER"
-        | "DECEMBER";
+// ─── Revenue ───────────────────────────────────────────────────────────────
+
+/** Revenue per month returned by GET /orchestration/report-details/monthly-revenue */
+export interface MonthlyRevenueResponse {
+    month: string;   // "YYYY-MM"
     revenue: number;
 }
 
-export interface CreateMonthlyRevenueReportRequest {
-    reportItems: MonthlyRevenueItem[];
+/** Query params for monthly-revenue endpoint */
+export interface MonthlyRevenueQueryParams {
+    from: string;  // "YYYY-MM"
+    to: string;    // "YYYY-MM"
 }
 
-export interface TopSellingProductItem {
+// ─── Product Revenue ────────────────────────────────────────────────────────
+
+/** Single product line in a month's revenue breakdown */
+export interface ProductRevenueItem {
+    productId: string;
+    variantId: string;
+    productName: string;
+    color: string;
+    storage: string;
+    quantitySold: number;
+    revenue: number;
+}
+
+/** Product revenue data for one month */
+export interface MonthlyProductRevenueEvent {
+    time: string;          // "YYYY-MM"
+    totalRevenue: number;
+    products: ProductRevenueItem[];
+}
+
+// ─── Top Selling ────────────────────────────────────────────────────────────
+
+export interface TopSellingProductResponse {
     productId: string;
     productName: string;
     totalSold: number;
+    totalRevenue: number;
+    /** may be absent in some backend versions */
+    imageUrl?: string;
 }
 
-export interface CreateTopSellingProductsReportRequest {
-    reportItems: TopSellingProductItem[];
+// ─── Create Report (async) ──────────────────────────────────────────────────
+
+/** POST /orchestration/admin/report-details/create-report?from=&to= */
+export interface CreateReportRequest {
+    from: string;  // "YYYY-MM"
+    to: string;    // "YYYY-MM"
 }
+
+/** Immediately returned — report is generated asynchronously */
+export interface CreateReportResponse {
+    reportId: string;
+}
+
+// ─── Report list ────────────────────────────────────────────────────────────
 
 export interface ReportResponse {
     reportId: string;
@@ -58,6 +88,8 @@ export interface ReportListResponse {
     totalPages: number;
 }
 
+// ─── Action Logs ────────────────────────────────────────────────────────────
+
 export interface AdminActionLogResponse {
     adminActionLogId: string;
     adminId: string;
@@ -85,6 +117,8 @@ export interface AdminActionLogListResponse {
     totalItems: number;
     totalPages: number;
 }
+
+// ─── Delivery Logs ──────────────────────────────────────────────────────────
 
 export interface DeliveryLogResponse {
     deliveryLogId: string;

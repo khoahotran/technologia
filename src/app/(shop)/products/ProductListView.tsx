@@ -7,7 +7,7 @@
  * quan ly trang thai (state) cho bo loc, phan trang, va goi cac custom hooks 
  * de tuong tac voi Backend (Lay danh sach san pham, danh muc, thuong hieu, them vao gio...).
  */
-import { Loader2, Flame, Music, Tag, Smartphone } from "lucide-react";
+import { AlertTriangle, Flame, Music, Tag, Smartphone } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, startTransition } from "react";
@@ -169,7 +169,7 @@ export function ProductListView() {
     if (isError) {
         return (
             <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center">
-                <Loader2 className="mb-3 h-7 w-7 text-destructive" />
+                <AlertTriangle className="mb-3 h-7 w-7 text-destructive" />
                 <p className="text-destructive">{t("cannot_load_products", {}, "Cannot load products right now.")}</p>
                 <p className="mt-1 text-sm text-muted-foreground">
                     {t("retry_later", {}, "Please retry in a moment.")}

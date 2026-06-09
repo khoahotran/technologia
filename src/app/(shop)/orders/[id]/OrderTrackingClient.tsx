@@ -1,7 +1,8 @@
 "use client";
 
 import { useQueries, useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Circle, Loader2, Star, Trash2 } from "lucide-react";
+import { ArrowLeft, Circle, Star, Trash2 } from "lucide-react";
+import { SmallLoading } from "@/components/shared/loading";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -275,7 +276,7 @@ export default function OrderTrackingClient({ id }: { id: string }) {
                                             disabled={cancelOrderMutation.isPending}
                                             className="border-[#FF4D4F] text-[#FF4D4F] hover:bg-[#FFF1F0] hover:text-[#FF4D4F]"
                                         >
-                                            {cancelOrderMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                                            {cancelOrderMutation.isPending ? <SmallLoading className="h-4 w-4 mr-2" /> : null}
                                             {t("cancel_order_btn", {}, "Cancel order")}
                                         </Button>
                                     )}
@@ -316,7 +317,7 @@ export default function OrderTrackingClient({ id }: { id: string }) {
                                             disabled={receiveOrderMutation.isPending}
                                             className="bg-primary hover:bg-primary/90 text-white"
                                         >
-                                            {receiveOrderMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                                            {receiveOrderMutation.isPending ? <SmallLoading className="h-4 w-4 mr-2" /> : null}
                                             {t("order_received_btn")}
                                         </Button>
                                     )}
@@ -363,7 +364,7 @@ export default function OrderTrackingClient({ id }: { id: string }) {
                             </h3>
                             {addressQuery.isLoading ? (
                                 <div className="flex items-center gap-2 text-muted-foreground">
-                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    <SmallLoading className="h-4 w-4" />
                                     <span className="text-sm">{t("loading", {}, "Loading...")}</span>
                                 </div>
                             ) : addressQuery.data ? (
@@ -385,7 +386,7 @@ export default function OrderTrackingClient({ id }: { id: string }) {
                             {order.paymentAccountId && order.paymentMethod !== "COD" ? (
                                 paymentAccountQuery.isLoading ? (
                                     <div className="flex items-center gap-2 text-muted-foreground mt-2">
-                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                        <SmallLoading className="h-4 w-4" />
                                         <span className="text-sm">{t("loading", {}, "Loading...")}</span>
                                     </div>
                                 ) : paymentAccountQuery.data ? (

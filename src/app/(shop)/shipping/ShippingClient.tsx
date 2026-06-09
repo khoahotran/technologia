@@ -62,7 +62,6 @@ export default function ShippingClient() {
     const recalculateCheckout = useRecalculateCheckout();
     const confirmCheckout = useConfirmCheckout();
     const checkoutSessionId = useOrderFlowStore((state) => state.checkoutSessionId);
-    const storedSelectedCartItemIds = useOrderFlowStore((state) => state.selectedCartItemIds);
     const setCheckoutSessionId = useOrderFlowStore((state) => state.setCheckoutSessionId);
     const setSelectedCartItemIds = useOrderFlowStore((state) => state.setSelectedCartItemIds);
     const setSelectedAddressId = useOrderFlowStore((state) => state.setSelectedAddressId);
@@ -73,16 +72,14 @@ export default function ShippingClient() {
         [selectedQuery]
     );
 
+    // Always reset checkoutSessionId on mount so every visit to /shipping
+    // triggers a fresh /checkout/preview/init call.
+    // This fixes the bug where backing out of checkout without placing an order
+    // caused the old session to be reused on the next checkout attempt.
     useEffect(() => {
-        const hasDifferentSelection =
-            storedSelectedCartItemIds.length !== selectedIds.length ||
-            storedSelectedCartItemIds.some((id, index) => id !== selectedIds[index]);
-
-        if (hasDifferentSelection) {
-            console.log("⚠️ selectedIds mismatch, resetting checkoutSessionId");
-            setCheckoutSessionId(null);
-        }
-    }, [selectedIds, setCheckoutSessionId, storedSelectedCartItemIds]);
+        setCheckoutSessionId(null);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const allCartItems = useMemo(() => cart?.cartItems ?? [], [cart]);
     const selectedCartItems = useMemo(
