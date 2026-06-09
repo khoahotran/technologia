@@ -7,10 +7,10 @@
  * (hiện tại logic mẫu đang lấy danh sách mới nhất với sortDirection: "DESC").
  * Có xử lý trạng thái Loading Skeleton trong lúc lấy dữ liệu.
  */
-import Link from "next/link"
+import Link from "next/link";
 
-import { Button } from "@/components/ui/button"
-import { ProductCard } from "@/components/ui/product-card"
+import { Button } from "@/components/ui/button";
+import { ProductCard } from "@/components/ui/product-card";
 import { useProducts } from "@/features/products/hooks";
 import { useLanguage } from "@/providers/language.provider";
 
@@ -21,7 +21,7 @@ export function HotProducts() {
   const currentLocale = locale === 'vi' ? 'vi-VN' : 'en-US';
   const formatter = new Intl.NumberFormat(currentLocale, { style: 'currency', currency: 'VND' });
   // Lấy dữ liệu sản phẩm từ Hook (trang 0, lấy 12 sản phẩm)
-  const { data, isLoading } = useProducts({ page: 0, size: 12, sortBy: "id", sortDirection: "DESC" });
+  const { data, isLoading } = useProducts({ page: 0, size: 12, sortBy: "average_rating", sortDirection: "DESC" });
   const products = data?.items ?? [];
 
   if (isLoading) {

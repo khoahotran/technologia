@@ -143,12 +143,21 @@ export function Chatbot() {
             },
         ]);
 
-        const chars = reply.split("");
-        for (let i = 0; i < chars.length; i++) {
-            await new Promise((resolve) => setTimeout(resolve, 15));
+        const chunkSize = 2;
+        let currentText = "";
+        for (let i = 0; i < reply.length; i += chunkSize) {
+            currentText = reply.slice(0, i + chunkSize);
+            await new Promise((resolve) => setTimeout(resolve, 12));
             setMessages((prev) =>
                 prev.map((msg) =>
-                    msg.id === botMessageId ? { ...msg, text: reply.slice(0, i + 1) } : msg
+                    msg.id === botMessageId ? { ...msg, text: currentText } : msg
+                )
+            );
+        }
+        if (currentText !== reply) {
+            setMessages((prev) =>
+                prev.map((msg) =>
+                    msg.id === botMessageId ? { ...msg, text: reply } : msg
                 )
             );
         }

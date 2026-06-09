@@ -97,9 +97,28 @@ export default function AdminOrdersClient() {
 
     const orders = useMemo(() => {
         const items = allOrdersQuery.data?.items ?? [];
-        if (!searchId.trim()) return items;
+
+        const parseSafeDate = (d: unknown) => {
+            if (!d) return 0;
+            const s = String(d);
+            const iso = s.includes('T') && !s.includes('Z') && !s.includes('+') ? `${s}Z` : s;
+            return new Date(iso).getTime();
+        };
+
+        const sorted = [...items].sort((a: Record<string, unknown>, b: Record<string, unknown>) => {
+            const dateA = parseSafeDate(a["orderDate"]);
+            const dateB = parseSafeDate(b["orderDate"]);
+            if (dateB !== dateA) {
+                return dateB - dateA;
+            }
+            const updateA = parseSafeDate(a["updatedAt"]);
+            const updateB = parseSafeDate(b["updatedAt"]);
+            return updateB - updateA;
+        });
+
+        if (!searchId.trim()) return sorted;
         const kw = searchId.trim().toLowerCase();
-        return items.filter((o: Record<string, unknown>) => String(o["orderId"]).toLowerCase().includes(kw));
+        return sorted.filter((o: Record<string, unknown>) => String(o["orderId"]).toLowerCase().includes(kw));
     }, [allOrdersQuery.data?.items, searchId]);
 
     const selectedOrder = adminOrderQuery.data;
