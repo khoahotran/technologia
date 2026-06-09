@@ -1,7 +1,7 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, ChevronDown, Landmark, Wallet, Banknote } from "lucide-react";
+import { ArrowLeft, Banknote, ChevronDown, Landmark, Wallet } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -16,8 +16,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useCart } from "@/features/cart/hooks";
 import {
     useAddresses,
-    usePaymentAccounts,
     useCreatePaymentAccount,
+    usePaymentAccounts,
     useSetDefaultPaymentAccount,
 } from "@/features/checkout/hooks";
 import type { Address } from "@/features/checkout/types";
@@ -106,7 +106,6 @@ export default function ShippingClient() {
                 voucherCode: voucherCodeParam,
             }, {
                 onSuccess: (data) => {
-                    console.log("📦 Preview response:", { voucherDiscount: data.voucherDiscount, shippingDiscount: data.shippingDiscount, totalPrice: data.totalPrice });
                     setCheckoutSessionId(data.checkoutSessionId);
                     setCheckoutData(data);
                 }
@@ -125,7 +124,6 @@ export default function ShippingClient() {
                 voucherCode: voucherCodeParam,
             }, {
                 onSuccess: (data) => {
-                    console.log("🔄 Recalculate response:", { voucherDiscount: data.voucherDiscount, shippingDiscount: data.shippingDiscount, totalPrice: data.totalPrice });
                     setCheckoutData(data);
                 }
             });
@@ -411,12 +409,11 @@ export default function ShippingClient() {
                                 }}
                                 className="grid gap-3"
                             >
-                                <div 
-                                    className={`relative flex items-center gap-3 p-3.5 rounded-lg border transition-all cursor-pointer ${
-                                        paymentMethod === "BANK_ACCOUNT" 
-                                        ? "border-primary bg-primary/5" 
-                                        : "border-border hover:border-primary/30"
-                                    }`}
+                                <div
+                                    className={`relative flex items-center gap-3 p-3.5 rounded-lg border transition-all cursor-pointer ${paymentMethod === "BANK_ACCOUNT"
+                                            ? "border-primary bg-primary/5"
+                                            : "border-border hover:border-primary/30"
+                                        }`}
                                     onClick={() => {
                                         setPaymentMethod("BANK_ACCOUNT");
                                         setPaymentAccountId(bankAccounts[0]?.id ?? "");
@@ -429,12 +426,11 @@ export default function ShippingClient() {
                                     </Label>
                                 </div>
 
-                                <div 
-                                    className={`relative flex items-center gap-3 p-3.5 rounded-lg border transition-all cursor-pointer ${
-                                        paymentMethod === "E_WALLET" 
-                                        ? "border-primary bg-primary/5" 
-                                        : "border-border hover:border-primary/30"
-                                    }`}
+                                <div
+                                    className={`relative flex items-center gap-3 p-3.5 rounded-lg border transition-all cursor-pointer ${paymentMethod === "E_WALLET"
+                                            ? "border-primary bg-primary/5"
+                                            : "border-border hover:border-primary/30"
+                                        }`}
                                     onClick={() => {
                                         setPaymentMethod("E_WALLET");
                                         setPaymentAccountId(walletAccounts[0]?.id ?? "");
@@ -447,12 +443,11 @@ export default function ShippingClient() {
                                     </Label>
                                 </div>
 
-                                <div 
-                                    className={`relative flex items-center gap-3 p-3.5 rounded-lg border transition-all cursor-pointer ${
-                                        paymentMethod === "COD" 
-                                        ? "border-primary bg-primary/5" 
-                                        : "border-border hover:border-primary/30"
-                                    }`}
+                                <div
+                                    className={`relative flex items-center gap-3 p-3.5 rounded-lg border transition-all cursor-pointer ${paymentMethod === "COD"
+                                            ? "border-primary bg-primary/5"
+                                            : "border-border hover:border-primary/30"
+                                        }`}
                                     onClick={() => {
                                         setPaymentMethod("COD");
                                         setPaymentAccountId("");

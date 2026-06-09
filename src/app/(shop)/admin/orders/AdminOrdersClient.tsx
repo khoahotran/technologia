@@ -231,7 +231,6 @@ export default function AdminOrdersClient() {
                                     {orders.map((order, i: number) => {
                                         const oid = String(order.orderId);
                                         const status = order.deliveryStatus;
-                                        console.log("order.orderDate: ", order.orderDate);
                                         
                                         return (
                                             <tr
