@@ -6,6 +6,7 @@ import {
     BarChart3,
     Box,
     Calendar,
+    CalendarDays,
     ChevronDown,
     ChevronRight,
     Download,
@@ -15,6 +16,7 @@ import {
     Package,
     RefreshCw,
     Search,
+    ShoppingBag,
     TrendingUp,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -23,6 +25,7 @@ import { SmallLoading } from "@/components/shared/loading";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
     Pagination,
@@ -45,9 +48,11 @@ import {
     useTopSellingProducts,
 } from "@/features/admin/hooks";
 import type { MonthlyRevenueResponse, ProductRevenueItem, ReportResponse, TopSellingProductResponse } from "@/features/admin/types";
-import { truncateId } from "@/features/orders/presentation";
-import { useLanguage } from "@/providers/language.provider";
+import { useAdminOrder, useAdminOrders } from "@/features/orders/hooks";
+import { formatOrderStatusLabel, truncateId } from "@/features/orders/presentation";
+import type { DeliveryStatus } from "@/features/orders/types";
 import { useProductDetail } from "@/features/products/hooks";
+import { useLanguage } from "@/providers/language.provider";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -60,11 +65,9 @@ function toYearMonth(d: Date): string {
 function defaultRange(): { from: string; to: string } {
     const now = new Date();
     const to = toYearMonth(now);
-    console.log("🚀 ~ defaultRange ~ to:", to)
     const fromDate = new Date(now.getFullYear(), now.getMonth() - 11, 1);
     const from = toYearMonth(fromDate);
-    console.log("🚀 ~ defaultRange ~ from:", from)
-    
+
     return { from, to };
 }
 
@@ -103,7 +106,7 @@ function toReportRows(reports: ReportResponse[], locale: string) {
 function TopSellingRow({ item, index, dateLocale }: { item: TopSellingProductResponse; index: number; dateLocale: string }) {
     const { data: product, isLoading } = useProductDetail(item.productId);
     const { t } = useLanguage();
-    
+
     // Default values if product data hasn't loaded or failed
     let revenue = item.totalRevenue ?? 0;
     let imageUrl = item.imageUrl;
@@ -131,7 +134,7 @@ function TopSellingRow({ item, index, dateLocale }: { item: TopSellingProductRes
                         </div>
                     )}
                     <div className="flex flex-col">
-                        <span className="font-medium truncate max-w-[120px]" title={productName}>
+                        <span className="font-medium truncate max-w-[160px]" title={productName}>
                             {productName || truncateId(item.productId)}
                         </span>
                         {isLoading && <span className="text-tiny text-muted-foreground animate-pulse">{t("loading", {}, "Loading...")}</span>}
@@ -181,19 +184,18 @@ function MonthRevenueRow({
         idx === 0
             ? null
             : diff > 0
-            ? <ArrowUp className="h-3 w-3 text-emerald-500 inline" />
-            : diff < 0
-            ? <ArrowDown className="h-3 w-3 text-red-500 inline" />
-            : <span className="h-3 w-3 text-muted-foreground inline">–</span>;
+                ? <ArrowUp className="h-3 w-3 text-success inline" />
+                : diff < 0
+                    ? <ArrowDown className="h-3 w-3 text-destructive inline" />
+                    : <span className="h-3 w-3 text-muted-foreground inline">–</span>;
 
     const shortLabel = monthLabels[idx] ?? item.month;
 
     return (
         <>
             <tr
-                className={`border-b border-border/30 transition-colors hover:bg-accent/50 cursor-pointer ${
-                    idx % 2 === 0 ? "bg-muted/20" : ""
-                } ${expanded ? "bg-accent/30" : ""}`}
+                className={`border-b border-border/30 transition-colors hover:bg-accent/50 cursor-pointer ${idx % 2 === 0 ? "bg-muted/20" : ""
+                    } ${expanded ? "bg-accent/30" : ""}`}
                 onClick={() => setExpanded((v) => !v)}
             >
                 <td className="py-1.5 px-2 font-medium flex items-center gap-1">
@@ -461,6 +463,142 @@ const entityTypeOptions = [
     { value: "DISCOUNT", label: "admin_discounts" },
 ];
 
+// ─── Daily Revenue: Order Detail Modal ───────────────────────────────────────
+
+function DailyOrderItemRow({ item, idx, dateLocale }: { item: Record<string, unknown>; idx: number; dateLocale: string }) {
+    const productId = String(item["productId"] ?? "");
+    const { data: product, isLoading } = useProductDetail(productId);
+    const { t } = useLanguage();
+
+    const name = product?.name ?? item["name"] ?? item["productId"] ?? `Item ${idx + 1}`;
+    const firstVariant = product?.variants?.[0];
+    const imageUrl = firstVariant?.images?.[0];
+    const sku = firstVariant?.variantId ?? String(item["productId"] ?? "").slice(0, 8) + "...";
+
+    return (
+        <div className="flex items-center gap-3 p-3 hover:bg-muted/30 transition-colors">
+            {imageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={imageUrl} alt="" className="w-10 h-10 rounded-lg object-cover border bg-muted shrink-0" />
+            ) : (
+                <div className="w-10 h-10 shrink-0 rounded-lg border bg-muted flex items-center justify-center">
+                    <Package className="h-4 w-4 text-muted-foreground/40" />
+                </div>
+            )}
+            <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold truncate">
+                    {String(name)}
+                </p>
+                <div className="flex items-center gap-2">
+                    <p className="text-[10px] text-muted-foreground font-mono">
+                        SKU: {sku}
+                    </p>
+                    {isLoading && <span className="text-tiny text-muted-foreground animate-pulse">{t("loading", {}, "Loading...")}</span>}
+                </div>
+            </div>
+            <div className="text-right shrink-0">
+                <p className="text-sm font-bold">x{item["quantity"] as number}</p>
+                <p className="text-[11px] text-muted-foreground">
+                    {new Intl.NumberFormat(dateLocale).format(Number(item["unitPrice"] ?? 0))}
+                </p>
+            </div>
+        </div>
+    );
+}
+
+
+function DailyOrderModal({
+    orderId,
+    onClose,
+}: {
+    orderId: string;
+    onClose: () => void;
+}) {
+    const { t, locale } = useLanguage();
+    const dateLocale = locale === "vi" ? "vi-VN" : "en-US";
+    const { data: order, isLoading } = useAdminOrder(orderId, Boolean(orderId));
+
+    return (
+        <Dialog open={Boolean(orderId)} onOpenChange={(open) => !open && onClose()}>
+            <DialogContent className="max-w-2xl max-h-[88vh] overflow-hidden flex flex-col gap-0 p-0 rounded-2xl border-none shadow-premium">
+                <DialogHeader className="p-5 border-b bg-card">
+                    <div className="flex items-center justify-between pr-6">
+                        <div className="space-y-0.5 min-w-0">
+                            <DialogTitle className="text-base font-bold flex items-center gap-2">
+                                <Package className="h-4 w-4 text-primary shrink-0" />
+                                {t("admin_order_detail", {}, "Order Detail")}
+                            </DialogTitle>
+                            <p className="text-[10px] text-muted-foreground font-mono opacity-70 break-all">ID: {orderId}</p>
+                        </div>
+                        {order && (
+                            <Badge
+                                variant={
+                                    order.deliveryStatus === "DELIVERED" ? "success" :
+                                        order.deliveryStatus === "CANCELED" ? "destructive" :
+                                            order.deliveryStatus === "ON_SHIPPING" ? "info" :
+                                                order.deliveryStatus === "PENDING" ? "warning" : "default"
+                                }
+                                className="h-7 px-3 rounded-full text-xs font-semibold whitespace-nowrap shrink-0"
+                            >
+                                {formatOrderStatusLabel(order.deliveryStatus, t)}
+                            </Badge>
+                        )}
+                    </div>
+                </DialogHeader>
+
+                <div className="flex-1 overflow-y-auto p-5 space-y-4">
+                    {isLoading ? (
+                        <div className="space-y-3">
+                            {[1, 2, 3].map((i) => <Skeleton key={i} className="h-12 w-full rounded-xl" />)}
+                        </div>
+                    ) : !order ? (
+                        <div className="py-12 text-center text-muted-foreground text-sm">
+                            {t("order_not_found", {}, "Order not found")}
+                        </div>
+                    ) : (
+                        <>
+                            {/* Stats */}
+                            <div className="grid grid-cols-3 gap-3">
+                                {[
+                                    {
+                                        label: t("admin_date", {}, "Date"),
+                                        value: new Date(
+                                            String(order.orderDate).includes('Z') || String(order.orderDate).includes('+')
+                                                ? order.orderDate
+                                                : `${order.orderDate}Z`
+                                        ).toLocaleDateString(dateLocale, { dateStyle: "medium" }),
+                                    },
+                                    {
+                                        label: t("admin_total", {}, "Total"),
+                                        value: `${new Intl.NumberFormat(dateLocale).format(order.totalAmount)} ${t("currency_vnd", {}, "VND")}`,
+                                        highlight: true,
+                                    },
+                                    {
+                                        label: t("admin_items", {}, "Items"),
+                                        value: `${order.items?.length ?? 0}`,
+                                    },
+                                ].map((stat, i) => (
+                                    <div key={i} className="p-3 rounded-xl border bg-card text-center">
+                                        <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-1">{stat.label}</p>
+                                        <p className={`text-sm font-bold ${stat.highlight ? "text-primary" : ""}`}>{stat.value}</p>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Order Items */}
+                            <div className="rounded-xl border divide-y overflow-hidden bg-card">
+                                {(order.items as Array<Record<string, unknown>>).map((item, idx) => (
+                                    <DailyOrderItemRow key={idx} item={item} idx={idx} dateLocale={dateLocale} />
+                                ))}
+                            </div>
+                        </>
+                    )}
+                </div>
+            </DialogContent>
+        </Dialog>
+    );
+}
+
 // ─── Main Page Component ──────────────────────────────────────────────────────
 
 export default function AdminReportsClient() {
@@ -488,9 +626,25 @@ export default function AdminReportsClient() {
     const [committedFromDate, setCommittedFromDate] = useState("");
     const [committedToDate, setCommittedToDate] = useState("");
 
+    // ── Daily Revenue state ────────────────────────────────────────────────
+    const todayStr = useMemo(() => {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    }, []);
+    // Default: last 30 days → today
+    const thirtyDaysAgoStr = useMemo(() => {
+        const d = new Date();
+        d.setDate(d.getDate() - 30);
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    }, []);
+    const [dailyFrom, setDailyFrom] = useState(thirtyDaysAgoStr);
+    const [dailyTo, setDailyTo] = useState(todayStr);
+    const [selectedDayOrderId, setSelectedDayOrderId] = useState<string | null>(null);
+
     // ── Queries ────────────────────────────────────────────────────────────
     const revenueQuery = useMonthlyRevenue({ from: rangeFrom, to: rangeTo });
     const topSellingQuery = useTopSellingProducts(10);
+    const dailyOrdersQuery = useAdminOrders({ page: 0, size: 200, sortBy: "orderDate", sortDirection: "DESC" });
 
     const reportParams = { page, size, sortBy, sortDirection };
     const reportQuery = useAdminReports(reportParams);
@@ -526,6 +680,30 @@ export default function AdminReportsClient() {
     );
 
     const topSelling = topSellingQuery.data ?? [];
+
+    // ── Daily Revenue derived data ─────────────────────────────────────────
+    // Filter by DELIVERED status only — matches the backend SQL used for monthly revenue reports
+    const dailyOrders = useMemo(() => {
+        const items = dailyOrdersQuery.data?.items ?? [];
+        return items.filter((order) => {
+            if (order.deliveryStatus !== "RECEIVED" && order.deliveryStatus !== "DELIVERED") return false;
+            const raw = String(order.orderDate);
+            const iso =
+                raw.includes("T") && !raw.includes("Z") && !raw.includes("+")
+                    ? `${raw}Z`
+                    : raw;
+            // Compare in Asia/Ho_Chi_Minh timezone (inclusive both ends)
+            const localDateStr = new Date(iso).toLocaleDateString("en-CA", {
+                timeZone: "Asia/Ho_Chi_Minh",
+            }); // "YYYY-MM-DD"
+            return localDateStr >= dailyFrom && localDateStr <= dailyTo;
+        });
+    }, [dailyOrdersQuery.data, dailyFrom, dailyTo]);
+
+    const dailyRevenue = useMemo(
+        () => dailyOrders.reduce((s, o) => s + (o.totalAmount ?? 0), 0),
+        [dailyOrders]
+    );
 
     const reports = useMemo(() => reportQuery.data?.items ?? [], [reportQuery.data]);
     const filteredReports = useMemo(() => {
@@ -657,7 +835,7 @@ export default function AdminReportsClient() {
                 <Card className="overflow-hidden border-none shadow-md bg-gradient-to-br from-card to-muted/20">
                     <CardHeader className="pb-2 border-b border-border/50">
                         <CardTitle className="text-sm font-bold flex items-center gap-2">
-                            <FileText className="h-4 w-4 text-blue-500" />
+                            <FileText className="h-4 w-4 text-info" />
                             {t("admin_monthly_revenue", {}, "Monthly Revenue")}
                             <span className="text-tiny font-normal text-muted-foreground ml-1">
                                 ({t("click_to_expand", {}, "click row for product detail")})
@@ -716,10 +894,10 @@ export default function AdminReportsClient() {
                     <CardHeader className="pb-2 border-b border-border/50">
                         <div className="flex items-center justify-between">
                             <CardTitle className="text-sm font-bold flex items-center gap-2">
-                                <TrendingUp className="h-4 w-4 text-emerald-500" />
+                                <TrendingUp className="h-4 w-4 text-success" />
                                 {t("admin_top_selling_products", {}, "Top Selling Products")}
                             </CardTitle>
-                            <Button
+                            {/* <Button
                                 variant="ghost"
                                 size="sm"
                                 className="h-7 text-tiny gap-1 text-muted-foreground"
@@ -727,7 +905,7 @@ export default function AdminReportsClient() {
                                 disabled={topSellingQuery.isFetching}
                             >
                                 <RefreshCw className={`h-3 w-3 ${topSellingQuery.isFetching ? "animate-spin" : ""}`} />
-                            </Button>
+                            </Button> */}
                         </div>
                     </CardHeader>
                     <CardContent className="pt-4">
@@ -771,6 +949,174 @@ export default function AdminReportsClient() {
                     </CardContent>
                 </Card>
             </section>
+
+            {/* ── Daily Revenue ──────────────────────────────────────────── */}
+            <Card className="flex flex-col max-h-[700px] overflow-hidden border-none shadow-md bg-gradient-to-br from-card to-muted/20">
+                <CardHeader className="pb-2 border-b border-border/50 shrink-0">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <CardTitle className="text-sm font-bold flex items-center gap-2">
+                            <CalendarDays className="h-4 w-4 text-primary" />
+                            {t("admin_daily_revenue", {}, "Revenue by Date Range")}
+                        </CardTitle>
+                        <div className="flex flex-wrap items-end gap-2">
+                            <div className="flex flex-col gap-0.5">
+                                <label className="text-tiny font-bold text-muted-foreground uppercase ml-0.5">
+                                    {t("from_date", {}, "From")}
+                                </label>
+                                <Input
+                                    type="date"
+                                    value={dailyFrom}
+                                    max={dailyTo || todayStr}
+                                    onChange={(e) => setDailyFrom(e.target.value)}
+                                    className="h-8 w-38 rounded-lg bg-background text-sm [&::-webkit-calendar-picker-indicator]:opacity-60"
+                                />
+                            </div>
+                            <div className="flex flex-col gap-0.5">
+                                <label className="text-tiny font-bold text-muted-foreground uppercase ml-0.5">
+                                    {t("to_date", {}, "To")}
+                                </label>
+                                <Input
+                                    type="date"
+                                    value={dailyTo}
+                                    min={dailyFrom}
+                                    max={todayStr}
+                                    onChange={(e) => setDailyTo(e.target.value)}
+                                    className="h-8 w-38 rounded-lg bg-background text-sm [&::-webkit-calendar-picker-indicator]:opacity-60"
+                                />
+                            </div>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 text-tiny gap-1 text-muted-foreground"
+                                onClick={() => dailyOrdersQuery.refetch()}
+                                disabled={dailyOrdersQuery.isFetching}
+                            >
+                                <RefreshCw className={`h-3 w-3 ${dailyOrdersQuery.isFetching ? "animate-spin" : ""}`} />
+                            </Button>
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent className="pt-4 flex flex-col gap-4 flex-1 min-h-0">
+                    {/* Stat summary */}
+                    <div className="grid grid-cols-2 gap-3 shrink-0">
+                        <div className="p-4 rounded-xl border bg-card flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                <TrendingUp className="h-4 w-4 text-primary" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                                    {t("admin_daily_total_revenue", {}, "Total Revenue")}
+                                </p>
+                                {dailyOrdersQuery.isLoading ? (
+                                    <Skeleton className="h-5 w-28 mt-1" />
+                                ) : (
+                                    <p className="text-base font-black text-primary">
+                                        {formatMoney(dailyRevenue, dateLocale)}
+                                        <span className="text-xs font-normal text-muted-foreground ml-1">VND</span>
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                        <div className="p-4 rounded-xl border bg-card flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center shrink-0">
+                                <ShoppingBag className="h-4 w-4 text-secondary-foreground" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                                    {t("admin_daily_total_orders", {}, "Total Orders")}
+                                </p>
+                                {dailyOrdersQuery.isLoading ? (
+                                    <Skeleton className="h-5 w-12 mt-1" />
+                                ) : (
+                                    <p className="text-base font-black text-foreground">
+                                        {dailyOrders.length}
+                                        <span className="text-xs font-normal text-muted-foreground ml-1">
+                                            {t("admin_daily_orders_unit", {}, "orders")}
+                                        </span>
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Orders table */}
+                    {dailyOrdersQuery.isLoading ? (
+                        <div className="space-y-2">
+                            {[1, 2, 3].map((i) => <Skeleton key={i} className="h-10 w-full rounded-lg" />)}
+                        </div>
+                    ) : dailyOrders.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-8 text-muted-foreground opacity-50">
+                            <CalendarDays className="h-8 w-8 mb-2" />
+                            <p className="text-xs font-medium">{t("admin_daily_no_orders", {}, "No delivered orders in this date range")}</p>
+                        </div>
+                    ) : (
+                        <div className="flex-1 overflow-auto min-h-0 border-t border-border/50">
+                            <table className="w-full text-left text-xs relative">
+                                <thead className="sticky top-0 bg-card z-10 shadow-sm">
+                                    <tr className="border-b border-border text-muted-foreground uppercase tracking-wider font-medium">
+                                        <th className="py-2 px-2">{t("admin_order_id", {}, "Order ID")}</th>
+                                        <th className="py-2 px-2">{t("admin_date", {}, "Time")}</th>
+                                        <th className="py-2 px-2 text-center">{t("admin_items", {}, "Items")}</th>
+                                        <th className="py-2 px-2">{t("admin_status", {}, "Status")}</th>
+                                        <th className="py-2 px-2 text-right">{t("admin_total", {}, "Revenue")}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {dailyOrders.map((order, i) => {
+                                        const raw = String(order.orderDate);
+                                        const iso =
+                                            raw.includes("T") && !raw.includes("Z") && !raw.includes("+")
+                                                ? `${raw}Z`
+                                                : raw;
+                                        return (
+                                            <tr
+                                                key={order.orderId}
+                                                className={`border-b border-border/30 hover:bg-accent/50 transition-colors cursor-pointer ${i % 2 === 0 ? "bg-muted/20" : ""
+                                                    }`}
+                                                onClick={() => setSelectedDayOrderId(order.orderId)}
+                                            >
+                                                <td className="py-2 px-2 font-mono text-muted-foreground">
+                                                    {truncateId(order.orderId)}
+                                                </td>
+                                                <td className="py-2 px-2 text-muted-foreground">
+                                                    {new Date(iso).toLocaleDateString(dateLocale, {
+                                                        timeZone: "Asia/Ho_Chi_Minh",
+                                                        day: "2-digit",
+                                                        month: "2-digit",
+                                                        year: "numeric",
+                                                    })}
+                                                </td>
+                                                <td className="py-2 px-2 text-center">
+                                                    {Array.isArray(order.items) ? order.items.length : 0}
+                                                </td>
+                                                <td className="py-2 px-2">
+                                                    <Badge
+                                                        variant="success"
+                                                        className="rounded-full text-tiny font-medium"
+                                                    >
+                                                        {formatOrderStatusLabel(order.deliveryStatus as DeliveryStatus, t)}
+                                                    </Badge>
+                                                </td>
+                                                <td className="py-2 px-2 text-right font-mono tabular-nums font-semibold text-primary">
+                                                    {formatMoney(order.totalAmount, dateLocale)}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+
+            {/* ── Daily Order Detail Modal ────────────────────────────────── */}
+            {selectedDayOrderId && (
+                <DailyOrderModal
+                    orderId={selectedDayOrderId}
+                    onClose={() => setSelectedDayOrderId(null)}
+                />
+            )}
 
             {/* ── Report List ────────────────────────────────────────────── */}
             {isReportListLoading ? (
