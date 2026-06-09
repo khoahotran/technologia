@@ -4,8 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { useCreatePayment, useGetOrderIdBySagaId } from "@/features/orders/hooks";
-import { useCancelPayment, useSimulatePayment, usePaymentQrCode } from "@/features/orders/hooks";
+import { useCancelPayment, useCreatePayment, useGetOrderIdBySagaId, usePaymentQrCode, useSimulatePayment } from "@/features/orders/hooks";
 import { useLanguage } from "@/providers/language.provider";
 import { toErrorMessage } from "@/utils/error-message";
 
@@ -202,7 +201,7 @@ export default function OrderProcessingPage() {
                         <Button
                             onClick={handlePaymentSuccess}
                             disabled={simulating}
-                            className="bg-primary hover:bg-green-700 text-white font-bold h-12 rounded-xl transition-all active:scale-95"
+                            className="bg-primary hover:bg-primary-hover text-white font-bold h-12 rounded-xl transition-all active:scale-95"
                         >
                             {t('payment_success', {}, "Success")}
                         </Button>
@@ -223,7 +222,7 @@ export default function OrderProcessingPage() {
                                 const timeStr = locale === 'vi'
                                     ? date.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
                                     : `${String(date.getUTCHours()).padStart(2, '0')}:${String(date.getUTCMinutes()).padStart(2, '0')}:${String(date.getUTCSeconds()).padStart(2, '0')}`;
-                                
+
                                 return t('qr_expired_at', { time: timeStr }, `Expires at ${timeStr}`);
                             })()}
                         </p>
