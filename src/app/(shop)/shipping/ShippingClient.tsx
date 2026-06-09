@@ -28,6 +28,7 @@ import {
 } from "@/features/orders/hooks";
 import type { CheckoutPreviewResponse, CheckoutRecalculateResponse } from "@/features/orders/types";
 import { useLanguage } from "@/providers/language.provider";
+import { FullLoading } from "@/components/shared/loading";
 import { useAuthStore } from "@/store/auth.store";
 import { useOrderFlowStore } from "@/store/order-flow.store";
 import { toErrorMessage } from "@/utils/error-message";
@@ -239,7 +240,7 @@ export default function ShippingClient() {
     if (isLoadingCart || checkoutPreview.isPending) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center">
-                <p className="text-muted-foreground">{t('loading_checkout', {}, "Loading checkout...")}</p>
+                <FullLoading message={t('loading_checkout', {}, "Loading checkout...")} />
             </div>
         );
     }

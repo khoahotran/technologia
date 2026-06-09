@@ -1,7 +1,7 @@
 "use client";
 
 import { Tag, Ticket } from "lucide-react";
-import { SmallLoading } from "@/components/shared/loading";
+import { FullLoading, SmallLoading } from "@/components/shared/loading";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -156,7 +156,7 @@ export default function CartClient() {
     if (isLoading) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center">
-                <p className="text-muted-foreground">{t('loading_cart', {}, "Loading cart...")}</p>
+                <FullLoading message={t('loading_cart', {}, "Loading cart...")} />
             </div>
         );
     }

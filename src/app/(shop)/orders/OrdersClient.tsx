@@ -14,6 +14,7 @@ import { isCreatedOrder } from "@/features/orders/presentation";
 import { getProductById } from "@/features/products/api";
 import { useLanguage } from "@/providers/language.provider";
 import { toErrorMessage } from "@/utils/error-message";
+import { FullLoading } from "@/components/shared/loading";
 
 function extractProductIds(orders: Array<{ items: unknown[] }>): string[] {
     const ids = new Set<string>();
@@ -186,7 +187,11 @@ export default function OrdersClient() {
     );
 
     if (isLoading) {
-        return <div className="flex justify-center p-8">{t("loading", {}, "Loading...")}</div>;
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <FullLoading message={t("loading", {}, "Loading...")} />
+            </div>
+        );
     }
 
     if (isError) {
