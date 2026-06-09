@@ -16,6 +16,7 @@ import { canGiveFeedback, formatOrderStatusLabel, truncateId } from "@/features/
 import { getProductById } from "@/features/products/api";
 import { useLanguage } from "@/providers/language.provider";
 import { toErrorMessage } from "@/utils/error-message";
+import { FullLoading } from "@/components/shared/loading";
 
 type FeedbackItem = {
     key: string;
@@ -125,7 +126,11 @@ export default function GiveFeedbackClient({ id }: { id: string }) {
     }, [productQueries, productIds]);
 
     if (isLoading) {
-        return <div className="flex justify-center p-8">{t("loading", {}, "Loading...")}</div>;
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <FullLoading message={t("loading", {}, "Loading...")} />
+            </div>
+        );
     }
 
     if (isError || !order) {

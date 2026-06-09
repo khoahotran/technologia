@@ -2,7 +2,7 @@
 
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Circle, Star, Trash2 } from "lucide-react";
-import { SmallLoading } from "@/components/shared/loading";
+import { FullLoading, SmallLoading } from "@/components/shared/loading";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -132,7 +132,11 @@ export default function OrderTrackingClient({ id }: { id: string }) {
     }, [deliveryLogsQuery.data]);
 
     if (isLoading) {
-        return <div className="flex justify-center p-8">{t("loading", {}, "Loading...")}</div>;
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <FullLoading message={t("loading", {}, "Loading...")} />
+            </div>
+        );
     }
 
     if (isError || !order) {
