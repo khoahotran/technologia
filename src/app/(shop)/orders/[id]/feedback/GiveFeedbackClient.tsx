@@ -62,7 +62,6 @@ export default function GiveFeedbackClient({ id }: { id: string }) {
         if (!order) return [];
         return order.items.map((item, index) => toFeedbackItem(item, index));
     }, [order]);
-    console.log("🚀 ~ GiveFeedbackClient ~ feedbackItems:", feedbackItems)
 
     const existingFeedbackByOrderItemId = useMemo(() => {
         const map = new Map<string, { rating: number; comment: string }>();
@@ -71,7 +70,6 @@ export default function GiveFeedbackClient({ id }: { id: string }) {
         });
         return map;
     }, [feedbackQuery.data]);
-    console.log("🚀 ~ GiveFeedbackClient ~ existingFeedbackByOrderItemId:", existingFeedbackByOrderItemId)
 
     useEffect(() => {
         if (feedbackItems.length === 0 || feedbackQuery.isLoading) return;

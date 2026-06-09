@@ -53,7 +53,6 @@ export default function OrderTrackingClient({ id }: { id: string }) {
     const { data: order, isLoading, isError, error } = useOrder(id);
     const deliveryLogsQuery = useDeliveryLogs(id, Boolean(id));
     const { data: feedbacks } = useOrderFeedbacks(id, Boolean(id));
-    console.log("🚀 ~ OrderTrackingClient ~ feedbacks:", feedbacks)
     const trackOrderInput = useOrderFlowStore((state) => state.trackOrderInput);
     const setTrackOrderInput = useOrderFlowStore((state) => state.setTrackOrderInput);
     const cancelOrderMutation = useCancelOrder();
@@ -203,9 +202,7 @@ export default function OrderTrackingClient({ id }: { id: string }) {
                                         const prod = pid ? productMap.get(pid) : null;
                                         const r = item as Record<string, unknown>;
                                         const orderItemId = typeof r["orderItemId"] === "string" ? r["orderItemId"] : null;
-                                        console.log("🚀 ~ OrderTrackingClient ~ orderItemId:", orderItemId)
                                         const itemFeedback = orderItemId ? feedbacks?.find((f) => f.orderItemId === orderItemId) : null;
-                                        console.log("🚀 ~ OrderTrackingClient ~ itemFeedback:", itemFeedback)
                                         return (
                                             <div key={`${order.orderId}-${index}`} className="py-2 border-b border-gray-100 last:border-0 space-y-2">
                                                 <div className="flex items-center gap-3 text-sm">

@@ -55,10 +55,6 @@ export default function AdminHomeClient() {
 
     const brands = useMemo(() => normalizeItems(brandData, "brandId"), [brandData]);
     const categories = useMemo(() => normalizeItems(categoryData, "categoryId"), [categoryData]);
-
-    console.log("[AdminHome] brandData:", brandData, "categoriesData:", categoryData);
-    console.log("[AdminHome] brands:", brands, "categories:", categories);
-
     const isBusy =
         createBrandMutation.isPending || updateBrandMutation.isPending ||
         deleteBrandMutation.isPending || createCategoryMutation.isPending ||
