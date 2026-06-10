@@ -38,7 +38,7 @@ export function Chatbot() {
     const [isMinimized, setIsMinimized] = useState(false);
     const [inputValue, setInputValue] = useState("");
     const [isTyping, setIsTyping] = useState(false);
-    const [sessionId] = useState(() => {
+    const [sessionId, setSessionId] = useState(() => {
         if (typeof window !== "undefined") {
             const existing = localStorage.getItem("chat_session_id");
             if (existing) return existing;
@@ -89,9 +89,21 @@ export function Chatbot() {
     const [messages, setMessages] = useState<Message[]>([]);
     const showChatWindow = isOpen && !isMinimized;
 
+    const prevCustomerIdRef = useRef(customerId);
+
     useEffect(() => {
-        setMessages(initialMessages);
-    }, [initialMessages]);
+        if (prevCustomerIdRef.current !== customerId) {
+            const fresh = crypto.randomUUID();
+            if (typeof window !== "undefined") {
+                localStorage.setItem("chat_session_id", fresh);
+            }
+            setSessionId(fresh);
+            setMessages(initialMessages);
+            prevCustomerIdRef.current = customerId;
+        } else {
+            setMessages(initialMessages);
+        }
+    }, [customerId, initialMessages]);
 
     useEffect(() => {
         if (!scrollRef.current) return;
