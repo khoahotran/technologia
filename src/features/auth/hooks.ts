@@ -65,6 +65,9 @@ export function useLogout() {
     },
     onSettled: () => {
       clearSession();
+      if (typeof window !== "undefined") {
+        localStorage.removeItem("chat_session_id");
+      }
       router.push("/login");
     },
   });
