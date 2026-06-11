@@ -20,6 +20,18 @@ import {
     TrendingUp,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import {
+    Bar,
+    BarChart,
+    CartesianGrid,
+    Legend,
+    Line,
+    LineChart,
+    ResponsiveContainer,
+    Tooltip,
+    XAxis,
+    YAxis,
+} from "recharts";
 
 import { SmallLoading } from "@/components/shared/loading";
 import { Badge } from "@/components/ui/badge";
@@ -38,6 +50,7 @@ import {
 } from "@/components/ui/pagination";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { productKeys } from "@/constants/query-keys";
 import {
     useAdminActionLog,
     useAdminActionLogs,
@@ -51,8 +64,10 @@ import type { MonthlyRevenueResponse, ProductRevenueItem, ReportResponse, TopSel
 import { useAdminOrder, useAdminOrders } from "@/features/orders/hooks";
 import { formatOrderStatusLabel, truncateId } from "@/features/orders/presentation";
 import type { DeliveryStatus } from "@/features/orders/types";
+import { getProductById } from "@/features/products/api";
 import { useProductDetail } from "@/features/products/hooks";
 import { useLanguage } from "@/providers/language.provider";
+import { useQueries } from "@tanstack/react-query";
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -61,11 +76,11 @@ function toYearMonth(d: Date): string {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 }
 
-/** Default range: last 12 months */
+/** Default range: last 6 months */
 function defaultRange(): { from: string; to: string } {
     const now = new Date();
     const to = toYearMonth(now);
-    const fromDate = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+    const fromDate = new Date(now.getFullYear(), now.getMonth() - 5, 1);
     const from = toYearMonth(fromDate);
 
     return { from, to };
@@ -152,6 +167,108 @@ function TopSellingRow({ item, index, dateLocale }: { item: TopSellingProductRes
                 )}
             </td>
         </tr>
+    );
+}
+
+function EnrichedProductsChart({ items, dateLocale }: { items: TopSellingProductResponse[]; dateLocale: string }) {
+    const { t } = useLanguage();
+    const top10 = useMemo(() => {
+        return [...items].sort((a, b) => (b.totalSold ?? 0) - (a.totalSold ?? 0)).slice(0, 10);
+    }, [items]);
+
+    const queries = useQueries({
+        queries: top10.map((item) => ({
+            queryKey: productKeys.detail(item.productId),
+            queryFn: () => getProductById(item.productId),
+            staleTime: 1000 * 60 * 10,
+        }))
+    });
+
+    const chartData = useMemo(() => {
+        return top10.map((item, index) => {
+            const product = queries[index]?.data;
+            let revenue = item.totalRevenue ?? 0;
+            let productName = item.productName;
+
+            if (product) {
+                const firstVariant = product.variants?.[0];
+                const basePrice = firstVariant ? (firstVariant.priceAfterDiscount ?? firstVariant.price) : product.displayPrice ?? 0;
+                revenue = basePrice * item.totalSold;
+                productName = product.name ?? item.productName;
+            }
+
+            return {
+                name: (productName ?? truncateId(item.productId)).slice(0, 16),
+                revenue,
+                sold: item.totalSold ?? 0,
+            };
+        });
+    }, [top10, queries]);
+
+    return (
+        <ResponsiveContainer width="100%" height={360}>
+            <BarChart
+                data={chartData}
+                margin={{ top: 4, right: 16, left: 8, bottom: 4 }}
+                layout="vertical"
+            >
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
+                <XAxis
+                    type="number"
+                    tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={(v: number) =>
+                        v >= 1_000_000
+                            ? `${(v / 1_000_000).toFixed(1)}M`
+                            : v >= 1_000
+                                ? `${(v / 1_000).toFixed(0)}K`
+                                : String(v)
+                    }
+                    domain={[0, "auto"] as [number, string]}
+                />
+                <YAxis
+                    type="category"
+                    dataKey="name"
+                    tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
+                    axisLine={false}
+                    tickLine={false}
+                    width={110}
+                />
+                <Tooltip
+                    cursor={{ fill: "var(--accent)", opacity: 0.35 }}
+                    content={({ active, payload, label }) => {
+                        if (active && payload && payload.length) {
+                            const data = payload[0]?.payload;
+                            return (
+                                <div className="bg-popover border border-border rounded-xl p-3 text-sm text-popover-foreground shadow-lg">
+                                    <p className="font-bold mb-2 text-foreground">{label}</p>
+                                    <div className="space-y-1">
+                                        <div className="flex justify-between items-center gap-4">
+                                            <span className="text-muted-foreground">{t("admin_revenue", {}, "Revenue")}:</span>
+                                            <span className="font-bold text-primary">
+                                                {new Intl.NumberFormat(dateLocale).format(data?.revenue ?? 0)} ₫
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between items-center gap-4">
+                                            <span className="text-muted-foreground">{t("sold", {}, "Sold")}:</span>
+                                            <span className="font-bold text-foreground">
+                                                {new Intl.NumberFormat(dateLocale).format(data?.sold ?? 0)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        }
+                        return null;
+                    }}
+                />
+                <Legend
+                    wrapperStyle={{ fontSize: 11, paddingTop: 8, color: "var(--muted-foreground)" }}
+                />
+                <Bar dataKey="revenue" name={t("admin_revenue", {}, "Revenue")} fill="var(--primary)" radius={[0, 4, 4, 0]} maxBarSize={16} />
+            </BarChart>
+        </ResponsiveContainer>
     );
 }
 
@@ -829,7 +946,436 @@ export default function AdminReportsClient() {
                 </CardContent>
             </Card>
 
-            {/* ── Revenue + Top Selling (side by side) ───────────────────── */}
+            {/* ── Summary KPI Cards ───────────────────────────────────────── */}
+            <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {[
+                    {
+                        label: t("admin_total_year_revenue", {}, "Total Revenue"),
+                        value: `${formatMoney(totalRevenue, dateLocale)} ₫`,
+                        sub: `${revenueData.length} ${t("admin_months_label", {}, "months")}`,
+                        icon: <TrendingUp className="h-5 w-5" />,
+                        color: "text-primary",
+                        bg: "bg-primary/10",
+                        loading: revenueQuery.isLoading,
+                    },
+                    {
+                        label: t("admin_daily_total_orders", {}, "Total Orders"),
+                        value: String(dailyOrdersQuery.data?.items?.length ?? 0),
+                        sub: t("admin_all_time", {}, "all time fetched"),
+                        icon: <ShoppingBag className="h-5 w-5" />,
+                        color: "text-info",
+                        bg: "bg-info/10",
+                        loading: dailyOrdersQuery.isLoading,
+                    },
+                    {
+                        label: t("admin_avg_order_value", {}, "Avg. Order Value"),
+                        value: dailyOrders.length > 0
+                            ? `${formatMoney(Math.round(dailyRevenue / dailyOrders.length), dateLocale)} ₫`
+                            : "—",
+                        sub: t("admin_period_label", {}, "selected period"),
+                        icon: <BarChart3 className="h-5 w-5" />,
+                        color: "text-primary",
+                        bg: "bg-primary/10",
+                        loading: dailyOrdersQuery.isLoading,
+                    },
+                    {
+                        label: t("admin_top_selling_products", {}, "Top Product"),
+                        value: topSelling[0]?.productName ?? "—",
+                        sub: topSelling[0]
+                            ? `${new Intl.NumberFormat(dateLocale).format(topSelling[0].totalSold)} ${t("sold", {}, "sold")}`
+                            : "",
+                        icon: <Package className="h-5 w-5" />,
+                        color: "text-info",
+                        bg: "bg-info/10",
+                        loading: topSellingQuery.isLoading,
+                    },
+                ].map((card, i) => (
+                    <Card key={i} className="border-none shadow-md bg-gradient-to-br from-card to-muted/20 overflow-hidden">
+                        <CardContent className="p-4 flex items-center gap-3">
+                            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 ${card.bg} ${card.color}`}>
+                                {card.icon}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider truncate">{card.label}</p>
+                                {card.loading ? (
+                                    <Skeleton className="h-5 w-24 mt-1" />
+                                ) : (
+                                    <p className={`text-sm font-black truncate ${card.color}`}>{card.value}</p>
+                                )}
+                                {card.sub && <p className="text-[10px] text-muted-foreground truncate mt-0.5">{card.sub}</p>}
+                            </div>
+                        </CardContent>
+                    </Card>
+                ))}
+            </section>
+
+            {/* ── Daily Revenue ──────────────────────────────────────────── */}
+            <Card className="flex flex-col overflow-hidden border-none shadow-md bg-gradient-to-br from-card to-muted/20">
+                <CardHeader className="pb-2 border-b border-border/50 shrink-0">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <CardTitle className="text-sm font-bold flex items-center gap-2">
+                            <CalendarDays className="h-4 w-4 text-primary" />
+                            {t("admin_daily_revenue", {}, "Revenue by Date Range")}
+                        </CardTitle>
+                        <div className="flex flex-wrap items-end gap-2">
+                            <div className="flex flex-col gap-0.5">
+                                <label className="text-tiny font-bold text-muted-foreground uppercase ml-0.5">
+                                    {t("from_date", {}, "From")}
+                                </label>
+                                <Input
+                                    type="date"
+                                    value={dailyFrom}
+                                    max={dailyTo || todayStr}
+                                    onChange={(e) => setDailyFrom(e.target.value)}
+                                    className="h-8 w-38 rounded-lg bg-background text-sm [&::-webkit-calendar-picker-indicator]:opacity-60"
+                                />
+                            </div>
+                            <div className="flex flex-col gap-0.5">
+                                <label className="text-tiny font-bold text-muted-foreground uppercase ml-0.5">
+                                    {t("to_date", {}, "To")}
+                                </label>
+                                <Input
+                                    type="date"
+                                    value={dailyTo}
+                                    min={dailyFrom}
+                                    max={todayStr}
+                                    onChange={(e) => setDailyTo(e.target.value)}
+                                    className="h-8 w-38 rounded-lg bg-background text-sm [&::-webkit-calendar-picker-indicator]:opacity-60"
+                                />
+                            </div>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 text-tiny gap-1 text-muted-foreground"
+                                onClick={() => dailyOrdersQuery.refetch()}
+                                disabled={dailyOrdersQuery.isFetching}
+                            >
+                                <RefreshCw className={`h-3 w-3 ${dailyOrdersQuery.isFetching ? "animate-spin" : ""}`} />
+                            </Button>
+                        </div>
+                    </div>
+                </CardHeader>
+                <CardContent className="pt-4 flex flex-col gap-4">
+                    {/* Stat summary */}
+                    <div className="grid grid-cols-2 gap-3 shrink-0">
+                        <div className="p-4 rounded-xl border bg-card flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                                <TrendingUp className="h-4 w-4 text-primary" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                                    {t("admin_daily_total_revenue", {}, "Total Revenue")}
+                                </p>
+                                {dailyOrdersQuery.isLoading ? (
+                                    <Skeleton className="h-5 w-28 mt-1" />
+                                ) : (
+                                    <p className="text-base font-black text-primary">
+                                        {formatMoney(dailyRevenue, dateLocale)}
+                                        <span className="text-xs font-normal text-muted-foreground ml-1">VND</span>
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                        <div className="p-4 rounded-xl border bg-card flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center shrink-0">
+                                <ShoppingBag className="h-4 w-4 text-secondary-foreground" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
+                                    {t("admin_daily_total_orders", {}, "Total Orders")}
+                                </p>
+                                {dailyOrdersQuery.isLoading ? (
+                                    <Skeleton className="h-5 w-12 mt-1" />
+                                ) : (
+                                    <p className="text-base font-black text-foreground">
+                                        {dailyOrders.length}
+                                        <span className="text-xs font-normal text-muted-foreground ml-1">
+                                            {t("admin_daily_orders_unit", {}, "orders")}
+                                        </span>
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Daily Revenue Line Chart */}
+                    <div className="border border-border/50 rounded-xl bg-background/50 p-4 shrink-0">
+                        <div className="w-full h-full">
+                            <CardHeader className="pb-3 border-b border-border/40">
+                                <CardTitle className="text-sm font-bold flex items-center gap-2 text-card-foreground">
+                                    <CalendarDays className="h-4 w-4 text-info" />
+                                    {t("admin_daily_revenue_chart", {}, "Daily Revenue Chart")}
+                                    <span className="text-[10px] font-normal text-muted-foreground ml-1">
+                                        ({dailyFrom} → {dailyTo})
+                                    </span>
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-5 pb-2">
+                                {dailyOrdersQuery.isLoading ? (
+                                    <Skeleton className="h-56 w-full rounded-xl" />
+                                ) : (() => {
+                                    // Aggregate by day (Vietnam timezone)
+                                    const byDay = new Map<string, number>();
+                                    for (const o of dailyOrders) {
+                                        const raw = String(o.orderDate);
+                                        const iso = raw.includes("T") && !raw.includes("Z") && !raw.includes("+") ? `${raw}Z` : raw;
+                                        const day = new Date(iso).toLocaleDateString("en-CA", { timeZone: "Asia/Ho_Chi_Minh" });
+                                        byDay.set(day, (byDay.get(day) ?? 0) + (o.totalAmount ?? 0));
+                                    }
+
+                                    // Generate full range of dates
+                                    const [sY, sM, sD] = dailyFrom.split('-');
+                                    const start = new Date(Number(sY), Number(sM) - 1, Number(sD));
+                                    const [eY, eM, eD] = dailyTo.split('-');
+                                    const end = new Date(Number(eY), Number(eM) - 1, Number(eD));
+                                    const dailyChartData = [];
+
+                                    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                                        const dayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+                                        dailyChartData.push({
+                                            day: dayStr.slice(5), // "MM-DD"
+                                            revenue: byDay.get(dayStr) ?? 0,
+                                        });
+                                    }
+
+                                    if (dailyChartData.length === 0) {
+                                        return (
+                                            <div className="h-56 flex flex-col items-center justify-center text-muted-foreground gap-2">
+                                                <CalendarDays className="h-8 w-8 opacity-20" />
+                                                <span className="text-xs">{t("admin_daily_no_orders", {}, "No delivered orders in this date range")}</span>
+                                            </div>
+                                        );
+                                    }
+                                    return (
+                                        <ResponsiveContainer width="100%" height={240}>
+                                            <LineChart
+                                                data={dailyChartData}
+                                                margin={{ top: 4, right: 16, left: 8, bottom: 4 }}
+                                            >
+                                                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                                                <XAxis
+                                                    dataKey="day"
+                                                    tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
+                                                    axisLine={false}
+                                                    tickLine={false}
+                                                    interval={Math.max(0, Math.floor(dailyChartData.length / 6) - 1)}
+                                                />
+                                                <YAxis
+                                                    tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
+                                                    axisLine={false}
+                                                    tickLine={false}
+                                                    tickFormatter={(v: number) =>
+                                                        v >= 1_000_000
+                                                            ? `${(v / 1_000_000).toFixed(1)}M`
+                                                            : v >= 1_000
+                                                                ? `${(v / 1_000).toFixed(0)}K`
+                                                                : String(v)
+                                                    }
+                                                    domain={[0, "auto"] as [number, string]}
+                                                    width={60}
+                                                />
+                                                <Tooltip
+                                                    contentStyle={{
+                                                        background: "var(--popover)",
+                                                        border: "1px solid var(--border)",
+                                                        borderRadius: "0.75rem",
+                                                        fontSize: 12,
+                                                        color: "var(--popover-foreground)",
+                                                    }}
+                                                    labelStyle={{ fontWeight: 700, color: "var(--foreground)" }}
+                                                    formatter={(value: number | string | readonly (number | string)[] | undefined) =>
+                                                        `${new Intl.NumberFormat(dateLocale).format(Number(value ?? 0))} ₫`
+                                                    }
+                                                />
+                                                <Line
+                                                    type="linear"
+                                                    dataKey="revenue"
+                                                    name={t("admin_revenue", {}, "Revenue")}
+                                                    stroke="var(--primary)"
+                                                    strokeWidth={2.5}
+                                                    dot={{ fill: "var(--primary)", r: 3, strokeWidth: 0 }}
+                                                    activeDot={{ r: 5, fill: "var(--chart-1)", strokeWidth: 0 }}
+                                                />
+                                            </LineChart>
+                                        </ResponsiveContainer>
+                                    );
+                                })()}
+                            </CardContent>
+                        </div>
+                    </div>
+
+                    {/* Orders table */}
+                    {dailyOrdersQuery.isLoading ? (
+                        <div className="space-y-2">
+                            {[1, 2, 3].map((i) => <Skeleton key={i} className="h-10 w-full rounded-lg" />)}
+                        </div>
+                    ) : dailyOrders.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-8 text-muted-foreground opacity-50">
+                            <CalendarDays className="h-8 w-8 mb-2" />
+                            <p className="text-xs font-medium">{t("admin_daily_no_orders", {}, "No delivered orders in this date range")}</p>
+                        </div>
+                    ) : (
+                        <div className="max-h-[500px] w-full overflow-auto border-t border-border/50">
+                            <table className="w-full text-left text-xs relative">
+                                <thead className="sticky top-0 bg-card z-10 shadow-sm">
+                                    <tr className="border-b border-border text-muted-foreground uppercase tracking-wider font-medium">
+                                        <th className="py-2 px-2">{t("admin_order_id", {}, "Order ID")}</th>
+                                        <th className="py-2 px-2">{t("admin_date", {}, "Time")}</th>
+                                        <th className="py-2 px-2 text-center">{t("admin_items", {}, "Items")}</th>
+                                        <th className="py-2 px-2">{t("admin_status", {}, "Status")}</th>
+                                        <th className="py-2 px-2 text-right">{t("admin_total", {}, "Revenue")}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {dailyOrders.map((order, i) => {
+                                        const raw = String(order.orderDate);
+                                        const iso =
+                                            raw.includes("T") && !raw.includes("Z") && !raw.includes("+")
+                                                ? `${raw}Z`
+                                                : raw;
+                                        return (
+                                            <tr
+                                                key={order.orderId}
+                                                className={`border-b border-border/30 hover:bg-accent/50 transition-colors cursor-pointer ${i % 2 === 0 ? "bg-muted/20" : ""
+                                                    }`}
+                                                onClick={() => setSelectedDayOrderId(order.orderId)}
+                                            >
+                                                <td className="py-2 px-2 font-mono text-muted-foreground">
+                                                    {truncateId(order.orderId)}
+                                                </td>
+                                                <td className="py-2 px-2 text-muted-foreground">
+                                                    {new Date(iso).toLocaleDateString(dateLocale, {
+                                                        timeZone: "Asia/Ho_Chi_Minh",
+                                                        day: "2-digit",
+                                                        month: "2-digit",
+                                                        year: "numeric",
+                                                    })}
+                                                </td>
+                                                <td className="py-2 px-2 text-center">
+                                                    {Array.isArray(order.items) ? order.items.length : 0}
+                                                </td>
+                                                <td className="py-2 px-2">
+                                                    <Badge
+                                                        variant="success"
+                                                        className="rounded-full text-tiny font-medium"
+                                                    >
+                                                        {formatOrderStatusLabel(order.deliveryStatus as DeliveryStatus, t)}
+                                                    </Badge>
+                                                </td>
+                                                <td className="py-2 px-2 text-right font-mono tabular-nums font-semibold text-primary">
+                                                    {formatMoney(order.totalAmount, dateLocale)}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+
+
+            {/* ── Monthly Trends (side by side) ─────────────────────────── */}
+            <section className="grid lg:grid-cols-2 gap-5 mt-5">
+                {/* Monthly Revenue Bar Chart */}
+                <Card className="border-none shadow-lg bg-gradient-to-br from-card to-muted/20">
+                    <CardHeader className="pb-3 border-b border-border/40">
+                        <CardTitle className="text-sm font-bold flex items-center gap-2 text-card-foreground">
+                            <BarChart3 className="h-4 w-4 text-primary" />
+                            {t("admin_monthly_revenue_chart", {}, "Monthly Revenue Chart")}
+                            <span className="ml-auto text-[10px] font-normal text-muted-foreground">
+                                {rangeFrom} → {rangeTo}
+                            </span>
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-5 pb-2">
+                        {revenueQuery.isLoading ? (
+                            <Skeleton className="h-60 w-full rounded-xl" />
+                        ) : revenueData.length === 0 ? (
+                            <div className="h-60 flex flex-col items-center justify-center text-muted-foreground gap-2">
+                                <BarChart3 className="h-8 w-8 opacity-20" />
+                                <span className="text-xs">{t("admin_no_data", {}, "No data")}</span>
+                            </div>
+                        ) : (
+                            <ResponsiveContainer width="100%" height={260}>
+                                <BarChart
+                                    data={revenueData.map((r, idx) => ({ name: monthLabels[idx] ?? r.month, revenue: r.revenue }))}
+                                    margin={{ top: 4, right: 16, left: 8, bottom: 4 }}
+                                >
+                                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+                                    <XAxis
+                                        dataKey="name"
+                                        tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+                                        axisLine={false}
+                                        tickLine={false}
+                                    />
+                                    <YAxis
+                                        tick={{ fontSize: 10, fill: "var(--muted-foreground)" }}
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tickFormatter={(v: number) =>
+                                            v >= 1_000_000
+                                                ? `${(v / 1_000_000).toFixed(1)}M`
+                                                : v >= 1_000
+                                                    ? `${(v / 1_000).toFixed(0)}K`
+                                                    : String(v)
+                                        }
+                                        domain={[0, "auto"] as [number, string]}
+                                        width={60}
+                                    />
+                                    <Tooltip
+                                        cursor={{ fill: "var(--accent)", opacity: 0.4 }}
+                                        contentStyle={{
+                                            background: "var(--popover)",
+                                            border: "1px solid var(--border)",
+                                            borderRadius: "0.75rem",
+                                            fontSize: 12,
+                                            color: "var(--popover-foreground)",
+                                        }}
+                                        labelStyle={{ fontWeight: 700, color: "var(--foreground)" }}
+                                        formatter={(value: number | string | readonly (number | string)[] | undefined) =>
+                                            `${new Intl.NumberFormat(dateLocale).format(Number(value ?? 0))} ₫`
+                                        }
+                                    />
+                                    <Bar
+                                        dataKey="revenue"
+                                        name={t("admin_revenue", {}, "Revenue")}
+                                        fill="var(--chart-1)"
+                                        radius={[6, 6, 0, 0]}
+                                        maxBarSize={40}
+                                    />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        )}
+                    </CardContent>
+                </Card>
+
+
+                {/* Top Products Chart */}
+                <Card className="border-none shadow-lg bg-gradient-to-br from-card to-muted/20">
+                    <CardHeader className="pb-3 border-b border-border/40">
+                        <CardTitle className="text-sm font-bold flex items-center gap-2 text-card-foreground">
+                            <TrendingUp className="h-4 w-4 text-success" />
+                            {t("admin_top_products_chart", {}, "Top Products — Revenue & Sold")}
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-5 pb-2">
+                        {topSellingQuery.isLoading ? (
+                            <Skeleton className="h-[360px] w-full rounded-xl" />
+                        ) : topSelling.length === 0 ? (
+                            <div className="h-[360px] flex flex-col items-center justify-center text-muted-foreground gap-2">
+                                <TrendingUp className="h-8 w-8 opacity-20" />
+                                <span className="text-xs">{t("admin_no_data", {}, "No data")}</span>
+                            </div>
+                        ) : (
+                            <EnrichedProductsChart items={topSelling} dateLocale={dateLocale} />
+                        )}
+                    </CardContent>
+                </Card>
+            </section>
+
+            {/* ── Detail Tables (side by side) ──────────────────────────── */}
             <section className="grid lg:grid-cols-2 gap-5">
                 {/* Revenue table with drill-down */}
                 <Card className="overflow-hidden border-none shadow-md bg-gradient-to-br from-card to-muted/20">
@@ -949,166 +1495,6 @@ export default function AdminReportsClient() {
                     </CardContent>
                 </Card>
             </section>
-
-            {/* ── Daily Revenue ──────────────────────────────────────────── */}
-            <Card className="flex flex-col max-h-[700px] overflow-hidden border-none shadow-md bg-gradient-to-br from-card to-muted/20">
-                <CardHeader className="pb-2 border-b border-border/50 shrink-0">
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                        <CardTitle className="text-sm font-bold flex items-center gap-2">
-                            <CalendarDays className="h-4 w-4 text-primary" />
-                            {t("admin_daily_revenue", {}, "Revenue by Date Range")}
-                        </CardTitle>
-                        <div className="flex flex-wrap items-end gap-2">
-                            <div className="flex flex-col gap-0.5">
-                                <label className="text-tiny font-bold text-muted-foreground uppercase ml-0.5">
-                                    {t("from_date", {}, "From")}
-                                </label>
-                                <Input
-                                    type="date"
-                                    value={dailyFrom}
-                                    max={dailyTo || todayStr}
-                                    onChange={(e) => setDailyFrom(e.target.value)}
-                                    className="h-8 w-38 rounded-lg bg-background text-sm [&::-webkit-calendar-picker-indicator]:opacity-60"
-                                />
-                            </div>
-                            <div className="flex flex-col gap-0.5">
-                                <label className="text-tiny font-bold text-muted-foreground uppercase ml-0.5">
-                                    {t("to_date", {}, "To")}
-                                </label>
-                                <Input
-                                    type="date"
-                                    value={dailyTo}
-                                    min={dailyFrom}
-                                    max={todayStr}
-                                    onChange={(e) => setDailyTo(e.target.value)}
-                                    className="h-8 w-38 rounded-lg bg-background text-sm [&::-webkit-calendar-picker-indicator]:opacity-60"
-                                />
-                            </div>
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 text-tiny gap-1 text-muted-foreground"
-                                onClick={() => dailyOrdersQuery.refetch()}
-                                disabled={dailyOrdersQuery.isFetching}
-                            >
-                                <RefreshCw className={`h-3 w-3 ${dailyOrdersQuery.isFetching ? "animate-spin" : ""}`} />
-                            </Button>
-                        </div>
-                    </div>
-                </CardHeader>
-                <CardContent className="pt-4 flex flex-col gap-4 flex-1 min-h-0">
-                    {/* Stat summary */}
-                    <div className="grid grid-cols-2 gap-3 shrink-0">
-                        <div className="p-4 rounded-xl border bg-card flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                                <TrendingUp className="h-4 w-4 text-primary" />
-                            </div>
-                            <div>
-                                <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
-                                    {t("admin_daily_total_revenue", {}, "Total Revenue")}
-                                </p>
-                                {dailyOrdersQuery.isLoading ? (
-                                    <Skeleton className="h-5 w-28 mt-1" />
-                                ) : (
-                                    <p className="text-base font-black text-primary">
-                                        {formatMoney(dailyRevenue, dateLocale)}
-                                        <span className="text-xs font-normal text-muted-foreground ml-1">VND</span>
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-                        <div className="p-4 rounded-xl border bg-card flex items-center gap-3">
-                            <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center shrink-0">
-                                <ShoppingBag className="h-4 w-4 text-secondary-foreground" />
-                            </div>
-                            <div>
-                                <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider">
-                                    {t("admin_daily_total_orders", {}, "Total Orders")}
-                                </p>
-                                {dailyOrdersQuery.isLoading ? (
-                                    <Skeleton className="h-5 w-12 mt-1" />
-                                ) : (
-                                    <p className="text-base font-black text-foreground">
-                                        {dailyOrders.length}
-                                        <span className="text-xs font-normal text-muted-foreground ml-1">
-                                            {t("admin_daily_orders_unit", {}, "orders")}
-                                        </span>
-                                    </p>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Orders table */}
-                    {dailyOrdersQuery.isLoading ? (
-                        <div className="space-y-2">
-                            {[1, 2, 3].map((i) => <Skeleton key={i} className="h-10 w-full rounded-lg" />)}
-                        </div>
-                    ) : dailyOrders.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center py-8 text-muted-foreground opacity-50">
-                            <CalendarDays className="h-8 w-8 mb-2" />
-                            <p className="text-xs font-medium">{t("admin_daily_no_orders", {}, "No delivered orders in this date range")}</p>
-                        </div>
-                    ) : (
-                        <div className="flex-1 overflow-auto min-h-0 border-t border-border/50">
-                            <table className="w-full text-left text-xs relative">
-                                <thead className="sticky top-0 bg-card z-10 shadow-sm">
-                                    <tr className="border-b border-border text-muted-foreground uppercase tracking-wider font-medium">
-                                        <th className="py-2 px-2">{t("admin_order_id", {}, "Order ID")}</th>
-                                        <th className="py-2 px-2">{t("admin_date", {}, "Time")}</th>
-                                        <th className="py-2 px-2 text-center">{t("admin_items", {}, "Items")}</th>
-                                        <th className="py-2 px-2">{t("admin_status", {}, "Status")}</th>
-                                        <th className="py-2 px-2 text-right">{t("admin_total", {}, "Revenue")}</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {dailyOrders.map((order, i) => {
-                                        const raw = String(order.orderDate);
-                                        const iso =
-                                            raw.includes("T") && !raw.includes("Z") && !raw.includes("+")
-                                                ? `${raw}Z`
-                                                : raw;
-                                        return (
-                                            <tr
-                                                key={order.orderId}
-                                                className={`border-b border-border/30 hover:bg-accent/50 transition-colors cursor-pointer ${i % 2 === 0 ? "bg-muted/20" : ""
-                                                    }`}
-                                                onClick={() => setSelectedDayOrderId(order.orderId)}
-                                            >
-                                                <td className="py-2 px-2 font-mono text-muted-foreground">
-                                                    {truncateId(order.orderId)}
-                                                </td>
-                                                <td className="py-2 px-2 text-muted-foreground">
-                                                    {new Date(iso).toLocaleDateString(dateLocale, {
-                                                        timeZone: "Asia/Ho_Chi_Minh",
-                                                        day: "2-digit",
-                                                        month: "2-digit",
-                                                        year: "numeric",
-                                                    })}
-                                                </td>
-                                                <td className="py-2 px-2 text-center">
-                                                    {Array.isArray(order.items) ? order.items.length : 0}
-                                                </td>
-                                                <td className="py-2 px-2">
-                                                    <Badge
-                                                        variant="success"
-                                                        className="rounded-full text-tiny font-medium"
-                                                    >
-                                                        {formatOrderStatusLabel(order.deliveryStatus as DeliveryStatus, t)}
-                                                    </Badge>
-                                                </td>
-                                                <td className="py-2 px-2 text-right font-mono tabular-nums font-semibold text-primary">
-                                                    {formatMoney(order.totalAmount, dateLocale)}
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
-                    )}
-                </CardContent>
-            </Card>
 
             {/* ── Daily Order Detail Modal ────────────────────────────────── */}
             {selectedDayOrderId && (
